@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DomainStatus {
+  PENDING
+  VERIFIED
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum RuleType {
+  ALLOW
+  BLOCK
+}
+
+enum RuleScope {
+  SENDER_DOMAIN
+  SENDER_EMAIL
+  RECIPIENT_DOMAIN
+  RECIPIENT_INBOX
+  SOURCE_IP
+}
+
+enum AbuseReportStatus {
+  OPEN
+  REVIEWING
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  auditLogs    AuditLog[]
+}
+
+model Domain {
+  id                 String        @id @default(uuid())
+  name               String        @unique
+  status             DomainStatus  @default(PENDING)
+  verificationToken  String
+  createdAt          DateTime      @default(now())
+  inboxes            Inbox[]
+}
+
+model Inbox {
+  id             String    @id @default(uuid())
+  domain         Domain    @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domainId       String
+  localPart      String
+  createdAt      DateTime  @default(now())
+  expiresAt      DateTime?
+  flags          Json?
+  deletedAt      DateTime?
+  messages       Message[]
+
+  @@unique([domainId, localPart])
+}
+
+model Message {
+  id          String      @id @default(uuid())
+  inbox       Inbox       @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  inboxId     String
+  messageId   String?
+  fromAddress String?
+  toAddress   String?
+  subject     String?
+  receivedAt  DateTime    @default(now())
+  textBody    String?
+  htmlBody    String?
+  sourceIp    String?
+  headers     Json?
+  spamScore   Float?
+  size        Int?
+  deletedAt   DateTime?
+  attachments Attachment[]
+  abuseReports AbuseReport[]
+
+  @@index([inboxId, receivedAt])
+  @@index([sourceIp, receivedAt])
+  @@index([deletedAt])
+}
+
+model Attachment {
+  id          String   @id @default(uuid())
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId   String
+  filename    String
+  mimeType    String?
+  size        Int?
+  storageKey  String
+  createdAt   DateTime @default(now())
+  deletedAt   DateTime?
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
+  action    String
+  meta      Json?
+  createdAt DateTime @default(now())
+}
+
+model Rule {
+  id        String    @id @default(uuid())
+  type      RuleType
+  scope     RuleScope
+  value     String
+  note      String?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([scope, value])
+}
+
+model AbuseReport {
+  id         String            @id @default(uuid())
+  message    Message?          @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  messageId  String?
+  reporter   String?
+  reason     String
+  status     AbuseReportStatus @default(OPEN)
+  createdAt  DateTime          @default(now())
+
+  @@index([status])
+  @@index([messageId])
+}

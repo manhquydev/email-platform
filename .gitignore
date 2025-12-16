@@ -1,0 +1,15 @@
+node_modules
+.env
+.env.local
+dist
+coverage
+*.log
+storage
+services/api/node_modules
+services/api/dist
+services/api/.env
+services/api/storage
+services/web/node_modules
+services/web/dist
+postgres-data
+redis-data

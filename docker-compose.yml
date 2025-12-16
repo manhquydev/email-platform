@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: email_service
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      context: ./services/api
+    restart: unless-stopped
+    env_file:
+      - ./services/api/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/email_service
+      HTTP_PORT: 3001
+      SMTP_PORT: 2525
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      OUTBOUND_SMTP_HOST: smtp.example.com
+      OUTBOUND_SMTP_PORT: 587
+      OUTBOUND_SMTP_USER: user
+      OUTBOUND_SMTP_PASS: password
+      OUTBOUND_SMTP_SECURE: "false"
+      OUTBOUND_ENABLED: "false"
+      ALLOW_AUTO_DOMAIN_CREATION: "true"
+      STORAGE_DIR: /app/storage
+    depends_on:
+      - postgres
+    volumes:
+      - ./services/api/storage:/app/storage
+    ports:
+      - "3001:3001"
+      - "2525:2525"
+
+  web:
+    build:
+      context: ./services/web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      # Nginx serves static files, so this env var is for build time if we were using it there, 
+      # but for Vite SPA it needs to be baked in or handled at runtime. 
+      # For now, we assume the browser can hit localhost:3001.
+      - VITE_API_BASE=http://localhost:3001
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./services/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.0.3
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./services/observability/grafana/provisioning:/etc/grafana/provisioning
+      - ./services/observability/grafana/dashboards:/etc/grafana/dashboards
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres-data:
+    driver: local
+  redis_data:
+    driver: local

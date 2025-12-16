@@ -41,7 +41,7 @@ export async function inboxRoutes(app: FastifyInstance) {
     const bodySchema = z.object({
       domainId: z.string().uuid(),
       localPart: z.string().min(1),
-      expiresAt: z.string().datetime().optional(),
+      expiresAt: z.string().datetime().nullable().optional(),
     });
     const parsed = bodySchema.safeParse(request.body);
     if (!parsed.success) {

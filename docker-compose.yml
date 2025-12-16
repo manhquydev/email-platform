@@ -57,13 +57,7 @@ services:
     ports:
       - "8080:80"
     environment:
-      # Nginx serves static files, so this env var is for build time if we were using it there, 
-      # but for Vite SPA it needs to be baked in or handled at runtime. 
-      # For now, we assume the browser can hit localhost:3001.
-      # VITE_API_BASE needs to be known at build time OR handled by the app at runtime using a config endpoint (advanced).
-      # For simple docker-compose usage with the provided Dockerfile (which likely does npm run dev or serve), this might work if passed properly.
-      # If using "preview" or "dev", it picks it up.
-      - VITE_API_BASE=${VITE_API_BASE:-http://localhost:3001}
+      VITE_API_BASE: ${VITE_API_BASE:-http://localhost:3001}
 
   prometheus:
     image: prom/prometheus:v2.45.0

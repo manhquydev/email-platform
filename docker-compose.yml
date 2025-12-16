@@ -30,6 +30,7 @@ services:
       OUTBOUND_SMTP_SECURE: "false"
       OUTBOUND_ENABLED: "false"
       ALLOW_AUTO_DOMAIN_CREATION: "true"
+      WEB_URL: http://165.22.48.193:8080
       STORAGE_DIR: /app/storage
     depends_on:
       - postgres
@@ -49,7 +50,7 @@ services:
       # Nginx serves static files, so this env var is for build time if we were using it there, 
       # but for Vite SPA it needs to be baked in or handled at runtime. 
       # For now, we assume the browser can hit localhost:3001.
-      - VITE_API_BASE=http://localhost:3001
+      - VITE_API_BASE=http://165.22.48.193:3001
 
   prometheus:
     image: prom/prometheus:v2.45.0

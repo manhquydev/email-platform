@@ -110,3 +110,32 @@ docker-compose exec postgres psql -U postgres -d email_service -c "INSERT INTO \
 
 - **Port 25 bị chặn**: Nhiều nhà cung cấp cloud chặn port 25 chiều outbound. Hãy dùng relay (SendGrid/SES) qua port 587.
 - **Connection Refused**: Kiểm tra Security Groups / Firewall (UFW) xem các port 80, 443, 25, 3000 có mở không.
+
+## 7. Quy trình Cập nhật Code (Redeploy)
+
+Khi bạn muốn cập nhật code mới từ repository về server:
+
+1. **Kéo code mới về**:
+   ```bash
+   git pull origin main
+   ```
+
+2. **Dừng và Build lại Container**:
+   ```bash
+   # Build lại để cập nhật code mới vào container
+   docker-compose up -d --build
+   ```
+
+3. **Chạy Migration (nếu có thay đổi DB)**:
+   ```bash
+   docker-compose exec api npx prisma migrate deploy
+   ```
+
+### Thay đổi Tài khoản Admin
+Nếu bạn muốn đổi mật khẩu hoặc email admin, hãy chạy lệnh sau trên server:
+
+```bash
+# Cập nhật email thành manhquydev@gmail.com và mật khẩu mới
+docker-compose exec -T postgres psql -U postgres -d email_service < scripts/update_admin.sql
+```
+(Lưu ý: File `scripts/update_admin.sql` cần có trên server. Nếu chưa có, bạn cần tạo nó hoặc pull code về trước).

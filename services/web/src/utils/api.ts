@@ -32,9 +32,10 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
 
     const data: unknown = await res.json().catch(() => ({}));
     if (!res.ok) {
-        const payload = (data as { error?: string; message?: string }) ?? {};
+        const payload = (data as { error?: string; message?: string; details?: string }) ?? {};
         const msg = payload.error ?? payload.message ?? "Request failed";
-        throw new Error(msg);
+        const details = payload.details;
+        throw new Error(details ? `${msg}: ${details}` : msg);
     }
 
     return data as T;

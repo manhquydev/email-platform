@@ -136,8 +136,35 @@ export function Sidebar({
                                     </code>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText(activeDomain.verificationToken);
-                                            toast.success('Đã copy token!');
+                                            const text = activeDomain.verificationToken;
+                                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                                navigator.clipboard.writeText(text).then(() => {
+                                                    toast.success('Đã copy token!');
+                                                }).catch(() => {
+                                                    // Fallback for non-secure contexts
+                                                    fallbackCopyTextToClipboard(text);
+                                                });
+                                            } else {
+                                                // Fallback for browsers without clipboard API
+                                                fallbackCopyTextToClipboard(text);
+                                            }
+
+                                            function fallbackCopyTextToClipboard(text: string) {
+                                                const textArea = document.createElement("textarea");
+                                                textArea.value = text;
+                                                textArea.style.position = "fixed";
+                                                textArea.style.left = "-999999px";
+                                                document.body.appendChild(textArea);
+                                                textArea.focus();
+                                                textArea.select();
+                                                try {
+                                                    document.execCommand('copy');
+                                                    toast.success('Đã copy token!');
+                                                } catch {
+                                                    toast.error('Không thể copy, vui lòng copy thủ công');
+                                                }
+                                                document.body.removeChild(textArea);
+                                            }
                                         }}
                                         className="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-[10px] font-medium transition-colors"
                                         title="Copy token"

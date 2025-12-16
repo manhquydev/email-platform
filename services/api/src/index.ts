@@ -21,6 +21,7 @@ const ensureAdminUser = async (log: any) => {
       email: appConfig.defaultAdminEmail,
       passwordHash,
       role: "ADMIN",
+      emailVerified: new Date(), // Admin is auto-verified
     },
   });
   log.info(

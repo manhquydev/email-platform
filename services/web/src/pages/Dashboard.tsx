@@ -66,7 +66,11 @@ export function Dashboard() {
             const domain = domains.find(d => d.id === domainId);
             if (!domain) return;
 
-            const res = await api<PaginatedResponse<Inbox>>(`/inboxes?domain=${domain.name}&limit=100`, { token });
+            const params = new URLSearchParams({
+                domain: domain.name,
+                limit: "100"
+            });
+            const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res.data);
 
             // Reset message list when switching domains
@@ -74,7 +78,7 @@ export function Dashboard() {
             setSelectedMessage(null);
             setSelectedInbox("");
         } catch (e) {
-            console.error(e);
+            console.error("Load Inboxes Error:", e);
             toast.error("Lỗi tải danh sách inbox");
         } finally {
             setBusy(false);
@@ -87,10 +91,15 @@ export function Dashboard() {
 
         try {
             const off = params.offset ?? 0;
-            let url = `/messages?inboxId=${inboxId}&limit=${PAGE_SIZE.messages}&offset=${off}&q=${encodeURIComponent(messageSearch)}`;
-            if (messageHasAttachments) url += "&hasAttachments=true";
+            const queryParams = new URLSearchParams({
+                inboxId,
+                limit: String(PAGE_SIZE.messages),
+                offset: String(off),
+                q: messageSearch,
+            });
+            if (messageHasAttachments) queryParams.append("hasAttachments", "true");
 
-            const res = await api<PaginatedResponse<Message>>(url, { token });
+            const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
 
             if (params.append) {
                 setMessages(prev => [...prev, ...res.data]);

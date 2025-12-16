@@ -32,7 +32,7 @@ services:
       OUTBOUND_ENABLED: "true"
       ALLOW_AUTO_DOMAIN_CREATION: "true"
       # Use env var for WEB_URL or default to localhost
-      WEB_URL: ${WEB_URL:-http://localhost:8080}
+      WEB_URL: ${WEB_URL:-http://165.22.48.193:8080}
       STORAGE_DIR: /app/storage
     depends_on:
       - postgres

@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate, Navigate } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { api, API_BASE } from "../utils/api";
+import { api } from "../utils/api";
 
 export function MainLayout() {
-    const { user, logout, token } = useAuth();
-    const navigate = useNavigate();
-    const [health, setHealth] = useState("checking...");
-
-    if (!token) {
-        return <Navigate to="/login" replace />;
-    }
-
-    const isAdmin = user?.role === "ADMIN";
+    const { token } = useAuth();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_, setHealth] = useState("checking...");
 
     const checkHealth = async () => {
         try {
@@ -27,38 +21,13 @@ export function MainLayout() {
         checkHealth();
     }, []);
 
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
+
     return (
-        <div className="shell">
-            <div className="header">
-                <div className="title">
-                    <span>dY</span>
-                    <div>
-                        <div>Inbound Email Hub</div>
-                        <div className="small">Domains • Inboxes • Messages</div>
-                    </div>
-                </div>
-                <div className="row" style={{ gap: "0.6rem" }}>
-                    <span className="pill">{health}</span>
-                    <span className="badge">
-                        {user?.email} ({user?.role ?? "user"})
-                    </span>
-                    {isAdmin && (
-                        <button onClick={() => navigate("/admin")}>Admin</button>
-                    )}
-                    <button onClick={logout}>Đăng xuất</button>
-                </div>
-            </div>
-
-            <div className="content">
-                <Outlet />
-            </div>
-
-            <div className="footer">
-                <span>API base: {API_BASE}</span>
-                <span className="small">
-                    Need help? Try `/health` or re-login if token expires.
-                </span>
-            </div>
+        <div className="h-full w-full bg-bg text-text-main">
+            <Outlet />
         </div>
     );
 }

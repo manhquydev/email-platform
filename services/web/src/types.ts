@@ -10,6 +10,8 @@ export type Domain = {
     status: "PENDING" | "VERIFIED";
     verificationToken: string;
     createdAt: string;
+    ownerId?: string | null;
+    isPublic: boolean;
 };
 
 export type Inbox = {

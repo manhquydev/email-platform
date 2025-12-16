@@ -63,6 +63,15 @@ Chúng tôi cung cấp script để tạo các file `.env` cần thiết cho pro
    Kiểm tra `services/api/.env` và cập nhật các giá trị quan trọng:
    - `JWT_SECRET`: Đảm bảo đủ mạnh (thường script đã tạo sẵn).
    - `OUTBOUND_ENABLED`: Đặt là `true` nếu bạn muốn gửi email.
+   - **Lưu ý Development**: Nếu chạy local, bạn có thể dùng **Mailpit** (có sẵn trong docker-compose) bằng cách đặt:
+     - `OUTBOUND_SMTP_HOST=mailpit`
+     - `OUTBOUND_SMTP_PORT=1025`
+     - `OUTBOUND_SMTP_SECURE=false`
+     - `OUTBOUND_ENABLED=true`
+     - Truy cập `http://localhost:8025` để xem email.
+
+   - `WEB_URL`: Cấu hình URL trang web của bạn (ví dụ: `https://yourdomain.com`).
+   - `VITE_API_BASE`: Cấu hình URL API cho frontend (ví dụ: `https://api.yourdomain.com`). Nếu chạy local hoặc docker-compose mặc định, nó sẽ tự nhận hoặc fallback về localhost.
 
 # S3 Storage (Optional)
 S3_ENABLED=false
@@ -75,21 +84,113 @@ S3_SECRET_ACCESS_KEY=
 
 ## 4. Triển khai
 
-1. **Build và Khởi chạy**:
+### 4.1 Development (Local)
+```bash
+docker-compose up -d --build
+```
+
+Lệnh này sẽ khởi động:
+- Postgres (Database)
+- Redis (Queue/Cache)
+- API (Backend + SMTP Inbound)
+- Web (Frontend)
+- Mailpit (Email Testing)
+- Prometheus & Grafana (Monitoring)
+
+### 4.2 Production (Với HTTPS tự động)
+
+> [!IMPORTANT]
+> Sử dụng `docker-compose.prod.yml` cho môi trường production để có HTTPS tự động với Let's Encrypt.
+
+1. **Cấu hình biến môi trường**:
    ```bash
-   docker-compose up -d --build
-   ```
+   # Tạo file .env ở thư mục root
+   cat > .env << EOF
+   DOMAIN=yourdomain.com
+   ACME_EMAIL=admin@yourdomain.com
+   POSTGRES_PASSWORD=$(openssl rand -base64 32)
+   GRAFANA_PASSWORD=$(openssl rand -base64 16)
    
-   Lệnh này sẽ khởi động:
-   - Postgres (Database)
-   - Redis (Queue/Cache)
-   - API (Backend + SMTP Inbound)
-   - Web (Frontend)
-   - Prometheus & Grafana (Monitoring)
+   # Outbound Email (xem section 4.3)
+   OUTBOUND_ENABLED=true
+   OUTBOUND_SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+   OUTBOUND_SMTP_PORT=587
+   OUTBOUND_SMTP_USER=YOUR_SES_SMTP_USER
+   OUTBOUND_SMTP_PASS=YOUR_SES_SMTP_PASS
+   OUTBOUND_SMTP_SECURE=true
+   EOF
+   ```
+
+2. **Build và Khởi chạy**:
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d --build
+   ```
+
+3. **Kiểm tra SSL**:
+   ```bash
+   # Xem logs của Caddy để đảm bảo SSL được cấp
+   docker-compose -f docker-compose.prod.yml logs caddy
+   
+   # Test HTTPS
+   curl -I https://api.yourdomain.com/health
+   ```
+
+### 4.3 Cấu hình Outbound Email (Amazon SES / SendGrid)
+
+> [!WARNING]
+> **Không nên** tự build SMTP outbound server vì IP sẽ bị vào spam ngay lập tức. Hãy sử dụng dịch vụ gửi email chuyên nghiệp.
+
+#### Option A: Amazon SES
+
+1. **Tạo tài khoản SES** tại [AWS Console](https://console.aws.amazon.com/ses/)
+
+2. **Verify domain của bạn** trong SES Console:
+   - Thêm bản ghi TXT để verify domain
+   - Thêm bản ghi DKIM (SES sẽ cung cấp 3 CNAME records)
+
+3. **Tạo SMTP Credentials**:
+   - Vào SES > SMTP Settings > Create SMTP Credentials
+   - Lưu lại SMTP username và password
+
+4. **Cập nhật `.env`**:
+   ```bash
+   OUTBOUND_ENABLED=true
+   OUTBOUND_SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+   OUTBOUND_SMTP_PORT=587
+   OUTBOUND_SMTP_USER=YOUR_SES_SMTP_USER
+   OUTBOUND_SMTP_PASS=YOUR_SES_SMTP_PASS
+   OUTBOUND_SMTP_SECURE=true
+   ```
+
+#### Option B: SendGrid
+
+1. **Tạo API Key** tại [SendGrid Console](https://app.sendgrid.com/)
+
+2. **Cấu hình trong `.env`**:
+   ```bash
+   OUTBOUND_ENABLED=true
+   OUTBOUND_SMTP_HOST=smtp.sendgrid.net
+   OUTBOUND_SMTP_PORT=587
+   OUTBOUND_SMTP_USER=apikey
+   OUTBOUND_SMTP_PASS=YOUR_SENDGRID_API_KEY
+   OUTBOUND_SMTP_SECURE=true
+   ```
+
+#### DNS Records cho Outbound Mail
+
+Thêm các bản ghi DNS sau để tăng deliverability:
+
+| Loại | Host | Giá trị |
+|------|------|---------|
+| TXT | @ | `v=spf1 include:amazonses.com ~all` (cho SES) hoặc `v=spf1 include:sendgrid.net ~all` (cho SendGrid) |
+| TXT | _dmarc | `v=DMARC1; p=quarantine; rua=mailto:dmarc@yourdomain.com` |
+| CNAME | (3 records từ SES/SendGrid) | DKIM signatures |
 
 2. **Kiểm tra Dịch vụ**:
    ```bash
-   docker-compose ps
+   docker-compose ps  # Development
+   # hoặc
+   docker-compose -f docker-compose.prod.yml ps  # Production
    ```
    Tất cả services nên ở trạng thái `Up`.
 
@@ -101,55 +202,117 @@ S3_SECRET_ACCESS_KEY=
 ## 5. Sau khi Triển khai
 
 ### Tạo User Admin
-Bạn có thể tạo user admin thủ công thông qua API hoặc truy cập trực tiếp vào database.
-```bash
-# Ví dụ sử dụng docker exec để chạy seed script hoặc lệnh SQL trực tiếp
-docker-compose exec postgres psql -U postgres -d email_service -c "INSERT INTO \"User\" (email, \"passwordHash\", role) VALUES ('admin@yourdomain.com', '...hash...', 'ADMIN');"
-```
-*Lưu ý: Công cụ CLI quản lý user sẽ được cập nhật trong tương lai.*
+Hệ thống tự động tạo user admin với thông tin mặc định:
+- Email: `admin@example.com`
+- Password: `changeme`
 
-## 6. Giám sát & Bảo trì
+**Hãy đổi mật khẩu ngay sau khi đăng nhập!**
 
-- **Grafana**: Truy cập tại `http://<YOUR_IP>:3000` (Mặc định: admin/admin - Hãy đổi mật khẩu ngay!).
-- **Prometheus**: Truy cập tại `http://<YOUR_IP>:9090`.
-- **Sao lưu (Backups)**: Định kỳ sao lưu thư mục `./postgres-data` hoặc thiết lập job backup.
+## 6. Sao lưu Tự động (Backup)
 
-## Xử lý sự cố (Troubleshooting)
+### 6.1 Script Backup
 
-- **Port 25 bị chặn**: Nhiều nhà cung cấp cloud chặn port 25 chiều outbound. Hãy dùng relay (SendGrid/SES) qua port 587.
-- **Connection Refused**: Kiểm tra Security Groups / Firewall (UFW) xem các port 80, 443, 25, 3000 có mở không.
-- **KeyError: 'ContainerConfig'**: Lỗi này xảy ra khi docker-compose cũ không đồng bộ được state. Hãy chạy:
-    ```bash
-    docker-compose down
-    docker-compose rm -f
-    docker-compose up -d --build
-    ```
-
-## 7. Quy trình Cập nhật Code (Redeploy)
-
-Khi bạn muốn cập nhật code mới từ repository về server:
-
-1. **Kéo code mới về**:
-   ```bash
-   git pull origin main
-   ```
-
-2. **Dừng và Build lại Container**:
-   ```bash
-   # Build lại để cập nhật code mới vào container
-   docker-compose up -d --build
-   ```
-
-3. **Chạy Migration (nếu có thay đổi DB)**:
-   ```bash
-   docker-compose exec api npx prisma migrate deploy
-   ```
-
-### Thay đổi Tài khoản Admin
-Nếu bạn muốn đổi mật khẩu hoặc email admin, hãy chạy lệnh sau trên server:
+Dự án cung cấp script backup PostgreSQL tự động:
 
 ```bash
-# Cập nhật email thành manhquydev@gmail.com và mật khẩu mới
-docker-compose exec -T postgres psql -U postgres -d email_service < scripts/update_admin.sql
+# Cấp quyền thực thi
+chmod +x scripts/backup.sh
+
+# Chạy backup thủ công
+./scripts/backup.sh
+
+# Xem các backup đã tạo
+ls -la backups/
 ```
-(Lưu ý: File `scripts/update_admin.sql` cần có trên server. Nếu chưa có, bạn cần tạo nó hoặc pull code về trước).
+
+### 6.2 Cron Job (Mỗi 6 giờ)
+
+```bash
+# Mở crontab editor
+crontab -e
+
+# Thêm dòng sau (backup mỗi 6 giờ)
+0 */6 * * * /path/to/email-platform/scripts/backup.sh >> /var/log/email-backup.log 2>&1
+```
+
+### 6.3 Upload lên S3 (Tùy chọn)
+
+```bash
+# Cấu hình AWS CLI trước
+aws configure
+
+# Backup với upload S3
+S3_BACKUP_BUCKET=my-backup-bucket ./scripts/backup.sh --upload-s3
+```
+
+### 6.4 Restore từ Backup
+
+```bash
+# Giải nén backup
+gunzip backups/email_platform_YYYYMMDD_HHMMSS.sql.gz
+
+# Restore vào database
+docker-compose exec -T postgres psql -U postgres -d email_service < backups/email_platform_YYYYMMDD_HHMMSS.sql
+```
+
+## 7. Giám sát & Bảo trì
+
+- **Grafana**: `https://grafana.yourdomain.com` (Mặc định: admin/admin - Hãy đổi mật khẩu ngay!)
+- **Prometheus**: `https://prometheus.yourdomain.com`
+
+## 8. Anti-Abuse (Tùy chọn nâng cao)
+
+Nếu bạn cần quét virus và lọc spam, uncomment các service sau trong `docker-compose.prod.yml`:
+
+```yaml
+# ClamAV - Virus scanning
+clamav:
+  image: clamav/clamav:latest
+  restart: unless-stopped
+  volumes:
+    - clamav_data:/var/lib/clamav
+  networks:
+    - email_network
+
+# Rspamd - Spam filtering  
+rspamd:
+  image: rspamd/rspamd:latest
+  restart: unless-stopped
+  volumes:
+    - rspamd_data:/var/lib/rspamd
+  networks:
+    - email_network
+```
+
+> [!NOTE]
+> ClamAV và Rspamd cần cấu hình thêm để tích hợp với API. Xem documentation của từng project để biết chi tiết.
+
+## 9. Xử lý sự cố (Troubleshooting)
+
+| Vấn đề | Giải pháp |
+|--------|-----------|
+| Port 25 bị chặn | Dùng relay (SES/SendGrid) qua port 587 |
+| Connection Refused | Kiểm tra Firewall/Security Groups (mở port 80, 443, 25) |
+| SSL không hoạt động | Kiểm tra DNS đã propagate chưa, xem logs Caddy |
+| Email vào spam | Kiểm tra SPF/DKIM/DMARC đã cấu hình đúng chưa |
+
+### KeyError: 'ContainerConfig'
+```bash
+docker-compose down
+docker-compose rm -f
+docker-compose up -d --build
+```
+
+## 10. Quy trình Cập nhật Code (Redeploy)
+
+```bash
+# 1. Kéo code mới
+git pull origin main
+
+# 2. Build lại và restart
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# 3. Chạy migration (nếu có)
+docker-compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
+```
+

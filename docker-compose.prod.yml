@@ -1,0 +1,189 @@
+# Docker Compose Production - Email Platform
+# ==========================================
+# Sử dụng: DOMAIN=yourdomain.com ACME_EMAIL=admin@yourdomain.com docker-compose -f docker-compose.prod.yml up -d
+#
+# Biến môi trường cần thiết:
+# - DOMAIN: Domain cho HTTPS (vd: example.com)
+# - ACME_EMAIL: Email nhận thông báo Let's Encrypt
+# - POSTGRES_PASSWORD: Mật khẩu PostgreSQL (production)
+# - JWT_SECRET: Secret cho JWT (nên dùng từ generate_env.sh)
+
+services:
+  # ===================
+  # REVERSE PROXY - SSL
+  # ===================
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@localhost}
+    depends_on:
+      - api
+      - web
+    networks:
+      - email_network
+
+  # ===================
+  # DATABASE
+  # ===================
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: email_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups # Thư mục backup
+    networks:
+      - email_network
+    # Không expose port ra ngoài trong production
+
+    # ===================
+    # REDIS (Queue/Cache)
+    # ===================
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - email_network
+    # Không expose port ra ngoài trong production
+
+    # ===================
+    # API BACKEND
+    # ===================
+  api:
+    build:
+      context: ./services/api
+    restart: unless-stopped
+    env_file:
+      - ./services/api/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/email_service
+      HTTP_PORT: 3001
+      SMTP_PORT: 2525
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Production Outbound - Cấu hình SES/SendGrid
+      OUTBOUND_SMTP_HOST: ${OUTBOUND_SMTP_HOST:-}
+      OUTBOUND_SMTP_PORT: ${OUTBOUND_SMTP_PORT:-587}
+      OUTBOUND_SMTP_USER: ${OUTBOUND_SMTP_USER:-}
+      OUTBOUND_SMTP_PASS: ${OUTBOUND_SMTP_PASS:-}
+      OUTBOUND_SMTP_SECURE: ${OUTBOUND_SMTP_SECURE:-true}
+      OUTBOUND_ENABLED: ${OUTBOUND_ENABLED:-false}
+      ALLOW_AUTO_DOMAIN_CREATION: "false" # Disabled in production
+      WEB_URL: https://${DOMAIN:-localhost}
+      STORAGE_DIR: /app/storage
+      TRUST_PROXY: "true"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - api_storage:/app/storage
+    ports:
+      - "2525:2525" # SMTP Inbound (không qua Caddy)
+    networks:
+      - email_network
+
+  # ===================
+  # WEB FRONTEND
+  # ===================
+  web:
+    build:
+      context: ./services/web
+      args:
+        VITE_API_BASE: https://api.${DOMAIN:-localhost}
+    restart: unless-stopped
+    networks:
+      - email_network
+    # Port 80 nội bộ, Caddy reverse proxy
+
+    # ===================
+    # MONITORING
+    # ===================
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./services/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - email_network
+
+  grafana:
+    image: grafana/grafana:10.0.3
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=https://grafana.${DOMAIN:-localhost}
+    volumes:
+      - ./services/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./services/observability/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - email_network
+  # ===================
+  # ANTI-ABUSE (Optional)
+  # ===================
+  # Uncomment để bật ClamAV virus scanning
+  # clamav:
+  #   image: clamav/clamav:latest
+  #   restart: unless-stopped
+  #   volumes:
+  #     - clamav_data:/var/lib/clamav
+  #   networks:
+  #     - email_network
+
+  # Uncomment để bật Rspamd spam filtering
+  # rspamd:
+  #   image: rspamd/rspamd:latest
+  #   restart: unless-stopped
+  #   volumes:
+  #     - rspamd_data:/var/lib/rspamd
+  #   networks:
+  #     - email_network
+
+  # ===================
+  # VOLUMES
+  # ===================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  api_storage:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  # clamav_data:
+  #   driver: local
+  # rspamd_data:
+  #   driver: local
+
+  # ===================
+  # NETWORKS
+  # ===================
+networks:
+  email_network:
+    driver: bridge

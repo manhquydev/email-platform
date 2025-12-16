@@ -32,15 +32,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (email: string, pass: string) => {
         setBusy(true);
         try {
-            const res = await api<{ token: string }>("/auth/login", {
+            const res = await api<{ token: string, user: User }>("/auth/login", {
                 method: "POST",
                 body: { email, password: pass },
             });
             setToken(res.token);
+            setUser(res.user);
             toast.success("Đăng nhập thành công");
         } catch (e) {
             const msg = (e as Error).toString();
-            toast.error(msg);
+            toast.error(msg.replace("Error: ", ""));
             throw e;
         } finally {
             setBusy(false);

@@ -10,7 +10,7 @@ import { Loading } from "../components/Loading";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 export function Dashboard() {
-    const { token, user } = useAuth();
+    const { token, user, logout } = useAuth();
     const [busy, setBusy] = useState(false);
 
     // Data
@@ -193,9 +193,37 @@ export function Dashboard() {
                 }
             });
             toast.success("Đã tạo hộp thư mới");
-            await loadInboxes(domain.name);
+            await loadInboxes(domain.id); // Use domain.id here, assuming loadInboxes expects ID (checked above)
         } catch (e) {
             toast.error("Lỗi: " + (e as Error).message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const verifyDomain = async (domainId: string, tokenString: string) => {
+        setBusy(true);
+        try {
+            await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: tokenString } });
+            toast.success("Xác thực domain thành công");
+            await loadDomains();
+        } catch (e) {
+            toast.error("Lỗi xác thực: " + (e as Error).message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const deleteDomain = async (domainId: string) => {
+        if (!confirm("Bạn có chắc chắn muốn xóa domain này không?")) return;
+        setBusy(true);
+        try {
+            await api(`/domains/${domainId}`, { method: "DELETE", token });
+            toast.success("Đã xóa domain");
+            setSelectedDomain(""); // Reset selection
+            await loadDomains();
+        } catch (e) {
+            toast.error("Lỗi xóa domain: " + (e as Error).message);
         } finally {
             setBusy(false);
         }
@@ -228,7 +256,11 @@ export function Dashboard() {
                     onSelectInbox={setSelectedInbox}
                     onCreateDomain={createDomain}
                     onCreateInbox={createInbox}
+                    onVerifyDomain={verifyDomain}
+                    onDeleteDomain={deleteDomain}
+                    onLogout={logout}
                     isAdmin={isAdmin}
+                    currentUserId={user?.id}
                     busy={busy}
                 />
             </div>

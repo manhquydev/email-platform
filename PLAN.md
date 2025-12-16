@@ -28,7 +28,7 @@
 - [ ] Structured logging + log shipping
 - [x] Metrics (Prometheus) + dashboards/alerts (basic /metrics)
 - [x] Health probe (HTTP /health; ready=health for now)
-- [ ] Backup/restore playbooks (DB + storage)
+- [x] Backup/restore playbooks (DB + storage)
 - [ ] Runbooks for oncall (abuse/delivery incidents)
 
 ## 5) UI/UX & Access
@@ -40,7 +40,7 @@
 - [ ] Localization & accessibility pass
 
 ## 6) Outbound/Hybrid (optional)
-- [ ] Integrate SES/Mailgun/SendGrid for outbound
+- [x] Integrate SES/Mailgun/SendGrid for outbound
 - [ ] Template management + webhook handling
 - [ ] Sender reputation guardrails (rate, feedback loop)
 

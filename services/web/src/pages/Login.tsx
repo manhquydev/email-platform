@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LoginForm } from "../components/LoginForm";
 import { API_BASE } from "../utils/api";
@@ -35,6 +35,9 @@ export function Login() {
                 <div className="panel">
                     <h2>Đăng nhập</h2>
                     <LoginForm onSubmit={handleLogin} busy={busy} />
+                    <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                        <Link to="/register" style={{ color: "var(--color-primary)" }}>Chưa có tài khoản? Đăng ký</Link>
+                    </div>
                 </div>
             </div>
             <div className="footer">

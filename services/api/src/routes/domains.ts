@@ -16,14 +16,30 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid query" });
     }
 
-    const where = query.data.search
+    const user = request.user as { userId: string; role: string };
+    const isAdmin = user.role === "ADMIN";
+
+    const baseWhere = isAdmin
+      ? {}
+      : {
+        OR: [
+          { ownerId: user.userId },
+          { isPublic: true },
+        ]
+      };
+
+    const searchWhere = query.data.search
       ? {
         name: {
           contains: query.data.search,
           mode: "insensitive" as const,
         },
       }
-      : undefined;
+      : {};
+
+    const where = {
+      AND: [baseWhere, searchWhere],
+    };
 
     const [domains, total] = await Promise.all([
       prisma.domain.findMany({
@@ -31,13 +47,14 @@ export async function domainRoutes(app: FastifyInstance) {
         orderBy: { createdAt: "desc" },
         take: query.data.limit ?? 100,
         skip: query.data.offset ?? 0,
+        include: { owner: { select: { email: true } } },
       }),
       prisma.domain.count({ where }),
     ]);
     return { data: domains, meta: { total } };
   });
 
-  app.post("/domains", { preHandler: app.requireAdmin }, async (request, reply) => {
+  app.post("/domains", { preHandler: app.authenticate }, async (request, reply) => {
     const bodySchema = z.object({
       name: z.string().min(3),
     });
@@ -46,18 +63,27 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
     }
 
+    const user = request.user as { userId: string; role: string };
     const { name } = parsed.data;
+
     const existing = await prisma.domain.findUnique({ where: { name } });
     if (existing) {
       return reply.status(409).send({ error: "Domain already exists", domain: existing });
     }
 
-    const domain = await prisma.domain.create({ data: { name, verificationToken: generateToken() } });
+    // Create domain attached to current user
+    const domain = await prisma.domain.create({
+      data: {
+        name,
+        verificationToken: generateToken(),
+        ownerId: user.userId,
+      }
+    });
 
     return { domain };
   });
 
-  app.post("/domains/:id/verify", { preHandler: app.requireAdmin }, async (request, reply) => {
+  app.post("/domains/:id/verify", { preHandler: app.authenticate }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     const body = z.object({ token: z.string().min(6) }).safeParse(request.body);
     if (!params.success || !body.success) {
@@ -67,6 +93,11 @@ export async function domainRoutes(app: FastifyInstance) {
     const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
     if (!domain) {
       return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to verify this domain" });
     }
 
     // [MODIFIED] Real DNS verification
@@ -104,5 +135,25 @@ export async function domainRoutes(app: FastifyInstance) {
     });
 
     return { domain: updated };
+  });
+
+  app.delete("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid ID" });
+    }
+
+    const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to delete this domain" });
+    }
+
+    await prisma.domain.delete({ where: { id: params.data.id } });
+    return { success: true };
   });
 }

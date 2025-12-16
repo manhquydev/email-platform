@@ -23,22 +23,32 @@ services:
       SMTP_PORT: 2525
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      OUTBOUND_SMTP_HOST: smtp.example.com
-      OUTBOUND_SMTP_PORT: 587
-      OUTBOUND_SMTP_USER: user
-      OUTBOUND_SMTP_PASS: password
+      # Mailpit configuration for local development
+      OUTBOUND_SMTP_HOST: mailpit
+      OUTBOUND_SMTP_PORT: 1025
+      OUTBOUND_SMTP_USER: ""
+      OUTBOUND_SMTP_PASS: ""
       OUTBOUND_SMTP_SECURE: "false"
-      OUTBOUND_ENABLED: "false"
+      OUTBOUND_ENABLED: "true"
       ALLOW_AUTO_DOMAIN_CREATION: "true"
-      WEB_URL: http://165.22.48.193:8080
+      # Use env var for WEB_URL or default to localhost
+      WEB_URL: ${WEB_URL:-http://localhost:8080}
       STORAGE_DIR: /app/storage
     depends_on:
       - postgres
+      - mailpit
     volumes:
       - ./services/api/storage:/app/storage
     ports:
       - "3001:3001"
       - "2525:2525"
+
+  mailpit:
+    image: axllent/mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
   web:
     build:
@@ -50,7 +60,10 @@ services:
       # Nginx serves static files, so this env var is for build time if we were using it there, 
       # but for Vite SPA it needs to be baked in or handled at runtime. 
       # For now, we assume the browser can hit localhost:3001.
-      - VITE_API_BASE=http://165.22.48.193:3001
+      # VITE_API_BASE needs to be known at build time OR handled by the app at runtime using a config endpoint (advanced).
+      # For simple docker-compose usage with the provided Dockerfile (which likely does npm run dev or serve), this might work if passed properly.
+      # If using "preview" or "dev", it picks it up.
+      - VITE_API_BASE=${VITE_API_BASE:-http://localhost:3001}
 
   prometheus:
     image: prom/prometheus:v2.45.0

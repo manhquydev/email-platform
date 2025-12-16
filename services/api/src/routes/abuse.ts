@@ -97,4 +97,36 @@ export async function abuseRoutes(app: FastifyInstance) {
     await recordAudit((request.user as any)?.userId ?? null, "ABUSE_REPORTED", { reportId: report.id, messageId });
     return { report };
   });
+
+  // Update abuse report status
+  app.patch("/abuse/reports/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z
+      .object({
+        status: z.nativeEnum(AbuseReportStatus),
+      })
+      .safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const report = await prisma.abuseReport.findUnique({ where: { id: params.data.id } });
+    if (!report) {
+      return reply.status(404).send({ error: "Report not found" });
+    }
+
+    const updated = await prisma.abuseReport.update({
+      where: { id: params.data.id },
+      data: { status: body.data.status },
+    });
+
+    await recordAudit(
+      (request.user as any)?.userId ?? null,
+      "ABUSE_REPORT_UPDATED",
+      { reportId: params.data.id, newStatus: body.data.status }
+    );
+
+    return { report: updated };
+  });
 }

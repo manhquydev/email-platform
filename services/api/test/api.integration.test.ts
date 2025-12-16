@@ -41,7 +41,7 @@ describe("API integration", () => {
   beforeEach(async () => {
     await resetDb();
     const passwordHash = await hashPassword(ADMIN_PASSWORD);
-    await prisma.user.create({ data: { email: ADMIN_EMAIL, passwordHash, role: "ADMIN" } });
+    await prisma.user.create({ data: { email: ADMIN_EMAIL, passwordHash, role: "ADMIN", emailVerified: new Date() } });
   });
 
   it("exposes health status", async () => {

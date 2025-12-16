@@ -1,6 +1,8 @@
 export const API_BASE = (window.env?.API_BASE || import.meta.env.VITE_API_BASE || "http://localhost:3001").replace(/\/$/, "");
 export const PAGE_SIZE = { domains: 20, inboxes: 20, messages: 20 };
 
+export * from "./format";
+
 type ApiOptions = {
     method?: string;
     body?: unknown;

@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { api, PAGE_SIZE } from "../utils/api";
-import { DomainPanel } from "../components/DomainPanel";
-import { InboxPanel } from "../components/InboxPanel";
-import { MessagePanel } from "../components/MessagePanel";
+import { Sidebar } from "../components/Sidebar";
+import { MessageList } from "../components/MessageList";
+import { MessageDetail } from "../components/MessageDetail";
 import { ComposeModal } from "../components/ComposeModal";
 import { Loading } from "../components/Loading";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
@@ -19,116 +19,131 @@ export function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([]);
 
     // Selection
+    // Initialize from localStorage or first available
     const [selectedDomain, setSelectedDomain] = useState<string>("");
     const [selectedInbox, setSelectedInbox] = useState<string>("");
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
-    // Pagination & Search
-    const [domainOffset, setDomainOffset] = useState(0);
-    const [domainTotal, setDomainTotal] = useState(0);
-    const [domainSearch, setDomainSearch] = useState("");
-
-    const [inboxOffset, setInboxOffset] = useState(0);
-    const [inboxTotal, setInboxTotal] = useState(0);
-    const [inboxSearch, setInboxSearch] = useState("");
-
-    const [messageOffset, setMessageOffset] = useState(0);
-    const [messageTotal, setMessageTotal] = useState(0);
+    // Filter/Pagination States
     const [messageSearch, setMessageSearch] = useState("");
     const [messageHasAttachments, setMessageHasAttachments] = useState(false);
+    const [messageOffset, setMessageOffset] = useState(0);
+    const [messageTotal, setMessageTotal] = useState(0);
 
-    // UI State
-    const [viewMode, setViewMode] = useState<"html" | "text">("html");
+    // Mobile View State
+    const [mobileView, setMobileView] = useState<"sidebar" | "list" | "detail">("sidebar");
+
     const [showCompose, setShowCompose] = useState(false);
 
     const isAdmin = user?.role === "ADMIN";
+    // Check outgoing support
     const outboundEnabled =
         String(window.env?.OUTBOUND_ENABLED ?? import.meta.env.VITE_OUTBOUND_ENABLED ?? "false").toLowerCase() === "true";
     const canSendOutbound = outboundEnabled && isAdmin;
 
-    const loadDomains = useCallback(
-        async (params: { offset?: number; search?: string } = {}) => {
-            if (!token) return;
-            setBusy(true);
-            try {
-                const off = params.offset ?? domainOffset;
-                const q = params.search ?? domainSearch;
-                const res = await api<PaginatedResponse<Domain>>(
-                    `/domains?limit=${PAGE_SIZE.domains}&offset=${off}&search=${encodeURIComponent(
-                        q
-                    )}`,
-                    { token }
-                );
-                setDomains(res.data);
-                if (res.meta?.total !== undefined) setDomainTotal(res.meta.total);
-                if (params.offset !== undefined) setDomainOffset(params.offset);
-            } catch (e) {
-                toast.error("Không thể tải danh sách domain");
-                console.error(e);
-            } finally {
-                setBusy(false);
+    // --- Loaders ---
+
+    const loadDomains = useCallback(async () => {
+        if (!token) return;
+        try {
+            const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token }); // Load all (up to 100) for sidebar
+            setDomains(res.data);
+
+            // Auto-select first domain if none selected
+            if (res.data.length > 0 && !selectedDomain) {
+                setSelectedDomain(res.data[0].id);
             }
-        },
-        [token, domainOffset, domainSearch]
-    );
+        } catch (e) {
+            console.error(e);
+            toast.error("Lỗi tải danh sách domain");
+        }
+    }, [token, selectedDomain]);
 
-    const loadInboxes = useCallback(
-        async (
-            domainName: string | undefined,
-            params: { offset?: number; search?: string } = {}
-        ) => {
-            if (!token) return;
-            setBusy(true);
-            try {
-                const off = params.offset ?? inboxOffset;
-                const q = params.search ?? inboxSearch;
-                let url = `/inboxes?limit=${PAGE_SIZE.inboxes
-                    }&offset=${off}&search=${encodeURIComponent(q)}`;
-                if (domainName) url += `&domain=${domainName}`;
+    const loadInboxes = useCallback(async (domainId: string) => {
+        if (!token) return;
+        setBusy(true);
+        try {
+            const domain = domains.find(d => d.id === domainId);
+            if (!domain) return;
 
-                const res = await api<PaginatedResponse<Inbox>>(url, { token });
-                setInboxes(res.data);
-                if (res.meta?.total !== undefined) setInboxTotal(res.meta.total);
-                if (params.offset !== undefined) setInboxOffset(params.offset);
-            } catch (e) {
-                toast.error("Không thể tải danh sách hộp thư");
-                console.error(e);
-            } finally {
-                setBusy(false);
-            }
-        },
-        [token, inboxOffset, inboxSearch]
-    );
+            const res = await api<PaginatedResponse<Inbox>>(`/inboxes?domain=${domain.name}&limit=100`, { token });
+            setInboxes(res.data);
 
-    const loadMessages = useCallback(
-        async (
-            inboxId: string,
-            params: { offset?: number; search?: string; background?: boolean } = {}
-        ) => {
-            if (!token) return;
-            if (!params.background) setBusy(true);
-            try {
-                const off = params.offset ?? messageOffset;
-                const q = params.search ?? messageSearch;
-                let url = `/messages?inboxId=${inboxId}&limit=${PAGE_SIZE.messages
-                    }&offset=${off}&q=${encodeURIComponent(q)}`;
-                if (messageHasAttachments) url += "&hasAttachments=true";
+            // Reset message list when switching domains
+            setMessages([]);
+            setSelectedMessage(null);
+            setSelectedInbox("");
+        } catch (e) {
+            console.error(e);
+            toast.error("Lỗi tải danh sách inbox");
+        } finally {
+            setBusy(false);
+        }
+    }, [token, domains]);
 
-                const res = await api<PaginatedResponse<Message>>(url, { token });
+    const loadMessages = useCallback(async (inboxId: string, params: { offset?: number, append?: boolean, background?: boolean } = {}) => {
+        if (!token) return;
+        if (!params.background) setBusy(true);
+
+        try {
+            const off = params.offset ?? 0;
+            let url = `/messages?inboxId=${inboxId}&limit=${PAGE_SIZE.messages}&offset=${off}&q=${encodeURIComponent(messageSearch)}`;
+            if (messageHasAttachments) url += "&hasAttachments=true";
+
+            const res = await api<PaginatedResponse<Message>>(url, { token });
+
+            if (params.append) {
+                setMessages(prev => [...prev, ...res.data]);
+            } else {
                 setMessages(res.data);
-                if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
-                if (params.offset !== undefined) setMessageOffset(params.offset);
-            } catch (e) {
-                if (!params.background) toast.error("Không thể tải danh sách email");
-                console.error(e);
-            } finally {
-                if (!params.background) setBusy(false);
             }
-        },
-        [token, messageOffset, messageSearch, messageHasAttachments]
-    );
 
-    // Auto-refresh messages every 15 seconds
+            if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
+            if (params.offset !== undefined) setMessageOffset(params.offset);
+
+        } catch (e) {
+            console.error(e);
+            if (!params.background) toast.error("Lỗi tải email");
+        } finally {
+            if (!params.background) setBusy(false);
+        }
+    }, [token, messageSearch, messageHasAttachments]);
+
+    // --- Effects ---
+
+    // 1. Initial Domain Load
+    useEffect(() => {
+        loadDomains();
+    }, [token]);
+
+    // 2. Load Inboxes when Domain Changes
+    useEffect(() => {
+        if (selectedDomain) {
+            loadInboxes(selectedDomain);
+        }
+    }, [selectedDomain]);
+
+    // 3. Load Messages when Inbox or Filters Change
+    useEffect(() => {
+        if (selectedInbox) {
+            loadMessages(selectedInbox, { offset: 0 });
+            setSelectedMessage(null);
+            // On mobile, go to list
+            setMobileView("list");
+        } else {
+            setMessages([]);
+        }
+    }, [selectedInbox, messageHasAttachments, loadMessages]);
+
+    // 4. Search Debounce (Simple effect)
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if (selectedInbox) loadMessages(selectedInbox);
+        }, 500);
+        return () => clearTimeout(t);
+    }, [messageSearch, selectedInbox, loadMessages]);
+
+    // 5. Auto-refresh
     useEffect(() => {
         if (!selectedInbox) return;
         const interval = setInterval(() => {
@@ -137,179 +152,116 @@ export function Dashboard() {
         return () => clearInterval(interval);
     }, [selectedInbox, loadMessages]);
 
-    // Initial load
-    useEffect(() => {
-        loadDomains({ offset: 0 });
-    }, [token]);
 
-    // Effects for selection changes
-    useEffect(() => {
-        if (selectedDomain && selectedDomain !== "__admin__") {
-            const d = domains.find((x) => x.id === selectedDomain);
-            loadInboxes(d?.name, { offset: 0 });
-            setSelectedInbox("");
-            setMessages([]);
-            setSelectedMessage(null);
-        }
-    }, [selectedDomain, domains]);
+    // --- Actions ---
 
-    useEffect(() => {
-        if (selectedInbox) {
-            loadMessages(selectedInbox, { offset: 0 });
-            setSelectedMessage(null);
-        } else {
-            setMessages([]);
-        }
-    }, [selectedInbox, messageHasAttachments]);
-
-    // Handlers
     const createDomain = async (name: string) => {
-        if (!name) return;
         setBusy(true);
         try {
             await api("/domains", { method: "POST", token, body: { name } });
-            toast.success("Đã thêm domain mới");
+            toast.success("Đã thêm domain thành công");
             await loadDomains();
         } catch (e) {
-            toast.error("Không thể tạo domain: " + (e as Error).message);
+            toast.error("Lỗi: " + (e as Error).message);
         } finally {
             setBusy(false);
         }
     };
 
-    const verifyDomain = async (id: string, code: string) => {
-        if (!code) return;
+    const createInbox = async (domainId: string, localPart: string, expiresAt?: number) => {
         setBusy(true);
         try {
-            await api(`/domains/${id}/verify`, {
-                method: "POST",
-                token,
-                body: { token: code },
-            });
-            toast.success("Domain đã được xác minh!");
-            await loadDomains();
-        } catch (e) {
-            toast.error("Xác minh thất bại: " + (e as Error).message);
-        } finally {
-            setBusy(false);
-        }
-    };
+            const domain = domains.find(d => d.id === domainId);
+            if (!domain) return;
 
-    const createInbox = async (
-        domainId: string,
-        localPart: string,
-        expiresAt?: string
-    ) => {
-        setBusy(true);
-        try {
             await api("/inboxes", {
                 method: "POST",
                 token,
-                body: { domainId, localPart, expiresAt: expiresAt || null },
+                body: {
+                    domainId,
+                    localPart,
+                    expiresAt: expiresAt ? new Date(Date.now() + expiresAt).toISOString() : null
+                }
             });
             toast.success("Đã tạo hộp thư mới");
-            const d = domains.find((x) => x.id === selectedDomain);
-            await loadInboxes(d?.name);
+            await loadInboxes(domain.name);
         } catch (e) {
-            toast.error("Không thể tạo hộp thư: " + (e as Error).message);
+            toast.error("Lỗi: " + (e as Error).message);
         } finally {
             setBusy(false);
         }
     };
 
-    const currentDomain = domains.find((d) => d.id === selectedDomain);
-    const currentInbox = inboxes.find((i) => i.id === selectedInbox);
+    const handleSelectMessage = async (msg: Message) => {
+        setSelectedMessage(msg);
+        setMobileView("detail"); // Go to detail on mobile
+
+        // Mark read
+        if (!msg.isRead) {
+            setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
+            try {
+                await api(`/messages/${msg.id}/read`, { method: "PATCH", token, body: { isRead: true } });
+            } catch (e) { console.error(e); }
+        }
+    };
 
     return (
-        <>
-            {busy && <Loading fullScreen message="Đang xử lý..." />}
+        <div className="pane-layout">
 
-            <div className="stack">
-                <DomainPanel
+            {/* Left Pane: Sidebar */}
+            <div className={`h-full border-r border-border bg-surface ${mobileView === 'sidebar' ? 'block w-full' : 'hidden'} md:block md:w-auto overflow-hidden`}>
+                <Sidebar
                     domains={domains}
-                    onCreate={createDomain}
-                    onVerify={verifyDomain}
-                    busy={busy}
-                    selectedDomain={selectedDomain}
-                    onSelect={setSelectedDomain}
-                    search={domainSearch}
-                    onSearchChange={setDomainSearch}
-                    onSearch={() => loadDomains({ offset: 0, search: domainSearch })}
-                    onPaginate={(next) => loadDomains({ offset: next })}
-                    offset={domainOffset}
-                    total={domainTotal}
-                    isAdmin={isAdmin}
-                />
-
-                <InboxPanel
-                    domain={currentDomain}
                     inboxes={inboxes}
-                    selectedInbox={selectedInbox}
+                    selectedDomainId={selectedDomain}
+                    selectedInboxId={selectedInbox}
+                    onSelectDomain={setSelectedDomain}
                     onSelectInbox={setSelectedInbox}
-                    onCreate={createInbox}
-                    busy={busy}
-                    search={inboxSearch}
-                    onSearchChange={setInboxSearch}
-                    onSearch={() =>
-                        loadInboxes(currentDomain?.name, { offset: 0, search: inboxSearch })
-                    }
-                    onPaginate={(next) =>
-                        loadInboxes(currentDomain?.name, { offset: next })
-                    }
-                    offset={inboxOffset}
-                    total={inboxTotal}
+                    onCreateDomain={createDomain}
+                    onCreateInbox={createInbox}
                     isAdmin={isAdmin}
+                    busy={busy}
                 />
             </div>
 
-            <MessagePanel
-                inbox={currentInbox}
-                messages={messages}
-                selected={selectedMessage}
-                onSelect={async (msg) => {
-                    setSelectedMessage(msg);
-                    if (msg && !msg.isRead && token) {
-                        try {
-                            // Optimistic update
-                            setMessages((prev) =>
-                                prev.map((m) => (m.id === msg.id ? { ...m, isRead: true } : m))
-                            );
-                            await api(`/messages/${msg.id}/read`, {
-                                method: "PATCH",
-                                token,
-                                body: { isRead: true },
-                            });
-                        } catch (e) {
-                            console.error("Failed to mark as read", e);
-                        }
-                    }
-                }}
-                reload={() => {
-                    if (selectedInbox)
-                        loadMessages(selectedInbox, { offset: messageOffset });
-                }}
-                offset={messageOffset}
-                total={messageTotal}
-                onPaginate={(nextOffset) => {
-                    if (selectedInbox) loadMessages(selectedInbox, { offset: nextOffset });
-                }}
-                search={messageSearch}
-                onSearchChange={setMessageSearch}
-                hasAttachments={messageHasAttachments}
-                onToggleAttachments={() => setMessageHasAttachments((v) => !v)}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                onCompose={() => canSendOutbound && setShowCompose(true)}
-                outboundEnabled={canSendOutbound}
-            />
+            {/* Middle Pane: Message List */}
+            <div className={`h-full border-r border-border bg-surface ${mobileView === 'list' ? 'block w-full' : 'hidden'} md:block md:w-auto overflow-hidden`}>
+                <MessageList
+                    inbox={inboxes.find(i => i.id === selectedInbox)}
+                    messages={messages}
+                    selectedMessageId={selectedMessage?.id}
+                    onSelectMessage={handleSelectMessage}
+                    search={messageSearch}
+                    onSearchChange={setMessageSearch}
+                    hasAttachments={messageHasAttachments}
+                    onToggleAttachments={() => setMessageHasAttachments(prev => !prev)}
+                    onRefresh={() => selectedInbox && loadMessages(selectedInbox)}
+                    loading={busy}
+                    canLoadMore={messages.length < messageTotal}
+                    onLoadMore={() => selectedInbox && loadMessages(selectedInbox, { offset: messageOffset + PAGE_SIZE.messages, append: true })}
+                    onBack={() => setMobileView("sidebar")}
+                />
+            </div>
 
-            {showCompose && canSendOutbound && (
+            {/* Right Pane: Message Detail */}
+            <div className={`h-full bg-surface ${mobileView === 'detail' ? 'block w-full' : 'hidden'} md:block overflow-hidden`}>
+                <MessageDetail
+                    message={selectedMessage}
+                    onComposeReply={() => canSendOutbound && setShowCompose(true)}
+                    onBack={() => setMobileView("list")}
+                />
+            </div>
+
+            {/* Modals */}
+            {showCompose && (
                 <ComposeModal
                     token={token}
                     inboxes={inboxes}
                     onClose={() => setShowCompose(false)}
                 />
             )}
-        </>
+
+            {busy && !messages.length && <Loading fullScreen />}
+        </div>
     );
 }

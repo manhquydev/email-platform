@@ -118,6 +118,12 @@ docker-compose exec postgres psql -U postgres -d email_service -c "INSERT INTO \
 
 - **Port 25 bị chặn**: Nhiều nhà cung cấp cloud chặn port 25 chiều outbound. Hãy dùng relay (SendGrid/SES) qua port 587.
 - **Connection Refused**: Kiểm tra Security Groups / Firewall (UFW) xem các port 80, 443, 25, 3000 có mở không.
+- **KeyError: 'ContainerConfig'**: Lỗi này xảy ra khi docker-compose cũ không đồng bộ được state. Hãy chạy:
+    ```bash
+    docker-compose down
+    docker-compose rm -f
+    docker-compose up -d --build
+    ```
 
 ## 7. Quy trình Cập nhật Code (Redeploy)
 

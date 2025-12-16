@@ -85,7 +85,7 @@ function DnsCard({ title, host, value, desc, warning }: { title: string; host: s
 function DomainWizard({ domain }: { domain?: Domain }) {
     if (!domain) return null;
     const dmarc = `_dmarc.${domain.name}`;
-    const dkim = `s1._domainkey.${domain.name}`;
+
     // Assumption: user hosts their own server, we give them the generic instructions for MX
     const mxHost = "mail." + domain.name;
 

@@ -2,11 +2,13 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import path from "path";
+import { version } from "../../package.json";
 import { appConfig } from "../config";
+import { storageService } from "../services/storage";
 import { promises as fs } from "fs";
 import { recordAudit } from "../utils/audit";
 
-export async function messageRoutes(app: FastifyInstance) {
+export const messageRoutes = async (app: FastifyInstance) => {
   app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
     const query = z
       .object({
@@ -70,6 +72,7 @@ export async function messageRoutes(app: FastifyInstance) {
         start: z.string().datetime().optional(),
         end: z.string().datetime().optional(),
         hasAttachments: z.coerce.boolean().optional(),
+        isRead: z.coerce.boolean().optional(),
       })
       .safeParse(request.query);
     if (!params.success || !query.success) {
@@ -104,6 +107,7 @@ export async function messageRoutes(app: FastifyInstance) {
           },
         }
         : {}),
+
       ...(query.data.hasAttachments
         ? {
           attachments: {
@@ -111,6 +115,7 @@ export async function messageRoutes(app: FastifyInstance) {
           },
         }
         : {}),
+      ...(query.data.isRead !== undefined ? { isRead: query.data.isRead } : {}),
     };
 
     const [messages, total] = await Promise.all([
@@ -201,7 +206,30 @@ export async function messageRoutes(app: FastifyInstance) {
     await prisma.message.update({ where: { id: existing.id }, data: { deletedAt: now } });
     const userId = (request.user as any)?.userId ?? null;
     await recordAudit(userId, "MESSAGE_DELETED", { messageId: existing.id });
+    await recordAudit(userId, "MESSAGE_DELETED", { messageId: existing.id });
     return { ok: true };
+  });
+
+  app.patch("/messages/:id/read", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({ isRead: z.boolean() }).safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid request" });
+    }
+
+    const existing = await prisma.message.findUnique({ where: { id: params.data.id, deletedAt: null } });
+    if (!existing) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const updated = await prisma.message.update({
+      where: { id: existing.id },
+      data: { isRead: body.data.isRead },
+      include: { attachments: { where: { deletedAt: null } }, inbox: { include: { domain: true } } },
+    });
+
+    return { message: updated };
   });
 
   app.get("/attachments/:id/download", { preHandler: app.authenticate }, async (request, reply) => {
@@ -212,19 +240,20 @@ export async function messageRoutes(app: FastifyInstance) {
 
     const attachment = await prisma.attachment.findUnique({
       where: { id: params.data.id },
-      include: { message: true },
+      include: { message: { include: { inbox: true } } },
     });
-    if (!attachment) {
-      return reply.status(404).send({ error: "Attachment not found" });
-    }
-    if (attachment.deletedAt || attachment.message?.deletedAt) {
-      return reply.status(410).send({ error: "Attachment unavailable" });
-    }
+    if (!attachment) return reply.status(404).send("Not found");
+    const userId = (request.user as any)?.userId ?? null;
+    if (attachment.message.inbox.localPart !== userId) return reply.status(403).send("Unauthorized");
 
-    const filePath = path.join(appConfig.storageDir, attachment.storageKey);
-    const fileBuffer = await fs.readFile(filePath);
-    reply.header("Content-Disposition", `attachment; filename="${attachment.filename}"`);
-    reply.header("Content-Type", attachment.mimeType ?? "application/octet-stream");
-    return reply.send(fileBuffer);
+    try {
+      const stream = await storageService.getReadStream(attachment.storageKey);
+      reply.header("Content-Disposition", `attachment; filename="${attachment.filename}"`);
+      reply.header("Content-Type", attachment.mimeType || "application/octet-stream");
+      return reply.send(stream);
+    } catch (e) {
+      request.log.error(e);
+      return reply.status(404).send("File not found");
+    }
   });
 }

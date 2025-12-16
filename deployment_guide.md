@@ -63,6 +63,14 @@ Chúng tôi cung cấp script để tạo các file `.env` cần thiết cho pro
    Kiểm tra `services/api/.env` và cập nhật các giá trị quan trọng:
    - `JWT_SECRET`: Đảm bảo đủ mạnh (thường script đã tạo sẵn).
    - `OUTBOUND_ENABLED`: Đặt là `true` nếu bạn muốn gửi email.
+
+# S3 Storage (Optional)
+S3_ENABLED=false
+S3_BUCKET=my-bucket
+S3_REGION=us-east-1
+S3_ENDPOINT=https://s3.amazonaws.com
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
    - `SMTP_*`: Cấu hình SMTP relay (SES/Mailgun) nếu bạn sử dụng dịch vụ ngoài.
 
 ## 4. Triển khai

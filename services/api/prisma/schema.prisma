@@ -84,6 +84,7 @@ model Message {
   spamScore   Float?
   size        Int?
   deletedAt   DateTime?
+  isRead      Boolean     @default(false)
   attachments Attachment[]
   abuseReports AbuseReport[]
 

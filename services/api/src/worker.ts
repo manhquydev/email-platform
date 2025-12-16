@@ -9,6 +9,7 @@ import { prisma } from './lib/prisma';
 import { evaluateRules } from './lib/rules';
 import { headersToObject } from './utils/headers';
 import { generateToken } from './utils/token';
+import { storageService } from './services/storage';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -65,9 +66,9 @@ const persistAttachments = async (messageId: string, inboxId: string, attachment
             throw new Error(`Attachment type not allowed: ${attachment.filename ?? mime}`);
         }
         const storageKey = path.join(inboxId, messageId, attachment.filename ?? "attachment.bin");
-        const targetPath = path.join(appConfig.storageDir, storageKey);
-        await fs.mkdir(path.dirname(targetPath), { recursive: true });
-        await fs.writeFile(targetPath, attachment.content);
+
+        await storageService.save(storageKey, attachment.content, attachment.contentType);
+
         const record = await prisma.attachment.create({
             data: {
                 messageId,

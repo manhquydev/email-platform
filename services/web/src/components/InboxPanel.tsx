@@ -57,13 +57,26 @@ export function InboxPanel({
                     />
                 </label>
                 <label className="label">
-                    Expire at (ISO, optional)
-                    <input
+                    Thời gian tồn tại (Expiration)
+                    <select
                         value={expiresAt}
-                        onChange={(e) => setExpiresAt(e.target.value)}
-                        placeholder="2025-12-31T23:59:59Z"
-                        aria-label="Inbox expiration"
-                    />
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "") {
+                                setExpiresAt("");
+                            } else {
+                                const ms = parseInt(val);
+                                const date = new Date(Date.now() + ms);
+                                setExpiresAt(date.toISOString());
+                            }
+                        }}
+                    >
+                        <option value="">Vĩnh viễn (Never)</option>
+                        <option value={3600 * 1000}>1 Giờ</option>
+                        <option value={24 * 3600 * 1000}>1 Ngày</option>
+                        <option value={7 * 24 * 3600 * 1000}>1 Tuần</option>
+                        <option value={30 * 24 * 3600 * 1000}>1 Tháng</option>
+                    </select>
                 </label>
             </div>
             <button

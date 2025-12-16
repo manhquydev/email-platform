@@ -103,10 +103,10 @@ export function Dashboard() {
     const loadMessages = useCallback(
         async (
             inboxId: string,
-            params: { offset?: number; search?: string } = {}
+            params: { offset?: number; search?: string; background?: boolean } = {}
         ) => {
             if (!token) return;
-            setBusy(true);
+            if (!params.background) setBusy(true);
             try {
                 const off = params.offset ?? messageOffset;
                 const q = params.search ?? messageSearch;
@@ -119,14 +119,23 @@ export function Dashboard() {
                 if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
                 if (params.offset !== undefined) setMessageOffset(params.offset);
             } catch (e) {
-                toast.error("Không thể tải danh sách email");
+                if (!params.background) toast.error("Không thể tải danh sách email");
                 console.error(e);
             } finally {
-                setBusy(false);
+                if (!params.background) setBusy(false);
             }
         },
         [token, messageOffset, messageSearch, messageHasAttachments]
     );
+
+    // Auto-refresh messages every 15 seconds
+    useEffect(() => {
+        if (!selectedInbox) return;
+        const interval = setInterval(() => {
+            loadMessages(selectedInbox, { background: true });
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [selectedInbox, loadMessages]);
 
     // Initial load
     useEffect(() => {
@@ -257,7 +266,24 @@ export function Dashboard() {
                 inbox={currentInbox}
                 messages={messages}
                 selected={selectedMessage}
-                onSelect={setSelectedMessage}
+                onSelect={async (msg) => {
+                    setSelectedMessage(msg);
+                    if (msg && !msg.isRead && token) {
+                        try {
+                            // Optimistic update
+                            setMessages((prev) =>
+                                prev.map((m) => (m.id === msg.id ? { ...m, isRead: true } : m))
+                            );
+                            await api(`/messages/${msg.id}/read`, {
+                                method: "PATCH",
+                                token,
+                                body: { isRead: true },
+                            });
+                        } catch (e) {
+                            console.error("Failed to mark as read", e);
+                        }
+                    }
+                }}
                 reload={() => {
                     if (selectedInbox)
                         loadMessages(selectedInbox, { offset: messageOffset });

@@ -16,7 +16,7 @@ export class OutboundService {
         });
     }
 
-    async sendEmail(from: string, to: string, subject: string, text?: string, html?: string) {
+    async sendEmail(from: string, to: string, subject: string, text?: string, html?: string, attachments?: any[]) {
         if (!process.env.OUTBOUND_SMTP_HOST) {
             throw new Error("Outbound email is not configured (OUTBOUND_SMTP_HOST missing)");
         }
@@ -27,6 +27,7 @@ export class OutboundService {
             subject,
             text,
             html,
+            attachments,
         });
 
         return info;

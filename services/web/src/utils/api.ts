@@ -5,16 +5,27 @@ type ApiOptions = {
     method?: string;
     body?: unknown;
     token?: string;
+    headers?: Record<string, string>;
 };
 
 export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const headers: Record<string, string> = { ...opts.headers };
+    let body = opts.body as BodyInit | undefined;
+
+    if (opts.body && !(opts.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+        body = JSON.stringify(opts.body);
+    } else {
+        // If FormData, let browser set Content-Type with boundary
+        body = opts.body as BodyInit;
+    }
+
     if (opts.token) headers.Authorization = `Bearer ${opts.token}`;
 
     const res = await fetch(`${API_BASE}${path}`, {
         method: opts.method ?? "GET",
         headers,
-        body: opts.body ? JSON.stringify(opts.body) : undefined,
+        body,
     });
 
     const data: unknown = await res.json().catch(() => ({}));

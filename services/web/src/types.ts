@@ -39,6 +39,7 @@ export type Message = {
     receivedAt: string;
     textBody?: string | null;
     htmlBody?: string | null;
+    isRead: boolean;
     attachments: Attachment[];
 };
 

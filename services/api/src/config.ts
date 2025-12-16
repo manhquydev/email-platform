@@ -52,4 +52,12 @@ export const appConfig = {
   webUrl: process.env.WEB_URL ?? "http://localhost:5173",
   trustProxy: (process.env.TRUST_PROXY ?? "true").toLowerCase() === "true",
   outboundEnabled: (process.env.OUTBOUND_ENABLED ?? "false").toLowerCase() === "true",
+  s3: {
+    enabled: (process.env.S3_ENABLED ?? "false").toLowerCase() === "true",
+    bucket: process.env.S3_BUCKET ?? "",
+    region: process.env.S3_REGION ?? "us-east-1",
+    endpoint: process.env.S3_ENDPOINT,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
+  },
 };

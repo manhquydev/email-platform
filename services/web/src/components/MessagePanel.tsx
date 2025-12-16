@@ -95,16 +95,29 @@ export function MessagePanel({
                         <div
                             key={m.id}
                             className="item"
-                            style={{ cursor: "pointer", borderColor: selected?.id === m.id ? "#2563eb" : undefined }}
+                            style={{
+                                cursor: "pointer",
+                                borderColor: selected?.id === m.id ? "#2563eb" : undefined,
+                                backgroundColor: !m.isRead ? "#f8fafc" : "white"
+                            }}
                             onClick={() => onSelect(m)}
                         >
-                            <div>
-                                <div className="label">{m.subject || "(No subject)"}</div>
-                                <div className="small">
-                                    {m.fromAddress ?? "Unknown"} ƒ+' {m.toAddress ?? inbox?.localPart}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                <div style={{ flex: 1 }}>
+                                    <div className="label" style={{ fontWeight: !m.isRead ? 700 : 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        {!m.isRead && (
+                                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#2563eb", display: "inline-block" }}></span>
+                                        )}
+                                        {m.subject || "(No subject)"}
+                                    </div>
+                                    <div className="small" style={{ fontWeight: !m.isRead ? 600 : 400, color: !m.isRead ? "#0f172a" : "#64748b" }}>
+                                        {m.fromAddress ?? "Unknown"} → {m.toAddress ?? inbox?.localPart}
+                                    </div>
+                                </div>
+                                <div className="small" style={{ whiteSpace: "nowrap", marginLeft: "0.5rem" }}>
+                                    {formatDate(m.receivedAt)}
                                 </div>
                             </div>
-                            <div className="small">{formatDate(m.receivedAt)}</div>
                         </div>
                     ))}
                     {!messages.length && <div className="muted">Chưa có email cho inbox này.</div>}

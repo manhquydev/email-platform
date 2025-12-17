@@ -39,60 +39,74 @@ export async function adminRoutes(app: FastifyInstance) {
     });
 
     // Time-series stats for dashboard charts (last 7 days)
-    app.get("/admin/stats/timeseries", { preHandler: app.requireAdmin }, async () => {
-        const days = 7;
-        const now = new Date();
-        const startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - days);
-        startDate.setHours(0, 0, 0, 0);
+    app.get("/admin/stats/timeseries", { preHandler: app.requireAdmin }, async (request, reply) => {
+        try {
+            const days = 7;
+            const now = new Date();
+            const startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - days);
+            startDate.setHours(0, 0, 0, 0);
 
-        // Get daily counts using raw queries for efficiency
-        const dailyMessages = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
-            SELECT DATE("createdAt") as date, COUNT(*) as count
-            FROM "Message"
-            WHERE "createdAt" >= ${startDate}
-            AND "deletedAt" IS NULL
-            GROUP BY DATE("createdAt")
-            ORDER BY date ASC
-        `;
+            // Get daily counts using raw queries for efficiency
+            const dailyMessages = await prisma.$queryRaw<{ date: Date; count: bigint }[]>`
+                SELECT DATE("createdAt") as date, COUNT(*) as count
+                FROM "Message"
+                WHERE "createdAt" >= ${startDate}
+                AND "deletedAt" IS NULL
+                GROUP BY DATE("createdAt")
+                ORDER BY date ASC
+            `;
 
-        const dailyUsers = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
-            SELECT DATE("createdAt") as date, COUNT(*) as count
-            FROM "User"
-            WHERE "createdAt" >= ${startDate}
-            GROUP BY DATE("createdAt")
-            ORDER BY date ASC
-        `;
+            const dailyUsers = await prisma.$queryRaw<{ date: Date; count: bigint }[]>`
+                SELECT DATE("createdAt") as date, COUNT(*) as count
+                FROM "User"
+                WHERE "createdAt" >= ${startDate}
+                GROUP BY DATE("createdAt")
+                ORDER BY date ASC
+            `;
 
-        const dailyInboxes = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
-            SELECT DATE("createdAt") as date, COUNT(*) as count
-            FROM "Inbox"
-            WHERE "createdAt" >= ${startDate}
-            AND "deletedAt" IS NULL
-            GROUP BY DATE("createdAt")
-            ORDER BY date ASC
-        `;
+            const dailyInboxes = await prisma.$queryRaw<{ date: Date; count: bigint }[]>`
+                SELECT DATE("createdAt") as date, COUNT(*) as count
+                FROM "Inbox"
+                WHERE "createdAt" >= ${startDate}
+                AND "deletedAt" IS NULL
+                GROUP BY DATE("createdAt")
+                ORDER BY date ASC
+            `;
 
-        // Build complete date range with 0s for missing days
-        const result = [];
-        for (let i = 0; i < days; i++) {
-            const date = new Date(startDate);
-            date.setDate(date.getDate() + i);
-            const dateStr = date.toISOString().split("T")[0];
+            // Build complete date range with 0s for missing days
+            const result = [];
+            for (let i = 0; i < days; i++) {
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split("T")[0];
 
-            const messages = dailyMessages.find(d => d.date.toString().startsWith(dateStr));
-            const users = dailyUsers.find(d => d.date.toString().startsWith(dateStr));
-            const inboxes = dailyInboxes.find(d => d.date.toString().startsWith(dateStr));
+                const messages = dailyMessages.find(d => {
+                    const dStr = d.date instanceof Date ? d.date.toISOString().split("T")[0] : String(d.date).split("T")[0];
+                    return dStr === dateStr;
+                });
+                const users = dailyUsers.find(d => {
+                    const dStr = d.date instanceof Date ? d.date.toISOString().split("T")[0] : String(d.date).split("T")[0];
+                    return dStr === dateStr;
+                });
+                const inboxes = dailyInboxes.find(d => {
+                    const dStr = d.date instanceof Date ? d.date.toISOString().split("T")[0] : String(d.date).split("T")[0];
+                    return dStr === dateStr;
+                });
 
-            result.push({
-                date: dateStr,
-                emails: Number(messages?.count ?? 0),
-                users: Number(users?.count ?? 0),
-                inboxes: Number(inboxes?.count ?? 0),
-            });
+                result.push({
+                    date: dateStr,
+                    emails: Number(messages?.count ?? 0),
+                    users: Number(users?.count ?? 0),
+                    inboxes: Number(inboxes?.count ?? 0),
+                });
+            }
+
+            return { data: result };
+        } catch (error) {
+            request.log.error({ error }, "Failed to fetch timeseries stats");
+            return reply.status(500).send({ error: "Failed to fetch timeseries stats" });
         }
-
-        return { data: result };
     });
 
     // List Users with pagination

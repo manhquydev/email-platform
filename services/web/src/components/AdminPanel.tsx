@@ -102,7 +102,7 @@ export function AdminPanel({ token }: { token: string }) {
                                     : "text-text-main hover:bg-bg"
                                     }`}
                             >
-                                <span className={`w-5 flex-shrink-0 ${activeTab === tab.id ? "text-white" : "text-muted"}`}>
+                                <span className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${activeTab === tab.id ? "text-white" : "text-muted"}`}>
                                     {tab.icon}
                                 </span>
                                 <span className="ml-3">{tab.label}</span>

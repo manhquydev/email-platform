@@ -50,9 +50,16 @@ ${HOSTNAME}
 *.${DOMAIN}
 EOF
 
-# Fix permissions
+# Fix permissions for OpenDKIM
 chown -R opendkim:opendkim /etc/opendkim
+
+# CRITICAL: Fix socket directory permissions for Postfix to access OpenDKIM
+mkdir -p /var/spool/postfix/opendkim
 chown opendkim:opendkim /var/spool/postfix/opendkim
+chmod 755 /var/spool/postfix/opendkim
+
+# Add postfix user to opendkim group for socket access
+addgroup postfix opendkim 2>/dev/null || true
 
 # Create Postfix chroot directories
 mkdir -p /var/spool/postfix/etc

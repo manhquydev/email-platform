@@ -466,6 +466,7 @@ function SettingsPanel({ token }: { token: string }) {
         email: string;
         role: string;
         createdAt: string;
+        twoFactorEnabled?: boolean;
         _count: { domains: number };
     } | null>(null);
     const [systemInfo, setSystemInfo] = useState<{
@@ -475,6 +476,24 @@ function SettingsPanel({ token }: { token: string }) {
         recentLogins24h: number;
         serverTime: string;
     } | null>(null);
+
+    // 2FA states
+    const [twoFAStep, setTwoFAStep] = useState<"idle" | "setup" | "verify" | "backup">("idle");
+    const [qrCode, setQrCode] = useState("");
+    const [totpSecret, setTotpSecret] = useState("");
+    const [verifyCode, setVerifyCode] = useState("");
+    const [backupCodes, setBackupCodes] = useState<string[]>([]);
+    const [twoFABusy, setTwoFABusy] = useState(false);
+    const [twoFAError, setTwoFAError] = useState("");
+
+    const loadProfile = useCallback(async () => {
+        try {
+            const profileRes = await api<{ user: typeof profile }>("/admin/profile", { token });
+            setProfile(profileRes.user);
+        } catch (e) {
+            // Silent fail
+        }
+    }, [token]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -509,6 +528,64 @@ function SettingsPanel({ token }: { token: string }) {
             setErr((error as Error).message);
         } finally {
             setBusy(false);
+        }
+    };
+
+    // 2FA handlers
+    const setup2FA = async () => {
+        setTwoFABusy(true);
+        setTwoFAError("");
+        try {
+            const res = await api<{ qrCode: string; secret: string }>("/auth/2fa/setup", { method: "POST", token });
+            setQrCode(res.qrCode);
+            setTotpSecret(res.secret);
+            setTwoFAStep("setup");
+        } catch (error) {
+            setTwoFAError((error as Error).message);
+        } finally {
+            setTwoFABusy(false);
+        }
+    };
+
+    const enable2FA = async () => {
+        if (verifyCode.length !== 6) {
+            setTwoFAError("Vui lòng nhập mã 6 chữ số");
+            return;
+        }
+        setTwoFABusy(true);
+        setTwoFAError("");
+        try {
+            const res = await api<{ ok: boolean; backupCodes: string[] }>("/auth/2fa/enable", {
+                method: "POST",
+                token,
+                body: { code: verifyCode }
+            });
+            setBackupCodes(res.backupCodes);
+            setTwoFAStep("backup");
+            toast.success("2FA đã được kích hoạt!");
+            loadProfile();
+        } catch (error) {
+            setTwoFAError((error as Error).message);
+        } finally {
+            setTwoFABusy(false);
+        }
+    };
+
+    const disable2FA = async () => {
+        const pwd = prompt("Nhập mật khẩu để tắt 2FA:");
+        if (!pwd) return;
+
+        setTwoFABusy(true);
+        setTwoFAError("");
+        try {
+            await api("/auth/2fa/disable", { method: "POST", token, body: { password: pwd } });
+            toast.success("2FA đã được tắt");
+            setTwoFAStep("idle");
+            loadProfile();
+        } catch (error) {
+            setTwoFAError((error as Error).message);
+        } finally {
+            setTwoFABusy(false);
         }
     };
 
@@ -614,6 +691,91 @@ function SettingsPanel({ token }: { token: string }) {
                     {msg && <div className="text-sm text-green-600">{msg}</div>}
                     {err && <div className="text-sm text-danger">{err}</div>}
                 </form>
+            </div>
+
+            {/* Two-Factor Authentication */}
+            <div className="bg-surface border border-border rounded-lg p-5 mt-6">
+                <h3 className="text-sm font-medium mb-4 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                    </svg>
+                    Xác thực hai yếu tố (2FA)
+                </h3>
+
+                {twoFAError && <div className="text-sm text-danger mb-3">{twoFAError}</div>}
+
+                {/* Status: Not enabled */}
+                {!profile?.twoFactorEnabled && twoFAStep === "idle" && (
+                    <div className="space-y-3">
+                        <p className="text-sm text-muted">
+                            Bảo vệ tài khoản của bạn bằng xác thực hai yếu tố sử dụng ứng dụng như Google Authenticator.
+                        </p>
+                        <button onClick={setup2FA} disabled={twoFABusy} className="btn-primary h-10 px-6">
+                            {twoFABusy ? "Đang thiết lập..." : "Kích hoạt 2FA"}
+                        </button>
+                    </div>
+                )}
+
+                {/* Step: Show QR code */}
+                {twoFAStep === "setup" && (
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted">Quét mã QR bằng ứng dụng xác thực:</p>
+                        <div className="bg-white p-4 rounded-lg inline-block border border-border">
+                            <img src={qrCode} alt="2FA QR Code" className="w-48 h-48" />
+                        </div>
+                        <p className="text-xs text-muted">Hoặc nhập thủ công: <code className="bg-bg px-2 py-1 rounded text-xs">{totpSecret}</code></p>
+                        <div className="pt-2">
+                            <label className="block text-xs text-muted mb-1.5">Nhập mã 6 chữ số từ ứng dụng:</label>
+                            <div className="flex gap-2 items-center">
+                                <input
+                                    type="text"
+                                    value={verifyCode}
+                                    onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    placeholder="000000"
+                                    className="text-sm w-32 text-center tracking-widest font-mono"
+                                    maxLength={6}
+                                />
+                                <button onClick={enable2FA} disabled={twoFABusy || verifyCode.length !== 6} className="btn-primary h-10 px-6">
+                                    {twoFABusy ? "Đang xác minh..." : "Xác nhận"}
+                                </button>
+                                <button onClick={() => setTwoFAStep("idle")} className="btn btn-secondary h-10 px-4">Hủy</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step: Show backup codes */}
+                {twoFAStep === "backup" && (
+                    <div className="space-y-4">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h4 className="font-medium text-yellow-800 mb-2">⚠️ Lưu mã khôi phục</h4>
+                            <p className="text-sm text-yellow-700 mb-3">
+                                Lưu các mã này ở nơi an toàn. Bạn sẽ không thể xem lại chúng!
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded border border-yellow-300">
+                                {backupCodes.map((code, i) => (
+                                    <code key={i} className="text-sm font-mono">{code}</code>
+                                ))}
+                            </div>
+                        </div>
+                        <button onClick={() => setTwoFAStep("idle")} className="btn-primary h-10 px-6">
+                            Tôi đã lưu mã
+                        </button>
+                    </div>
+                )}
+
+                {/* Status: Enabled */}
+                {profile?.twoFactorEnabled && twoFAStep === "idle" && (
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span className="text-green-600 font-medium">2FA đang được kích hoạt</span>
+                        </div>
+                        <button onClick={disable2FA} disabled={twoFABusy} className="text-sm px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded hover:bg-red-100">
+                            {twoFABusy ? "Đang tắt..." : "Tắt 2FA"}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Danger Zone */}

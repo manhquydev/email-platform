@@ -47,6 +47,16 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
         window.print();
     };
 
+    const handleExport = () => {
+        const link = document.createElement('a');
+        link.href = `${API_BASE}/messages/${message.id}/export`;
+        link.download = `email_${message.id.slice(0, 8)}.eml`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Đang tải xuống file .eml');
+    };
+
     return (
         <div className="h-full flex flex-col bg-surface overflow-hidden">
             {/* Header */}
@@ -66,12 +76,21 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
                             data-tooltip="Trả lời"
                             onClick={onComposeReply}
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             <span className="hidden sm:inline">Trả lời</span>
                         </button>
                         {/* Forward */}
                         <button className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift" title="Chuyển tiếp" data-tooltip="Chuyển tiếp">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </button>
+                        {/* Export */}
+                        <button
+                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
+                            title="Tải xuống (.eml)"
+                            data-tooltip="Tải xuống"
+                            onClick={handleExport}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                         {/* Copy */}
                         <button
@@ -80,7 +99,7 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
                             data-tooltip="Sao chép"
                             onClick={handleCopyContent}
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                         {/* Print */}
                         <button
@@ -89,11 +108,11 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
                             data-tooltip="In"
                             onClick={handlePrint}
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                         {/* Delete */}
                         <button className="btn btn-secondary text-sm h-8 text-danger hover:bg-danger-bg hover:border-danger tooltip transition-colors" title="Xóa" data-tooltip="Xóa">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                     </div>
                 </div>

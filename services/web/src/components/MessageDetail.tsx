@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DOMPurify from "dompurify";
+import toast from "react-hot-toast";
 import type { Message } from "../types";
 import { format, formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -16,15 +17,15 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
 
     if (!message) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-bg text-muted">
-                {/* Mobile empty state: show nothing or hint */}
+            <div className="h-full flex flex-col items-center justify-center bg-bg text-muted animate-fade-in">
+                {/* Mobile empty state */}
                 <div className="md:hidden w-full h-full flex items-center justify-center">
                     <p className="text-sm">Chạm vào một email để xem nội dung</p>
                 </div>
 
                 <div className="hidden md:flex flex-col items-center">
-                    <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center shadow-sm mb-4">
-                        <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center shadow-md mb-4 hover-glow">
+                        <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </div>
                     <h3 className="text-lg font-semibold text-text-main mb-1">Chưa chọn email</h3>
                     <p className="text-sm">Vui lòng chọn một email từ danh sách để xem nội dung.</p>
@@ -32,6 +33,19 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
             </div>
         );
     }
+
+    const handleCopyContent = () => {
+        const content = message.textBody || message.htmlBody?.replace(/<[^>]*>/g, '') || '';
+        navigator.clipboard.writeText(content).then(() => {
+            toast.success('Đã sao chép nội dung email');
+        }).catch(() => {
+            toast.error('Không thể sao chép');
+        });
+    };
+
+    const handlePrint = () => {
+        window.print();
+    };
 
     return (
         <div className="h-full flex flex-col bg-surface overflow-hidden">
@@ -44,16 +58,41 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
                         </button>
                     )}
                     <h1 className="text-xl font-bold text-text-main leading-snug flex-1">{message.subject || "(Không có tiêu đề)"}</h1>
-                    <div className="flex gap-2">
-                        {/* Actions Stub */}
-                        <button className="btn btn-secondary text-sm h-8" title="Trả lời" onClick={onComposeReply}>
+                    <div className="flex gap-1.5">
+                        {/* Reply */}
+                        <button
+                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
+                            title="Trả lời"
+                            data-tooltip="Trả lời"
+                            onClick={onComposeReply}
+                        >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             <span className="hidden sm:inline">Trả lời</span>
                         </button>
-                        <button className="btn btn-secondary text-sm h-8" title="Chuyển tiếp">
+                        {/* Forward */}
+                        <button className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift" title="Chuyển tiếp" data-tooltip="Chuyển tiếp">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
-                        <button className="btn btn-secondary text-sm h-8 text-danger hover:bg-danger-bg hover:border-danger" title="Xóa">
+                        {/* Copy */}
+                        <button
+                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
+                            title="Sao chép nội dung"
+                            data-tooltip="Sao chép"
+                            onClick={handleCopyContent}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </button>
+                        {/* Print */}
+                        <button
+                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
+                            title="In email"
+                            data-tooltip="In"
+                            onClick={handlePrint}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </button>
+                        {/* Delete */}
+                        <button className="btn btn-secondary text-sm h-8 text-danger hover:bg-danger-bg hover:border-danger tooltip transition-colors" title="Xóa" data-tooltip="Xóa">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                     </div>

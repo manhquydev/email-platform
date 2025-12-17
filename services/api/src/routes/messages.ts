@@ -206,7 +206,6 @@ export const messageRoutes = async (app: FastifyInstance) => {
     await prisma.message.update({ where: { id: existing.id }, data: { deletedAt: now } });
     const userId = (request.user as any)?.userId ?? null;
     await recordAudit(userId, "MESSAGE_DELETED", { messageId: existing.id });
-    await recordAudit(userId, "MESSAGE_DELETED", { messageId: existing.id });
     return { ok: true };
   });
 

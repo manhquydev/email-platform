@@ -65,12 +65,26 @@ export function MessageList({
 
     if (!inbox) {
         return (
-            <div className="h-full flex flex-col items-center justify-center text-muted p-4 text-center">
-                <svg className="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                <div>Chọn một hộp thư để xem email</div>
+            <div className="h-full flex flex-col items-center justify-center text-muted p-4 text-center animate-fade-in">
+                <svg className="w-16 h-16 mb-3 opacity-30" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <div className="text-lg font-medium mb-1">Chọn một hộp thư</div>
+                <div className="text-sm text-text-light">Chọn hộp thư từ sidebar để xem email</div>
             </div>
         );
     }
+
+    // Skeleton Loading Component
+    const SkeletonMessage = () => (
+        <div className="p-3 animate-pulse">
+            <div className="flex justify-between items-center mb-2">
+                <div className="skeleton skeleton-text w-32"></div>
+                <div className="skeleton skeleton-text w-16"></div>
+            </div>
+            <div className="skeleton skeleton-text w-48 mb-2"></div>
+            <div className="skeleton skeleton-text w-full"></div>
+            <div className="skeleton skeleton-text w-3/4"></div>
+        </div>
+    );
 
     return (
         <div className="flex flex-col h-full border-r border-border bg-surface w-full">
@@ -107,9 +121,20 @@ export function MessageList({
 
             {/* Message List */}
             <div className="flex-1 overflow-y-auto">
-                {messages.length === 0 && !loading ? (
-                    <div className="text-center py-10 text-muted text-sm px-4">
-                        Không tìm thấy email nào.
+                {loading && messages.length === 0 ? (
+                    // Skeleton loading state
+                    <div className="divide-y divide-border">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <SkeletonMessage key={i} />
+                        ))}
+                    </div>
+                ) : messages.length === 0 ? (
+                    <div className="empty-state">
+                        <svg className="empty-state-icon" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+                            <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <div className="text-lg font-medium mb-1">Không có email</div>
+                        <div className="text-sm text-text-light">Hộp thư này hiện đang trống</div>
                     </div>
                 ) : (
                     <>
@@ -160,7 +185,8 @@ export function MessageList({
                                     rightLabel={msg.isPinned ? "Bỏ ghim" : "Ghim"}
                                 >
                                     <div
-                                        className={`group p-3 cursor-pointer transition-colors relative hover:bg-bg ${selectedMessageId === msg.id ? 'bg-primary-light ring-1 ring-inset ring-primary-border' : ''} ${selectedIds.has(msg.id) ? 'bg-primary-light/50' : ''}`}
+                                        className={`group p-3 cursor-pointer relative list-item-interactive animate-fade-in-up ${selectedMessageId === msg.id ? 'bg-primary-light ring-1 ring-inset ring-primary-border' : ''} ${selectedIds.has(msg.id) ? 'bg-primary-light/50' : ''}`}
+                                        style={{ animationDelay: `${messages.indexOf(msg) * 30}ms` }}
                                     >
                                         {/* Checkbox for bulk selection */}
                                         <div

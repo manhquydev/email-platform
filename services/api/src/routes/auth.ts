@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma";
 import { verifyPassword, hashPassword } from "../utils/password";
 import { appConfig } from "../config";
 import { outboundService } from "../services/outbound";
+import { recordAudit } from "../utils/audit";
 
 export async function authRoutes(app: FastifyInstance) {
   app.post("/auth/register", async (request, reply) => {
@@ -64,6 +65,9 @@ export async function authRoutes(app: FastifyInstance) {
     }
 
     const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
+
+    await recordAudit(user.id, "USER_REGISTERED", { email: user.email });
+
     return {
       token,
       user: { id: user.id, email: user.email, role: user.role },
@@ -105,6 +109,8 @@ export async function authRoutes(app: FastifyInstance) {
       },
     });
 
+    await recordAudit(user.id, "EMAIL_VERIFIED", { email: user.email });
+
     return { ok: true, message: "Email verified successfully" };
   });
 
@@ -135,6 +141,9 @@ export async function authRoutes(app: FastifyInstance) {
     }
 
     const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
+
+    await recordAudit(user.id, "LOGIN", { email: user.email, ip: request.ip });
+
     return { token, user: { id: user.id, email: user.email, role: user.role } };
   });
 
@@ -157,6 +166,8 @@ export async function authRoutes(app: FastifyInstance) {
       where: { id: userId },
       data: { passwordHash },
     });
+
+    await recordAudit(userId, "PASSWORD_CHANGED", {});
 
     return { ok: true };
   });

@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
+import { recordAudit } from "../utils/audit";
 
 export async function inboxRoutes(app: FastifyInstance) {
   app.get("/inboxes", { preHandler: app.authenticate }, async (request, reply) => {
@@ -85,6 +86,11 @@ export async function inboxRoutes(app: FastifyInstance) {
           expiresAt: expiresAt ? new Date(expiresAt) : null,
         },
       });
+
+    await recordAudit(user.userId, "INBOX_CREATED", {
+      inboxId: inbox.id,
+      email: `${localPart}@${domain.name}`
+    });
 
     return { inbox };
   });

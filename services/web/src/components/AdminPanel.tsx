@@ -462,6 +462,35 @@ function SettingsPanel({ token }: { token: string }) {
     const [msg, setMsg] = useState("");
     const [err, setErr] = useState("");
     const [busy, setBusy] = useState(false);
+    const [profile, setProfile] = useState<{
+        email: string;
+        role: string;
+        createdAt: string;
+        _count: { domains: number };
+    } | null>(null);
+    const [systemInfo, setSystemInfo] = useState<{
+        userCount: number;
+        domainCount: number;
+        messageCount: number;
+        recentLogins24h: number;
+        serverTime: string;
+    } | null>(null);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const [profileRes, systemRes] = await Promise.all([
+                    api<{ user: typeof profile }>("/admin/profile", { token }),
+                    api<{ system: typeof systemInfo }>("/admin/system-info", { token }),
+                ]);
+                setProfile(profileRes.user);
+                setSystemInfo(systemRes.system);
+            } catch (e) {
+                // Silent fail
+            }
+        };
+        loadData();
+    }, [token]);
 
     const submit = async (e: FormEvent) => {
         e.preventDefault();
@@ -484,14 +513,88 @@ function SettingsPanel({ token }: { token: string }) {
     };
 
     return (
-        <div className="p-6 max-w-md">
+        <div className="p-6 max-w-2xl">
             <div className="mb-6">
                 <h1 className="text-xl font-semibold">Cài đặt</h1>
-                <p className="text-sm text-muted mt-1">Quản lý tài khoản của bạn</p>
+                <p className="text-sm text-muted mt-1">Quản lý tài khoản và hệ thống</p>
             </div>
 
-            <div className="bg-surface border border-border rounded-lg p-5">
-                <h3 className="text-sm font-medium mb-4">Đổi mật khẩu</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Admin Profile */}
+                <div className="bg-surface border border-border rounded-lg p-5">
+                    <h3 className="text-sm font-medium mb-4 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        Thông tin tài khoản
+                    </h3>
+                    {profile ? (
+                        <div className="space-y-3 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted">Email</span>
+                                <span className="font-medium">{profile.email}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted">Vai trò</span>
+                                <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded bg-purple-50 text-purple-600">
+                                    {profile.role}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted">Tạo tài khoản</span>
+                                <span>{new Date(profile.createdAt).toLocaleDateString("vi-VN")}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted">Domains sở hữu</span>
+                                <span>{profile._count.domains}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-sm text-muted">Đang tải...</div>
+                    )}
+                </div>
+
+                {/* System Info */}
+                <div className="bg-surface border border-border rounded-lg p-5">
+                    <h3 className="text-sm font-medium mb-4 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
+                        </svg>
+                        Thông tin hệ thống
+                    </h3>
+                    {systemInfo ? (
+                        <div className="space-y-3 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted">Tổng người dùng</span>
+                                <span className="font-medium">{systemInfo.userCount}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted">Tổng domains</span>
+                                <span>{systemInfo.domainCount}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted">Tổng email</span>
+                                <span>{systemInfo.messageCount}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted">Đăng nhập 24h</span>
+                                <span className="text-green-600">{systemInfo.recentLogins24h}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-sm text-muted">Đang tải...</div>
+                    )}
+                </div>
+            </div>
+
+            {/* Change Password */}
+            <div className="bg-surface border border-border rounded-lg p-5 mt-6">
+                <h3 className="text-sm font-medium mb-4 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    Đổi mật khẩu
+                </h3>
                 <form onSubmit={submit} className="space-y-4">
                     <div>
                         <label className="block text-xs text-muted mb-1.5">Mật khẩu mới</label>
@@ -500,18 +603,44 @@ function SettingsPanel({ token }: { token: string }) {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Tối thiểu 6 ký tự"
-                            className="text-sm"
+                            className="text-sm w-full max-w-xs"
                             minLength={6}
                             required
                         />
                     </div>
-                    <button type="submit" disabled={busy} className="btn-primary w-full h-10">
-                        {busy ? "Đang cập nhật..." : "Cập nhật"}
+                    <button type="submit" disabled={busy} className="btn-primary h-10 px-6">
+                        {busy ? "Đang cập nhật..." : "Cập nhật mật khẩu"}
                     </button>
-                    {msg && <div className="text-sm text-green-600 text-center">{msg}</div>}
-                    {err && <div className="text-sm text-danger text-center">{err}</div>}
+                    {msg && <div className="text-sm text-green-600">{msg}</div>}
+                    {err && <div className="text-sm text-danger">{err}</div>}
                 </form>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-5 mt-6">
+                <h3 className="text-sm font-medium mb-2 text-red-800 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                    Vùng nguy hiểm
+                </h3>
+                <p className="text-xs text-red-700 mb-3">
+                    Các thao tác này có thể ảnh hưởng đến toàn bộ hệ thống. Hãy cẩn thận!
+                </p>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            if (confirm("Bạn có chắc muốn xóa tất cả nhật ký cũ hơn 30 ngày?")) {
+                                toast.success("Tính năng sẽ được thêm sau");
+                            }
+                        }}
+                        className="text-xs px-3 py-1.5 bg-white border border-red-300 text-red-700 rounded hover:bg-red-100"
+                    >
+                        Dọn dẹp nhật ký cũ
+                    </button>
+                </div>
             </div>
         </div>
     );
 }
+

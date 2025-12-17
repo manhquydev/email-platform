@@ -202,9 +202,9 @@ Thêm các bản ghi DNS sau để tăng deliverability:
 ## 5. Sau khi Triển khai
 
 ### Tạo User Admin
-Hệ thống tự động tạo user admin với thông tin mặc định:
-- Email: `admin@example.com`
-- Password: `changeme`
+Hệ thống tự động tạo user admin với thông tin được cấu hình trong docker-compose.yml:
+- Email: `manhquydev@gmail.com`
+- Password: (đã cấu hình trong file)
 
 **Hãy đổi mật khẩu ngay sau khi đăng nhập!**
 

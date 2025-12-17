@@ -87,6 +87,9 @@ export function Sidebar({
     const [newInboxName, setNewInboxName] = useState("");
     const [newInboxTTL, setNewInboxTTL] = useState<string>("");
 
+    // Collapsible state for inbox sections
+    const [isInboxCollapsed, setIsInboxCollapsed] = useState(false);
+
     const activeDomain = domains.find(d => d.id === selectedDomainId);
     const isOwnerOrAdmin = activeDomain && (isAdmin || activeDomain.ownerId === currentUserId);
 
@@ -260,12 +263,28 @@ export function Sidebar({
                 )}
             </div>
 
-            {/* 2. Inbox List */}
+            {/* 2. Inbox List - Collapsible */}
             <div className="flex-1 overflow-y-auto p-2">
-                <div className="flex items-center justify-between px-2 py-1 mb-1">
-                    <span className="text-xs font-semibold text-muted uppercase">Hộp Thư Đến</span>
+                <button
+                    onClick={() => setIsInboxCollapsed(!isInboxCollapsed)}
+                    className="flex items-center justify-between w-full px-2 py-1.5 mb-1 rounded hover:bg-bg transition-colors"
+                >
+                    <div className="flex items-center gap-2">
+                        <svg
+                            className={`w-3 h-3 text-muted transition-transform ${isInboxCollapsed ? '' : 'rotate-90'}`}
+                            fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                        >
+                            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="text-xs font-semibold text-muted uppercase">Hộp Thư Đến</span>
+                        {inboxes.length > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                {inboxes.length}
+                            </span>
+                        )}
+                    </div>
                     {activeDomain && isOwnerOrAdmin && (
-                        <div className="flex items-center gap-0.5">
+                        <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
                             <button
                                 onClick={async () => {
                                     if (!activeDomain) return;
@@ -273,21 +292,22 @@ export function Sidebar({
                                     await onCreateInbox(activeDomain.id, randomName);
                                 }}
                                 disabled={busy}
-                                className="p-1 hover:bg-bg rounded text-muted hover:text-primary transition-colors"
+                                className="p-1 hover:bg-surface rounded text-muted hover:text-primary transition-colors"
                                 title="Tạo email ngẫu nhiên"
                             >
                                 {icons.random}
                             </button>
                             <button
                                 onClick={() => setIsCreatingInbox(true)}
-                                className="p-1 hover:bg-bg rounded text-primary"
+                                className="p-1 hover:bg-surface rounded text-primary"
                                 title="Tạo hộp thư mới"
                             >
                                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 5v14m-7-7h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             </button>
                         </div>
                     )}
-                </div>
+                </button>
+
 
                 {isCreatingInbox && (
                     <div className="mb-3 p-3 bg-bg rounded border border-border shadow-sm">
@@ -319,16 +339,18 @@ export function Sidebar({
                     </div>
                 )}
 
-                <div className="space-y-0.5">
+                {/* Collapsible content */}
+                <div className={`space-y-0.5 transition-all ${isInboxCollapsed ? 'hidden' : ''}`}>
                     {inboxes.map(inbox => {
                         const fullEmail = `${inbox.localPart}@${activeDomain?.name || ''}`;
                         return (
                             <div
                                 key={inbox.id}
-                                className={`group w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${selectedInboxId === inbox.id
+                                className={`group w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg transition-all list-item-interactive animate-fade-in ${selectedInboxId === inbox.id
                                     ? 'bg-primary-light text-primary'
-                                    : 'text-text-main hover:bg-bg'
+                                    : 'text-text-main'
                                     }`}
+                                style={{ animationDelay: `${inboxes.indexOf(inbox) * 50}ms` }}
                             >
                                 <button
                                     onClick={() => onSelectInbox(inbox.id)}

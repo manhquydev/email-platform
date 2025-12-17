@@ -118,30 +118,52 @@ export function Dashboard() {
             // Parse search query for advanced operators
             const parsed = parseSearchQuery(messageSearch);
 
-            const queryParams = new URLSearchParams({
-                inboxId,
-                limit: String(PAGE_SIZE.messages),
-                offset: String(off),
-            });
+            // Use fuzzy search when there's a simple text query (better relevance)
+            if (parsed.q && parsed.q.length >= 2 && !parsed.from && !parsed.before && !parsed.after && parsed.isRead === undefined) {
+                const fuzzyParams = new URLSearchParams({
+                    q: parsed.q,
+                    inboxId,
+                    limit: String(PAGE_SIZE.messages),
+                    threshold: "0.3", // Default similarity threshold
+                });
+                if (parsed.hasAttachments || messageHasAttachments) fuzzyParams.append("hasAttachments", "true");
 
-            // Add parsed operators to query
-            if (parsed.q) queryParams.append("q", parsed.q);
-            if (parsed.from) queryParams.append("from", parsed.from);
-            if (parsed.hasAttachments || messageHasAttachments) queryParams.append("hasAttachments", "true");
-            if (parsed.before) queryParams.append("end", parsed.before);
-            if (parsed.after) queryParams.append("start", parsed.after);
-            if (parsed.isRead !== undefined) queryParams.append("isRead", String(parsed.isRead));
+                const res = await api<PaginatedResponse<Message>>(`/messages/search/fuzzy?${fuzzyParams.toString()}`, { token });
 
-            const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
-
-            if (params.append) {
-                setMessages(prev => [...prev, ...res.data]);
+                if (params.append) {
+                    setMessages(prev => [...prev, ...res.data]);
+                } else {
+                    setMessages(res.data);
+                }
+                if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
+                if (params.offset !== undefined) setMessageOffset(params.offset);
             } else {
-                setMessages(res.data);
-            }
+                // Standard search with all operators
+                const queryParams = new URLSearchParams({
+                    inboxId,
+                    limit: String(PAGE_SIZE.messages),
+                    offset: String(off),
+                });
 
-            if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
-            if (params.offset !== undefined) setMessageOffset(params.offset);
+                // Add parsed operators to query
+                if (parsed.q) queryParams.append("q", parsed.q);
+                if (parsed.from) queryParams.append("from", parsed.from);
+                if (parsed.hasAttachments || messageHasAttachments) queryParams.append("hasAttachments", "true");
+                if (parsed.before) queryParams.append("end", parsed.before);
+                if (parsed.after) queryParams.append("start", parsed.after);
+                if (parsed.isRead !== undefined) queryParams.append("isRead", String(parsed.isRead));
+
+                const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
+
+                if (params.append) {
+                    setMessages(prev => [...prev, ...res.data]);
+                } else {
+                    setMessages(res.data);
+                }
+
+                if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
+                if (params.offset !== undefined) setMessageOffset(params.offset);
+            }
 
         } catch (e) {
             console.error(e);

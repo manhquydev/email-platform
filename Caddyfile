@@ -5,11 +5,11 @@
 
 {
 	# Email cho Let's Encrypt notifications
-	email { $ACME_EMAIL:admin@localhost }
+	email {$ACME_EMAIL}
 }
 
 # API Backend - api.yourdomain.com
-{ $DOMAIN:localhost }:443, api. { $DOMAIN:localhost } {
+api.{$DOMAIN} {
 	reverse_proxy api:3001
 
 	# Security headers
@@ -28,7 +28,7 @@
 }
 
 # Web Frontend - app.yourdomain.com
-app. { $DOMAIN:localhost } {
+app.{$DOMAIN} {
 	reverse_proxy web:80
 
 	# Security headers
@@ -46,8 +46,7 @@ app. { $DOMAIN:localhost } {
 }
 
 # Grafana Dashboard - grafana.yourdomain.com
-# Chỉ nên mở nội bộ hoặc qua VPN
-grafana. { $DOMAIN:localhost } {
+grafana.{$DOMAIN} {
 	reverse_proxy grafana:3000
 
 	header {
@@ -62,14 +61,8 @@ grafana. { $DOMAIN:localhost } {
 }
 
 # Prometheus - metrics.yourdomain.com
-# Khuyến nghị: Chỉ mở nội bộ hoặc bảo vệ bằng basic_auth
-prometheus. { $DOMAIN:localhost } {
+prometheus.{$DOMAIN} {
 	reverse_proxy prometheus:9090
-
-	# Uncomment to enable basic auth:
-	# basic_auth {
-	#     admin $2a$14$... # caddy hash-password
-	# }
 
 	header {
 		-Server
@@ -81,18 +74,9 @@ prometheus. { $DOMAIN:localhost } {
 	}
 }
 
-# SMTP không đi qua Caddy (port 25, 587 - không phải HTTP)
-# Cấu hình firewall/iptables riêng cho SMTP traffic
-
-# Local development fallback (khi DOMAIN không được set)
-:80 {
-	respond "Caddy is running. Set DOMAIN env var for production." 200
-}
-{$DOMAIN:localhost} {
-	redir https://app.{$DOMAIN:localhost}{uri} permanent
+# Root domain redirect to app subdomain
+{$DOMAIN} {
+	redir https://app.{$DOMAIN}{uri} permanent
 }
 
-# Local development fallback (khi DOMAIN không được set)
-:80 {
-	respond "Caddy is running. Set DOMAIN env var for production." 200
-}
+# HTTP to HTTPS redirect (automatic with Caddy)

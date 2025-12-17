@@ -83,7 +83,7 @@ services:
       OUTBOUND_SMTP_SECURE: ${OUTBOUND_SMTP_SECURE:-true}
       OUTBOUND_ENABLED: ${OUTBOUND_ENABLED:-false}
       ALLOW_AUTO_DOMAIN_CREATION: "false" # Disabled in production
-      WEB_URL: https://${DOMAIN:-localhost}
+      WEB_URL: https://app.${DOMAIN:-localhost}
       STORAGE_DIR: /app/storage
       TRUST_PROXY: "true"
     depends_on:

@@ -1,11 +1,105 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>web</title>
+
+  <!-- Primary Meta Tags -->
+  <title>TempMail Pro - Email Tạm Thời Chuyên Nghiệp | Custom Domain Email</title>
+  <meta name="title" content="TempMail Pro - Email Tạm Thời Chuyên Nghiệp | Custom Domain Email" />
+  <meta name="description"
+    content="Tạo email tạm thời không giới hạn với domain riêng. Bảo vệ quyền riêng tư, nhận email realtime, API cho developer. Hoàn toàn miễn phí!" />
+  <meta name="keywords"
+    content="email tạm thời, temp mail, disposable email, custom domain email, email testing, API email, privacy email" />
+  <meta name="author" content="TempMail Pro" />
+  <meta name="robots" content="index, follow" />
+  <meta name="language" content="Vietnamese" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://manhquy.click/" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://manhquy.click/" />
+  <meta property="og:title" content="TempMail Pro - Email Tạm Thời Chuyên Nghiệp" />
+  <meta property="og:description"
+    content="Tạo email tạm thời không giới hạn với domain riêng. Bảo vệ quyền riêng tư, nhận email realtime." />
+  <meta property="og:image" content="https://manhquy.click/og-image.png" />
+  <meta property="og:locale" content="vi_VN" />
+  <meta property="og:site_name" content="TempMail Pro" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://manhquy.click/" />
+  <meta property="twitter:title" content="TempMail Pro - Email Tạm Thời Chuyên Nghiệp" />
+  <meta property="twitter:description"
+    content="Tạo email tạm thời không giới hạn với domain riêng. Bảo vệ quyền riêng tư, nhận email realtime." />
+  <meta property="twitter:image" content="https://manhquy.click/og-image.png" />
+
+  <!-- PWA / Mobile -->
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="TempMail Pro" />
+
+  <!-- Preconnect to improve performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TempMail Pro",
+    "description": "Nền tảng email tạm thời chuyên nghiệp với custom domain, API cho developer, và bảo mật cao.",
+    "url": "https://manhquy.click/",
+    "applicationCategory": "CommunicationApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "VND"
+    },
+    "featureList": [
+      "Email tạm thời không giới hạn",
+      "Custom domain support",
+      "RESTful API",
+      "Realtime email delivery",
+      "Webhook integration"
+    ],
+    "author": {
+      "@type": "Organization",
+      "name": "TempMail Pro",
+      "url": "https://manhquy.click/"
+    }
+  }
+  </script>
+
+  <!-- Organization Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "TempMail Pro",
+    "url": "https://manhquy.click/",
+    "logo": "https://manhquy.click/logo.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "availableLanguage": ["Vietnamese", "English"]
+    },
+    "sameAs": []
+  }
+  </script>
+
+  <!-- Polyfill for older browsers -->
   <script>
     if (!window.crypto.randomUUID) {
       window.crypto.randomUUID = function () {
@@ -19,6 +113,14 @@
 </head>
 
 <body>
+  <!-- Noscript fallback -->
+  <noscript>
+    <div style="padding: 20px; text-align: center; font-family: sans-serif;">
+      <h1>TempMail Pro</h1>
+      <p>Vui lòng bật JavaScript để sử dụng ứng dụng này.</p>
+    </div>
+  </noscript>
+
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

@@ -1,0 +1,20 @@
+# TempMail Pro - robots.txt
+# https://manhquy.click/
+
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+
+# Disallow private/authenticated areas
+Disallow: /app
+Disallow: /app/*
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /verify-email
+
+# Sitemap location
+Sitemap: https://manhquy.click/sitemap.xml
+
+# Crawl-delay (optional, for polite crawling)
+Crawl-delay: 1

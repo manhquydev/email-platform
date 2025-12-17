@@ -1,13 +1,37 @@
-# Email Alias MVP (Inbound-Only)
+# TempMail Pro - Email Platform
 
-This repo follows `blueprint.md`: multi-domain inbound email capture with disposable inboxes, an HTTP API to browse messages, and an SMTP ingest pipeline. Outbound mail, spam filtering, and IMAP/POP3 are not in scope for this cut.
+> 🚀 **Production Ready** | [manhquy.click](https://manhquy.click)
 
-## Stack
-- Node.js + Fastify (JWT auth)
-- Prisma + PostgreSQL
-- SMTP ingest via `smtp-server` + `mailparser` (attachments saved to disk)
-- React + Vite frontend
-- Docker Compose for local dev
+Multi-domain inbound email platform with disposable inboxes, modern UI, and comprehensive API. Self-hosted temp mail solution for developers and teams.
+
+## ✨ Features
+
+- **Multi-Domain Support** - Add unlimited custom domains
+- **Disposable Inboxes** - Create temp email addresses instantly
+- **Modern UI/UX** - Glassmorphism design, mobile responsive
+- **SEO Optimized** - Meta tags, Open Graph, JSON-LD structured data
+- **Admin Panel** - User management, logs, reports, statistics
+- **RESTful API** - Full API access for automation
+- **Real-time Delivery** - Instant email reception
+- **Docker Ready** - One-command deployment
+
+## 🔗 Live Demo
+
+| Service | URL |
+|---------|-----|
+| **Web App** | https://app.manhquy.click |
+| **API** | https://api.manhquy.click |
+| **Grafana** | https://grafana.manhquy.click |
+
+## 🛠 Stack
+
+- **Backend**: Node.js + Fastify (JWT auth)
+- **Database**: Prisma + PostgreSQL + Redis
+- **SMTP**: smtp-server + mailparser (attachments saved to disk)
+- **Frontend**: React 19 + Vite + TailwindCSS
+- **Reverse Proxy**: Caddy (auto HTTPS)
+- **Monitoring**: Prometheus + Grafana
+- **Container**: Docker Compose
 
 ## Quick start (Docker)
 1) Copy env and adjust secrets:

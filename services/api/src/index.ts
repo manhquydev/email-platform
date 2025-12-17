@@ -12,13 +12,33 @@ const ensureStorageDir = async () => {
 };
 
 const ensureAdminUser = async (log: any) => {
-  const count = await prisma.user.count();
-  if (count > 0) return;
+  const adminEmail = appConfig.defaultAdminEmail;
 
+  // Check if admin user already exists
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail }
+  });
+
+  if (existingAdmin) {
+    // Admin exists - update password if needed (useful when password is reset via env)
+    const passwordHash = await hashPassword(appConfig.defaultAdminPassword);
+    await prisma.user.update({
+      where: { id: existingAdmin.id },
+      data: {
+        passwordHash,
+        role: "ADMIN",
+        emailVerified: existingAdmin.emailVerified ?? new Date(),
+      },
+    });
+    log.info({ email: adminEmail }, "admin user password updated from env");
+    return;
+  }
+
+  // Create new admin user
   const passwordHash = await hashPassword(appConfig.defaultAdminPassword);
   await prisma.user.create({
     data: {
-      email: appConfig.defaultAdminEmail,
+      email: adminEmail,
       passwordHash,
       role: "ADMIN",
       emailVerified: new Date(), // Admin is auto-verified
@@ -26,7 +46,7 @@ const ensureAdminUser = async (log: any) => {
   });
   log.info(
     {
-      email: appConfig.defaultAdminEmail,
+      email: adminEmail,
     },
     "created default admin user",
   );

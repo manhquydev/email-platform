@@ -22,6 +22,7 @@ fi
 JWT_SECRET=$(generate_secret)
 CAPTCHA_SECRET=$(generate_secret)
 POSTGRES_PASSWORD=$(openssl rand -base64 12)
+DEFAULT_ADMIN_PASSWORD=$(openssl rand -base64 16)
 
 # Create file
 cat <<EOF > "$API_ENV_PATH"
@@ -55,6 +56,10 @@ SMTP_RATE_LIMIT_PER_IP=50
 # Features
 ALLOW_AUTO_DOMAIN_CREATION="false" # Safer for production
 PUBLIC_INBOX_ENABLED="false"
+
+# Admin Account (auto-created on first startup)
+DEFAULT_ADMIN_EMAIL="admin@example.com"
+DEFAULT_ADMIN_PASSWORD="${DEFAULT_ADMIN_PASSWORD}"
 EOF
 
 echo "Done! Created $API_ENV_PATH"

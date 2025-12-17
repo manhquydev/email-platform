@@ -61,6 +61,7 @@ export const buildServer = () => {
       }
       cb(new Error("Not allowed"), false);
     },
+    methods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"],
   });
   app.register(jwt, { secret: appConfig.jwtSecret });
   app.register(rateLimit, {

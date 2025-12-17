@@ -407,6 +407,7 @@ export async function adminRoutes(app: FastifyInstance) {
                 role: true,
                 createdAt: true,
                 emailVerified: true,
+                twoFactorEnabled: true,
                 _count: {
                     select: { domains: true }
                 }

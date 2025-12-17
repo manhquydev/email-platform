@@ -3688,3 +3688,401 @@ a:focus-visible {
     white-space: nowrap;
   }
 }
+
+/* ====================================
+   APP HEADER (Dashboard/Admin)
+   ==================================== */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 1rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-header-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.app-header-back:hover {
+  background: var(--color-bg);
+  color: var(--color-text-main);
+}
+
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.app-header-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--gradient-primary);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.app-header-logo svg {
+  width: 18px;
+  height: 18px;
+}
+
+.app-header-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.app-header-page-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--color-border);
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-header-admin-link {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border-radius: var(--border-radius-full);
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.app-header-admin-link:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* User Dropdown */
+.app-header-user {
+  position: relative;
+}
+
+.app-header-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.app-header-user-btn:hover {
+  background: var(--color-bg);
+  border-color: var(--color-primary-border);
+}
+
+.app-header-avatar {
+  width: 28px;
+  height: 28px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.app-header-username {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dropdown Menu */
+.app-header-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  z-index: 200;
+  animation: slideDown var(--duration-fast) var(--ease-smooth);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-header-dropdown-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.app-header-dropdown-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.app-header-dropdown-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-header-dropdown-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.app-header-dropdown-email {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-header-dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 0.5rem 0;
+}
+
+.app-header-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.app-header-dropdown-item:hover {
+  background: var(--color-bg);
+  color: var(--color-text-main);
+}
+
+.app-header-dropdown-logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .app-header {
+    padding: 0 0.75rem;
+  }
+
+  .app-header-title {
+    display: none;
+  }
+
+  .app-header-admin-link span {
+    display: none;
+  }
+
+  .app-header-username {
+    display: none;
+  }
+
+  .app-header-page-title {
+    font-size: 0.85rem;
+    padding-left: 0.5rem;
+  }
+}
+
+/* Dashboard Layout with Header */
+.dashboard-with-header {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.dashboard-with-header .pane-layout {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ====================================
+   ADMIN PANEL MOBILE RESPONSIVE
+   ==================================== */
+
+/* Admin sidebar mobile toggle */
+@media (max-width: 768px) {
+  .h-screen.flex.bg-bg {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Collapse sidebar on mobile */
+  .h-screen.flex.bg-bg>.w-60 {
+    width: 100%;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Admin nav horizontal on mobile */
+  .h-screen.flex.bg-bg>.w-60 nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .h-screen.flex.bg-bg>.w-60 nav .space-y-1 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .h-screen.flex.bg-bg>.w-60 nav button {
+    flex: 0 0 auto;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .h-screen.flex.bg-bg>.w-60 nav button svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Admin content area */
+  .h-screen.flex.bg-bg>.flex-1 {
+    overflow: visible;
+  }
+
+  /* Fix stat cards grid on mobile */
+  .grid.grid-cols-2.md\\:grid-cols-3.lg\\:grid-cols-6 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Fix stat card mobile */
+  .grid.grid-cols-2>div {
+    min-height: auto;
+  }
+
+  .grid.grid-cols-2>div .text-2xl {
+    font-size: 1.5rem;
+  }
+
+  /* Admin page padding mobile */
+  .p-6.max-w-5xl,
+  .p-6.max-w-2xl {
+    padding: 1rem;
+  }
+
+  /* Admin header mobile */
+  .h-16.px-5.flex.items-center {
+    padding: 0.75rem 1rem;
+    height: auto;
+  }
+
+  /* Admin footer link mobile */
+  .p-3.border-t.border-border {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Fix admin header text wrapping */
+.p-6.max-w-5xl>.flex.items-center.justify-between.mb-6 {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.p-6.max-w-5xl>.flex.items-center.justify-between.mb-6>div:first-child h1 {
+  font-size: 1.125rem;
+}
+
+@media (max-width: 480px) {
+
+  /* Very small screens */
+  .grid.grid-cols-2.md\\:grid-cols-3.lg\\:grid-cols-6 {
+    gap: 0.5rem !important;
+  }
+
+  .grid.grid-cols-2>div {
+    padding: 0.75rem !important;
+  }
+
+  .grid.grid-cols-2>div .text-2xl {
+    font-size: 1.25rem;
+  }
+
+  /* Quick Actions cards stack */
+  .mt-8.grid.grid-cols-1.md\\:grid-cols-2 {
+    gap: 0.75rem !important;
+  }
+}

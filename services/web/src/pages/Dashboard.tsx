@@ -13,6 +13,7 @@ import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { CategoryTabs, useCategoryFilter } from "../components/CategoryTabs";
 import { useConversationMode } from "../components/ConversationView";
 import { MobileNavigation } from "../components/MobileNavigation";
+import { AppHeader } from "../components/AppHeader";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 export function Dashboard() {
@@ -448,127 +449,130 @@ export function Dashboard() {
     });
 
     return (
-        <div className="pane-layout">
+        <div className="dashboard-with-header">
+            <AppHeader />
+            <div className="pane-layout">
 
-            {/* Left Pane: Sidebar */}
-            <div className={`h-full border-r border-border bg-surface ${mobileView === 'sidebar' ? 'block w-full' : 'hidden'} md:block md:w-auto overflow-hidden`}>
-                <Sidebar
-                    domains={domains}
-                    inboxes={inboxes}
-                    selectedDomainId={selectedDomain}
-                    selectedInboxId={selectedInbox}
-                    onSelectDomain={setSelectedDomain}
-                    onSelectInbox={setSelectedInbox}
-                    onCreateDomain={createDomain}
-                    onCreateInbox={createInbox}
-                    onVerifyDomain={verifyDomain}
-                    onDeleteDomain={deleteDomain}
-                    onLogout={logout}
-                    isAdmin={isAdmin}
-                    currentUserId={user?.id}
-                    busy={busy}
-                />
-            </div>
-
-            {/* Middle Pane: Message List */}
-            <div className={`h-full border-r border-border bg-surface ${mobileView === 'list' ? 'block w-full' : 'hidden'} md:block md:w-auto overflow-hidden flex flex-col`}>
-                {/* Category Tabs */}
-                {selectedInbox && messages.length > 0 && (
-                    <div className="px-3 pt-2 pb-1 border-b border-border flex-shrink-0">
-                        <CategoryTabs
-                            messages={messages}
-                            activeCategory={activeCategory}
-                            onCategoryChange={setActiveCategory}
-                        />
-                    </div>
-                )}
-
-                {/* Conversation Mode Toggle */}
-                {selectedInbox && messages.length > 0 && (
-                    <div className="px-3 py-1 border-b border-border flex items-center justify-between text-xs text-muted flex-shrink-0">
-                        <span>{filteredMessages.length} email{filteredMessages.length !== 1 ? 's' : ''}</span>
-                        <button
-                            onClick={toggleConversationMode}
-                            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${isConversationMode ? 'bg-primary-light text-primary' : 'hover:bg-bg'}`}
-                            title={isConversationMode ? 'Chế độ danh sách' : 'Chế độ hội thoại'}
-                        >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                {isConversationMode ? (
-                                    <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" />
-                                ) : (
-                                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" strokeLinecap="round" strokeLinejoin="round" />
-                                )}
-                            </svg>
-                            <span>{isConversationMode ? 'Danh sách' : 'Hội thoại'}</span>
-                        </button>
-                    </div>
-                )}
-
-                <div className="flex-1 overflow-hidden">
-                    <MessageList
-                        inbox={inboxes.find(i => i.id === selectedInbox)}
-                        messages={[...filteredMessages].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))}
-                        selectedMessageId={selectedMessage?.id}
-                        onSelectMessage={handleSelectMessage}
-                        onMarkUnread={handleMarkUnread}
-                        onTogglePin={handleTogglePin}
-                        onSnooze={handleSnooze}
-                        search={messageSearch}
-                        onSearchChange={setMessageSearch}
-                        searchInputRef={searchInputRef}
-                        hasAttachments={messageHasAttachments}
-                        onToggleAttachments={() => setMessageHasAttachments(prev => !prev)}
-                        onRefresh={() => selectedInbox && loadMessages(selectedInbox)}
-                        loading={busy}
-                        canLoadMore={messages.length < messageTotal}
-                        onLoadMore={() => selectedInbox && loadMessages(selectedInbox, { offset: messageOffset + PAGE_SIZE.messages, append: true })}
-                        onBack={() => setMobileView("sidebar")}
-                        selectedIds={selectedIds}
-                        onToggleSelect={handleToggleSelect}
-                        onSelectAll={handleSelectAll}
-                        onClearSelection={handleClearSelection}
-                        onBulkDelete={handleBulkDelete}
-                        onBulkMarkRead={handleBulkMarkRead}
-                        onDelete={handleDeleteMessage}
+                {/* Left Pane: Sidebar */}
+                <div className={`h-full border-r border-border bg-surface ${mobileView === 'sidebar' ? 'block w-full' : 'hidden'} md:block md:w-auto overflow-hidden`}>
+                    <Sidebar
+                        domains={domains}
+                        inboxes={inboxes}
+                        selectedDomainId={selectedDomain}
+                        selectedInboxId={selectedInbox}
+                        onSelectDomain={setSelectedDomain}
+                        onSelectInbox={setSelectedInbox}
+                        onCreateDomain={createDomain}
+                        onCreateInbox={createInbox}
+                        onVerifyDomain={verifyDomain}
+                        onDeleteDomain={deleteDomain}
+                        onLogout={logout}
+                        isAdmin={isAdmin}
+                        currentUserId={user?.id}
+                        busy={busy}
                     />
                 </div>
-            </div>
 
-            {/* Right Pane: Message Detail */}
-            <div className={`h-full bg-surface ${mobileView === 'detail' ? 'block w-full' : 'hidden'} md:block overflow-hidden`}>
-                <MessageDetail
-                    message={selectedMessage}
-                    onComposeReply={() => canSendOutbound && setShowCompose(true)}
-                    onBack={() => setMobileView("list")}
+                {/* Middle Pane: Message List */}
+                <div className={`h-full border-r border-border bg-surface ${mobileView === 'list' ? 'block w-full' : 'hidden'} md:block md:w-auto overflow-hidden flex flex-col`}>
+                    {/* Category Tabs */}
+                    {selectedInbox && messages.length > 0 && (
+                        <div className="px-3 pt-2 pb-1 border-b border-border flex-shrink-0">
+                            <CategoryTabs
+                                messages={messages}
+                                activeCategory={activeCategory}
+                                onCategoryChange={setActiveCategory}
+                            />
+                        </div>
+                    )}
+
+                    {/* Conversation Mode Toggle */}
+                    {selectedInbox && messages.length > 0 && (
+                        <div className="px-3 py-1 border-b border-border flex items-center justify-between text-xs text-muted flex-shrink-0">
+                            <span>{filteredMessages.length} email{filteredMessages.length !== 1 ? 's' : ''}</span>
+                            <button
+                                onClick={toggleConversationMode}
+                                className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${isConversationMode ? 'bg-primary-light text-primary' : 'hover:bg-bg'}`}
+                                title={isConversationMode ? 'Chế độ danh sách' : 'Chế độ hội thoại'}
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    {isConversationMode ? (
+                                        <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" />
+                                    ) : (
+                                        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" strokeLinecap="round" strokeLinejoin="round" />
+                                    )}
+                                </svg>
+                                <span>{isConversationMode ? 'Danh sách' : 'Hội thoại'}</span>
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="flex-1 overflow-hidden">
+                        <MessageList
+                            inbox={inboxes.find(i => i.id === selectedInbox)}
+                            messages={[...filteredMessages].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))}
+                            selectedMessageId={selectedMessage?.id}
+                            onSelectMessage={handleSelectMessage}
+                            onMarkUnread={handleMarkUnread}
+                            onTogglePin={handleTogglePin}
+                            onSnooze={handleSnooze}
+                            search={messageSearch}
+                            onSearchChange={setMessageSearch}
+                            searchInputRef={searchInputRef}
+                            hasAttachments={messageHasAttachments}
+                            onToggleAttachments={() => setMessageHasAttachments(prev => !prev)}
+                            onRefresh={() => selectedInbox && loadMessages(selectedInbox)}
+                            loading={busy}
+                            canLoadMore={messages.length < messageTotal}
+                            onLoadMore={() => selectedInbox && loadMessages(selectedInbox, { offset: messageOffset + PAGE_SIZE.messages, append: true })}
+                            onBack={() => setMobileView("sidebar")}
+                            selectedIds={selectedIds}
+                            onToggleSelect={handleToggleSelect}
+                            onSelectAll={handleSelectAll}
+                            onClearSelection={handleClearSelection}
+                            onBulkDelete={handleBulkDelete}
+                            onBulkMarkRead={handleBulkMarkRead}
+                            onDelete={handleDeleteMessage}
+                        />
+                    </div>
+                </div>
+
+                {/* Right Pane: Message Detail */}
+                <div className={`h-full bg-surface ${mobileView === 'detail' ? 'block w-full' : 'hidden'} md:block overflow-hidden`}>
+                    <MessageDetail
+                        message={selectedMessage}
+                        onComposeReply={() => canSendOutbound && setShowCompose(true)}
+                        onBack={() => setMobileView("list")}
+                    />
+                </div>
+
+                {/* Modals */}
+                {showCompose && (
+                    <ComposeModal
+                        token={token}
+                        inboxes={inboxes}
+                        onClose={() => setShowCompose(false)}
+                    />
+                )}
+
+                {showKeyboardHelp && (
+                    <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
+                )}
+
+                {busy && !messages.length && <Loading fullScreen />}
+
+                {/* Mobile Bottom Navigation */}
+                <MobileNavigation
+                    activeTab={mobileTab}
+                    onTabChange={(tab) => {
+                        setMobileTab(tab);
+                        if (tab === 'inbox') setMobileView('list');
+                        if (tab === 'settings') setMobileView('sidebar');
+                    }}
+                    unreadCount={messages.filter(m => !m.isRead).length}
+                    onCompose={() => canSendOutbound && setShowCompose(true)}
                 />
             </div>
-
-            {/* Modals */}
-            {showCompose && (
-                <ComposeModal
-                    token={token}
-                    inboxes={inboxes}
-                    onClose={() => setShowCompose(false)}
-                />
-            )}
-
-            {showKeyboardHelp && (
-                <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
-            )}
-
-            {busy && !messages.length && <Loading fullScreen />}
-
-            {/* Mobile Bottom Navigation */}
-            <MobileNavigation
-                activeTab={mobileTab}
-                onTabChange={(tab) => {
-                    setMobileTab(tab);
-                    if (tab === 'inbox') setMobileView('list');
-                    if (tab === 'settings') setMobileView('sidebar');
-                }}
-                unreadCount={messages.filter(m => !m.isRead).length}
-                onCompose={() => canSendOutbound && setShowCompose(true)}
-            />
         </div>
     );
 }

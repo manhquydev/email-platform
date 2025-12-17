@@ -86,6 +86,9 @@ services:
       MAIL_DOMAIN: ${DOMAIN:-localhost}
       MAIL_FROM_NAME: "TempMail Pro"
       MAIL_FROM_ADDRESS: "noreply@${DOMAIN:-localhost}"
+      # TEMPORARY: Set to false until PTR record is configured
+      # Change to true after setting up PTR record with DigitalOcean
+      REQUIRE_EMAIL_VERIFICATION: "false"
       ALLOW_AUTO_DOMAIN_CREATION: "false" # Disabled in production
       WEB_URL: https://app.${DOMAIN:-localhost}
       STORAGE_DIR: /app/storage

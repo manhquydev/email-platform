@@ -37,20 +37,23 @@ export async function authRoutes(app: FastifyInstance) {
         email,
         passwordHash,
         role: "USER",
-        emailVerified: null,
-        verificationToken,
-        verificationTokenExpiresAt,
+        // Auto-verify if email verification is disabled
+        emailVerified: appConfig.requireEmailVerification ? null : new Date(),
+        verificationToken: appConfig.requireEmailVerification ? verificationToken : null,
+        verificationTokenExpiresAt: appConfig.requireEmailVerification ? verificationTokenExpiresAt : null,
       },
     });
 
-    // Send verification email
-    try {
-      const verifyUrl = `${appConfig.webUrl}/verify-email?token=${verificationToken}`;
-      await outboundService.sendVerificationEmail(email, verifyUrl);
-      request.log.info({ email }, "Verification email sent successfully");
-    } catch (err) {
-      request.log.error(err, "Failed to send verification email");
-      // We don't fail the request, but user might need to resend verification later
+    // Send verification email (only if verification is required)
+    if (appConfig.requireEmailVerification) {
+      try {
+        const verifyUrl = `${appConfig.webUrl}/verify-email?token=${verificationToken}`;
+        await outboundService.sendVerificationEmail(email, verifyUrl);
+        request.log.info({ email }, "Verification email sent successfully");
+      } catch (err) {
+        request.log.error(err, "Failed to send verification email");
+        // We don't fail the request, but user might need to resend verification later
+      }
     }
 
     const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
@@ -60,7 +63,9 @@ export async function authRoutes(app: FastifyInstance) {
     return {
       token,
       user: { id: user.id, email: user.email, role: user.role },
-      message: "Registration successful. Please check your email to verify your account."
+      message: appConfig.requireEmailVerification
+        ? "Registration successful. Please check your email to verify your account."
+        : "Registration successful. You can now login."
     };
   });
 
@@ -182,7 +187,8 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
-    if (!user.emailVerified) {
+    // Check email verification (skip if verification is disabled)
+    if (appConfig.requireEmailVerification && !user.emailVerified) {
       return reply.status(403).send({ error: "Email not verified. Please check your email." });
     }
 

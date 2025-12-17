@@ -1,12 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { api, PAGE_SIZE } from "../utils/api";
+import { parseSearchQuery } from "../utils/searchParser";
 import { Sidebar } from "../components/Sidebar";
 import { MessageList } from "../components/MessageList";
 import { MessageDetail } from "../components/MessageDetail";
 import { ComposeModal } from "../components/ComposeModal";
 import { Loading } from "../components/Loading";
+import { KeyboardShortcutsHelp } from "../components/KeyboardShortcutsHelp";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 export function Dashboard() {
@@ -34,6 +37,11 @@ export function Dashboard() {
     const [mobileView, setMobileView] = useState<"sidebar" | "list" | "detail">("sidebar");
 
     const [showCompose, setShowCompose] = useState(false);
+    const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // Bulk selection state
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const isAdmin = user?.role === "ADMIN";
     // Check outgoing support
@@ -91,13 +99,23 @@ export function Dashboard() {
 
         try {
             const off = params.offset ?? 0;
+
+            // Parse search query for advanced operators
+            const parsed = parseSearchQuery(messageSearch);
+
             const queryParams = new URLSearchParams({
                 inboxId,
                 limit: String(PAGE_SIZE.messages),
                 offset: String(off),
-                q: messageSearch,
             });
-            if (messageHasAttachments) queryParams.append("hasAttachments", "true");
+
+            // Add parsed operators to query
+            if (parsed.q) queryParams.append("q", parsed.q);
+            if (parsed.from) queryParams.append("from", parsed.from);
+            if (parsed.hasAttachments || messageHasAttachments) queryParams.append("hasAttachments", "true");
+            if (parsed.before) queryParams.append("end", parsed.before);
+            if (parsed.after) queryParams.append("start", parsed.after);
+            if (parsed.isRead !== undefined) queryParams.append("isRead", String(parsed.isRead));
 
             const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
 
@@ -152,14 +170,30 @@ export function Dashboard() {
         return () => clearTimeout(t);
     }, [messageSearch, selectedInbox, loadMessages]);
 
-    // 5. Auto-refresh
+    // 5. Auto-refresh (10 seconds for better responsiveness)
     useEffect(() => {
         if (!selectedInbox) return;
         const interval = setInterval(() => {
             loadMessages(selectedInbox, { background: true });
-        }, 15000);
+        }, 10000);
         return () => clearInterval(interval);
     }, [selectedInbox, loadMessages]);
+
+    // 6. Document title badge for unread emails
+    useEffect(() => {
+        const unreadCount = messages.filter(m => !m.isRead).length;
+        const baseTitle = "Email Platform";
+
+        if (unreadCount > 0) {
+            document.title = `(${unreadCount}) ${baseTitle}`;
+        } else {
+            document.title = baseTitle;
+        }
+
+        return () => {
+            document.title = baseTitle;
+        };
+    }, [messages]);
 
 
     // --- Actions ---
@@ -242,6 +276,165 @@ export function Dashboard() {
         }
     };
 
+    const handleMarkUnread = async (msgId: string) => {
+        // Optimistic update
+        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRead: false } : m));
+        if (selectedMessage?.id === msgId) {
+            setSelectedMessage(prev => prev ? { ...prev, isRead: false } : null);
+        }
+        try {
+            await api(`/messages/${msgId}/read`, { method: "PATCH", token, body: { isRead: false } });
+            toast.success("Đã đánh dấu chưa đọc");
+        } catch (e) {
+            console.error(e);
+            // Revert on error
+            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRead: true } : m));
+            toast.error("Không thể cập nhật trạng thái");
+        }
+    };
+
+    // Handle keyboard-based message selection by index
+    const handleKeyboardSelect = useCallback((index: number) => {
+        if (messages[index]) {
+            handleSelectMessage(messages[index]);
+        }
+    }, [messages]);
+
+    // Handle delete current message
+    const handleDeleteMessage = useCallback(async () => {
+        if (!selectedMessage) return;
+        try {
+            setBusy(true);
+            await api(`/messages/${selectedMessage.id}`, { method: "DELETE", token });
+            setMessages(prev => prev.filter(m => m.id !== selectedMessage.id));
+            setSelectedMessage(null);
+            toast.success("Đã xóa email");
+        } catch (e) {
+            console.error(e);
+            toast.error("Không thể xóa email");
+        } finally {
+            setBusy(false);
+        }
+    }, [selectedMessage, token]);
+
+    // Handle toggle pin
+    const handleTogglePin = async (msgId: string, isPinned: boolean) => {
+        // Optimistic update
+        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned } : m));
+        if (selectedMessage?.id === msgId) {
+            setSelectedMessage(prev => prev ? { ...prev, isPinned } : null);
+        }
+        try {
+            await api(`/messages/${msgId}/pin`, { method: "PATCH", token, body: { isPinned } });
+            toast.success(isPinned ? "Đã ghim email" : "Đã bỏ ghim");
+        } catch (e) {
+            console.error(e);
+            // Revert on error
+            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned: !isPinned } : m));
+            toast.error("Không thể cập nhật");
+        }
+    };
+
+    // Handle snooze
+    const handleSnooze = async (msgId: string, until: Date | null) => {
+        const snoozedUntil = until?.toISOString() ?? null;
+        // Optimistic update
+        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, snoozedUntil } : m));
+        if (selectedMessage?.id === msgId) {
+            setSelectedMessage(prev => prev ? { ...prev, snoozedUntil } : null);
+        }
+        try {
+            await api(`/messages/${msgId}/snooze`, { method: "PATCH", token, body: { snoozedUntil } });
+            toast.success(until ? "Email sẽ xuất hiện lại sau" : "Đã xóa snooze");
+        } catch (e) {
+            console.error(e);
+            toast.error("Không thể cập nhật");
+        }
+    };
+
+    // Bulk selection handlers
+    const handleToggleSelect = (msgId: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(msgId)) {
+                next.delete(msgId);
+            } else {
+                next.add(msgId);
+            }
+            return next;
+        });
+    };
+
+    const handleSelectAll = () => {
+        setSelectedIds(new Set(messages.map(m => m.id)));
+    };
+
+    const handleClearSelection = () => {
+        setSelectedIds(new Set());
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+        const ids = Array.from(selectedIds);
+
+        // Optimistic update
+        setMessages(prev => prev.filter(m => !selectedIds.has(m.id)));
+        setSelectedIds(new Set());
+
+        try {
+            setBusy(true);
+            await Promise.all(ids.map(id =>
+                api(`/messages/${id}`, { method: "DELETE", token })
+            ));
+            toast.success(`Đã xóa ${ids.length} email`);
+        } catch (e) {
+            console.error(e);
+            toast.error("Lỗi khi xóa");
+            // Reload on error
+            if (selectedInbox) loadMessages(selectedInbox);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const handleBulkMarkRead = async () => {
+        if (selectedIds.size === 0) return;
+        const ids = Array.from(selectedIds);
+
+        // Optimistic update
+        setMessages(prev => prev.map(m => selectedIds.has(m.id) ? { ...m, isRead: true } : m));
+        setSelectedIds(new Set());
+
+        try {
+            await Promise.all(ids.map(id =>
+                api(`/messages/${id}/read`, { method: "PATCH", token, body: { isRead: true } })
+            ));
+            toast.success(`Đã đánh dấu ${ids.length} email đã đọc`);
+        } catch (e) {
+            console.error(e);
+            toast.error("Lỗi khi đánh dấu");
+        }
+    };
+
+    // Keyboard shortcuts
+    useKeyboardShortcuts({
+        messages,
+        selectedMessageId: selectedMessage?.id,
+        onSelectMessage: handleKeyboardSelect,
+        onDeleteMessage: handleDeleteMessage,
+        onMarkUnread: selectedMessage ? () => handleMarkUnread(selectedMessage.id) : undefined,
+        onReply: canSendOutbound ? () => setShowCompose(true) : undefined,
+        onRefresh: selectedInbox ? () => loadMessages(selectedInbox) : undefined,
+        onFocusSearch: () => searchInputRef.current?.focus(),
+        onShowHelp: () => setShowKeyboardHelp(true),
+        onBack: () => {
+            if (mobileView === 'detail') setMobileView('list');
+            else if (mobileView === 'list') setMobileView('sidebar');
+            else setSelectedMessage(null);
+        },
+        enabled: !showCompose && !showKeyboardHelp,
+    });
+
     return (
         <div className="pane-layout">
 
@@ -269,11 +462,15 @@ export function Dashboard() {
             <div className={`h-full border-r border-border bg-surface ${mobileView === 'list' ? 'block w-full' : 'hidden'} md:block md:w-auto overflow-hidden`}>
                 <MessageList
                     inbox={inboxes.find(i => i.id === selectedInbox)}
-                    messages={messages}
+                    messages={[...messages].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))}
                     selectedMessageId={selectedMessage?.id}
                     onSelectMessage={handleSelectMessage}
+                    onMarkUnread={handleMarkUnread}
+                    onTogglePin={handleTogglePin}
+                    onSnooze={handleSnooze}
                     search={messageSearch}
                     onSearchChange={setMessageSearch}
+                    searchInputRef={searchInputRef}
                     hasAttachments={messageHasAttachments}
                     onToggleAttachments={() => setMessageHasAttachments(prev => !prev)}
                     onRefresh={() => selectedInbox && loadMessages(selectedInbox)}
@@ -281,6 +478,13 @@ export function Dashboard() {
                     canLoadMore={messages.length < messageTotal}
                     onLoadMore={() => selectedInbox && loadMessages(selectedInbox, { offset: messageOffset + PAGE_SIZE.messages, append: true })}
                     onBack={() => setMobileView("sidebar")}
+                    selectedIds={selectedIds}
+                    onToggleSelect={handleToggleSelect}
+                    onSelectAll={handleSelectAll}
+                    onClearSelection={handleClearSelection}
+                    onBulkDelete={handleBulkDelete}
+                    onBulkMarkRead={handleBulkMarkRead}
+                    onDelete={handleDeleteMessage}
                 />
             </div>
 
@@ -300,6 +504,10 @@ export function Dashboard() {
                     inboxes={inboxes}
                     onClose={() => setShowCompose(false)}
                 />
+            )}
+
+            {showKeyboardHelp && (
+                <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
             )}
 
             {busy && !messages.length && <Loading fullScreen />}

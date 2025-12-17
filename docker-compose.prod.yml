@@ -105,6 +105,10 @@ services:
       args:
         VITE_API_BASE: https://api.${DOMAIN:-localhost}
     restart: unless-stopped
+    environment:
+      # Runtime environment for entrypoint.sh to generate config.js
+      VITE_API_BASE: https://api.${DOMAIN:-localhost}
+      OUTBOUND_ENABLED: ${OUTBOUND_ENABLED:-false}
     networks:
       - email_network
     # Port 80 nội bộ, Caddy reverse proxy

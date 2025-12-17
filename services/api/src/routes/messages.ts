@@ -232,6 +232,54 @@ export const messageRoutes = async (app: FastifyInstance) => {
     return { message: updated };
   });
 
+  // Pin/unpin message
+  app.patch("/messages/:id/pin", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({ isPinned: z.boolean() }).safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid request" });
+    }
+
+    const existing = await prisma.message.findUnique({ where: { id: params.data.id, deletedAt: null } });
+    if (!existing) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const updated = await prisma.message.update({
+      where: { id: existing.id },
+      data: { isPinned: body.data.isPinned },
+      include: { attachments: { where: { deletedAt: null } }, inbox: { include: { domain: true } } },
+    });
+
+    return { message: updated };
+  });
+
+  // Snooze message
+  app.patch("/messages/:id/snooze", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({
+      snoozedUntil: z.string().datetime().nullable()
+    }).safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid request" });
+    }
+
+    const existing = await prisma.message.findUnique({ where: { id: params.data.id, deletedAt: null } });
+    if (!existing) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const updated = await prisma.message.update({
+      where: { id: existing.id },
+      data: { snoozedUntil: body.data.snoozedUntil ? new Date(body.data.snoozedUntil) : null },
+      include: { attachments: { where: { deletedAt: null } }, inbox: { include: { domain: true } } },
+    });
+
+    return { message: updated };
+  });
+
   app.get("/attachments/:id/download", { preHandler: app.authenticate }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {

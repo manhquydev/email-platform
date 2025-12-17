@@ -42,6 +42,8 @@ export type Message = {
     textBody?: string | null;
     htmlBody?: string | null;
     isRead: boolean;
+    isPinned: boolean;
+    snoozedUntil?: string | null;
     attachments: Attachment[];
 };
 

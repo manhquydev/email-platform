@@ -1,12 +1,18 @@
 import type { Message, Inbox } from "../types";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { type RefObject, useState } from "react";
+import { SnoozePicker } from "./SnoozePicker";
+import { SwipeableMessage } from "./SwipeableMessage";
 
 interface MessageListProps {
     inbox?: Inbox;
     messages: Message[];
     selectedMessageId: string | undefined;
     onSelectMessage: (msg: Message) => void;
+    onMarkUnread: (msgId: string) => void;
+    onTogglePin: (msgId: string, isPinned: boolean) => void;
+    onSnooze: (msgId: string, until: Date | null) => void;
     search: string;
     onSearchChange: (val: string) => void;
     hasAttachments: boolean;
@@ -16,6 +22,16 @@ interface MessageListProps {
     canLoadMore: boolean;
     onLoadMore: () => void;
     onBack?: () => void;
+    searchInputRef?: RefObject<HTMLInputElement | null>;
+    // Bulk selection
+    selectedIds: Set<string>;
+    onToggleSelect: (msgId: string) => void;
+    onSelectAll: () => void;
+    onClearSelection: () => void;
+    onBulkDelete: () => void;
+    onBulkMarkRead: () => void;
+    // Swipe actions
+    onDelete: (msgId: string) => void;
 }
 
 export function MessageList({
@@ -23,6 +39,9 @@ export function MessageList({
     messages,
     selectedMessageId,
     onSelectMessage,
+    onMarkUnread,
+    onTogglePin,
+    onSnooze,
     search,
     onSearchChange,
     hasAttachments,
@@ -31,8 +50,18 @@ export function MessageList({
     loading,
     canLoadMore,
     onLoadMore,
-    onBack
+    onBack,
+    searchInputRef,
+    selectedIds,
+    onToggleSelect,
+    onSelectAll,
+    onClearSelection,
+    onBulkDelete,
+    onBulkMarkRead,
+    onDelete,
 }: MessageListProps) {
+    const [snoozeMessageId, setSnoozeMessageId] = useState<string | null>(null);
+    const snoozeMessage = messages.find(m => m.id === snoozeMessageId);
 
     if (!inbox) {
         return (
@@ -56,8 +85,9 @@ export function MessageList({
                     <div className="relative flex-1">
                         <svg className="absolute left-2 top-1/2 -translate-y-1/2 text-muted w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         <input
+                            ref={searchInputRef}
                             className="pl-8 text-sm py-1.5 w-full"
-                            placeholder="Tìm kiếm email..."
+                            placeholder="Tìm kiếm email... (nhấn / để focus)"
                             value={search}
                             onChange={e => onSearchChange(e.target.value)}
                         />
@@ -82,60 +112,186 @@ export function MessageList({
                         Không tìm thấy email nào.
                     </div>
                 ) : (
-                    <div className="divide-y divide-border">
-                        {messages.map(msg => (
-                            <div
-                                key={msg.id}
-                                onClick={() => onSelectMessage(msg)}
-                                className={`p-3 cursor-pointer transition-colors relative hover:bg-bg ${selectedMessageId === msg.id ? 'bg-primary-light ring-1 ring-inset ring-primary-border' : ''
-                                    }`}
-                            >
-                                {/* Read Indicator */}
-                                {!msg.isRead && (
-                                    <span className="absolute left-1 top-4 w-2 h-2 rounded-full bg-primary" title="Chưa đọc"></span>
-                                )}
-
-                                <div className="flex justify-between items-baseline mb-1 pl-2">
-                                    <div className={`text-sm truncate pr-2 ${!msg.isRead ? 'font-bold text-text-main' : 'font-medium text-text-main'}`}>
-                                        {msg.fromAddress || 'Không rõ người gửi'}
-                                    </div>
-                                    <div className="text-[10px] text-muted flex-shrink-0 whitespace-nowrap">
-                                        {formatDistanceToNow(new Date(msg.receivedAt), { addSuffix: true, locale: vi })}
-                                    </div>
+                    <>
+                        {/* Bulk Action Toolbar */}
+                        {selectedIds.size > 0 && (
+                            <div className="sticky top-0 z-20 bg-primary text-white px-3 py-2 flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-3">
+                                    <span className="font-medium">{selectedIds.size} đã chọn</span>
+                                    <button
+                                        onClick={onSelectAll}
+                                        className="text-xs hover:underline opacity-80"
+                                    >
+                                        Chọn tất cả ({messages.length})
+                                    </button>
                                 </div>
-
-                                <div className={`text-xs pl-2 truncate mb-1 ${!msg.isRead ? 'font-semibold text-text-main' : 'text-text-main'}`}>
-                                    {msg.subject || '(Không có tiêu đề)'}
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={onBulkMarkRead}
+                                        className="px-2 py-1 rounded bg-white/20 hover:bg-white/30 text-xs"
+                                    >
+                                        Đánh dấu đã đọc
+                                    </button>
+                                    <button
+                                        onClick={onBulkDelete}
+                                        className="px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-xs"
+                                    >
+                                        Xóa
+                                    </button>
+                                    <button
+                                        onClick={onClearSelection}
+                                        className="p-1 rounded hover:bg-white/20"
+                                        title="Bỏ chọn"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </button>
                                 </div>
-
-                                <div className="text-[11px] text-muted pl-2 truncate line-clamp-2">
-                                    {msg.textBody ? msg.textBody.substring(0, 100) : 'Không có nội dung xem trước...'}
-                                </div>
-
-                                {msg.attachments && msg.attachments.length > 0 && (
-                                    <div className="pl-2 mt-1.5 flex gap-1 flex-wrap">
-                                        {msg.attachments.slice(0, 3).map((a: any) => (
-                                            <span key={a.id} className="inline-flex items-center px-1.5 py-0.5 rounded bg-bg border border-border text-[10px] text-muted">
-                                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                                {a.filename}
-                                            </span>
-                                        ))}
-                                        {msg.attachments.length > 3 && <span className="text-[10px] text-muted">+{msg.attachments.length - 3}</span>}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-
-                        {canLoadMore && (
-                            <div className="p-3 text-center">
-                                <button onClick={onLoadMore} disabled={loading} className="text-xs text-primary hover:underline">
-                                    {loading ? 'Đang tải...' : 'Xem thêm tin cũ hơn'}
-                                </button>
                             </div>
                         )}
-                    </div>
+                        <div className="divide-y divide-border">
+                            {messages.map(msg => (
+                                <SwipeableMessage
+                                    key={msg.id}
+                                    onSwipeLeft={() => onDelete(msg.id)}
+                                    onSwipeRight={() => onTogglePin(msg.id, !msg.isPinned)}
+                                    leftLabel="Xóa"
+                                    rightLabel={msg.isPinned ? "Bỏ ghim" : "Ghim"}
+                                >
+                                    <div
+                                        className={`group p-3 cursor-pointer transition-colors relative hover:bg-bg ${selectedMessageId === msg.id ? 'bg-primary-light ring-1 ring-inset ring-primary-border' : ''} ${selectedIds.has(msg.id) ? 'bg-primary-light/50' : ''}`}
+                                    >
+                                        {/* Checkbox for bulk selection */}
+                                        <div
+                                            className={`absolute left-1 top-3 ${selectedIds.size > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+                                            onClick={e => e.stopPropagation()}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedIds.has(msg.id)}
+                                                onChange={() => onToggleSelect(msg.id)}
+                                                className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                                            />
+                                        </div>
+
+                                        {/* Read Indicator - shifted right */}
+                                        {!msg.isRead && !selectedIds.has(msg.id) && selectedIds.size === 0 && (
+                                            <span className="absolute left-1 top-4 w-2 h-2 rounded-full bg-primary" title="Chưa đọc"></span>
+                                        )}
+
+                                        {/* Action buttons - visible on hover */}
+                                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-1 z-10">
+                                            {/* Pin button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onTogglePin(msg.id, !msg.isPinned);
+                                                }}
+                                                className={`p-1.5 rounded bg-surface border border-border hover:border-yellow-400 transition-all ${msg.isPinned ? 'text-yellow-500' : 'text-muted hover:text-yellow-500'}`}
+                                                title={msg.isPinned ? "Bỏ ghim" : "Ghim email"}
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill={msg.isPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </button>
+                                            {/* Snooze button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSnoozeMessageId(msg.id);
+                                                }}
+                                                className={`p-1.5 rounded bg-surface border border-border hover:border-purple-400 transition-all ${msg.snoozedUntil ? 'text-purple-500' : 'text-muted hover:text-purple-500'}`}
+                                                title={msg.snoozedUntil ? `Snooze đến ${new Date(msg.snoozedUntil).toLocaleString('vi-VN')}` : "Nhắc lại sau"}
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </button>
+                                            {/* Mark unread button - only for read messages */}
+                                            {msg.isRead && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onMarkUnread(msg.id);
+                                                    }}
+                                                    className="p-1.5 rounded bg-surface border border-border hover:border-primary hover:text-primary text-muted transition-all"
+                                                    title="Đánh dấu chưa đọc"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Snooze indicator */}
+                                        {msg.snoozedUntil && (
+                                            <div className="absolute right-2 bottom-2 flex items-center gap-1 px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded text-[9px]">
+                                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                                <span>{formatDistanceToNow(new Date(msg.snoozedUntil), { addSuffix: true, locale: vi })}</span>
+                                            </div>
+                                        )}
+
+                                        <div onClick={() => onSelectMessage(msg)}>
+                                            <div className="flex justify-between items-baseline mb-1 pl-2">
+                                                <div className={`text-sm truncate pr-2 ${!msg.isRead ? 'font-bold text-text-main' : 'font-medium text-text-main'}`}>
+                                                    {msg.fromAddress || 'Không rõ người gửi'}
+                                                </div>
+                                                <div className="text-[10px] text-muted flex-shrink-0 whitespace-nowrap">
+                                                    {formatDistanceToNow(new Date(msg.receivedAt), { addSuffix: true, locale: vi })}
+                                                </div>
+                                            </div>
+
+                                            <div className={`text-xs pl-2 truncate mb-1 ${!msg.isRead ? 'font-semibold text-text-main' : 'text-text-main'}`}>
+                                                {msg.subject || '(Không có tiêu đề)'}
+                                            </div>
+
+                                            <div className="text-[11px] text-muted pl-2 truncate line-clamp-2">
+                                                {msg.textBody ? msg.textBody.substring(0, 100) : 'Không có nội dung xem trước...'}
+                                            </div>
+
+                                            {msg.attachments && msg.attachments.length > 0 && (
+                                                <div className="pl-2 mt-1.5 flex gap-1 flex-wrap">
+                                                    {msg.attachments.slice(0, 3).map((a: any) => (
+                                                        <span key={a.id} className="inline-flex items-center px-1.5 py-0.5 rounded bg-bg border border-border text-[10px] text-muted">
+                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                                            {a.filename}
+                                                        </span>
+                                                    ))}
+                                                    {msg.attachments.length > 3 && <span className="text-[10px] text-muted">+{msg.attachments.length - 3}</span>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </SwipeableMessage>
+                            ))}
+
+                            {canLoadMore && (
+                                <div className="p-3 text-center">
+                                    <button onClick={onLoadMore} disabled={loading} className="text-xs text-primary hover:underline">
+                                        {loading ? 'Đang tải...' : 'Xem thêm tin cũ hơn'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
+
+            {/* Snooze Picker Modal */}
+            {snoozeMessageId && snoozeMessage && (
+                <SnoozePicker
+                    currentSnooze={snoozeMessage.snoozedUntil}
+                    onSnooze={(until) => {
+                        onSnooze(snoozeMessageId, until);
+                        setSnoozeMessageId(null);
+                    }}
+                    onClose={() => setSnoozeMessageId(null)}
+                />
+            )}
         </div>
     );
 }

@@ -92,12 +92,15 @@ model Message {
   size        Int?
   deletedAt   DateTime?
   isRead      Boolean     @default(false)
+  isPinned    Boolean     @default(false)
+  snoozedUntil DateTime?
   attachments Attachment[]
   abuseReports AbuseReport[]
 
   @@index([inboxId, receivedAt])
   @@index([sourceIp, receivedAt])
   @@index([deletedAt])
+  @@index([isPinned])
 }
 
 model Attachment {

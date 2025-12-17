@@ -2,8 +2,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import type { Domain, Inbox } from "../types";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
+import { CountdownTimer } from "./CountdownTimer";
+import { ThemeToggle } from "./ThemeToggle";
 
 // Professional SVG Icons
 const icons = {
@@ -320,31 +320,50 @@ export function Sidebar({
                 )}
 
                 <div className="space-y-0.5">
-                    {inboxes.map(inbox => (
-                        <button
-                            key={inbox.id}
-                            onClick={() => onSelectInbox(inbox.id)}
-                            className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${selectedInboxId === inbox.id
-                                ? 'bg-primary-light text-primary'
-                                : 'text-text-main hover:bg-bg'
-                                }`}
-                        >
-                            <svg
-                                className={`w-4 h-4 flex-shrink-0 ${selectedInboxId === inbox.id ? 'text-primary' : 'text-muted'}`}
-                                fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                    {inboxes.map(inbox => {
+                        const fullEmail = `${inbox.localPart}@${activeDomain?.name || ''}`;
+                        return (
+                            <div
+                                key={inbox.id}
+                                className={`group w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${selectedInboxId === inbox.id
+                                    ? 'bg-primary-light text-primary'
+                                    : 'text-text-main hover:bg-bg'
+                                    }`}
                             >
-                                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            <div className="flex-1 min-w-0 overflow-hidden">
-                                <div className="truncate font-medium text-sm">{inbox.localPart}</div>
-                                {inbox.expiresAt && (
-                                    <div className="text-[10px] text-muted truncate">
-                                        Hết hạn {formatDistanceToNow(new Date(inbox.expiresAt), { addSuffix: true, locale: vi })}
+                                <button
+                                    onClick={() => onSelectInbox(inbox.id)}
+                                    className="flex-1 flex items-center gap-3 min-w-0"
+                                >
+                                    <svg
+                                        className={`w-4 h-4 flex-shrink-0 ${selectedInboxId === inbox.id ? 'text-primary' : 'text-muted'}`}
+                                        fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                                    >
+                                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    <div className="flex-1 min-w-0 overflow-hidden">
+                                        <div className="truncate font-medium text-sm" title={fullEmail}>
+                                            {fullEmail}
+                                        </div>
+                                        {inbox.expiresAt && (
+                                            <CountdownTimer expiresAt={inbox.expiresAt} />
+                                        )}
                                     </div>
-                                )}
+                                </button>
+                                {/* Copy button - visible on hover */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigator.clipboard.writeText(fullEmail);
+                                        toast.success(`Đã copy: ${fullEmail}`);
+                                    }}
+                                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-surface rounded text-muted hover:text-primary transition-all flex-shrink-0"
+                                    title="Copy địa chỉ email"
+                                >
+                                    {icons.copy}
+                                </button>
                             </div>
-                        </button>
-                    ))}
+                        );
+                    })}
 
                     {activeDomain && inboxes.length === 0 && !isCreatingInbox && (
                         <div className="text-center py-8 text-muted text-sm px-4">
@@ -371,6 +390,7 @@ export function Sidebar({
                         <div className="text-[10px] text-muted truncate">Quản trị viên</div>
                     </div>
                     <div className="flex items-center gap-1">
+                        <ThemeToggle />
                         {isAdmin && (
                             <button
                                 onClick={() => navigate("/admin")}

@@ -10,15 +10,30 @@
 
 # API Backend - api.yourdomain.com
 api.{$DOMAIN} {
-	reverse_proxy api:3001
+	# Handle CORS preflight requests
+	@options method OPTIONS
+	handle @options {
+		header Access-Control-Allow-Origin https://app.{$DOMAIN}
+		header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+		header Access-Control-Allow-Headers "Authorization, Content-Type, Accept"
+		header Access-Control-Allow-Credentials "true"
+		header Access-Control-Max-Age "86400"
+		respond "" 204
+	}
 
-	# Security headers
+	# Add CORS headers to all responses
 	header {
+		Access-Control-Allow-Origin https://app.{$DOMAIN}
+		Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+		Access-Control-Allow-Headers "Authorization, Content-Type, Accept"
+		Access-Control-Allow-Credentials "true"
 		X-Content-Type-Options nosniff
 		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
 	}
+
+	reverse_proxy api:3001
 
 	# Logging
 	log {

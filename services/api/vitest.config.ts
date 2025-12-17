@@ -13,7 +13,7 @@ export default defineConfig({
       REDIS_PORT: "6380",
     },
     // Ensure we don't treat tests as ESM if we don't want to, or configure extensions
-    include: ['test/**/*.test.ts'],
+    include: ['src/test/**/*.test.ts'],
     fileParallelism: false,
   },
 });

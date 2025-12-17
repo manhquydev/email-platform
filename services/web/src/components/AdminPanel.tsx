@@ -98,8 +98,8 @@ export function AdminPanel({ token }: { token: string }) {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-150 ${activeTab === tab.id
-                                        ? "bg-primary text-white shadow-sm"
-                                        : "text-text-main hover:bg-bg"
+                                    ? "bg-primary text-white shadow-sm"
+                                    : "text-text-main hover:bg-bg"
                                     }`}
                             >
                                 <span className={activeTab === tab.id ? "text-white" : "text-muted"}>
@@ -355,6 +355,46 @@ function DomainsList({ token }: { token: string }) {
             <div className="mb-6">
                 <h1 className="text-xl font-semibold">Tên miền</h1>
                 <p className="text-sm text-muted mt-1">Quản lý các tên miền trong hệ thống</p>
+            </div>
+
+            {/* DNS Configuration Help */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-blue-800 mb-2">📧 Cấu hình DNS để nhận email</h3>
+                <p className="text-sm text-blue-700 mb-3">
+                    Để nhận được email, người dùng cần thêm các bản ghi DNS sau vào domain của họ:
+                </p>
+                <div className="bg-white rounded border border-blue-200 overflow-hidden">
+                    <table className="w-full text-xs">
+                        <thead className="bg-blue-100">
+                            <tr>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Type</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Host</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Value</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Mục đích</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-blue-700">
+                            <tr className="border-t border-blue-200">
+                                <td className="px-3 py-2 font-mono font-bold text-red-600">MX</td>
+                                <td className="px-3 py-2 font-mono">@</td>
+                                <td className="px-3 py-2 font-mono">mail.[domain] (priority 10)</td>
+                                <td className="px-3 py-2">⚠️ Bắt buộc để nhận email</td>
+                            </tr>
+                            <tr className="border-t border-blue-200">
+                                <td className="px-3 py-2 font-mono font-bold text-blue-600">A</td>
+                                <td className="px-3 py-2 font-mono">mail</td>
+                                <td className="px-3 py-2 font-mono">IP của mail server</td>
+                                <td className="px-3 py-2">Trỏ mail subdomain về IP</td>
+                            </tr>
+                            <tr className="border-t border-blue-200">
+                                <td className="px-3 py-2 font-mono font-bold text-green-600">TXT</td>
+                                <td className="px-3 py-2 font-mono">@</td>
+                                <td className="px-3 py-2 font-mono">[verification token]</td>
+                                <td className="px-3 py-2">Xác minh sở hữu domain</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div className="bg-surface border border-border rounded-lg overflow-hidden">

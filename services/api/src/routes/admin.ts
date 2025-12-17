@@ -49,11 +49,11 @@ export async function adminRoutes(app: FastifyInstance) {
 
             // Get daily counts using raw queries for efficiency
             const dailyMessages = await prisma.$queryRaw<{ date: Date; count: bigint }[]>`
-                SELECT DATE("createdAt") as date, COUNT(*) as count
+                SELECT DATE("receivedAt") as date, COUNT(*) as count
                 FROM "Message"
-                WHERE "createdAt" >= ${startDate}
+                WHERE "receivedAt" >= ${startDate}
                 AND "deletedAt" IS NULL
-                GROUP BY DATE("createdAt")
+                GROUP BY DATE("receivedAt")
                 ORDER BY date ASC
             `;
 

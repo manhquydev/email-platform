@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Navigation } from "../components/Navigation";
 import toast from "react-hot-toast";
 
 export function Login() {
@@ -25,16 +26,9 @@ export function Login() {
     };
 
     return (
-        <div className="auth-page">
+        <div className="auth-page auth-page-with-nav">
+            <Navigation variant="auth" />
             <div className="auth-bg"></div>
-
-            {/* Back to home */}
-            <Link to="/" className="auth-back-link">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Về trang chủ
-            </Link>
 
             <div className="auth-container">
                 <div className="auth-card">

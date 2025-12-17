@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { api } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import { Navigation } from "../components/Navigation";
 
 const registerSchema = z.object({
     email: z.string().email("Email không hợp lệ"),
@@ -87,16 +88,9 @@ export function Register() {
     };
 
     return (
-        <div className="auth-page">
+        <div className="auth-page auth-page-with-nav">
+            <Navigation variant="auth" />
             <div className="auth-bg"></div>
-
-            {/* Back to home */}
-            <Link to="/" className="auth-back-link">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Về trang chủ
-            </Link>
 
             <div className="auth-container">
                 <div className="auth-card">

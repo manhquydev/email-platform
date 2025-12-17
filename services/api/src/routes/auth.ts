@@ -46,19 +46,8 @@ export async function authRoutes(app: FastifyInstance) {
     // Send verification email
     try {
       const verifyUrl = `${appConfig.webUrl}/verify-email?token=${verificationToken}`;
-      const emailHtml = `
-        <h1>Verify your email</h1>
-        <p>Thanks for creating an account. Click the link below to verify your email address:</p>
-        <a href="${verifyUrl}">${verifyUrl}</a>
-      `;
-
-      await outboundService.sendEmail(
-        appConfig.defaultAdminEmail,
-        email,
-        "Verify your email",
-        `Verify your email: ${verifyUrl}`,
-        emailHtml
-      );
+      await outboundService.sendVerificationEmail(email, verifyUrl);
+      request.log.info({ email }, "Verification email sent successfully");
     } catch (err) {
       request.log.error(err, "Failed to send verification email");
       // We don't fail the request, but user might need to resend verification later
@@ -109,9 +98,66 @@ export async function authRoutes(app: FastifyInstance) {
       },
     });
 
+    // Send welcome email
+    try {
+      await outboundService.sendWelcomeEmail(user.email);
+      request.log.info({ email: user.email }, "Welcome email sent successfully");
+    } catch (err) {
+      request.log.error(err, "Failed to send welcome email");
+    }
+
     await recordAudit(user.id, "EMAIL_VERIFIED", { email: user.email });
 
     return { ok: true, message: "Email verified successfully" };
+  });
+
+  // Resend verification email
+  app.post("/auth/resend-verification", async (request, reply) => {
+    const bodySchema = z.object({
+      email: z.string().email(),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const { email } = parsed.data;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Don't reveal if user exists or not
+      return { ok: true, message: "If the email exists, a verification link has been sent." };
+    }
+
+    if (user.emailVerified) {
+      return reply.status(400).send({ error: "Email is already verified" });
+    }
+
+    // Generate new verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        verificationToken,
+        verificationTokenExpiresAt,
+      },
+    });
+
+    try {
+      const verifyUrl = `${appConfig.webUrl}/verify-email?token=${verificationToken}`;
+      await outboundService.sendVerificationEmail(email, verifyUrl);
+      request.log.info({ email }, "Resent verification email");
+    } catch (err) {
+      request.log.error(err, "Failed to resend verification email");
+      return reply.status(500).send({ error: "Failed to send verification email" });
+    }
+
+    await recordAudit(user.id, "RESEND_VERIFICATION", { email: user.email });
+
+    return { ok: true, message: "Verification email sent successfully" };
   });
 
   app.post("/auth/login", async (request, reply) => {

@@ -5,32 +5,135 @@ export class OutboundService {
     private transporter: nodemailer.Transporter;
 
     constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: process.env.OUTBOUND_SMTP_HOST,
-            port: Number(process.env.OUTBOUND_SMTP_PORT) || 587,
-            secure: process.env.OUTBOUND_SMTP_SECURE === "true", // true for 465, false for other ports
-            auth: {
-                user: process.env.OUTBOUND_SMTP_USER,
-                pass: process.env.OUTBOUND_SMTP_PASS,
-            },
-        });
+        const smtpHost = process.env.OUTBOUND_SMTP_HOST;
+        const smtpPort = Number(process.env.OUTBOUND_SMTP_PORT) || 587;
+        const smtpUser = process.env.OUTBOUND_SMTP_USER;
+        const smtpPass = process.env.OUTBOUND_SMTP_PASS;
+        const smtpSecure = process.env.OUTBOUND_SMTP_SECURE === "true";
+
+        // Configure transporter - support both authenticated and local SMTP
+        const transportConfig: nodemailer.TransportOptions = {
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpSecure,
+        } as any;
+
+        // Only add auth if credentials are provided
+        if (smtpUser && smtpPass) {
+            (transportConfig as any).auth = {
+                user: smtpUser,
+                pass: smtpPass,
+            };
+        }
+
+        this.transporter = nodemailer.createTransport(transportConfig);
     }
 
-    async sendEmail(from: string, to: string, subject: string, text?: string, html?: string, attachments?: any[]) {
+    async sendEmail(
+        from: string,
+        to: string,
+        subject: string,
+        text?: string,
+        html?: string,
+        attachments?: any[]
+    ) {
         if (!process.env.OUTBOUND_SMTP_HOST) {
             throw new Error("Outbound email is not configured (OUTBOUND_SMTP_HOST missing)");
         }
 
+        // Get mail configuration from environment
+        const mailFromName = process.env.MAIL_FROM_NAME || "TempMail Pro";
+        const mailFromAddress = process.env.MAIL_FROM_ADDRESS || from;
+        const mailDomain = process.env.MAIL_DOMAIN || "localhost";
+
+        // Generate proper message ID
+        const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${mailDomain}>`;
+
         const info = await this.transporter.sendMail({
-            from, // This must be a verified sender in the Relay service (e.g. SES)
+            from: `"${mailFromName}" <${mailFromAddress}>`,
             to,
             subject,
             text,
             html,
             attachments,
+            messageId,
+            headers: {
+                'X-Mailer': 'TempMail Pro',
+                'X-Priority': '3',
+                'List-Unsubscribe': `<mailto:unsubscribe@${mailDomain}>`,
+            },
         });
 
         return info;
+    }
+
+    /**
+     * Send verification email using professional template
+     */
+    async sendVerificationEmail(to: string, verificationUrl: string) {
+        const { verificationEmailTemplate } = await import("./emailTemplates");
+        const template = verificationEmailTemplate({
+            verificationUrl,
+            recipientEmail: to,
+        });
+
+        return this.sendEmail(
+            appConfig.defaultAdminEmail,
+            to,
+            template.subject,
+            template.text,
+            template.html
+        );
+    }
+
+    /**
+     * Send welcome email after verification
+     */
+    async sendWelcomeEmail(to: string) {
+        const { welcomeEmailTemplate } = await import("./emailTemplates");
+        const template = welcomeEmailTemplate({
+            recipientEmail: to,
+        });
+
+        return this.sendEmail(
+            appConfig.defaultAdminEmail,
+            to,
+            template.subject,
+            template.text,
+            template.html
+        );
+    }
+
+    /**
+     * Send password reset email
+     */
+    async sendPasswordResetEmail(to: string, resetUrl: string) {
+        const { passwordResetEmailTemplate } = await import("./emailTemplates");
+        const template = passwordResetEmailTemplate({
+            resetUrl,
+            recipientEmail: to,
+        });
+
+        return this.sendEmail(
+            appConfig.defaultAdminEmail,
+            to,
+            template.subject,
+            template.text,
+            template.html
+        );
+    }
+
+    /**
+     * Verify SMTP connection is working
+     */
+    async verifyConnection(): Promise<boolean> {
+        try {
+            await this.transporter.verify();
+            return true;
+        } catch (error) {
+            console.error("SMTP connection verification failed:", error);
+            return false;
+        }
     }
 }
 

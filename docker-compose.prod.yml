@@ -75,13 +75,17 @@ services:
       SMTP_PORT: 2525
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      # Production Outbound - Cấu hình SES/SendGrid
-      OUTBOUND_SMTP_HOST: ${OUTBOUND_SMTP_HOST:-}
-      OUTBOUND_SMTP_PORT: ${OUTBOUND_SMTP_PORT:-587}
-      OUTBOUND_SMTP_USER: ${OUTBOUND_SMTP_USER:-}
-      OUTBOUND_SMTP_PASS: ${OUTBOUND_SMTP_PASS:-}
-      OUTBOUND_SMTP_SECURE: ${OUTBOUND_SMTP_SECURE:-true}
-      OUTBOUND_ENABLED: ${OUTBOUND_ENABLED:-false}
+      # Self-hosted Postfix SMTP (local container)
+      OUTBOUND_SMTP_HOST: postfix
+      OUTBOUND_SMTP_PORT: 587
+      OUTBOUND_SMTP_USER: ""
+      OUTBOUND_SMTP_PASS: ""
+      OUTBOUND_SMTP_SECURE: "false"
+      OUTBOUND_ENABLED: "true"
+      # Mail configuration
+      MAIL_DOMAIN: ${DOMAIN:-localhost}
+      MAIL_FROM_NAME: "TempMail Pro"
+      MAIL_FROM_ADDRESS: "noreply@${DOMAIN:-localhost}"
       ALLOW_AUTO_DOMAIN_CREATION: "false" # Disabled in production
       WEB_URL: https://app.${DOMAIN:-localhost}
       STORAGE_DIR: /app/storage
@@ -89,6 +93,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - postfix
     volumes:
       - api_storage:/app/storage
     ports:
@@ -97,8 +102,29 @@ services:
       - email_network
 
   # ===================
-  # WEB FRONTEND
+  # OUTBOUND SMTP (Postfix + OpenDKIM)
   # ===================
+  postfix:
+    build:
+      context: ./services/postfix
+    restart: unless-stopped
+    hostname: mail.${DOMAIN:-localhost}
+    environment:
+      MAIL_DOMAIN: ${DOMAIN:-localhost}
+      MAIL_HOSTNAME: mail.${DOMAIN:-localhost}
+      DKIM_SELECTOR: mail
+    volumes:
+      - postfix_dkim:/etc/opendkim/keys
+    networks:
+      - email_network
+    # Port 25 có thể expose nếu cần nhận mail từ ngoài
+    # ports:
+    #   - "25:25"
+
+
+    # ===================
+    # WEB FRONTEND
+    # ===================
   web:
     build:
       context: ./services/web
@@ -179,6 +205,8 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  postfix_dkim:
     driver: local
   # clamav_data:
   #   driver: local

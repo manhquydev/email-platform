@@ -52,6 +52,9 @@ export const appConfig = {
   webUrl: process.env.WEB_URL ?? "http://localhost:5173",
   trustProxy: (process.env.TRUST_PROXY ?? "true").toLowerCase() === "true",
   outboundEnabled: (process.env.OUTBOUND_ENABLED ?? "false").toLowerCase() === "true",
+  mailDomain: process.env.MAIL_DOMAIN ?? "localhost",
+  mailFromName: process.env.MAIL_FROM_NAME ?? "TempMail Pro",
+  mailFromAddress: process.env.MAIL_FROM_ADDRESS ?? "noreply@localhost",
   s3: {
     enabled: (process.env.S3_ENABLED ?? "false").toLowerCase() === "true",
     bucket: process.env.S3_BUCKET ?? "",

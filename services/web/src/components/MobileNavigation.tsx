@@ -78,12 +78,12 @@ export function MobileNavigation({
         <nav
             className={`
                 md:hidden fixed bottom-0 left-0 right-0 z-50
-                bg-surface border-t border-border
+                bg-surface/95 backdrop-blur-lg border-t border-border
                 transition-transform duration-300 safe-area-bottom
                 ${isVisible ? 'translate-y-0' : 'translate-y-full'}
             `}
         >
-            <div className="flex items-center justify-around h-16 px-2">
+            <div className="mobile-nav-container">
                 {tabs.map(tab => {
                     const isActive = activeTab === tab.id;
 
@@ -95,7 +95,8 @@ export function MobileNavigation({
                                     onCompose?.();
                                     onTabChange(tab.id);
                                 }}
-                                className="relative -mt-6 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center hover-lift transition-all"
+                                className="mobile-nav-compose"
+                                aria-label={tab.label}
                             >
                                 {tab.icon}
                             </button>
@@ -106,23 +107,18 @@ export function MobileNavigation({
                         <button
                             key={tab.id}
                             onClick={() => onTabChange(tab.id)}
-                            className={`
-                                flex flex-col items-center justify-center h-full px-4 transition-colors relative
-                                ${isActive ? 'text-primary' : 'text-muted'}
-                            `}
+                            className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+                            aria-label={tab.label}
                         >
-                            <div className="relative">
+                            <div className="mobile-nav-icon">
                                 {tab.icon}
                                 {tab.badge && tab.badge > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">
+                                    <span className="mobile-nav-badge">
                                         {tab.badge > 9 ? '9+' : tab.badge}
                                     </span>
                                 )}
                             </div>
-                            <span className="text-[10px] mt-1 font-medium">{tab.label}</span>
-                            {isActive && (
-                                <span className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
-                            )}
+                            <span className="mobile-nav-label">{tab.label}</span>
                         </button>
                     );
                 })}

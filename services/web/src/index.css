@@ -4086,3 +4086,273 @@ a:focus-visible {
     gap: 0.75rem !important;
   }
 }
+
+/* ====================================
+   MOBILE BOTTOM NAVIGATION
+   ==================================== */
+
+.mobile-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 64px;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  padding: 4px 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 0;
+}
+
+.mobile-nav-item.active {
+  color: var(--color-primary);
+}
+
+.mobile-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--color-primary);
+  border-radius: 50%;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.mobile-nav-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.mobile-nav-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mobile-nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--color-danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.mobile-nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 2px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.mobile-nav-compose {
+  position: relative;
+  margin-top: -20px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-compose:active {
+  transform: scale(0.92);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.mobile-nav-compose svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ====================================
+   ADMIN COMPACT NAVIGATION (Mobile)
+   ==================================== */
+
+@media (max-width: 768px) {
+
+  /* Admin panel mobile layout */
+  .admin-layout {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* Admin sidebar becomes horizontal nav */
+  .admin-sidebar {
+    width: 100% !important;
+    min-height: auto !important;
+    flex-direction: row !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-surface);
+  }
+
+  /* Admin sidebar header - compact on mobile */
+  .admin-sidebar>div:first-child {
+    display: none;
+  }
+
+  /* Admin nav - horizontal scroll */
+  .admin-sidebar nav {
+    flex: 1;
+    padding: 8px 12px !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-sidebar nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-sidebar nav>div {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    width: max-content;
+  }
+
+  /* Admin nav buttons - pill style */
+  .admin-sidebar nav button {
+    flex: 0 0 auto !important;
+    padding: 8px 12px !important;
+    white-space: nowrap;
+    font-size: 12px !important;
+    border-radius: 20px !important;
+    gap: 6px !important;
+  }
+
+  .admin-sidebar nav button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Hide button labels on very small screens */
+  @media (max-width: 480px) {
+    .admin-sidebar nav button {
+      padding: 8px 10px !important;
+    }
+
+    .admin-sidebar nav button span:last-child {
+      display: none;
+    }
+  }
+
+  /* Admin footer - inline with nav */
+  .admin-sidebar>.p-3 {
+    padding: 8px !important;
+    border-top: none !important;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .admin-sidebar>.p-3 a {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+  }
+
+  .admin-sidebar>.p-3 a span {
+    display: none;
+  }
+}
+
+/* ====================================
+   DASHBOARD MOBILE OPTIMIZATIONS
+   ==================================== */
+
+@media (max-width: 768px) {
+
+  /* Category tabs mobile */
+  .px-3.pt-2.pb-1.border-b {
+    padding: 8px 12px !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Message list header spacing */
+  .flex-shrink-0 {
+    flex-shrink: 0;
+  }
+
+  /* Account for bottom nav */
+  .pane-layout {
+    padding-bottom: 72px;
+  }
+
+  /* Sidebar mobile optimizations */
+  .h-full.border-r.border-border.bg-surface {
+    border-right: none;
+    width: 100% !important;
+  }
+
+  /* Inbox item mobile touch targets */
+  .px-3.py-2.cursor-pointer {
+    padding: 12px !important;
+  }
+
+  /* Email address truncation */
+  .font-medium.text-sm.truncate {
+    max-width: 200px;
+  }
+}
+
+/* Smooth transitions for mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a {
+    touch-action: manipulation;
+  }
+}

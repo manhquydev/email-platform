@@ -74,9 +74,9 @@ export function AdminPanel({ token }: { token: string }) {
     const [activeTab, setActiveTab] = useState<TabType>("dashboard");
 
     return (
-        <div className="h-screen flex bg-bg">
+        <div className="h-screen flex bg-bg admin-layout">
             {/* Sidebar */}
-            <div className="w-60 bg-surface border-r border-border flex flex-col">
+            <div className="w-60 bg-surface border-r border-border flex flex-col admin-sidebar">
                 {/* Header */}
                 <div className="h-16 px-5 flex items-center border-b border-border">
                     <div className="flex items-center gap-3">

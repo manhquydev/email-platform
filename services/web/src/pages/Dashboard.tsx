@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { api, PAGE_SIZE } from "../utils/api";
@@ -6,15 +6,17 @@ import { parseSearchQuery } from "../utils/searchParser";
 import { Sidebar } from "../components/Sidebar";
 import { MessageList } from "../components/MessageList";
 import { MessageDetail } from "../components/MessageDetail";
-import { ComposeModal } from "../components/ComposeModal";
 import { Loading } from "../components/Loading";
-import { KeyboardShortcutsHelp } from "../components/KeyboardShortcutsHelp";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { CategoryTabs, useCategoryFilter } from "../components/CategoryTabs";
 import { useConversationMode } from "../components/ConversationView";
 import { MobileNavigation } from "../components/MobileNavigation";
 import { AppHeader } from "../components/AppHeader";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
+
+// Lazy load heavy modal components
+const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
+const KeyboardShortcutsHelp = lazy(() => import("../components/KeyboardShortcutsHelp").then(m => ({ default: m.KeyboardShortcutsHelp })));
 
 export function Dashboard() {
     const { token, user, logout } = useAuth();
@@ -548,15 +550,19 @@ export function Dashboard() {
 
                 {/* Modals */}
                 {showCompose && (
-                    <ComposeModal
-                        token={token}
-                        inboxes={inboxes}
-                        onClose={() => setShowCompose(false)}
-                    />
+                    <Suspense fallback={<Loading />}>
+                        <ComposeModal
+                            token={token}
+                            inboxes={inboxes}
+                            onClose={() => setShowCompose(false)}
+                        />
+                    </Suspense>
                 )}
 
                 {showKeyboardHelp && (
-                    <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
+                    <Suspense fallback={null}>
+                        <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
+                    </Suspense>
                 )}
 
                 {busy && !messages.length && <Loading fullScreen />}

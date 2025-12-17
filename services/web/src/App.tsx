@@ -1,14 +1,19 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { Suspense, lazy } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LandingPage } from "./pages/LandingPage";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { VerifyEmail } from "./pages/VerifyEmail";
-import { Dashboard } from "./pages/Dashboard";
-import { Admin } from "./pages/Admin";
 import { MainLayout } from "./layouts/MainLayout";
+import { Loading } from "./components/Loading";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+
+// Lazy load heavy components
+const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
+const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
 
 function App() {
   return (
@@ -16,24 +21,28 @@ function App() {
       <AuthProvider>
         <Toaster position="top-right" />
         <BrowserRouter>
-          <Routes>
-            {/* Public marketing page */}
-            <Route path="/" element={<LandingPage />} />
+          <ErrorBoundary>
+            <Suspense fallback={<Loading fullScreen />}>
+              <Routes>
+                {/* Public marketing page */}
+                <Route path="/" element={<LandingPage />} />
 
-            {/* Auth routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
+                {/* Auth routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
 
-            {/* Protected app routes */}
-            <Route element={<MainLayout />}>
-              <Route path="/app" element={<Dashboard />} />
-              <Route path="/admin" element={<Admin />} />
-            </Route>
+                {/* Protected app routes */}
+                <Route element={<MainLayout />}>
+                  <Route path="/app" element={<Dashboard />} />
+                  <Route path="/admin" element={<Admin />} />
+                </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
@@ -41,4 +50,3 @@ function App() {
 }
 
 export default App;
-

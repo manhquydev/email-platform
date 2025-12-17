@@ -97,15 +97,15 @@ export function AdminPanel({ token }: { token: string }) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-150 ${activeTab === tab.id
+                                className={`w-full flex items-center px-3 py-2 rounded-md text-sm transition-all duration-150 ${activeTab === tab.id
                                     ? "bg-primary text-white shadow-sm"
                                     : "text-text-main hover:bg-bg"
                                     }`}
                             >
-                                <span className={activeTab === tab.id ? "text-white" : "text-muted"}>
+                                <span className={`w-5 flex-shrink-0 ${activeTab === tab.id ? "text-white" : "text-muted"}`}>
                                     {tab.icon}
                                 </span>
-                                {tab.label}
+                                <span className="ml-3">{tab.label}</span>
                             </button>
                         ))}
                     </div>

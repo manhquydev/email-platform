@@ -1,8 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import crypto from "crypto";
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
 import { prisma } from "../lib/prisma";
 import { verifyPassword, hashPassword } from "../utils/password";
+import { encrypt, decrypt } from "../utils/encryption";
 import { appConfig } from "../config";
 import { outboundService } from "../services/outbound";
 import { recordAudit } from "../utils/audit";
@@ -192,6 +195,18 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: "Email not verified. Please check your email." });
     }
 
+    // Check if account is disabled
+    if (user.isDisabled) {
+      return reply.status(403).send({ error: "Account is disabled. Contact administrator." });
+    }
+
+    // Check 2FA
+    if (user.twoFactorEnabled) {
+      // Return partial response - client needs to provide TOTP
+      const tempToken = app.jwt.sign({ userId: user.id, pending2FA: true } as any, { expiresIn: "5m" });
+      return { requires2FA: true, tempToken };
+    }
+
     const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
 
     await recordAudit(user.id, "LOGIN", { email: user.email, ip: request.ip });
@@ -220,6 +235,206 @@ export async function authRoutes(app: FastifyInstance) {
     });
 
     await recordAudit(userId, "PASSWORD_CHANGED", {});
+
+    return { ok: true };
+  });
+
+  // 2FA: Verify TOTP after login (strict rate limit to prevent brute force)
+  app.post("/auth/2fa/verify", {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: "5 minutes",
+        keyGenerator: (request) => {
+          // Rate limit by temp token to prevent user enumeration
+          const body = request.body as { tempToken?: string };
+          return body?.tempToken?.slice(0, 50) || request.ip;
+        },
+      },
+    },
+  }, async (request, reply) => {
+    const bodySchema = z.object({
+      tempToken: z.string(),
+      code: z.string().length(6),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const { tempToken, code } = parsed.data;
+
+    let decoded: { userId: string; pending2FA?: boolean };
+    try {
+      decoded = app.jwt.verify(tempToken) as { userId: string; pending2FA?: boolean };
+    } catch {
+      return reply.status(401).send({ error: "Invalid or expired token" });
+    }
+
+    if (!decoded.pending2FA) {
+      return reply.status(400).send({ error: "Invalid 2FA flow" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user || !user.twoFactorSecret) {
+      return reply.status(401).send({ error: "Invalid user" });
+    }
+
+    // Decrypt TOTP secret
+    const decryptedSecret = decrypt(user.twoFactorSecret);
+
+    // Verify TOTP code
+    const isValid = authenticator.verify({ token: code, secret: decryptedSecret });
+
+    // Check backup codes if TOTP fails
+    if (!isValid) {
+      let backupIndex = -1;
+      for (let i = 0; i < user.twoFactorBackupCodes.length; i++) {
+        const isMatch = await verifyPassword(code, user.twoFactorBackupCodes[i]);
+        if (isMatch) {
+          backupIndex = i;
+          break;
+        }
+      }
+
+      if (backupIndex === -1) {
+        return reply.status(401).send({ error: "Invalid code" });
+      }
+
+      // Remove used backup code
+      const newBackupCodes = [...user.twoFactorBackupCodes];
+      newBackupCodes.splice(backupIndex, 1);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { twoFactorBackupCodes: newBackupCodes },
+      });
+    }
+
+    const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
+
+    await recordAudit(user.id, "LOGIN_2FA", { email: user.email, ip: request.ip });
+
+    return { token, user: { id: user.id, email: user.email, role: user.role } };
+  });
+
+  // 2FA: Setup - Generate secret and QR code
+  app.post("/auth/2fa/setup", { preHandler: app.authenticate }, async (request, reply) => {
+    const userId = (request.user as any).userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+
+    if (user.twoFactorEnabled) {
+      return reply.status(400).send({ error: "2FA is already enabled" });
+    }
+
+    // Generate secret
+    const secret = authenticator.generateSecret();
+    const otpauth = authenticator.keyuri(user.email, "Email Platform", secret);
+
+    // Generate QR code as data URL
+    const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
+
+    // Encrypt and store secret temporarily (not enabled yet)
+    const encryptedSecret = encrypt(secret);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: encryptedSecret },
+    });
+
+    return { secret, qrCode: qrCodeDataUrl };
+  });
+
+  // 2FA: Enable - Verify code and activate 2FA
+  app.post("/auth/2fa/enable", { preHandler: app.authenticate }, async (request, reply) => {
+    const bodySchema = z.object({
+      code: z.string().length(6),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const { code } = parsed.data;
+    const userId = (request.user as any).userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.twoFactorSecret) {
+      return reply.status(400).send({ error: "2FA setup not initiated" });
+    }
+
+    if (user.twoFactorEnabled) {
+      return reply.status(400).send({ error: "2FA is already enabled" });
+    }
+
+    // Verify provided code (decrypt secret first)
+    const decryptedSecret = decrypt(user.twoFactorSecret);
+    const isValid = authenticator.verify({ token: code, secret: decryptedSecret });
+    if (!isValid) {
+      return reply.status(400).send({ error: "Invalid verification code" });
+    }
+
+    // Generate backup codes (use bcrypt for security)
+    const backupCodes: string[] = [];
+    const hashedBackupCodes: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      const code = crypto.randomBytes(4).toString("hex").toUpperCase();
+      backupCodes.push(code);
+      hashedBackupCodes.push(await hashPassword(code));
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorBackupCodes: hashedBackupCodes,
+      },
+    });
+
+    await recordAudit(userId, "2FA_ENABLED", {});
+
+    return { ok: true, backupCodes };
+  });
+
+  // 2FA: Disable
+  app.post("/auth/2fa/disable", { preHandler: app.authenticate }, async (request, reply) => {
+    const bodySchema = z.object({
+      password: z.string().min(6),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const { password } = parsed.data;
+    const userId = (request.user as any).userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+
+    // Verify password before disabling 2FA
+    const ok = await verifyPassword(password, user.passwordHash);
+    if (!ok) {
+      return reply.status(401).send({ error: "Invalid password" });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        twoFactorBackupCodes: [],
+      },
+    });
+
+    await recordAudit(userId, "2FA_DISABLED", {});
 
     return { ok: true };
   });

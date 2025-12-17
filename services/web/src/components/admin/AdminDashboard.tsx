@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../../utils/api";
 import toast from "react-hot-toast";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
 interface Stats {
     totalUsers: number;
@@ -12,6 +13,13 @@ interface Stats {
     openReports: number;
 }
 
+interface TimeSeriesData {
+    date: string;
+    emails: number;
+    users: number;
+    inboxes: number;
+}
+
 interface StatCard {
     label: string;
     value: number | string;
@@ -21,17 +29,23 @@ interface StatCard {
 }
 
 const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
+const CHART_COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#0ea5e9"];
 
 export function AdminDashboard({ token }: { token: string }) {
     const [stats, setStats] = useState<Stats | null>(null);
+    const [timeseries, setTimeseries] = useState<TimeSeriesData[]>([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const loadStats = useCallback(async (showToast = false) => {
         try {
-            const res = await api<{ stats: Stats }>("/admin/stats", { token });
-            setStats(res.stats);
+            const [statsRes, timeseriesRes] = await Promise.all([
+                api<{ stats: Stats }>("/admin/stats", { token }),
+                api<{ data: TimeSeriesData[] }>("/admin/stats/timeseries", { token })
+            ]);
+            setStats(statsRes.stats);
+            setTimeseries(timeseriesRes.data);
             setLastUpdated(new Date());
             if (showToast) toast.success("Đã cập nhật thống kê");
         } catch (err) {
@@ -174,6 +188,111 @@ export function AdminDashboard({ token }: { token: string }) {
                         <div className="text-xs text-muted mt-1">{card.label}</div>
                     </div>
                 ))}
+            </div>
+
+            {/* Charts Section */}
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Email Activity Chart - 7 days */}
+                <div className="lg:col-span-2 bg-surface border border-border rounded-lg p-5">
+                    <h3 className="text-sm font-medium mb-4">Hoạt động email (7 ngày)</h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={timeseries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorEmails" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                                <XAxis
+                                    dataKey="date"
+                                    tick={{ fontSize: 11 }}
+                                    tickFormatter={(val) => new Date(val).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                                    stroke="var(--color-text-muted)"
+                                />
+                                <YAxis tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                                <Tooltip
+                                    contentStyle={{
+                                        background: 'var(--color-surface)',
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: '8px',
+                                        fontSize: '12px'
+                                    }}
+                                    labelFormatter={(val) => new Date(val).toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="emails"
+                                    stroke="#6366f1"
+                                    strokeWidth={2}
+                                    fillOpacity={1}
+                                    fill="url(#colorEmails)"
+                                    name="Email nhận được"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Domain Status Pie Chart */}
+                <div className="bg-surface border border-border rounded-lg p-5">
+                    <h3 className="text-sm font-medium mb-4">Trạng thái tên miền</h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: 'Đã xác thực', value: stats.verifiedDomains },
+                                        { name: 'Chờ xác thực', value: stats.totalDomains - stats.verifiedDomains },
+                                    ]}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={50}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                                    labelLine={false}
+                                >
+                                    <Cell fill={CHART_COLORS[1]} />
+                                    <Cell fill={CHART_COLORS[2]} />
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
+            {/* Activity Bar Chart */}
+            <div className="mt-4 bg-surface border border-border rounded-lg p-5">
+                <h3 className="text-sm font-medium mb-4">Hoạt động theo ngày</h3>
+                <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={timeseries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                            <XAxis
+                                dataKey="date"
+                                tick={{ fontSize: 11 }}
+                                tickFormatter={(val) => new Date(val).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                                stroke="var(--color-text-muted)"
+                            />
+                            <YAxis tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                            <Tooltip
+                                contentStyle={{
+                                    background: 'var(--color-surface)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '8px',
+                                    fontSize: '12px'
+                                }}
+                            />
+                            <Bar dataKey="emails" fill="#6366f1" radius={[4, 4, 0, 0]} name="Email" />
+                            <Bar dataKey="users" fill="#22c55e" radius={[4, 4, 0, 0]} name="Users" />
+                            <Bar dataKey="inboxes" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Inboxes" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
 
             {/* Quick Actions */}

@@ -44,6 +44,10 @@ model User {
   emailVerified DateTime?
   verificationToken String?
   verificationTokenExpiresAt DateTime?
+  isDisabled   Boolean  @default(false)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?  // encrypted TOTP secret
+  twoFactorBackupCodes String[] // array of hashed backup codes
   createdAt    DateTime @default(now())
   auditLogs    AuditLog[]
   domains      Domain[]

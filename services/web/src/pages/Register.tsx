@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,12 +59,17 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
 export function Register() {
     const [busy, setBusy] = useState(false);
     const [passwordValue, setPasswordValue] = useState('');
-    const navigate = useNavigate();
+    const [registered, setRegistered] = useState(false);
     const { token } = useAuth();
 
     // Redirect if already logged in
     if (token) {
-        navigate("/app");
+        return <Navigate to="/app" replace />;
+    }
+
+    // Redirect after successful registration
+    if (registered) {
+        return <Navigate to="/login" replace />;
     }
 
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
@@ -79,7 +84,7 @@ export function Register() {
                 body: { email: data.email, password: data.password },
             });
             toast.success(res.message || "Đăng ký thành công! Vui lòng kiểm tra email.");
-            navigate("/login");
+            setRegistered(true);
         } catch (e) {
             toast.error((e as Error).toString());
         } finally {

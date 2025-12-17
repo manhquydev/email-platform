@@ -7,6 +7,7 @@ import { appConfig } from "../config";
 import { storageService } from "../services/storage";
 import { promises as fs } from "fs";
 import { recordAudit } from "../utils/audit";
+import Mailbuild from "mailbuild";
 
 export const messageRoutes = async (app: FastifyInstance) => {
   app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
@@ -173,6 +174,41 @@ export const messageRoutes = async (app: FastifyInstance) => {
     return { data: messages, meta: { total } };
   });
 
+  // Fuzzy search using pg_trgm similarity ranking
+  app.get("/messages/search/fuzzy", { preHandler: app.authenticate }, async (request, reply) => {
+    const query = z
+      .object({
+        q: z.string().min(1),
+        limit: z.coerce.number().min(1).max(100).optional(),
+        threshold: z.coerce.number().min(0).max(1).optional(),
+      })
+      .safeParse(request.query);
+    if (!query.success) {
+      return reply.status(400).send({ error: "Search query required" });
+    }
+
+    const { q, limit = 20, threshold = 0.3 } = query.data;
+
+    // Use raw SQL for pg_trgm similarity search
+    const messages = await prisma.$queryRaw`
+      SELECT m.*, 
+             GREATEST(
+               COALESCE(similarity(m.subject, ${q}), 0),
+               COALESCE(similarity(m."textBody", ${q}), 0)
+             ) as relevance
+      FROM "Message" m
+      WHERE m."deletedAt" IS NULL
+        AND (
+          similarity(m.subject, ${q}) > ${threshold}
+          OR similarity(m."textBody", ${q}) > ${threshold}
+        )
+      ORDER BY relevance DESC
+      LIMIT ${limit}
+    `;
+
+    return { data: messages, meta: { query: q, threshold } };
+  });
+
   app.get("/messages/:id", { preHandler: app.authenticate }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
@@ -302,5 +338,82 @@ export const messageRoutes = async (app: FastifyInstance) => {
       request.log.error(e);
       return reply.status(404).send("File not found");
     }
+  });
+
+  // Export message as .eml file
+  app.get("/messages/:id/export", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid request" });
+    }
+
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: { include: { domain: true } }, attachments: { where: { deletedAt: null } } },
+    });
+
+    if (!message) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    // Build RFC 5322 email using mailbuild
+    const mail = new Mailbuild("multipart/mixed");
+
+    mail.setHeader("Message-ID", message.messageId || `<${message.id}@${message.inbox.domain.name}>`);
+    mail.setHeader("Date", message.receivedAt.toUTCString());
+    mail.setHeader("From", message.fromAddress || "unknown@unknown");
+    mail.setHeader("To", message.toAddress || `${message.inbox.localPart}@${message.inbox.domain.name}`);
+    mail.setHeader("Subject", message.subject || "(no subject)");
+
+    // Add text body
+    if (message.textBody) {
+      const textPart = mail.appendChild();
+      textPart.setHeader("Content-Type", "text/plain; charset=utf-8");
+      textPart.setContent(message.textBody);
+    }
+
+    // Add HTML body if exists
+    if (message.htmlBody) {
+      const htmlPart = mail.appendChild();
+      htmlPart.setHeader("Content-Type", "text/html; charset=utf-8");
+      htmlPart.setContent(message.htmlBody);
+    }
+
+    // Add attachments
+    for (const attachment of message.attachments) {
+      try {
+        const streamOrBlob = await storageService.getReadStream(attachment.storageKey);
+        let content: string;
+
+        if (streamOrBlob instanceof Blob) {
+          // Handle Blob (rare case)
+          const buffer = Buffer.from(await streamOrBlob.arrayBuffer());
+          content = buffer.toString("base64");
+        } else {
+          // Handle Readable stream
+          const chunks: Buffer[] = [];
+          for await (const chunk of streamOrBlob) {
+            chunks.push(Buffer.from(chunk));
+          }
+          content = Buffer.concat(chunks).toString("base64");
+        }
+
+        const attPart = mail.appendChild();
+        attPart.setHeader("Content-Type", attachment.mimeType || "application/octet-stream");
+        attPart.setHeader("Content-Transfer-Encoding", "base64");
+        attPart.setHeader("Content-Disposition", `attachment; filename="${attachment.filename}"`);
+        attPart.setContent(content);
+      } catch (err) {
+        request.log.warn({ attachmentId: attachment.id, err }, "Failed to include attachment in export");
+      }
+    }
+
+    const emlContent = mail.build();
+    const filename = `email_${message.id.slice(0, 8)}.eml`;
+
+    reply.header("Content-Type", "message/rfc822");
+    reply.header("Content-Disposition", `attachment; filename="${filename}"`);
+
+    return reply.send(emlContent);
   });
 }

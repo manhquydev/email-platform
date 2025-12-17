@@ -38,6 +38,63 @@ export async function adminRoutes(app: FastifyInstance) {
         };
     });
 
+    // Time-series stats for dashboard charts (last 7 days)
+    app.get("/admin/stats/timeseries", { preHandler: app.requireAdmin }, async () => {
+        const days = 7;
+        const now = new Date();
+        const startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - days);
+        startDate.setHours(0, 0, 0, 0);
+
+        // Get daily counts using raw queries for efficiency
+        const dailyMessages = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
+            SELECT DATE("createdAt") as date, COUNT(*) as count
+            FROM "Message"
+            WHERE "createdAt" >= ${startDate}
+            AND "deletedAt" IS NULL
+            GROUP BY DATE("createdAt")
+            ORDER BY date ASC
+        `;
+
+        const dailyUsers = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
+            SELECT DATE("createdAt") as date, COUNT(*) as count
+            FROM "User"
+            WHERE "createdAt" >= ${startDate}
+            GROUP BY DATE("createdAt")
+            ORDER BY date ASC
+        `;
+
+        const dailyInboxes = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
+            SELECT DATE("createdAt") as date, COUNT(*) as count
+            FROM "Inbox"
+            WHERE "createdAt" >= ${startDate}
+            AND "deletedAt" IS NULL
+            GROUP BY DATE("createdAt")
+            ORDER BY date ASC
+        `;
+
+        // Build complete date range with 0s for missing days
+        const result = [];
+        for (let i = 0; i < days; i++) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i);
+            const dateStr = date.toISOString().split("T")[0];
+
+            const messages = dailyMessages.find(d => d.date.toString().startsWith(dateStr));
+            const users = dailyUsers.find(d => d.date.toString().startsWith(dateStr));
+            const inboxes = dailyInboxes.find(d => d.date.toString().startsWith(dateStr));
+
+            result.push({
+                date: dateStr,
+                emails: Number(messages?.count ?? 0),
+                users: Number(users?.count ?? 0),
+                inboxes: Number(inboxes?.count ?? 0),
+            });
+        }
+
+        return { data: result };
+    });
+
     // List Users with pagination
     app.get("/admin/users", { preHandler: app.requireAdmin }, async (request, reply) => {
         const query = z
@@ -86,12 +143,13 @@ export async function adminRoutes(app: FastifyInstance) {
         return { data: users, meta: { total } };
     });
 
-    // Update User (role, etc.)
+    // Update User (role, status, etc.)
     app.patch("/admin/users/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
         const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
         const body = z
             .object({
                 role: z.nativeEnum(UserRole).optional(),
+                isDisabled: z.boolean().optional(),
             })
             .safeParse(request.body);
 
@@ -104,6 +162,12 @@ export async function adminRoutes(app: FastifyInstance) {
             return reply.status(404).send({ error: "User not found" });
         }
 
+        // Prevent disabling self
+        const adminId = (request.user as any)?.userId;
+        if (body.data.isDisabled && params.data.id === adminId) {
+            return reply.status(400).send({ error: "Cannot disable your own account" });
+        }
+
         const updated = await prisma.user.update({
             where: { id: params.data.id },
             data: body.data,
@@ -113,13 +177,99 @@ export async function adminRoutes(app: FastifyInstance) {
                 role: true,
                 emailVerified: true,
                 createdAt: true,
+                isDisabled: true,
+            }
+        });
+
+        await recordAudit(
+            adminId ?? null,
+            "USER_UPDATED",
+            { targetUserId: params.data.id, changes: body.data }
+        );
+
+        return { user: updated };
+    });
+
+    // Delete User
+    app.delete("/admin/users/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+
+        if (!params.success) {
+            return reply.status(400).send({ error: "Invalid user ID" });
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: params.data.id } });
+        if (!user) {
+            return reply.status(404).send({ error: "User not found" });
+        }
+
+        // Prevent deleting self
+        const adminId = (request.user as any)?.userId;
+        if (params.data.id === adminId) {
+            return reply.status(400).send({ error: "Cannot delete your own account" });
+        }
+
+        // Cascade delete: domains, inboxes, messages
+        await prisma.$transaction(async (tx) => {
+            // Delete user's messages
+            await tx.message.deleteMany({
+                where: { inbox: { domain: { ownerId: params.data.id } } }
+            });
+            // Delete user's inboxes
+            await tx.inbox.deleteMany({
+                where: { domain: { ownerId: params.data.id } }
+            });
+            // Delete user's domains
+            await tx.domain.deleteMany({
+                where: { ownerId: params.data.id }
+            });
+            // Delete user
+            await tx.user.delete({ where: { id: params.data.id } });
+        });
+
+        await recordAudit(
+            adminId ?? null,
+            "USER_DELETED",
+            { targetUserId: params.data.id, email: user.email }
+        );
+
+        return { success: true };
+    });
+
+    // Force verify user email
+    app.post("/admin/users/:id/verify", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+
+        if (!params.success) {
+            return reply.status(400).send({ error: "Invalid user ID" });
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: params.data.id } });
+        if (!user) {
+            return reply.status(404).send({ error: "User not found" });
+        }
+
+        if (user.emailVerified) {
+            return reply.status(400).send({ error: "User already verified" });
+        }
+
+        const updated = await prisma.user.update({
+            where: { id: params.data.id },
+            data: {
+                emailVerified: new Date(),
+                verificationToken: null
+            },
+            select: {
+                id: true,
+                email: true,
+                emailVerified: true,
             }
         });
 
         await recordAudit(
             (request.user as any)?.userId ?? null,
-            "USER_UPDATED",
-            { targetUserId: params.data.id, changes: body.data }
+            "USER_FORCE_VERIFIED",
+            { targetUserId: params.data.id }
         );
 
         return { user: updated };

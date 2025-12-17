@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 // Feature data
 const features = [
@@ -60,8 +61,14 @@ const steps = [
 ];
 
 export function LandingPage() {
+    const { token } = useAuth();
     const [emailDemo, setEmailDemo] = useState("user");
     const [copied, setCopied] = useState(false);
+
+    // Redirect authenticated users to app
+    if (token) {
+        return <Navigate to="/app" replace />;
+    }
 
     // Animated email demo
     useEffect(() => {

@@ -12,6 +12,7 @@ import { generateToken } from './utils/token';
 import { storageService } from './services/storage';
 import { checkSpam, shouldRejectEmail, formatSpamSymbols } from './services/spamFilter';
 import { scanBuffer, hasVirus, getDetectedViruses } from './services/virusScanner';
+import { spamFilterService } from './services/spamFilterService';
 import { syncMessageToMaildir } from './services/maildirSync';
 import { processFiltersForMessage } from './services/emailFilters';
 
@@ -213,17 +214,51 @@ export const setupEmailWorker = (logger: Logger) => {
                     throw new Error("Domain quota exceeded");
                 }
 
-                // Spam check using Rspamd
-                const spamResult = await checkSpam(rawContent, sourceIp);
-                logger.info({
-                    spamScore: spamResult.score,
-                    action: spamResult.action,
-                    symbols: formatSpamSymbols(spamResult)
-                }, 'spam check result');
+                // Spam check using enhanced filter with Rspamd and ClamAV
+                const attachmentsForScanning = mail.attachments?.map(a => ({
+                    filename: a.filename || 'attachment.bin',
+                    data: a.content || Buffer.alloc(0),
+                    mimeType: a.contentType || 'application/octet-stream'
+                })) || [];
 
-                if (shouldRejectEmail(spamResult)) {
-                    logger.warn({ spamResult }, 'Rejecting spam email');
-                    throw new Error(`Email rejected as spam (score: ${spamResult.score})`);
+                const enhancedSpamResult = await spamFilterService.checkEmail(
+                    fromAddress || '',
+                    recipients,
+                    mail.subject || '',
+                    textBody,
+                    htmlBody,
+                    attachmentsForScanning
+                );
+
+                // Also run basic spam check for additional validation
+                const basicSpamResult = await checkSpam(rawContent, sourceIp);
+
+                // Combine scores - use the higher one
+                const finalSpamScore = Math.max(enhancedSpamResult.score, basicSpamResult.score);
+                const isSpam = enhancedSpamResult.isSpam || basicSpamResult.action === 'reject' || shouldRejectEmail(basicSpamResult);
+
+                logger.info({
+                    enhancedSpamScore: enhancedSpamResult.score,
+                    basicSpamScore: basicSpamResult.score,
+                    finalSpamScore,
+                    virusDetected: enhancedSpamResult.virusDetected,
+                    virusName: enhancedSpamResult.virusName,
+                    rspamdSymbols: enhancedSpamResult.symbols,
+                    basicSymbols: formatSpamSymbols(basicSpamResult)
+                }, 'enhanced spam check result');
+
+                if (isSpam || enhancedSpamResult.virusDetected) {
+                    const rejectReason = enhancedSpamResult.virusDetected
+                        ? `Virus detected: ${enhancedSpamResult.virusName}`
+                        : `Email rejected as spam (score: ${finalSpamScore})`;
+
+                    logger.warn({
+                        spamResult: enhancedSpamResult,
+                        basicResult: basicSpamResult,
+                        finalScore: finalSpamScore
+                    }, rejectReason);
+
+                    throw new Error(rejectReason);
                 }
 
                 const message = await prisma.message.create({
@@ -237,7 +272,7 @@ export const setupEmailWorker = (logger: Logger) => {
                         textBody,
                         htmlBody,
                         headers: headersToObject(mail.headers as Map<string, string | string[] | undefined>),
-                        spamScore: spamResult.score,
+                        spamScore: finalSpamScore,
                         size: rawContent.length,
                         sourceIp,
                     },

@@ -1,0 +1,18 @@
+{
+    "exit_code":  2,
+    "timestamp":  "2025-12-18T22:39:29Z",
+    "remediation":  {
+                        "pip_retry":  ".\\.claude\\skills\\.venv\\Scripts\\Activate.ps1; pip install \u003cpackage\u003e",
+                        "build_tools":  "https://visualstudio.microsoft.com/visual-cpp-build-tools/",
+                        "winget_packages":  "winget install Gyan.FFmpeg ImageMagick.ImageMagick"
+                    },
+    "optional_failures":  [
+                              "ai-multimodal:docx2pdf\u003e=0.1.8  # Windows only, optional on Linux/macOS: Package install failed"
+                          ],
+    "skipped":  [
+
+                ],
+    "critical_failures":  [
+
+                          ]
+}

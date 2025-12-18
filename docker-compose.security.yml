@@ -1,0 +1,100 @@
+# Docker Compose for Security Services (Rspamd & ClamAV)
+# Run with: docker-compose -f docker-compose.yml -f docker-compose.security.yml up -d
+
+version: '3.8'
+
+services:
+  # ClamAV Anti-virus
+  clamav:
+    image: clamav/clamav:latest
+    container_name: tempmail-clamav
+    restart: unless-stopped
+    environment:
+      - CLAMAV_NO_FRESHCLAM=false
+      - CLAMAV_NO_CLAMD=false
+    volumes:
+      - clamav_data:/var/lib/clamav
+      - ./config/clamav:/etc/clamav:ro
+    networks:
+      - tempmail-network
+    healthcheck:
+      test: ["CMD", "clamdscan", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Rspamd Spam Filter
+  rspamd:
+    image: rspamd/rspamd:latest
+    container_name: tempmail-rspamd
+    restart: unless-stopped
+    environment:
+      - RSPAMD_DNS_ENABLE=1
+      - RSPAMD_PROXY_ENABLE=1
+      - RSPAMD_CONTROLLER_ENABLE=1
+      - RSPAMD_WORKER_CONTROLLER_PASSWORD=${RSPAMD_CONTROLLER_PASSWORD:-q1}
+    ports:
+      - "11333:11333"  # Rspamd normal port
+      - "11334:11334"  # Rspamd controller port
+    volumes:
+      - rspamd_data:/var/lib/rspamd
+      - rspamd_etc:/etc/rspamd
+      - ./config/rspamd:/etc/rspamd/override.d:ro
+    depends_on:
+      - clamav
+    networks:
+      - tempmail-network
+    healthcheck:
+      test: ["CMD", "rspamadm", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for Rspamd caching
+  rspamd-redis:
+    image: redis:7-alpine
+    container_name: tempmail-rspamd-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - rspamd_redis_data:/data
+    networks:
+      - tempmail-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Update API with security environment variables
+  api:
+    environment:
+      # Security services
+      RSPAMD_ENABLED: "true"
+      RSPAMD_HOST: "rspamd"
+      RSPAMD_PORT: "11333"
+      RSPAMD_CONTROLLER_PASSWORD: ${RSPAMD_CONTROLLER_PASSWORD:-q1}
+      CLAMAV_ENABLED: "true"
+      CLAMAV_SOCKET: "/tmp/clamd.sock"
+    volumes:
+      # Mount ClamAV socket
+      - clamav_socket:/tmp:rw
+    depends_on:
+      - rspamd
+      - clamav
+
+volumes:
+  clamav_data:
+    driver: local
+  clamav_socket:
+    driver: local
+  rspamd_data:
+    driver: local
+  rspamd_etc:
+    driver: local
+  rspamd_redis_data:
+    driver: local
+
+networks:
+  tempmail-network:
+    external: true

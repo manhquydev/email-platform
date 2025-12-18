@@ -1,0 +1,142 @@
+# Docker Compose for Backup Services
+# Run with: docker-compose -f docker-compose.backup.yml up -d
+
+version: '3.8'
+
+services:
+  backup-scheduler:
+    image: alpine:3.18
+    container_name: tempmail-backup-scheduler
+    restart: unless-stopped
+    environment:
+      # Database configuration
+      DATABASE_URL: ${DATABASE_URL}
+      DB_NAME: email_service
+
+      # Backup configuration
+      BACKUP_DIR: /app/backups
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+
+      # Cloud storage (optional)
+      S3_BACKUP_BUCKET: ${S3_BACKUP_BUCKET:-}
+      GCS_BACKUP_BUCKET: ${GCS_BACKUP_BUCKET:-}
+
+      # Notifications (optional)
+      BACKUP_NOTIFICATION_WEBHOOK: ${BACKUP_NOTIFICATION_WEBHOOK:-}
+
+      # Schedule (cron format)
+      DATABASE_BACKUP_SCHEDULE: ${DATABASE_BACKUP_SCHEDULE:-0 2 * * *}
+      STORAGE_BACKUP_SCHEDULE: ${STORAGE_BACKUP_SCHEDULE:-0 3 * * *}
+
+    volumes:
+      - ./backups:/app/backups:rw
+      - ./scripts:/app/scripts:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    command: >
+      sh -c "
+        apk add --no-cache
+          postgresql-client
+          tar
+          coreutils
+          curl
+          aws-cli
+          bc
+        &&
+        chmod +x /app/scripts/*.sh &&
+
+        # Install cron
+        apk add --no-cache dcron &&
+
+        # Initialize cron
+        crond -f &
+
+        # Add cron jobs
+        echo '${DATABASE_BACKUP_SCHEDULE} /app/scripts/backup-database.sh >> /var/log/backup.log 2>&1' >> /etc/crontabs/root &&
+        echo '${STORAGE_BACKUP_SCHEDULE} /app/scripts/backup-storage.sh >> /var/log/backup.log 2>&1' >> /etc/crontabs/root &&
+
+        # Add health check backup (daily at 6 AM)
+        echo '0 6 * * * /app/scripts/backup-database.sh health_check_$(date +\\%Y\\%m\\%d_\\%H\\%M\\%S) >> /var/log/backup.log 2>&1' >> /etc/crontabs/root &&
+
+        # Create log directory
+        mkdir -p /var/log &&
+
+        # Run cron in foreground
+        exec crond -f -l 8
+      "
+
+    networks:
+      - tempmail-network
+
+  # Monitoring for backups
+  prometheus-backup-exporter:
+    image: alpine:3.18
+    container_name: tempmail-backup-exporter
+    restart: unless-stopped
+    environment:
+      BACKUP_DIR: /app/backups
+    volumes:
+      - ./backups:/app/backups:ro
+    ports:
+      - "9180:9180"
+    command: >
+      sh -c "
+        apk add --no-cache python3 py3-pip &&
+        pip3 install prometheus_client &&
+
+        cat > /app/exporter.py << 'EOF'
+        import prometheus_client
+        import os
+        import json
+        import time
+        from datetime import datetime
+
+        # Metrics
+        BACKUP_SIZE = prometheus_client.Gauge('tempmail_backup_size_bytes', 'Size of latest backup', ['type'])
+        BACKUP_COUNT = prometheus_client.Gauge('tempmail_backup_count', 'Number of backups', ['type'])
+        BACKUP_AGE = prometheus_client.Gauge('tempmail_backup_age_seconds', 'Age of latest backup in seconds', ['type'])
+        BACKUP_SUCCESS = prometheus_client.Gauge('tempmail_backup_last_success_timestamp', 'Last successful backup timestamp', ['type'])
+
+        def collect_backups():
+            backup_dir = '/app/backups'
+
+            # Database backups
+            db_backups = [f for f in os.listdir(backup_dir) if f.startswith('backup_') and f.endswith('.sql')]
+            BACKUP_COUNT.labels(type='database').set(len(db_backups))
+
+            if db_backups:
+                latest_db = sorted(db_backups)[-1]
+                db_path = os.path.join(backup_dir, latest_db)
+                BACKUP_SIZE.labels(type='database').set(os.path.getsize(db_path))
+                mtime = os.path.getmtime(db_path)
+                BACKUP_AGE.labels(type='database').set(time.time() - mtime)
+                BACKUP_SUCCESS.labels(type='database').set(mtime)
+
+            # Storage backups
+            storage_backups = [f for f in os.listdir(backup_dir) if f.startswith('storage_backup_') and f.endswith('.tar.gz')]
+            BACKUP_COUNT.labels(type='storage').set(len(storage_backups))
+
+            if storage_backups:
+                latest_storage = sorted(storage_backups)[-1]
+                storage_path = os.path.join(backup_dir, latest_storage)
+                BACKUP_SIZE.labels(type='storage').set(os.path.getsize(storage_path))
+                mtime = os.path.getmtime(storage_path)
+                BACKUP_AGE.labels(type='storage').set(time.time() - mtime)
+                BACKUP_SUCCESS.labels(type='storage').set(mtime)
+
+        if __name__ == '__main__':
+            prometheus_client.start_http_server(9180)
+            while True:
+                collect_backups()
+                time.sleep(60)
+        EOF
+
+        python3 /app/exporter.py
+      "
+
+    networks:
+      - tempmail-network
+
+networks:
+  tempmail-network:
+    external: true

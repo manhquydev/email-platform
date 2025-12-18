@@ -120,6 +120,17 @@ model Message {
   isRead       Boolean        @default(false)
   isPinned     Boolean        @default(false)
   snoozedUntil DateTime?
+  // Bounce and complaint tracking
+  bounced      Boolean        @default(false)
+  bouncedAt    DateTime?
+  bounceReason String?
+  complained   Boolean        @default(false)
+  complainedAt DateTime?
+  rejected     Boolean        @default(false)
+  rejectedAt   DateTime?
+  rejectReason String?
+  delivered    Boolean        @default(false)
+  deliveredAt  DateTime?
   attachments  Attachment[]
   abuseReports AbuseReport[]
   labels       MessageLabel[]
@@ -128,6 +139,8 @@ model Message {
   @@index([sourceIp, receivedAt])
   @@index([deletedAt])
   @@index([isPinned])
+  @@index([bounced])
+  @@index([complained])
 }
 
 model Attachment {
@@ -155,12 +168,15 @@ model Rule {
   id        String    @id @default(uuid())
   type      RuleType
   scope     RuleScope
-  value     String
-  note      String?
+  field     String?   // e.g., 'FROM', 'TO', 'SUBJECT'
+  pattern   String
+  active    Boolean   @default(true)
+  reason    String?
   expiresAt DateTime?
   createdAt DateTime  @default(now())
 
-  @@index([scope, value])
+  @@index([scope, pattern])
+  @@index([active])
 }
 
 model AbuseReport {

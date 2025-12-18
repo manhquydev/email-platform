@@ -19,6 +19,7 @@ const lower = (values: string[]) => values.map((v) => v.toLowerCase());
 
 export const appConfig = {
   databaseUrl: required("DATABASE_URL"),
+  databaseReadUrl: process.env.DATABASE_READ_URL || process.env.DATABASE_URL, // Read replica URL
   jwtSecret: required("JWT_SECRET"),
   httpPort: Number(process.env.HTTP_PORT ?? 3001),
   smtpPort: Number(process.env.SMTP_PORT ?? 2525),

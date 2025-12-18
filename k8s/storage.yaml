@@ -1,0 +1,45 @@
+---
+# PersistentVolumeClaim for API storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: api-storage-pvc
+  labels:
+    app: tempmail
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+---
+# PersistentVolumeClaim for Redis
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  labels:
+    app: tempmail
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
+---
+# PersistentVolumeClaim for Maildir (Dovecot)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: maildir-pvc
+  labels:
+    app: tempmail
+spec:
+  accessModes:
+    - ReadWriteMany  # NFS or similar for shared access
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: nfs

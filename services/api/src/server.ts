@@ -15,6 +15,7 @@ import { abuseRoutes } from "./routes/abuse";
 import { publicRoutes } from "./routes/public";
 import { outboundRoutes } from "./routes/outbound";
 import { adminRoutes } from "./routes/admin";
+import { billingRoutes } from "./routes/billing";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -132,6 +133,7 @@ export const buildServer = () => {
   app.register(messageRoutes);
   app.register(abuseRoutes);
   app.register(adminRoutes);
+  app.register(billingRoutes);
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);
   }

@@ -299,6 +299,7 @@ function DomainsList({ token }: { token: string }) {
     const [loading, setLoading] = useState(true);
     const [verifyingId, setVerifyingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [togglingId, setTogglingId] = useState<string | null>(null);
 
     const loadDomains = useCallback(async () => {
         setLoading(true);
@@ -346,6 +347,23 @@ function DomainsList({ token }: { token: string }) {
     const copyToken = (val: string) => {
         navigator.clipboard.writeText(val);
         toast.success("Đã sao chép");
+    };
+
+    const handleTogglePublic = async (domainId: string, currentPublic: boolean) => {
+        setTogglingId(domainId);
+        try {
+            await api(`/domains/${domainId}`, {
+                method: "PATCH",
+                token,
+                body: { isPublic: !currentPublic }
+            });
+            toast.success(currentPublic ? "Đã chuyển sang riêng tư" : "Đã công khai cho tất cả");
+            await loadDomains();
+        } catch (err) {
+            toast.error((err as Error).message);
+        } finally {
+            setTogglingId(null);
+        }
     };
 
     if (loading) {
@@ -405,6 +423,7 @@ function DomainsList({ token }: { token: string }) {
                         <tr>
                             <th className="px-4 py-3 font-medium text-muted">Tên miền</th>
                             <th className="px-4 py-3 font-medium text-muted">Trạng thái</th>
+                            <th className="px-4 py-3 font-medium text-muted">Công khai</th>
                             <th className="px-4 py-3 font-medium text-muted">Chủ sở hữu</th>
                             <th className="px-4 py-3 font-medium text-muted">Ngày tạo</th>
                             <th className="px-4 py-3 font-medium text-muted w-32"></th>
@@ -419,6 +438,34 @@ function DomainsList({ token }: { token: string }) {
                                         }`}>
                                         {d.status === "VERIFIED" ? "Đã xác thực" : "Chờ xác thực"}
                                     </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                    <button
+                                        onClick={() => handleTogglePublic(d.id, d.isPublic)}
+                                        disabled={togglingId === d.id}
+                                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded cursor-pointer transition-colors ${d.isPublic
+                                                ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                            }`}
+                                    >
+                                        {togglingId === d.id ? (
+                                            <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></span>
+                                        ) : d.isPublic ? (
+                                            <>
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Public
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                                Private
+                                            </>
+                                        )}
+                                    </button>
                                 </td>
                                 <td className="px-4 py-3 text-muted">{d.owner?.email || "—"}</td>
                                 <td className="px-4 py-3 text-muted">{new Date(d.createdAt).toLocaleDateString("vi-VN")}</td>

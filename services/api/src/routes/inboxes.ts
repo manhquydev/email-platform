@@ -94,4 +94,41 @@ export async function inboxRoutes(app: FastifyInstance) {
 
     return { inbox };
   });
+
+  // DELETE inbox (soft delete)
+  app.delete("/inboxes/:id", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid ID" });
+    }
+
+    const inbox = await prisma.inbox.findUnique({
+      where: { id: params.data.id },
+      include: { domain: true },
+    });
+
+    if (!inbox || inbox.deletedAt) {
+      return reply.status(404).send({ error: "Inbox not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+
+    // Check permission: domain owner or admin
+    if (inbox.domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to delete this inbox" });
+    }
+
+    // Soft delete
+    await prisma.inbox.update({
+      where: { id: params.data.id },
+      data: { deletedAt: new Date() },
+    });
+
+    await recordAudit(user.userId, "INBOX_DELETED", {
+      inboxId: inbox.id,
+      email: `${inbox.localPart}@${inbox.domain.name}`,
+    });
+
+    return { success: true };
+  });
 }

@@ -10,6 +10,9 @@ import { evaluateRules } from './lib/rules';
 import { headersToObject } from './utils/headers';
 import { generateToken } from './utils/token';
 import { storageService } from './services/storage';
+import { checkSpam, shouldRejectEmail, formatSpamSymbols } from './services/spamFilter';
+import { scanBuffer, hasVirus, getDetectedViruses } from './services/virusScanner';
+import { syncMessageToMaildir } from './services/maildirSync';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -52,8 +55,32 @@ const ensureDomainAndInbox = async (address: string) => {
     return { domain, inbox };
 };
 
-const persistAttachments = async (messageId: string, inboxId: string, attachments: Attachment[]) => {
+const persistAttachments = async (messageId: string, inboxId: string, attachments: Attachment[], logger: Logger) => {
     const saved = [];
+
+    // Scan all attachments for viruses first
+    const attachmentsToScan = attachments.filter(a => a.content && a.content.length > 0).map(a => ({
+        id: a.checksum || a.filename || 'unknown',
+        buffer: a.content,
+        filename: a.filename ?? 'attachment.bin'
+    }));
+
+    if (attachmentsToScan.length > 0) {
+        const scanResults = await Promise.all(
+            attachmentsToScan.map(async ({ id, buffer, filename }) => ({
+                id,
+                filename,
+                result: await scanBuffer(buffer)
+            }))
+        );
+
+        if (hasVirus(scanResults)) {
+            const detected = getDetectedViruses(scanResults);
+            logger.warn({ detected }, 'Virus detected in attachments');
+            throw new Error(`Virus detected: ${detected.map(d => `${d.filename}: ${d.virus}`).join(', ')}`);
+        }
+    }
+
     for (const attachment of attachments ?? []) {
         if (attachment.size && attachment.size > appConfig.maxAttachmentBytes) {
             throw new Error(`Attachment too large: ${attachment.filename ?? "unknown"}`);
@@ -185,6 +212,19 @@ export const setupEmailWorker = (logger: Logger) => {
                     throw new Error("Domain quota exceeded");
                 }
 
+                // Spam check using Rspamd
+                const spamResult = await checkSpam(rawContent, sourceIp);
+                logger.info({
+                    spamScore: spamResult.score,
+                    action: spamResult.action,
+                    symbols: formatSpamSymbols(spamResult)
+                }, 'spam check result');
+
+                if (shouldRejectEmail(spamResult)) {
+                    logger.warn({ spamResult }, 'Rejecting spam email');
+                    throw new Error(`Email rejected as spam (score: ${spamResult.score})`);
+                }
+
                 const message = await prisma.message.create({
                     data: {
                         inboxId: inbox.id,
@@ -196,14 +236,29 @@ export const setupEmailWorker = (logger: Logger) => {
                         textBody,
                         htmlBody,
                         headers: headersToObject(mail.headers as Map<string, string | string[] | undefined>),
-                        spamScore: undefined,
+                        spamScore: spamResult.score,
                         size: rawContent.length,
                         sourceIp,
                     },
                 });
 
-                await persistAttachments(message.id, inbox.id, mail.attachments);
-                logger.info({ inboxId: inbox.id, messageId: message.id }, "stored inbound email via worker");
+                await persistAttachments(message.id, inbox.id, mail.attachments, logger);
+
+                // Sync message to Maildir for IMAP access
+                try {
+                    const messageWithRelations = await prisma.message.findUnique({
+                        where: { id: message.id },
+                        include: { inbox: { include: { domain: true } } },
+                    });
+                    if (messageWithRelations) {
+                        await syncMessageToMaildir(messageWithRelations as any);
+                        logger.info({ messageId: message.id }, 'synced message to Maildir');
+                    }
+                } catch (maildirErr) {
+                    logger.warn({ err: maildirErr }, 'failed to sync message to Maildir');
+                }
+
+                logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: spamResult.score }, "stored inbound email via worker");
 
                 // Clean up raw file
                 await fs.unlink(rawPath).catch(e => logger.warn({ err: e }, "failed to delete raw file"));

@@ -300,6 +300,26 @@ export function Dashboard() {
         }
     };
 
+    const deleteInbox = async (inboxId: string) => {
+        setBusy(true);
+        try {
+            await api(`/inboxes/${inboxId}`, { method: "DELETE", token });
+            toast.success("Đã xóa hộp thư");
+            // Remove from local state
+            setInboxes(prev => prev.filter(i => i.id !== inboxId));
+            // If this was the selected inbox, clear selection
+            if (selectedInbox === inboxId) {
+                setSelectedInbox("");
+                setMessages([]);
+                setSelectedMessage(null);
+            }
+        } catch (e) {
+            toast.error("Lỗi xóa hộp thư: " + (e as Error).message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
     const handleSelectMessage = async (msg: Message) => {
         setSelectedMessage(msg);
         setMobileView("detail"); // Go to detail on mobile
@@ -490,6 +510,7 @@ export function Dashboard() {
                         onCreateInbox={createInbox}
                         onVerifyDomain={verifyDomain}
                         onDeleteDomain={deleteDomain}
+                        onDeleteInbox={deleteInbox}
                         onLogout={logout}
                         isAdmin={isAdmin}
                         currentUserId={user?.id}

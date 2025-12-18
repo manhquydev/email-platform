@@ -36,6 +36,20 @@ enum AbuseReportStatus {
   CLOSED
 }
 
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -48,6 +62,12 @@ model User {
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret  String?  // encrypted TOTP secret
   twoFactorBackupCodes String[] // array of hashed backup codes
+  // Subscription fields
+  tier         SubscriptionTier @default(FREE)
+  stripeCustomerId String? @unique
+  stripeSubscriptionId String?
+  subscriptionStatus SubscriptionStatus @default(ACTIVE)
+  trialEndsAt  DateTime?
   createdAt    DateTime @default(now())
   auditLogs    AuditLog[]
   domains      Domain[]

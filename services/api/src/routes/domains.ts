@@ -73,15 +73,22 @@ export async function domainRoutes(app: FastifyInstance) {
     }
 
     // Create domain attached to current user
+    // If admin creates domain, make it public automatically
+    const isAdmin = user.role === "ADMIN";
     const domain = await prisma.domain.create({
       data: {
         name,
         verificationToken: generateToken(),
         ownerId: user.userId,
+        isPublic: isAdmin, // Admin-created domains are public by default
       }
     });
 
-    await recordAudit(user.userId, "DOMAIN_CREATED", { domainId: domain.id, name: domain.name });
+    await recordAudit(user.userId, "DOMAIN_CREATED", {
+      domainId: domain.id,
+      name: domain.name,
+      isPublic: isAdmin,
+    });
 
     return { domain };
   });
@@ -163,5 +170,53 @@ export async function domainRoutes(app: FastifyInstance) {
     await recordAudit(user.userId, "DOMAIN_DELETED", { domainId: params.data.id, name: domain.name });
 
     return { success: true };
+  });
+
+  // PATCH domain - update isPublic (admin only for isPublic)
+  app.patch("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z
+      .object({
+        isPublic: z.boolean().optional(),
+      })
+      .safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+
+    // Only admin can toggle isPublic
+    if (body.data.isPublic !== undefined && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Only admin can change domain visibility" });
+    }
+
+    // Check general permission (owner or admin)
+    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to update this domain" });
+    }
+
+    const updated = await prisma.domain.update({
+      where: { id: params.data.id },
+      data: {
+        ...(body.data.isPublic !== undefined ? { isPublic: body.data.isPublic } : {}),
+      },
+    });
+
+    if (body.data.isPublic !== undefined) {
+      await recordAudit(user.userId, "DOMAIN_VISIBILITY_CHANGED", {
+        domainId: domain.id,
+        name: domain.name,
+        isPublic: body.data.isPublic,
+      });
+    }
+
+    return { domain: updated };
   });
 }

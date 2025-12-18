@@ -7,6 +7,7 @@ import { LandingPage } from "./pages/LandingPage";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { VerifyEmail } from "./pages/VerifyEmail";
+import { TermsOfService, PrivacyPolicy, AcceptableUse } from "./pages/Legal";
 import { MainLayout } from "./layouts/MainLayout";
 import { Loading } from "./components/Loading";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -31,6 +32,11 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
+
+                {/* Legal pages */}
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/acceptable-use" element={<AcceptableUse />} />
 
                 {/* Protected app routes */}
                 <Route element={<MainLayout />}>

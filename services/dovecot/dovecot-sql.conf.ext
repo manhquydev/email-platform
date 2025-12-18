@@ -1,0 +1,41 @@
+# Dovecot SQL authentication configuration
+# This connects to the same PostgreSQL database as the API
+
+driver = pgsql
+connect = host=postgres dbname=email_service user=postgres password=%{env:POSTGRES_PASSWORD}
+
+# Password query - authenticate user by inbox address
+# Format: localpart@domain
+password_query = \
+  SELECT i."localPart" || '@' || d.name AS user, \
+         u."passwordHash" AS password, \
+         '/var/mail/' || d.name || '/' || i."localPart" AS userdb_home, \
+         'maildir:/var/mail/' || d.name || '/' || i."localPart" AS userdb_mail \
+  FROM "Inbox" i \
+  JOIN "Domain" d ON i."domainId" = d.id \
+  JOIN "User" u ON d."ownerId" = u.id \
+  WHERE i."localPart" || '@' || d.name = '%u' \
+    AND i."deletedAt" IS NULL \
+    AND d.status = 'VERIFIED' \
+    AND u."isDisabled" = false
+
+# User query - get mailbox location
+user_query = \
+  SELECT i."localPart" || '@' || d.name AS user, \
+         '/var/mail/' || d.name || '/' || i."localPart" AS home, \
+         'maildir:/var/mail/' || d.name || '/' || i."localPart" AS mail \
+  FROM "Inbox" i \
+  JOIN "Domain" d ON i."domainId" = d.id \
+  WHERE i."localPart" || '@' || d.name = '%u' \
+    AND i."deletedAt" IS NULL
+
+# Iteration query - list all users
+iterate_query = \
+  SELECT i."localPart" || '@' || d.name AS user \
+  FROM "Inbox" i \
+  JOIN "Domain" d ON i."domainId" = d.id \
+  WHERE i."deletedAt" IS NULL \
+    AND d.status = 'VERIFIED'
+
+# Default password scheme (bcrypt)
+default_pass_scheme = BLF-CRYPT

@@ -58,6 +58,7 @@ interface SidebarProps {
     onCreateInbox: (domainId: string, localPart: string, expiresAt?: number) => Promise<void>;
     onVerifyDomain: (domainId: string, token: string) => Promise<void>;
     onDeleteDomain: (domainId: string) => Promise<void>;
+    onDeleteInbox: (inboxId: string) => Promise<void>;
     onLogout: () => void;
     isAdmin: boolean;
     busy: boolean;
@@ -75,6 +76,7 @@ export function Sidebar({
     onCreateInbox,
     onVerifyDomain,
     onDeleteDomain,
+    onDeleteInbox,
     onLogout,
     isAdmin,
     busy
@@ -383,6 +385,24 @@ export function Sidebar({
                                 >
                                     {icons.copy}
                                 </button>
+                                {/* Delete button - visible on hover */}
+                                {isOwnerOrAdmin && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (confirm(`Xóa hộp thư ${fullEmail}?`)) {
+                                                onDeleteInbox(inbox.id);
+                                            }
+                                        }}
+                                        disabled={busy}
+                                        className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded text-muted hover:text-red-500 transition-all flex-shrink-0"
+                                        title="Xóa hộp thư"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                )}
                             </div>
                         );
                     })}

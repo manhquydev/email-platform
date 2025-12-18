@@ -124,7 +124,32 @@ services:
     # ports:
     #   - "25:25"
 
-
+    # ===================
+    # IMAP SERVER (Dovecot)
+    # ===================
+  dovecot:
+    build:
+      context: ./services/dovecot
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - maildir_data:/var/mail
+      - ./services/dovecot/dovecot.conf:/etc/dovecot/dovecot.conf:ro
+      - ./services/dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
+      - ./services/dovecot/conf.d:/etc/dovecot/conf.d:ro
+    ports:
+      - "143:143" # IMAP
+      - "993:993" # IMAPS
+    depends_on:
+      - postgres
+    networks:
+      - email_network
+    healthcheck:
+      test: [ "CMD", "doveadm", "service", "status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     # ===================
     # WEB FRONTEND
     # ===================
@@ -171,26 +196,37 @@ services:
     networks:
       - email_network
   # ===================
-  # ANTI-ABUSE (Optional)
+  # ANTI-ABUSE
   # ===================
-  # Uncomment để bật ClamAV virus scanning
-  # clamav:
-  #   image: clamav/clamav:latest
-  #   restart: unless-stopped
-  #   volumes:
-  #     - clamav_data:/var/lib/clamav
-  #   networks:
-  #     - email_network
+  # ClamAV virus scanning
+  clamav:
+    image: clamav/clamav:latest
+    restart: unless-stopped
+    volumes:
+      - clamav_data:/var/lib/clamav
+    networks:
+      - email_network
+    healthcheck:
+      test: [ "CMD", "clamdscan", "--version" ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
 
-  # Uncomment để bật Rspamd spam filtering
-  # rspamd:
-  #   image: rspamd/rspamd:latest
-  #   restart: unless-stopped
-  #   volumes:
-  #     - rspamd_data:/var/lib/rspamd
-  #   networks:
-  #     - email_network
-
+  # Rspamd spam filtering
+  rspamd:
+    image: rspamd/rspamd:latest
+    restart: unless-stopped
+    volumes:
+      - rspamd_data:/var/lib/rspamd
+      - ./services/rspamd/local.d:/etc/rspamd/local.d:ro
+    networks:
+      - email_network
+    healthcheck:
+      test: [ "CMD", "rspamadm", "control", "stat" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   # ===================
   # VOLUMES
   # ===================
@@ -211,11 +247,12 @@ volumes:
     driver: local
   postfix_dkim:
     driver: local
-  # clamav_data:
-  #   driver: local
-  # rspamd_data:
-  #   driver: local
-
+  clamav_data:
+    driver: local
+  rspamd_data:
+    driver: local
+  maildir_data:
+    driver: local
   # ===================
   # NETWORKS
   # ===================

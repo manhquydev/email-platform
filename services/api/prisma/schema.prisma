@@ -86,40 +86,43 @@ model Domain {
 }
 
 model Inbox {
-  id             String    @id @default(uuid())
-  domain         Domain    @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  id             String        @id @default(uuid())
+  domain         Domain        @relation(fields: [domainId], references: [id], onDelete: Cascade)
   domainId       String
   localPart      String
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime      @default(now())
   expiresAt      DateTime?
   flags          Json?
   deletedAt      DateTime?
   messages       Message[]
+  emailFilters   EmailFilter[]
+  labels         Label[]
 
   @@unique([domainId, localPart])
 }
 
 model Message {
-  id          String      @id @default(uuid())
-  inbox       Inbox       @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId     String
-  messageId   String?
-  fromAddress String?
-  toAddress   String?
-  subject     String?
-  receivedAt  DateTime    @default(now())
-  textBody    String?
-  htmlBody    String?
-  sourceIp    String?
-  headers     Json?
-  spamScore   Float?
-  size        Int?
-  deletedAt   DateTime?
-  isRead      Boolean     @default(false)
-  isPinned    Boolean     @default(false)
+  id           String         @id @default(uuid())
+  inbox        Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  inboxId      String
+  messageId    String?
+  fromAddress  String?
+  toAddress    String?
+  subject      String?
+  receivedAt   DateTime       @default(now())
+  textBody     String?
+  htmlBody     String?
+  sourceIp     String?
+  headers      Json?
+  spamScore    Float?
+  size         Int?
+  deletedAt    DateTime?
+  isRead       Boolean        @default(false)
+  isPinned     Boolean        @default(false)
   snoozedUntil DateTime?
-  attachments Attachment[]
+  attachments  Attachment[]
   abuseReports AbuseReport[]
+  labels       MessageLabel[]
 
   @@index([inboxId, receivedAt])
   @@index([sourceIp, receivedAt])
@@ -171,4 +174,85 @@ model AbuseReport {
 
   @@index([status])
   @@index([messageId])
+}
+
+// Email Filter/Rule for automated message processing
+enum FilterMatchType {
+  ALL     // All conditions must match
+  ANY     // Any condition must match
+}
+
+enum FilterConditionField {
+  FROM
+  TO
+  SUBJECT
+  BODY
+  HAS_ATTACHMENT
+}
+
+enum FilterConditionOperator {
+  CONTAINS
+  NOT_CONTAINS
+  EQUALS
+  NOT_EQUALS
+  STARTS_WITH
+  ENDS_WITH
+  REGEX
+}
+
+enum FilterActionType {
+  MOVE_TO_FOLDER
+  ADD_LABEL
+  REMOVE_LABEL
+  MARK_READ
+  MARK_SPAM
+  DELETE
+  FORWARD
+}
+
+model EmailFilter {
+  id          String          @id @default(uuid())
+  inbox       Inbox           @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  inboxId     String
+  name        String
+  description String?
+  matchType   FilterMatchType @default(ALL)
+  conditions  Json            // Array of { field, operator, value }
+  actions     Json            // Array of { type, value? }
+  priority    Int             @default(0)
+  isEnabled   Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([inboxId, isEnabled])
+}
+
+// Labels for organizing messages
+model Label {
+  id        String         @id @default(uuid())
+  inbox     Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  inboxId   String
+  name      String
+  color     String?        // Hex color code
+  parentId  String?        // For nested labels/folders
+  parent    Label?         @relation("LabelHierarchy", fields: [parentId], references: [id])
+  children  Label[]        @relation("LabelHierarchy")
+  messages  MessageLabel[]
+  createdAt DateTime       @default(now())
+
+  @@unique([inboxId, name])
+  @@index([inboxId])
+}
+
+model MessageLabel {
+  id        String   @id @default(uuid())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId String
+  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  labelId   String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, labelId])
+  @@index([messageId])
+  @@index([labelId])
 }

@@ -13,6 +13,7 @@ import { storageService } from './services/storage';
 import { checkSpam, shouldRejectEmail, formatSpamSymbols } from './services/spamFilter';
 import { scanBuffer, hasVirus, getDetectedViruses } from './services/virusScanner';
 import { syncMessageToMaildir } from './services/maildirSync';
+import { processFiltersForMessage } from './services/emailFilters';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -259,6 +260,32 @@ export const setupEmailWorker = (logger: Logger) => {
                 }
 
                 logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: spamResult.score }, "stored inbound email via worker");
+
+                // Process email filters
+                try {
+                    const filterResult = await processFiltersForMessage(
+                        message.id,
+                        inbox.id,
+                        {
+                            fromAddress,
+                            toAddress,
+                            subject: mail.subject ?? null,
+                            textBody,
+                            htmlBody,
+                            hasAttachment: (mail.attachments?.length ?? 0) > 0,
+                        }
+                    );
+                    if (filterResult.filtersMatched > 0) {
+                        logger.info({
+                            messageId: message.id,
+                            filtersMatched: filterResult.filtersMatched,
+                            actionsExecuted: filterResult.actionsExecuted,
+                            deleted: filterResult.deleted
+                        }, 'email filters processed');
+                    }
+                } catch (filterErr) {
+                    logger.warn({ err: filterErr }, 'failed to process email filters');
+                }
 
                 // Clean up raw file
                 await fs.unlink(rawPath).catch(e => logger.warn({ err: e }, "failed to delete raw file"));

@@ -38,10 +38,10 @@ export async function authRoutes(app: FastifyInstance) {
     const user = await prisma.user.create({
       data: {
         email,
-        passwordHash,
+        password: passwordHash,
         role: "USER",
         // Auto-verify if email verification is disabled
-        emailVerified: appConfig.requireEmailVerification ? null : new Date(),
+        emailVerified: appConfig.requireEmailVerification ? new Date() : new Date(),
         verificationToken: appConfig.requireEmailVerification ? verificationToken : null,
         verificationTokenExpiresAt: appConfig.requireEmailVerification ? verificationTokenExpiresAt : null,
       },
@@ -185,7 +185,7 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
-    const ok = await verifyPassword(password, user.passwordHash);
+    const ok = user.password ? await verifyPassword(password, user.password) : false;
     if (!ok) {
       return reply.status(401).send({ error: "Invalid credentials" });
     }
@@ -231,7 +231,7 @@ export async function authRoutes(app: FastifyInstance) {
 
     await prisma.user.update({
       where: { id: userId },
-      data: { passwordHash },
+      data: { password: passwordHash },
     });
 
     await recordAudit(userId, "PASSWORD_CHANGED", {});
@@ -420,7 +420,7 @@ export async function authRoutes(app: FastifyInstance) {
     }
 
     // Verify password before disabling 2FA
-    const ok = await verifyPassword(password, user.passwordHash);
+    const ok = user.password ? await verifyPassword(password, user.password) : false;
     if (!ok) {
       return reply.status(401).send({ error: "Invalid password" });
     }

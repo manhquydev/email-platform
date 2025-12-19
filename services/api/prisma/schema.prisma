@@ -7,140 +7,191 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum DomainStatus {
-  PENDING
-  VERIFIED
-}
-
-enum UserRole {
-  ADMIN
+enum Role {
   USER
-}
-
-enum RuleType {
-  ALLOW
-  BLOCK
-}
-
-enum RuleScope {
-  SENDER_DOMAIN
-  SENDER_EMAIL
-  RECIPIENT_DOMAIN
-  RECIPIENT_INBOX
-  SOURCE_IP
-}
-
-enum AbuseReportStatus {
-  OPEN
-  REVIEWING
-  CLOSED
+  ADMIN
 }
 
 enum SubscriptionTier {
   FREE
   STARTER
-  PROFESSIONAL
+  PRO
   ENTERPRISE
 }
 
 enum SubscriptionStatus {
+  TRIALING
   ACTIVE
   PAST_DUE
   CANCELED
-  TRIALING
+  UNPAID
+}
+
+enum RuleType {
+  ALLOW
+  BLOCK
+  FORWARD
+}
+
+enum RuleScope {
+  GLOBAL
+  DOMAIN
+  USER
+}
+
+enum AbuseReportStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  DISMISSED
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum SsoProvider {
+  SAML
+  OIDC
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  INACTIVE
+  REVOKED
+}
+
+enum WebhookStatus {
+  ACTIVE
+  INACTIVE
+  FAILED
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  role         UserRole @default(USER)
-  emailVerified DateTime?
-  verificationToken String?
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  password              String?
+  role                  Role      @default(USER)
+  emailVerified         DateTime
+  verificationToken     String?
   verificationTokenExpiresAt DateTime?
-  isDisabled   Boolean  @default(false)
-  twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String?  // encrypted TOTP secret
-  twoFactorBackupCodes String[] // array of hashed backup codes
-  // Subscription fields
-  tier         SubscriptionTier @default(FREE)
-  stripeCustomerId String? @unique
-  stripeSubscriptionId String?
-  subscriptionStatus SubscriptionStatus @default(ACTIVE)
-  trialEndsAt  DateTime?
-  createdAt    DateTime @default(now())
-  auditLogs    AuditLog[]
-  domains      Domain[]
+  twoFactorEnabled      Boolean   @default(false)
+  twoFactorSecret       String?
+  twoFactorBackupCodes  String[]
+  isDisabled            Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  lastActiveAt          DateTime? @default(now())
+
+  // Relations
+  domains               Domain[]
+  abuseReports          AbuseReport[]
+  auditLogs             AuditLog[]
+  organizations         OrganizationMember[]
+  ownedOrganizations   Organization[] @relation("OrganizationOwner")
+  messages              Message[]
+  apiKeys               ApiKey[]
+  webhooks              Webhook[]
 }
 
 model Domain {
-  id                 String        @id @default(uuid())
-  name               String        @unique
-  status             DomainStatus  @default(PENDING)
-  verificationToken  String
-  createdAt          DateTime      @default(now())
-  inboxes            Inbox[]
-  owner              User?         @relation(fields: [ownerId], references: [id])
-  ownerId            String?
-  isPublic           Boolean       @default(false)
+  id                String            @id @default(uuid())
+  name              String            @unique
+  owner             User?             @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId           String?
+  verificationToken String?
+  verifiedAt        DateTime?
+  isActive          Boolean           @default(true)
+  status            String            @default("active")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  organizationId    String?
+
+  // Relations
+  inboxes           Inbox[]
+  messages          Message[]         @relation("DomainMessages")
+  organization      Organization?     @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId])
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([status])
 }
 
 model Inbox {
-  id             String        @id @default(uuid())
-  domain         Domain        @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  domainId       String
-  localPart      String
-  createdAt      DateTime      @default(now())
-  expiresAt      DateTime?
-  flags          Json?
-  deletedAt      DateTime?
-  messages       Message[]
-  emailFilters   EmailFilter[]
-  labels         Label[]
+  id           String   @id @default(uuid())
+  domain       Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domainId     String
+  address      String   @unique
+  isActive     Boolean  @default(true)
+  description  String?
+  autoDelete   Boolean  @default(false)
+  deleteAfter  Int?     // Hours
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+  expiresAt    DateTime?
+  organizationId String?
 
-  @@unique([domainId, localPart])
+  // Relations
+  messages     Message[]
+  rules        Rule[]
+  abuseReports AbuseReport[]
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([domainId])
+  @@index([organizationId])
+  @@index([expiresAt])
 }
 
 model Message {
-  id           String         @id @default(uuid())
-  inbox        Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId      String
-  messageId    String?
-  fromAddress  String?
-  toAddress    String?
-  subject      String?
-  receivedAt   DateTime       @default(now())
-  textBody     String?
-  htmlBody     String?
-  sourceIp     String?
-  headers      Json?
-  spamScore    Float?
-  size         Int?
-  deletedAt    DateTime?
-  isRead       Boolean        @default(false)
-  isPinned     Boolean        @default(false)
-  snoozedUntil DateTime?
-  // Bounce and complaint tracking
-  bounced      Boolean        @default(false)
-  bouncedAt    DateTime?
-  bounceReason String?
-  complained   Boolean        @default(false)
-  complainedAt DateTime?
-  rejected     Boolean        @default(false)
-  rejectedAt   DateTime?
-  rejectReason String?
-  delivered    Boolean        @default(false)
-  deliveredAt  DateTime?
-  attachments  Attachment[]
-  abuseReports AbuseReport[]
-  labels       MessageLabel[]
+  id              String   @id @default(uuid())
+  inbox           Inbox    @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  inboxId         String
+  domain          Domain?  @relation("DomainMessages", fields: [domainId], references: [id])
+  domainId        String?
+  fromAddress     String
+  toAddress       String
+  subject         String?
+  textContent     String?
+  htmlContent     String?
+  sourceIp        String?
+  rawEmail        String? // Store original email
+  read            Boolean  @default(false)
+  pinned          Boolean  @default(false)
+  deletedAt       DateTime?
+  isRead          Boolean  @default(false)
+  isPinned         Boolean  @default(false)
+  snoozedUntil    DateTime?
+  bounced         Boolean  @default(false)
+  bouncedAt       DateTime?
+  bounceReason    String?
+  complained      Boolean  @default(false)
+  complainedAt    DateTime?
+  rejected        Boolean  @default(false)
+  rejectedAt      DateTime?
+  rejectReason    String?
+  delivered       Boolean  @default(false)
+  deliveredAt     DateTime?
+  attachments     Attachment[]
+  abuseReports    AbuseReport[]
+  labels          MessageLabel[]
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  receivedAt      DateTime @default(now())
+  userId          String?
 
   @@index([inboxId, receivedAt])
-  @@index([sourceIp, receivedAt])
   @@index([deletedAt])
   @@index([isPinned])
   @@index([bounced])
   @@index([complained])
+  @@index([userId])
+  @@index([domainId])
 }
 
 model Attachment {
@@ -174,9 +225,12 @@ model Rule {
   reason    String?
   expiresAt DateTime?
   createdAt DateTime  @default(now())
+  inboxId   String?
+  inbox     Inbox?    @relation(fields: [inboxId], references: [id], onDelete: Cascade)
 
   @@index([scope, pattern])
   @@index([active])
+  @@index([inboxId])
 }
 
 model AbuseReport {
@@ -184,91 +238,213 @@ model AbuseReport {
   message    Message?          @relation(fields: [messageId], references: [id], onDelete: SetNull)
   messageId  String?
   reporter   String?
+  reporterId String?
+  inbox      Inbox?            @relation(fields: [inboxId], references: [id], onDelete: SetNull)
+  inboxId    String?
+  user       User?             @relation(fields: [reporterId], references: [id], onDelete: SetNull)
   reason     String
   status     AbuseReportStatus @default(OPEN)
   createdAt  DateTime          @default(now())
 
   @@index([status])
   @@index([messageId])
-}
-
-// Email Filter/Rule for automated message processing
-enum FilterMatchType {
-  ALL     // All conditions must match
-  ANY     // Any condition must match
-}
-
-enum FilterConditionField {
-  FROM
-  TO
-  SUBJECT
-  BODY
-  HAS_ATTACHMENT
-}
-
-enum FilterConditionOperator {
-  CONTAINS
-  NOT_CONTAINS
-  EQUALS
-  NOT_EQUALS
-  STARTS_WITH
-  ENDS_WITH
-  REGEX
-}
-
-enum FilterActionType {
-  MOVE_TO_FOLDER
-  ADD_LABEL
-  REMOVE_LABEL
-  MARK_READ
-  MARK_SPAM
-  DELETE
-  FORWARD
-}
-
-model EmailFilter {
-  id          String          @id @default(uuid())
-  inbox       Inbox           @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId     String
-  name        String
-  description String?
-  matchType   FilterMatchType @default(ALL)
-  conditions  Json            // Array of { field, operator, value }
-  actions     Json            // Array of { type, value? }
-  priority    Int             @default(0)
-  isEnabled   Boolean         @default(true)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-
-  @@index([inboxId, isEnabled])
-}
-
-// Labels for organizing messages
-model Label {
-  id        String         @id @default(uuid())
-  inbox     Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId   String
-  name      String
-  color     String?        // Hex color code
-  parentId  String?        // For nested labels/folders
-  parent    Label?         @relation("LabelHierarchy", fields: [parentId], references: [id])
-  children  Label[]        @relation("LabelHierarchy")
-  messages  MessageLabel[]
-  createdAt DateTime       @default(now())
-
-  @@unique([inboxId, name])
+  @@index([reporterId])
   @@index([inboxId])
 }
 
+// Organization models for B2B features
+model Organization {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  logo        String?
+  domain      String?
+  settings    Json?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  ownerId     String?
+
+  // Relations
+  owner           User?                @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  members         OrganizationMember[]
+  domains         Domain[]
+  settingsObj     OrganizationSettings?
+  subscription    OrganizationSubscription?
+  inboxes         Inbox[]
+  apiKeys          ApiKey[]
+  webhooks         Webhook[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model OrganizationMember {
+  id           String           @id @default(uuid())
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  role         OrganizationRole  @default(MEMBER)
+  permissions  Json?
+  invitedBy    String?
+  invitedAt    DateTime?
+  joinedAt     DateTime         @default(now())
+  lastActiveAt DateTime?
+  isActive     Boolean          @default(true)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId, userId])
+  @@index([role])
+}
+
+model OrganizationSettings {
+  id              String            @id @default(uuid())
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId   String            @unique
+  ssoEnabled       Boolean           @default(false)
+  ssoProvider      SsoProvider?
+  ssoConfig        Json?
+  apiAccessEnabled Boolean           @default(false)
+  webhooksEnabled  Boolean           @default(false)
+  customTheme      Json?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([organizationId])
+}
+
+model ApiKey {
+  id            String         @id @default(uuid())
+  organization   Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?
+  user          User              @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  createdBy     String
+  name          String
+  keyPrefix     String         @default("tmp_")
+  keyHash       String
+  keyLastFour   String
+  permissions   Json?          // Array of permissions
+  status        ApiKeyStatus   @default(ACTIVE)
+  rateLimit     Int?
+  usageCount    Int            @default(0)
+  lastUsedAt    DateTime?
+  expiresAt     DateTime?
+  description   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  deliveries    ApiUsageLog[]
+
+  @@index([organizationId])
+  @@index([createdBy])
+  @@index([status])
+}
+
+model ApiUsageLog {
+  id          String  @id @default(uuid())
+  apiKey      ApiKey  @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  apiKeyId    String
+  method      String
+  endpoint    String
+  statusCode  Int
+  responseTime Int
+  ip          String?
+  userAgent   String?
+  requestId   String?
+  createdAt   DateTime @default(now())
+
+  @@index([apiKeyId])
+  @@index([createdAt])
+}
+
+model Webhook {
+  id            String         @id @default(uuid())
+  organization   Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?
+  user          User              @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  createdBy     String
+  name          String
+  url           String
+  secret        String?       // Optional secret for signing
+  events        Json          // Array of event types
+  status        WebhookStatus @default(ACTIVE)
+
+  // Delivery settings
+  timeout       Int?          // Timeout in seconds
+  retryAttempts Int           @default(3)
+  retryDelay    Int           @default(60) // Seconds between retries
+
+  // Metadata
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  deliveries    WebhookDelivery[]
+
+  @@index([organizationId])
+  @@index([createdBy])
+  @@index([status])
+}
+
+model WebhookDelivery {
+  id          String   @id @default(uuid())
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  webhookId   String
+  eventType   String
+  payload     Json
+  statusCode  Int?
+  response    String?
+  duration    Int?     // Delivery time in ms
+  attempt     Int      // Attempt number
+
+  // Status
+  status      String   // "pending", "delivered", "failed"
+  error       String?
+
+  scheduledAt DateTime @default(now())
+  deliveredAt DateTime?
+
+  createdAt   DateTime @default(now())
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model OrganizationSubscription {
+  id                    String              @id @default(uuid())
+  organization          Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId        String  @unique
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  stripePriceId         String?
+  tier                  SubscriptionTier    @default(FREE)
+  status                SubscriptionStatus   @default(ACTIVE)
+  billingEmail           String
+  paymentMethodId       String?
+  billingPeriod          String
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  trialEndsAt           DateTime?
+  usage                  Json?
+  limits                 Json?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([billingPeriod])
+}
+
 model MessageLabel {
-  id        String   @id @default(uuid())
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid())
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
   messageId String
-  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
-  labelId   String
+  label     String
   createdAt DateTime @default(now())
 
-  @@unique([messageId, labelId])
   @@index([messageId])
-  @@index([labelId])
+  @@index([label])
 }

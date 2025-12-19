@@ -19,6 +19,15 @@ import { billingRoutes } from "./routes/billing";
 import { filterRoutes } from "./routes/filters";
 import { webhookRoutes } from "./routes/webhooks";
 import { backupRoutes } from "./routes/backup";
+import { organizationRoutes } from "./routes/organizations";
+import { ssoRoutes } from "./routes/sso";
+import { apiKeyRoutes } from "./routes/apiKeys";
+import { orgWebhookRoutes } from "./routes/orgWebhooks";
+import { brandingRoutes } from "./routes/branding";
+import { searchRoutes } from "./routes/search";
+import { exportRoutes } from "./routes/export";
+import { automationRoutes } from "./routes/automation";
+import { billingAutomationRoutes } from "./routes/billingAutomation";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -131,6 +140,15 @@ export const buildServer = () => {
   app.register(healthRoutes);
   app.register(publicRoutes);
   app.register(authRoutes);
+  app.register(organizationRoutes, { prefix: '/api' });
+  app.register(ssoRoutes, { prefix: '/api' });
+  app.register(apiKeyRoutes, { prefix: '/api' });
+  app.register(orgWebhookRoutes, { prefix: '/api' });
+  app.register(brandingRoutes, { prefix: '/api' });
+  app.register(searchRoutes, { prefix: '/api' });
+  app.register(exportRoutes, { prefix: '/api' });
+  app.register(automationRoutes, { prefix: '/api' });
+  app.register(billingAutomationRoutes, { prefix: '/api' });
   app.register(domainRoutes);
   app.register(inboxRoutes);
   app.register(messageRoutes);

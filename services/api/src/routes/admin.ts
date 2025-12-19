@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
-import { UserRole } from "@prisma/client";
+import { Role } from "@prisma/client";
 
 export async function adminRoutes(app: FastifyInstance) {
     // Dashboard Statistics
@@ -114,7 +114,7 @@ export async function adminRoutes(app: FastifyInstance) {
         const query = z
             .object({
                 search: z.string().optional(),
-                role: z.nativeEnum(UserRole).optional(),
+                role: z.nativeEnum(Role).optional(),
                 limit: z.coerce.number().min(1).max(100).optional(),
                 offset: z.coerce.number().min(0).optional(),
             })
@@ -147,7 +147,7 @@ export async function adminRoutes(app: FastifyInstance) {
                     emailVerified: true,
                     createdAt: true,
                     _count: {
-                        select: { domains: true }
+                        select: { ownedOrganizations: true }
                     }
                 }
             }),
@@ -162,7 +162,7 @@ export async function adminRoutes(app: FastifyInstance) {
         const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
         const body = z
             .object({
-                role: z.nativeEnum(UserRole).optional(),
+                role: z.nativeEnum(Role).optional(),
                 isDisabled: z.boolean().optional(),
             })
             .safeParse(request.body);
@@ -409,7 +409,7 @@ export async function adminRoutes(app: FastifyInstance) {
                 emailVerified: true,
                 twoFactorEnabled: true,
                 _count: {
-                    select: { domains: true }
+                    select: { ownedOrganizations: true }
                 }
             }
         });

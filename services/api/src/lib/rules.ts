@@ -23,11 +23,11 @@ export const evaluateRules = async (input: RuleCheckInput): Promise<RuleMatch> =
   const sourceIp = normalize(input.sourceIp);
 
   const filters = [];
-  if (senderDomain) filters.push({ scope: RuleScope.SENDER_DOMAIN, value: senderDomain });
-  if (senderEmail) filters.push({ scope: RuleScope.SENDER_EMAIL, value: senderEmail });
-  if (recipientDomain) filters.push({ scope: RuleScope.RECIPIENT_DOMAIN, value: recipientDomain });
-  if (recipientInbox) filters.push({ scope: RuleScope.RECIPIENT_INBOX, value: recipientInbox });
-  if (sourceIp) filters.push({ scope: RuleScope.SOURCE_IP, value: sourceIp });
+  if (senderDomain) filters.push({ scope: RuleScope.GLOBAL, value: senderDomain });
+  if (senderEmail) filters.push({ scope: RuleScope.USER, value: senderEmail });
+  if (recipientDomain) filters.push({ scope: RuleScope.GLOBAL, value: recipientDomain });
+  if (recipientInbox) filters.push({ scope: RuleScope.DOMAIN, value: recipientInbox });
+  if (sourceIp) filters.push({ scope: RuleScope.GLOBAL, value: sourceIp });
 
   if (!filters.length) return { action: "ALLOW" };
 
@@ -41,11 +41,11 @@ export const evaluateRules = async (input: RuleCheckInput): Promise<RuleMatch> =
 
   const allow = rules.find((r) => r.type === RuleType.ALLOW);
   if (allow) {
-    return { action: "ALLOW", rule: { id: allow.id, scope: allow.scope, value: allow.value } };
+    return { action: "ALLOW", rule: { id: allow.id, scope: allow.scope, value: allow.pattern } };
   }
   const block = rules.find((r) => r.type === RuleType.BLOCK);
   if (block) {
-    return { action: "BLOCK", rule: { id: block.id, scope: block.scope, value: block.value } };
+    return { action: "BLOCK", rule: { id: block.id, scope: block.scope, value: block.pattern } };
   }
   return { action: "ALLOW" };
 };

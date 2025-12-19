@@ -7,9 +7,16 @@ import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { appConfig } from '../config';
+import { billingService } from '../services/billingService';
+import { SubscriptionTier } from '@prisma/client';
+import { AuthenticatedRequest } from '../types/auth';
+import { requirePermission, Permission } from '../middleware/rbac';
 
-// Stripe import - will be installed separately
-// import Stripe from 'stripe';
+// Stripe import
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-12-15.clover',
+});
 
 // Tier limits configuration
 export const TIER_LIMITS = {
@@ -162,7 +169,7 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
             });
         }
 
-        const user = req.user as { userId: string; email: string };
+        const user = req.user as { userId: string; email: string; role: string; id: string };
         const body = createCheckoutSchema.parse(req.body);
 
         const priceId = STRIPE_PRICES[body.tier];
@@ -376,5 +383,211 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
                 }
             }
         }
+    });
+
+    // ========== ORGANIZATION BILLING ROUTES ==========
+
+    // Get pricing plans
+    app.get('/api/billing/plans', {
+        preHandler: [app.authenticate]
+    }, async (request, reply) => {
+        const plans = await billingService.getPricingPlans();
+        return { plans };
+    });
+
+    // Get organization billing info
+    app.get('/api/billing/subscription/:organizationId', {
+        preHandler: [
+            app.authenticate,
+            requirePermission(Permission.ORG_VIEW_BILLING, 'organizationId')
+        ]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+
+        const subscription = await prisma.organizationSubscription.findUnique({
+            where: { organizationId },
+            include: {
+                organization: {
+                    select: { id: true, name: true, slug: true }
+                }
+            }
+        });
+
+        if (!subscription) {
+            reply.status(404).send({ error: 'No subscription found' });
+            return;
+        }
+
+        const usage = await billingService.getCurrentUsage(organizationId);
+
+        return {
+            subscription,
+            usage,
+        };
+    });
+
+    // Create subscription
+    fastify.post('/api/billing/subscribe/:organizationId', {
+        preHandler: [
+            fastify.authenticate,
+            requirePermission(Permission.ORG_MANAGE_BILLING, 'organizationId')
+        ]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+        const data = request.body as {
+            tier: SubscriptionTier;
+            billingEmail: string;
+            paymentMethodId?: string;
+            billingPeriod?: 'monthly' | 'yearly';
+            promoCode?: string;
+        };
+
+        try {
+            const result = await billingService.createSubscription({
+                organizationId,
+                tier: data.tier,
+                billingEmail: data.billingEmail,
+                paymentMethodId: data.paymentMethodId,
+                billingPeriod: data.billingPeriod,
+                promoCode: data.promoCode,
+            });
+
+            reply.status(201).send(result);
+        } catch (error: any) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+
+    // Update subscription
+    fastify.patch('/api/billing/subscription/:organizationId', {
+        preHandler: [
+            fastify.authenticate,
+            requirePermission(Permission.ORG_MANAGE_BILLING, 'organizationId')
+        ]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+        const data = request.body as {
+            tier?: SubscriptionTier;
+            billingPeriod?: 'monthly' | 'yearly';
+            paymentMethodId?: string;
+            seats?: number;
+        };
+
+        try {
+            const subscription = await billingService.updateSubscription(organizationId, data);
+            return { subscription };
+        } catch (error: any) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+
+    // Cancel subscription
+    fastify.delete('/api/billing/subscription/:organizationId', {
+        preHandler: [
+            fastify.authenticate,
+            requirePermission(Permission.ORG_MANAGE_BILLING, 'organizationId')
+        ]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+        const { immediately } = request.query as { immediately?: string };
+
+        try {
+            await billingService.cancelSubscription(organizationId, immediately === 'true');
+            return { success: true };
+        } catch (error: any) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+
+    // Get usage statistics
+    fastify.get('/api/billing/usage/:organizationId', {
+        preHandler: [
+            fastify.authenticate,
+            requirePermission(Permission.ANALYTICS_VIEW, 'organizationId')
+        ]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+
+        const usage = await billingService.getCurrentUsage(organizationId);
+        return { usage };
+    });
+
+    // Record usage (internal API)
+    fastify.post('/api/billing/usage/:organizationId', {
+        preHandler: [fastify.authenticate]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+        const data = request.body as {
+            metric: 'domains' | 'inboxes' | 'emails' | 'storage' | 'api_calls';
+            quantity: number;
+        };
+
+        try {
+            await billingService.recordUsage({
+                organizationId,
+                metric: data.metric,
+                quantity: data.quantity,
+            });
+            return { success: true };
+        } catch (error: any) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+
+    // Get invoices
+    fastify.get('/api/billing/invoices/:organizationId', {
+        preHandler: [
+            fastify.authenticate,
+            requirePermission(Permission.ORG_VIEW_BILLING, 'organizationId')
+        ]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+
+        try {
+            const invoices = await billingService.getInvoices(organizationId);
+            return { invoices };
+        } catch (error: any) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+
+    // Billing dashboard data
+    fastify.get('/api/billing/dashboard/:organizationId', {
+        preHandler: [
+            fastify.authenticate,
+            requirePermission(Permission.ORG_VIEW_BILLING, 'organizationId')
+        ]
+    }, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+        const { organizationId } = request.params as { organizationId: string };
+
+        const [subscription, usage, invoices] = await Promise.all([
+            prisma.organizationSubscription.findUnique({
+                where: { organizationId },
+                include: {
+                    organization: {
+                        select: { id: true, name: true, slug: true }
+                    }
+                }
+            }),
+            billingService.getCurrentUsage(organizationId),
+            billingService.getInvoices(organizationId).catch(() => []),
+        ]);
+
+        // Calculate usage percentages
+        const limits = (subscription?.limits as any) || {};
+        const usagePercentages = usage ? {
+            domains: limits.domains ? (usage.domains / limits.domains) * 100 : 0,
+            inboxes: limits.inboxes ? (usage.inboxes / limits.inboxes) * 100 : 0,
+            emails: limits.emails ? (usage.emails / limits.emails) * 100 : 0,
+            storage: limits.storageMB ? (usage.storage / limits.storageMB) * 100 : 0,
+        } : {};
+
+        return {
+            subscription,
+            usage,
+            usagePercentages,
+            invoices: invoices.slice(0, 5), // Last 5 invoices
+            upcomingInvoice: null, // Would calculate from Stripe
+        };
     });
 };

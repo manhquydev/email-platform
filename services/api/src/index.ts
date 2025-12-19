@@ -25,7 +25,7 @@ const ensureAdminUser = async (log: any) => {
     await prisma.user.update({
       where: { id: existingAdmin.id },
       data: {
-        passwordHash,
+        password: passwordHash,
         role: "ADMIN",
         emailVerified: existingAdmin.emailVerified ?? new Date(),
       },
@@ -39,7 +39,7 @@ const ensureAdminUser = async (log: any) => {
   await prisma.user.create({
     data: {
       email: adminEmail,
-      passwordHash,
+      password: passwordHash,
       role: "ADMIN",
       emailVerified: new Date(), // Admin is auto-verified
     },

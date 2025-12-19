@@ -42,13 +42,18 @@ const ensureDomainAndInbox = async (address: string) => {
         });
     }
 
+    const fullAddress = `${localPart}@${domain.name}`;
     let inbox = await prisma.inbox.findUnique({
-        where: { domainId_localPart: { domainId: domain.id, localPart } },
+        where: { address: fullAddress },
     });
 
     if (!inbox) {
         inbox = await prisma.inbox.create({
-            data: { domainId: domain.id, localPart },
+            data: {
+                domainId: domain.id,
+                address: fullAddress,
+                isActive: true
+            },
         });
     } else if (inbox.deletedAt) {
         inbox = await prisma.inbox.update({ where: { id: inbox.id }, data: { deletedAt: null, expiresAt: null } });
@@ -264,16 +269,13 @@ export const setupEmailWorker = (logger: Logger) => {
                 const message = await prisma.message.create({
                     data: {
                         inboxId: inbox.id,
-                        messageId: mail.messageId ?? generateToken(),
                         fromAddress,
                         toAddress,
                         subject: mail.subject ?? "",
                         receivedAt: new Date(),
-                        textBody,
-                        htmlBody,
-                        headers: headersToObject(mail.headers as Map<string, string | string[] | undefined>),
-                        spamScore: finalSpamScore,
-                        size: rawContent.length,
+                        textContent: textBody,
+                        htmlContent: htmlBody,
+                        rawEmail: rawContent,
                         sourceIp,
                     },
                 });
@@ -294,7 +296,7 @@ export const setupEmailWorker = (logger: Logger) => {
                     logger.warn({ err: maildirErr }, 'failed to sync message to Maildir');
                 }
 
-                logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: spamResult.score }, "stored inbound email via worker");
+                logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: enhancedSpamResult.score }, "stored inbound email via worker");
 
                 // Process email filters
                 try {

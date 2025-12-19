@@ -26,8 +26,10 @@ export async function abuseRoutes(app: FastifyInstance) {
 
     const rule = await prisma.rule.create({
       data: {
-        ...body.data,
-        value: body.data.value.toLowerCase(),
+        type: body.data.type,
+        scope: body.data.scope,
+        pattern: body.data.value?.toLowerCase(),
+        reason: body.data.note,
         expiresAt: body.data.expiresAt ? new Date(body.data.expiresAt) : null,
       },
     });

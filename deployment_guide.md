@@ -303,16 +303,22 @@ docker-compose rm -f
 docker-compose up -d --build
 ```
 
-## 10. Quy trình Cập nhật Code (Redeploy)
+
+### 10. Automating Updates (Recommended)
+
+Chúng tôi đã tạo một script để tự động hóa quy trình redeploy:
 
 ```bash
-# 1. Kéo code mới
-git pull origin main
+# Cấp quyền thực thi (chỉ cần làm 1 lần)
+chmod +x scripts/deploy.sh
 
-# 2. Build lại và restart
-docker-compose -f docker-compose.prod.yml up -d --build
-
-# 3. Chạy migration (nếu có)
-docker-compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
+# Chạy deploy mỗi khi có code mới
+./scripts/deploy.sh
 ```
+
+Script này sẽ tự động:
+1. Pull code mới từ git.
+2. Build lại các container với `docker-compose.prod.yml`.
+3. Chạy migration database an toàn.
+4. Restart service API.
 

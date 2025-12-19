@@ -65,7 +65,7 @@ export async function inboxRoutes(app: FastifyInstance) {
     }
 
     const user = request.user as { userId: string; role: string };
-    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+    if (!domain.isPublic && domain.ownerId !== user.userId && user.role !== "ADMIN") {
       return reply.status(403).send({ error: "Not authorized to create inbox for this domain" });
     }
 

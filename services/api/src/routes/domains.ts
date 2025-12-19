@@ -11,6 +11,7 @@ export async function domainRoutes(app: FastifyInstance) {
         search: z.string().optional(),
         limit: z.coerce.number().min(1).max(200).optional(),
         offset: z.coerce.number().min(0).optional(),
+        contributionStatus: z.enum(["NONE", "PENDING_REVIEW", "APPROVED", "REJECTED"]).optional(),
       })
       .safeParse(request.query);
     if (!query.success) {
@@ -29,17 +30,21 @@ export async function domainRoutes(app: FastifyInstance) {
         ]
       };
 
-    const searchWhere = query.data.search
-      ? {
-        name: {
-          contains: query.data.search,
-          mode: "insensitive" as const,
-        },
-      }
-      : {};
+    const contributionStatus = query.data.contributionStatus;
+    const filterWhere = {
+      ...(contributionStatus ? { contributionStatus } : {}),
+      ...(query.data.search
+        ? {
+          name: {
+            contains: query.data.search,
+            mode: "insensitive" as const,
+          },
+        }
+        : {}),
+    };
 
     const where = {
-      AND: [baseWhere, searchWhere],
+      AND: [baseWhere, filterWhere],
     };
 
     const [domains, total] = await Promise.all([
@@ -178,6 +183,7 @@ export async function domainRoutes(app: FastifyInstance) {
     const body = z
       .object({
         isPublic: z.boolean().optional(),
+        contributionStatus: z.enum(["NONE", "PENDING_REVIEW", "APPROVED", "REJECTED"]).optional(),
       })
       .safeParse(request.body);
 
@@ -192,28 +198,66 @@ export async function domainRoutes(app: FastifyInstance) {
 
     const user = request.user as { userId: string; role: string };
 
-    // Only admin can toggle isPublic
-    if (body.data.isPublic !== undefined && user.role !== "ADMIN") {
-      return reply.status(403).send({ error: "Only admin can change domain visibility" });
-    }
-
     // Check general permission (owner or admin)
     if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
       return reply.status(403).send({ error: "Not authorized to update this domain" });
     }
 
+    // Handle isPublic changes
+    if (body.data.isPublic !== undefined) {
+      if (user.role !== "ADMIN") {
+        return reply.status(403).send({ error: "Only admin can change domain visibility manually" });
+      }
+    }
+
+    // Handle contributionStatus changes
+    if (body.data.contributionStatus) {
+      const status = body.data.contributionStatus;
+
+      if (status === "PENDING_REVIEW") {
+        // Owner requesting contribution
+        if (domain.status !== "VERIFIED") {
+          return reply.status(400).send({ error: "Domain must be verified before contributing" });
+        }
+      } else if (["APPROVED", "REJECTED"].includes(status)) {
+        // Approval/Rejection
+        if (user.role !== "ADMIN") {
+          return reply.status(403).send({ error: "Only admin can approve or reject contributions" });
+        }
+      }
+    }
+
+    const dataToUpdate: any = { ...body.data };
+
+    // Auto-set isPublic on APPROVAL, unset on REJECTED/NONE
+    if (body.data.contributionStatus === "APPROVED") {
+      dataToUpdate.isPublic = true;
+    } else if (
+      body.data.contributionStatus === "REJECTED" ||
+      body.data.contributionStatus === "NONE"
+    ) {
+      dataToUpdate.isPublic = false;
+    }
+
     const updated = await prisma.domain.update({
       where: { id: params.data.id },
-      data: {
-        ...(body.data.isPublic !== undefined ? { isPublic: body.data.isPublic } : {}),
-      },
+      data: dataToUpdate,
     });
 
+    // Audit logs
     if (body.data.isPublic !== undefined) {
       await recordAudit(user.userId, "DOMAIN_VISIBILITY_CHANGED", {
         domainId: domain.id,
         name: domain.name,
         isPublic: body.data.isPublic,
+      });
+    }
+
+    if (body.data.contributionStatus !== undefined) {
+      await recordAudit(user.userId, "DOMAIN_CONTRIBUTION_STATUS_CHANGED", {
+        domainId: domain.id,
+        name: domain.name,
+        status: body.data.contributionStatus,
       });
     }
 

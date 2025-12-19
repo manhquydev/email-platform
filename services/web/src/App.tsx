@@ -11,10 +11,12 @@ import { TermsOfService, PrivacyPolicy, AcceptableUse } from "./pages/Legal";
 import { MainLayout } from "./layouts/MainLayout";
 import { Loading } from "./components/Loading";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { VersionCheck } from "./components/VersionCheck";
 
 // Lazy load heavy components
 const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
 const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
+const Authenticator = lazy(() => import("./pages/Authenticator").then(m => ({ default: m.Authenticator })));
 
 function App() {
   return (
@@ -22,6 +24,7 @@ function App() {
       <AuthProvider>
         <Toaster position="top-right" />
         <BrowserRouter>
+          <VersionCheck />
           <ErrorBoundary>
             <Suspense fallback={<Loading fullScreen />}>
               <Routes>
@@ -42,6 +45,7 @@ function App() {
                 <Route element={<MainLayout />}>
                   <Route path="/app" element={<Dashboard />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/authenticator" element={<Authenticator />} />
                 </Route>
 
                 {/* Fallback */}

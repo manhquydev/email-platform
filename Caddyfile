@@ -54,6 +54,24 @@ app.{$DOMAIN} {
 		-Server
 	}
 
+	# Cache Control - Fix Stale Cache Issue
+	# 1. No Cache for index.html and service worker
+	@noCache {
+		path /
+		path /index.html
+		path /sw.js
+		path /version.json
+		path /config.js
+	}
+	header @noCache Cache-Control "no-cache, no-store, must-revalidate"
+
+	# 2. Long Cache for static assets (hashed by Vite)
+	@static {
+		path /assets/*
+		path /images/*
+	}
+	header @static Cache-Control "public, max-age=31536000, immutable"
+
 	log {
 		output stdout
 		format json

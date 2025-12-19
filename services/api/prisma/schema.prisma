@@ -12,6 +12,13 @@ enum DomainStatus {
   VERIFIED
 }
 
+enum ContributionStatus {
+  NONE
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
 enum UserRole {
   ADMIN
   USER
@@ -71,6 +78,7 @@ model User {
   createdAt    DateTime @default(now())
   auditLogs    AuditLog[]
   domains      Domain[]
+  authenticatorAccounts AuthenticatorAccount[]
 }
 
 model Domain {
@@ -83,6 +91,7 @@ model Domain {
   owner              User?         @relation(fields: [ownerId], references: [id])
   ownerId            String?
   isPublic           Boolean       @default(false)
+  contributionStatus ContributionStatus @default(NONE)
 }
 
 model Inbox {
@@ -253,6 +262,22 @@ model MessageLabel {
   createdAt DateTime @default(now())
 
   @@unique([messageId, labelId])
-  @@index([messageId])
   @@index([labelId])
+}
+
+model AuthenticatorAccount {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  serviceName  String   // e.g. "Google", "Facebook"
+  accountName  String?  // e.g. "alice@gmail.com"
+  secret       String   // Encrypted TOTP Secret (AES-256-GCM)
+  issuer       String?  // Metadata from migration
+  algorithm    String   @default("SHA1") // SHA1, SHA256, SHA512
+  digits       Int      @default(6)
+  period       Int      @default(30)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
 }

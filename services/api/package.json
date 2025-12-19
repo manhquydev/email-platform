@@ -12,7 +12,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "create-admin": "tsx scripts/create-admin.ts"
   },
   "keywords": [],
   "author": "",
@@ -44,7 +45,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/mailparser": "^3.4.6",
-    "@types/node": "^25.0.2",
+    "@types/node": "^25.0.3",
     "@types/smtp-server": "^3.5.12",
     "@types/supertest": "^6.0.3",
     "nodemailer": "^7.0.11",

@@ -40,6 +40,11 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
         const msg = getFriendlyErrorMessage(rawMsg);
 
         const details = payload.details;
+
+        if (res.status === 401) {
+            window.dispatchEvent(new Event("auth:unauthorized"));
+        }
+
         throw new Error(details ? `${msg}: ${details}` : msg);
     }
 

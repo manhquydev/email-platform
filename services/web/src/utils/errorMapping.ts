@@ -9,6 +9,8 @@ export const ERROR_MAPPINGS: Record<string, string> = {
     "2FA not enabled": "Xác thực 2 lớp chưa được kích hoạt",
     "Token expired": "Phiên đăng nhập đã hết hạn",
     "Invalid token": "Token không hợp lệ",
+    "Invalid credentials": "Email hoặc mật khẩu không chính xác",
+    "Email already exists": "Email này đã được sử dụng",
 
     // Domain/Inbox
     "Domain not found": "Không tìm thấy tên miền",

@@ -92,7 +92,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setInitializing(false);
         };
         initAuth();
-    }, [token]);
+
+        const handleUnauthorized = () => {
+            // Only clear if we actually have a user/token to avoid loops or unnecessary toasts
+            if (token || user) {
+                setToken("");
+                setUser(null);
+                toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại");
+            }
+        };
+
+        window.addEventListener("auth:unauthorized", handleUnauthorized);
+        return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
+    }, [token, user]);
 
     if (initializing) {
         return <Loading fullScreen message="Đang tải dữ liệu..." />;

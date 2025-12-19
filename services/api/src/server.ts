@@ -98,8 +98,13 @@ export const buildServer = () => {
     try {
       await request.jwtVerify();
     } catch (err) {
-      request.log.warn({ err }, "unauthorized");
-      return reply.status(401).send({ error: "Unauthorized" });
+      request.log.warn({
+        err,
+        authHeader: request.headers.authorization ? (request.headers.authorization.slice(0, 20) + "...") : "none",
+        url: request.url,
+        method: request.method
+      }, "unauthorized request");
+      return reply.status(401).send({ error: "Unauthorized", details: (err as any).message });
     }
   });
 

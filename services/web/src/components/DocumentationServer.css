@@ -1,0 +1,254 @@
+/* Documentation Styles */
+
+/* Code blocks */
+.code-block-container {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.code-block {
+  background-color: #f6f8fa;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.code-block code {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  font-size: inherit;
+  color: #24292e;
+}
+
+/* Copy button */
+.copy-code {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: #0366d6;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copy-code:hover {
+  background-color: #0256cc;
+}
+
+.copy-code:active {
+  background-color: #024384;
+}
+
+/* Dark mode */
+.dark .code-block {
+  background-color: #282c34;
+}
+
+.dark .code-block code {
+  color: #abb2bf;
+}
+
+.dark .copy-code {
+  background-color: #0366d6;
+}
+
+.dark .copy-code:hover {
+  background-color: #0256cc;
+}
+
+/* Inline code */
+.inline-code {
+  background-color: rgba(175, 184, 193, 0.2);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+}
+
+.dark .inline-code {
+  background-color: rgba(110, 118, 129, 0.3);
+  color: #e6edf3;
+}
+
+/* Table of contents */
+.toc {
+  background-color: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+
+.dark .toc {
+  background-color: #161b22;
+  border-color: #30363d;
+}
+
+.toc h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #24292e;
+}
+
+.dark .toc h3 {
+  color: #e6edf3;
+}
+
+.toc ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.toc li {
+  margin-bottom: 0.25rem;
+}
+
+.toc a {
+  color: #0969da;
+  text-decoration: none;
+  font-size: 0.875rem;
+  display: block;
+  padding: 0.125rem 0;
+}
+
+.dark .toc a {
+  color: #58a6ff;
+}
+
+.toc a:hover {
+  text-decoration: underline;
+}
+
+/* Prose styles for documentation */
+.prose {
+  color: #24292e;
+  max-width: none;
+}
+
+.prose h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #374151;
+}
+
+.prose p {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.prose ul, .prose ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.prose a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose blockquote {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 1rem;
+  border-left: 4px solid #d1d5db;
+  color: #6b7280;
+}
+
+.dark .prose blockquote {
+  border-left-color: #4b5563;
+  color: #9ca3af;
+}
+
+.prose hr {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dark .prose hr {
+  border-top-color: #374151;
+}
+
+/* Dark mode */
+.dark .prose {
+  color: #e5e7eb;
+}
+
+.dark .prose h1 {
+  color: #f9fafb;
+}
+
+.dark .prose h2 {
+  color: #f3f4f6;
+}
+
+.dark .prose h3 {
+  color: #d1d5db;
+}
+
+.dark .prose a {
+  color: #58a6ff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .prose h1 {
+    font-size: 1.875rem;
+  }
+
+  .prose h2 {
+    font-size: 1.25rem;
+  }
+
+  .prose h3 {
+    font-size: 1.125rem;
+  }
+
+  .code-block {
+    font-size: 0.75rem;
+  }
+}

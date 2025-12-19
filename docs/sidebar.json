@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "config": {
+    "title": "TempMail Pro Documentation",
+    "logo": {
+      "light": "/assets/logo-dark.svg",
+      "dark": "/assets/logo-light.svg"
+    },
+    "sidebar": {
+      "defaultCollapseLevel": 1
+    }
+  },
+  "nav": [
+    {
+      "title": "Getting Started",
+      "items": [
+        {
+          "title": "Introduction",
+          "href": "/getting-started/introduction.md",
+          "description": "Learn about TempMail Pro and its features"
+        },
+        {
+          "title": "Quick Start",
+          "href": "/getting-started/quick-start.md",
+          "description": "Get TempMail Pro running in minutes"
+        },
+        {
+          "title": "Your First Inbox",
+          "href": "/getting-started/your-first-inbox.md",
+          "description": "Create and use your first temporary email address"
+        }
+      ]
+    },
+    {
+      "title": "API Documentation",
+      "items": [
+        {
+          "title": "Authentication",
+          "href": "/api/authentication.md",
+          "description": "JWT-based authentication and security"
+        },
+        {
+          "title": "Domains",
+          "href": "/api/endpoints/domains.md",
+          "description": "Manage custom domains and DNS configuration"
+        },
+        {
+          "title": "Inboxes",
+          "href": "/api/endpoints/inboxes.md",
+          "description": "Create and manage temporary email addresses"
+        },
+        {
+          "title": "Messages",
+          "href": "/api/endpoints/messages.md",
+          "description": "Retrieve and manage email messages"
+        }
+      ]
+    },
+    {
+      "title": "Guides",
+      "items": [
+        {
+          "title": "Custom Domains",
+          "href": "/guides/custom-domains.md",
+          "description": "Configure and manage your own domains"
+        },
+        {
+          "title": "Email Forwarding",
+          "href": "/guides/email-forwarding.md",
+          "description": "Forward emails to your regular inbox"
+        },
+        {
+          "title": "Using the API",
+          "href": "/guides/using-the-api.md",
+          "description": "Advanced API usage and best practices"
+        }
+      ]
+    },
+    {
+      "title": "FAQ",
+      "items": [
+        {
+          "title": "General Questions",
+          "href": "/faq/general.md",
+          "description": "Common questions about TempMail Pro"
+        },
+        {
+          "title": "Troubleshooting",
+          "href": "/faq/troubleshooting.md",
+          "description": "Solutions to common technical issues"
+        }
+      ]
+    },
+    {
+      "title": "Tutorials",
+      "items": [
+        {
+          "title": "Node.js SDK",
+          "href": "/tutorials/nodejs-sdk.md",
+          "description": "Integrate TempMail Pro with Node.js applications"
+        },
+        {
+          "title": "Python SDK",
+          "href": "/tutorials/python-sdk.md",
+          "description": "Integrate TempMail Pro with Python applications"
+        }
+      ]
+    },
+    {
+      "title": "Resources",
+      "items": [
+        {
+          "title": "GitHub Repository",
+          "href": "https://github.com/tempmailpro/tempmailpro",
+          "external": true
+        },
+        {
+          "title": "Community Forum",
+          "href": "https://github.com/tempmailpro/tempmailpro/discussions",
+          "external": true
+        },
+        {
+          "title": "Report an Issue",
+          "href": "https://github.com/tempmailpro/tempmailpro/issues",
+          "external": true
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "links": [
+      {
+        "title": "Privacy Policy",
+        "href": "/privacy-policy"
+      },
+      {
+        "title": "Terms of Service",
+        "href": "/terms-of-service"
+      },
+      {
+        "title": "Status",
+        "href": "https://status.tempmailpro.com"
+      }
+    ]
+  }
+}

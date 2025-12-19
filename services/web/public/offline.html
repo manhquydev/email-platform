@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - TempMail Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .offline-container {
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .offline-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 30px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .offline-icon svg {
+      width: 60px;
+      height: 60px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 1.125rem;
+      opacity: 0.9;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .retry-button {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .retry-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .tips {
+      margin-top: 40px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .tips h3 {
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+    }
+
+    .tips ul {
+      list-style: none;
+      text-align: left;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    .tips li {
+      margin-bottom: 12px;
+      opacity: 0.9;
+      padding-left: 24px;
+      position: relative;
+    }
+
+    .tips li:before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .checking {
+      animation: pulse 1.5s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+      </svg>
+    </div>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. Some features may not be available until you're back online.</p>
+
+    <button class="retry-button" onclick="checkConnection()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+      </svg>
+      Try Again
+    </button>
+
+    <div class="tips">
+      <h3>While you're offline, you can:</h3>
+      <ul>
+        <li>View previously accessed pages</li>
+        <li>Check cached emails and inboxes</li>
+        <li>Draft new emails (will send when online)</li>
+        <li>Review your account settings</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    let checkInterval;
+
+    function checkConnection() {
+      const button = document.querySelector('.retry-button');
+      const icon = button.querySelector('svg');
+
+      button.classList.add('checking');
+      button.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="checking">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        Checking...
+      `;
+
+      // Try to fetch a small resource to check connectivity
+      fetch('/health', {
+        method: 'HEAD',
+        cache: 'no-cache'
+      })
+      .then(response => {
+        if (response.ok) {
+          // We're online! Reload the page
+          window.location.reload();
+        } else {
+          showOffline();
+        }
+      })
+      .catch(() => {
+        showOffline();
+      });
+    }
+
+    function showOffline() {
+      const button = document.querySelector('.retry-button');
+      button.classList.remove('checking');
+      button.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+        Try Again
+      `;
+    }
+
+    // Listen for online events
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+
+    // Check connection periodically
+    checkInterval = setInterval(() => {
+      if (navigator.onLine) {
+        checkConnection();
+      }
+    }, 30000); // Check every 30 seconds
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
+    });
+
+    // Show connection status
+    function updateConnectionStatus() {
+      const status = navigator.onLine ? 'Online' : 'Offline';
+      console.log(`Connection status: ${status}`);
+    }
+
+    updateConnectionStatus();
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+  </script>
+</body>
+</html>

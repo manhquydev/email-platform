@@ -6,7 +6,7 @@ import { recordAudit } from "../utils/audit";
 import { AuthenticatedRequest } from "../types/auth";
 import { OrganizationRole } from "@prisma/client";
 import { PermissionService } from "../services/permissionService";
-import { checkQuota } from "../middleware/quota";
+import { quotaCheck, trackUsage } from "../middleware/quotaCheck";
 
 export async function domainRoutes(app: FastifyInstance) {
   app.get("/domains", { preHandler: app.authenticate }, async (request, reply) => {
@@ -97,7 +97,7 @@ export async function domainRoutes(app: FastifyInstance) {
     return { data: domains, meta: { total } };
   });
 
-  app.post("/domains", { preHandler: [app.authenticate, checkQuota('domain')] }, async (request, reply) => {
+  app.post("/domains", { preHandler: [app.authenticate, quotaCheck({ resource: 'domain' })] }, async (request, reply) => {
     const bodySchema = z.object({
       name: z.string().min(3),
       organizationId: z.string().uuid().optional(),

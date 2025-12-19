@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
-import { checkQuota } from "../middleware/quota";
+import { quotaCheck, trackUsage } from "../middleware/quotaCheck";
 
 export async function inboxRoutes(app: FastifyInstance) {
   app.get("/inboxes", { preHandler: app.authenticate }, async (request, reply) => {
@@ -39,7 +39,7 @@ export async function inboxRoutes(app: FastifyInstance) {
     return { data: inboxes, meta: { total } };
   });
 
-  app.post("/inboxes", { preHandler: [app.authenticate, checkQuota('inbox')] }, async (request, reply) => {
+  app.post("/inboxes", { preHandler: [app.authenticate, quotaCheck({ resource: 'inbox' })] }, async (request, reply) => {
     const bodySchema = z.object({
       domainId: z.string().uuid(),
       localPart: z.string().min(1),

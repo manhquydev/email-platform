@@ -28,6 +28,10 @@ import { searchRoutes } from "./routes/search";
 import { exportRoutes } from "./routes/export";
 import { automationRoutes } from "./routes/automation";
 import { billingAutomationRoutes } from "./routes/billingAutomation";
+import { publicAuthRoutes } from "./routes/publicAuth";
+import { publicQuotaRoutes } from "./routes/publicQuota";
+import { sitemapRoutes } from "./routes/sitemap";
+import { supportRoutes } from "./routes/support";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -61,7 +65,22 @@ export const buildServer = () => {
     }
   });
 
-  app.register(helmet, { global: true });
+  app.register(helmet, {
+    global: true,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://www.google.com", "https://www.googletagmanager.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        connectSrc: ["'self'", "https://api.stripe.com", "https://js.stripe.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'self'"]
+      }
+    }
+  });
   app.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
   app.register(cors, {
     origin: (origin, cb) => {
@@ -139,6 +158,10 @@ export const buildServer = () => {
 
   app.register(healthRoutes);
   app.register(publicRoutes);
+  app.register(publicAuthRoutes);
+  app.register(publicQuotaRoutes);
+  app.register(sitemapRoutes);
+  app.register(supportRoutes);
   app.register(authRoutes);
   app.register(organizationRoutes, { prefix: '/api' });
   app.register(ssoRoutes, { prefix: '/api' });

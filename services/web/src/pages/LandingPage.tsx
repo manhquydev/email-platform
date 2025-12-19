@@ -1,6 +1,7 @@
 import { Link, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { SEO } from "../components/SEO";
 
 // Feature data
 const features = [
@@ -70,6 +71,22 @@ export function LandingPage() {
         return <Navigate to="/app" replace />;
     }
 
+    // SEO
+    const seoTitle = "Temporary Email Service - Protect Your Privacy | TempMail Pro";
+    const seoDescription = "Create temporary email addresses instantly. Protect your privacy, avoid spam, and test applications with our secure disposable email service. Free tier available.";
+    const seoKeywords = [
+        "temporary email",
+        "disposable email",
+        "fake email",
+        "temp mail",
+        "throwaway email",
+        "email privacy",
+        "spam protection",
+        "email testing",
+        "anonymous email",
+        "temp mail pro"
+    ];
+
     // Animated email demo
     useEffect(() => {
         const emails = ["user", "test", "signup", "verify", "demo"];
@@ -88,7 +105,14 @@ export function LandingPage() {
     };
 
     return (
-        <div className="landing-page">
+        <>
+            <SEO
+                title={seoTitle}
+                description={seoDescription}
+                keywords={seoKeywords}
+                image="/images/tempmail-hero.jpg"
+            />
+            <div className="landing-page">
             {/* Navigation */}
             <nav className="landing-nav">
                 <div className="landing-nav-container">
@@ -104,7 +128,7 @@ export function LandingPage() {
                         <a href="#features" className="landing-nav-link">Tính năng</a>
                         <a href="#how-it-works" className="landing-nav-link">Cách hoạt động</a>
                         <Link to="/login" className="landing-nav-link">Đăng nhập</Link>
-                        <Link to="/register" className="btn-landing-primary">
+                        <Link to="/signup" className="btn-landing-primary">
                             Bắt đầu miễn phí
                         </Link>
                     </div>
@@ -156,7 +180,7 @@ export function LandingPage() {
                     </div>
 
                     <div className="landing-hero-actions">
-                        <Link to="/register" className="btn-landing-primary btn-landing-lg">
+                        <Link to="/signup" className="btn-landing-primary btn-landing-lg">
                             Tạo tài khoản miễn phí
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -280,7 +304,7 @@ export function LandingPage() {
                                     API cơ bản
                                 </li>
                             </ul>
-                            <Link to="/register" className="btn-landing-secondary btn-landing-lg w-full justify-center">
+                            <Link to="/signup" className="btn-landing-secondary btn-landing-lg w-full justify-center">
                                 Bắt đầu miễn phí
                             </Link>
                         </div>
@@ -482,5 +506,6 @@ export function LandingPage() {
                 </div>
             </footer>
         </div>
+        </>
     );
 }

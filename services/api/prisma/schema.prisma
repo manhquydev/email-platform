@@ -82,6 +82,10 @@ model User {
   twoFactorSecret       String?
   twoFactorBackupCodes  String[]
   isDisabled            Boolean   @default(false)
+  tier                  String    @default("free") // free, premium, business
+  source                String?   // direct, referral, social
+  resetToken            String?
+  resetExpiresAt        DateTime?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   lastActiveAt          DateTime? @default(now())
@@ -95,6 +99,11 @@ model User {
   messages              Message[]
   apiKeys               ApiKey[]
   webhooks              Webhook[]
+  userQuota             UserQuota?
+  usageTrackers         UsageTracker[]
+  referralCodeId        String?
+  notifications         Notification[]
+  settings              Json?
 }
 
 model Domain {
@@ -447,4 +456,61 @@ model MessageLabel {
 
   @@index([messageId])
   @@index([label])
+}
+
+// Public tier models for Phase 3
+model UserQuota {
+  id                  String   @id @default(uuid())
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String   @unique
+  maxDomains          Int      @default(1)
+  maxInboxes          Int      @default(10)
+  maxEmailsPerMonth   Int      @default(100)
+  emailRetentionHours Int      @default(24)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UsageTracker {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  metric      String   // emails_sent, emails_received, storage_used
+  value       Int      @default(0)
+  period      String   // daily, monthly, yearly
+  periodStart DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([metric])
+  @@index([period])
+}
+
+model ReferralCode {
+  id            String  @id @default(uuid())
+  code          String  @unique
+  referrerId    String?
+  referralCount Int     @default(0)
+  active        Boolean @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([referrerId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  type      String   // quota_warning, quota_exceeded, trial_ending, upgrade_suggestion
+  title     String
+  message   String
+  data      Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
 }

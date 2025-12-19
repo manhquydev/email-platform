@@ -6,8 +6,12 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { LandingPage } from "./pages/LandingPage";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
+import { PublicSignup } from "./pages/PublicSignup";
 import { VerifyEmail } from "./pages/VerifyEmail";
+import PricingPage from "./pages/PricingPage";
 import { TermsOfService, PrivacyPolicy, AcceptableUse } from "./pages/Legal";
+import { DocumentationPage } from "./pages/DocumentationPage";
+import SupportPage from "./pages/SupportPage";
 import { MainLayout } from "./layouts/MainLayout";
 import { Loading } from "./components/Loading";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -28,10 +32,20 @@ function App() {
                 {/* Public marketing page */}
                 <Route path="/" element={<LandingPage />} />
 
+                {/* Documentation */}
+                <Route path="/docs/*" element={<DocumentationPage />} />
+
+                {/* Support */}
+                <Route path="/support" element={<SupportPage />} />
+
                 {/* Auth routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/signup" element={<PublicSignup />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
+
+                {/* Pricing page */}
+                <Route path="/pricing" element={<PricingPage />} />
 
                 {/* Legal pages */}
                 <Route path="/terms" element={<TermsOfService />} />

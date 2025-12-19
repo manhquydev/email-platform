@@ -1,12 +1,14 @@
 FROM alpine:3.18
 
 # Install Dovecot and dependencies
+# dovecot-pcre is likely included or not available as separate package
+# Added dovecot-sql as we use dovecot-sql.conf.ext
 RUN apk add --no-cache \
     dovecot \
-    dovecot-pcre \
     dovecot-lmtpd \
     dovecot-pop3d \
     dovecot-submissiond \
+    dovecot-sql \
     openssl \
     bash
 

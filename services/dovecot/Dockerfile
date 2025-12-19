@@ -12,6 +12,14 @@ RUN apk add --no-cache \
     openssl \
     bash
 
+# Generate self-signed certificate for Dovecot
+RUN mkdir -p /etc/ssl/certs /etc/ssl/private && \
+    openssl req -new -x509 -days 365 -nodes \
+    -out /etc/ssl/certs/dovecot.pem \
+    -keyout /etc/ssl/private/dovecot.pem \
+    -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" && \
+    chmod 0600 /etc/ssl/private/dovecot.pem
+
 # Copy configuration files
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 COPY conf.d/ /etc/dovecot/conf.d/

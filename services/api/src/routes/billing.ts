@@ -162,7 +162,7 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
             });
         }
 
-        const user = req.user as { userId: string; email: string };
+        const user = req.user as unknown as { userId: string; email: string };
         const body = createCheckoutSchema.parse(req.body);
 
         const priceId = STRIPE_PRICES[body.tier];

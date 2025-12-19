@@ -110,14 +110,14 @@ export async function getMatchingFilters(
     const matching: Array<{ id: string; name: string; actions: FilterAction[] }> = [];
 
     for (const filter of filters) {
-        const conditions = filter.conditions as FilterCondition[];
+        const conditions = filter.conditions as unknown as FilterCondition[];
         const matchType = filter.matchType as 'ALL' | 'ANY';
 
         if (evaluateConditions(conditions, email, matchType)) {
             matching.push({
                 id: filter.id,
                 name: filter.name,
-                actions: filter.actions as FilterAction[],
+                actions: filter.actions as unknown as FilterAction[],
             });
         }
     }

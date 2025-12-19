@@ -1,0 +1,497 @@
+# TempMail Pro GraphQL Schema
+# GraphQL schema for efficient data fetching
+
+# User type
+type User {
+  id: ID!
+  email: String!
+  tier: UserTier!
+  source: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Relations
+  domains(first: Int = 10, after: String): DomainConnection!
+  inboxes(first: Int = 10, after: String): InboxConnection!
+  quota: UserQuota!
+  usage: UsageTracker!
+
+  # Counters
+  _domainsCount: Int!
+  _inboxesCount: Int!
+  _messagesCount: Int!
+}
+
+enum UserTier {
+  FREE
+  PRO
+  BUSINESS
+  ENTERPRISE
+}
+
+# Domain type
+type Domain {
+  id: ID!
+  name: String!
+  userId: ID!
+  isActive: Boolean!
+  mxRecord: String
+  dkimSelector: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Relations
+  user: User!
+  inboxes(first: Int = 10, after: String): InboxConnection!
+
+  # Counters
+  _inboxesCount: Int!
+  _messagesCount: Int!
+}
+
+# Inbox type
+type Inbox {
+  id: ID!
+  name: String!
+  email: String!
+  domainId: ID!
+  userId: ID!
+  isActive: Boolean!
+  retentionHours: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  expiresAt: DateTime
+
+  # Relations
+  domain: Domain!
+  user: User!
+  messages(first: Int = 20, after: String, filter: MessageFilter): MessageConnection!
+
+  # Counters
+  _messagesCount: Int!
+  _unreadCount: Int!
+}
+
+# Message type
+type Message {
+  id: ID!
+  inboxId: ID!
+  fromEmail: String!
+  fromName: String
+  subject: String!
+  body: String!
+  bodyHtml: String
+  headers: JSON
+  size: Int!
+  isRead: Boolean!
+  hasAttachments: Boolean!
+  receivedAt: DateTime!
+  createdAt: DateTime!
+
+  # Relations
+  inbox: Inbox!
+
+  # Fields for pagination
+  cursor: String!
+}
+
+# User Quota type
+type UserQuota {
+  id: ID!
+  userId: ID!
+  maxDomains: Int!
+  maxInboxes: Int!
+  maxEmailsPerMonth: Int!
+  emailRetentionHours: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Usage
+  usedDomains: Int!
+  usedInboxes: Int!
+  usedEmailsThisMonth: Int!
+  domainUsagePercentage: Float!
+  inboxUsagePercentage: Float!
+  emailUsagePercentage: Float!
+}
+
+# Usage Tracker type
+type UsageTracker {
+  id: ID!
+  userId: ID!
+  metric: String!
+  value: Int!
+  period: String!
+  createdAt: DateTime!
+}
+
+# Support Ticket type
+type SupportTicket {
+  id: ID!
+  userId: ID!
+  name: String!
+  email: String!
+  subject: String!
+  category: String!
+  message: String!
+  priority: String!
+  status: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  closedAt: DateTime
+
+  # Relations
+  user: User
+  replies(first: Int = 10): [SupportReply!]!
+}
+
+# Support Reply type
+type SupportReply {
+  id: ID!
+  ticketId: ID!
+  userId: ID!
+  message: String!
+  isInternal: Boolean!
+  createdAt: DateTime!
+
+  # Relations
+  ticket: SupportTicket!
+  user: User!
+}
+
+# Connection types for pagination
+type DomainConnection {
+  edges: [DomainEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type DomainEdge {
+  node: Domain!
+  cursor: String!
+}
+
+type InboxConnection {
+  edges: [InboxEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type InboxEdge {
+  node: Inbox!
+  cursor: String!
+}
+
+type MessageConnection {
+  edges: [MessageEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type MessageEdge {
+  node: Message!
+  cursor: String!
+}
+
+# Standard PageInfo type
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+# Input types
+input MessageFilter {
+  isRead: Boolean
+  hasAttachments: Boolean
+  fromEmail: String
+  subject: String
+  dateFrom: DateTime
+  dateTo: DateTime
+}
+
+input CreateDomainInput {
+  name: String!
+}
+
+input CreateInboxInput {
+  name: String!
+  domainId: ID!
+  retentionHours: Int
+}
+
+input UpdateInboxInput {
+  name: String
+  isActive: Boolean
+  retentionHours: Int
+}
+
+input CreateSupportTicketInput {
+  name: String!
+  email: String!
+  subject: String!
+  category: String!
+  message: String!
+  priority: String!
+}
+
+input AddSupportReplyInput {
+  ticketId: ID!
+  message: String!
+  isInternal: Boolean!
+}
+
+# Authentication types
+type AuthPayload {
+  token: String!
+  user: User!
+  expiresAt: DateTime!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input SignupInput {
+  email: String!
+  password: String!
+  source: String
+  referralCode: String
+}
+
+input UpdatePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
+# Queries
+type Query {
+  # Authenticated user queries
+  me: User!
+
+  # Domain queries
+  domains(first: Int = 10, after: String, filter: DomainFilter): DomainConnection!
+  domain(id: ID!): Domain
+
+  # Inbox queries
+  inboxes(first: Int = 10, after: String, filter: InboxFilter): InboxConnection!
+  inbox(id: ID!): Inbox
+
+  # Message queries
+  messages(
+    inboxId: ID!
+    first: Int = 20
+    after: String
+    filter: MessageFilter
+  ): MessageConnection!
+  message(id: ID!): Message
+
+  # Support queries
+  myTickets(first: Int = 10, after: String, status: String): [SupportTicket!]!
+  ticket(id: ID!): SupportTicket
+
+  # Admin queries
+  admin: AdminQuery!
+
+  # Analytics queries
+  analytics: AnalyticsQuery!
+}
+
+# Admin query type
+type AdminQuery {
+  users(first: Int = 10, after: String, filter: UserFilter): UserConnection!
+  stats: GlobalStats!
+
+  # Domain management
+  allDomains(first: Int = 10, after: String): DomainConnection!
+
+  # Message analytics
+  messageStats(startDate: DateTime!, endDate: DateTime!): MessageStats!
+
+  # System health
+  health: SystemHealth!
+}
+
+# Analytics query type
+type AnalyticsQuery {
+  myUsage(period: String!): UsageMetrics!
+  quotaStatus: QuotaStatus!
+  emailTrends(period: String!): EmailTrends!
+}
+
+# Mutations
+type Mutation {
+  # Authentication mutations
+  login(input: LoginInput!): AuthPayload!
+  signup(input: SignupInput!): AuthPayload!
+  refreshToken(token: String!): AuthPayload!
+  logout: Boolean!
+  updatePassword(input: UpdatePasswordInput!): Boolean!
+
+  # Domain mutations
+  createDomain(input: CreateDomainInput!): Domain!
+  updateDomain(id: ID!, input: UpdateDomainInput!): Domain!
+  deleteDomain(id: ID!): Boolean!
+  verifyDomain(id: ID!): Domain!
+
+  # Inbox mutations
+  createInbox(input: CreateInboxInput!): Inbox!
+  updateInbox(id: ID!, input: UpdateInboxInput!): Inbox!
+  deleteInbox(id: ID!): Boolean!
+  regenerateInbox(id: ID!): Inbox!
+
+  # Message mutations
+  markMessageAsRead(id: ID!): Message!
+  markMessagesAsRead(ids: [ID!]!): [Message!]!
+  deleteMessage(id: ID!): Boolean!
+  deleteMessages(ids: [ID!]!): Boolean!
+
+  # Support mutations
+  createTicket(input: CreateSupportTicketInput!): SupportTicket!
+  addReply(input: AddSupportReplyInput!): SupportReply!
+  closeTicket(id: ID!): SupportTicket!
+
+  # Admin mutations
+  admin: AdminMutation!
+}
+
+# Admin mutation type
+type AdminMutation {
+  updateUserRole(userId: ID!, role: String!): User!
+  suspendUser(userId: ID!, reason: String!): User!
+  unsuspendUser(userId: ID!): User!
+
+  # System management
+  clearCache: Boolean!
+  runMaintenance(task: String!): MaintenanceResult!
+}
+
+# Additional filter types
+input DomainFilter {
+  isActive: Boolean
+  userId: ID
+}
+
+input InboxFilter {
+  isActive: Boolean
+  domainId: ID
+  userId: ID
+}
+
+input UserFilter {
+  tier: UserTier
+  isActive: Boolean
+  source: String
+}
+
+# Analytics types
+type UsageMetrics {
+  emailsReceived: Int!
+  emailsSent: Int!
+  domainsUsed: Int!
+  inboxesCreated: Int!
+  storageUsed: Float!
+  period: String!
+}
+
+type QuotaStatus {
+  domains: QuotaItem!
+  inboxes: QuotaItem!
+  emails: QuotaItem!
+  storage: QuotaItem!
+}
+
+type QuotaItem {
+  used: Int!
+  max: Int!
+  percentage: Float!
+  remaining: Int!
+}
+
+type EmailTrends {
+  daily: [TrendData!]!
+  weekly: [TrendData!]!
+  monthly: [TrendData!]!
+}
+
+type TrendData {
+  date: String!
+  count: Int!
+  growth: Float
+}
+
+# Stats types
+type GlobalStats {
+  totalUsers: Int!
+  totalDomains: Int!
+  totalInboxes: Int!
+  totalMessages: Int!
+  activeUsers: Int!
+  messagesToday: Int!
+  newUsersToday: Int!
+}
+
+type MessageStats {
+  total: Int!
+  averageSize: Float!
+  withAttachments: Int!
+  topSenders: [TopSender!]!
+  topDomains: [TopDomain!]!
+}
+
+type TopSender {
+  email: String!
+  count: Int!
+}
+
+type TopDomain {
+  domain: String!
+  count: Int!
+}
+
+type SystemHealth {
+  database: HealthStatus!
+  redis: HealthStatus!
+  storage: HealthStatus!
+  emailService: HealthStatus!
+  overall: HealthStatus!
+}
+
+type HealthStatus {
+  status: String!
+  message: String!
+  lastChecked: DateTime!
+  metrics: JSON
+}
+
+type MaintenanceResult {
+  taskId: String!
+  status: String!
+  message: String!
+}
+
+# Custom scalar types
+scalar DateTime
+scalar JSON
+
+# Subscription types
+type Subscription {
+  # Real-time subscriptions
+  messageReceived(inboxId: ID!): Message!
+  inboxUpdated(inboxId: ID!): Inbox!
+  quotaUpdated(userId: ID!): UserQuota!
+
+  # Admin subscriptions
+  userRegistered: User!
+  systemAlert: SystemAlert!
+}
+
+type SystemAlert {
+  id: ID!
+  level: String!
+  message: String!
+  timestamp: DateTime!
+  metadata: JSON
+}

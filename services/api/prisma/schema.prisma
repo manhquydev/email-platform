@@ -106,6 +106,13 @@ model User {
   settings              Json?
 }
 
+enum ContributionStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Domain {
   id                String            @id @default(uuid())
   name              String            @unique
@@ -119,6 +126,11 @@ model Domain {
   updatedAt         DateTime          @updatedAt
   organizationId    String?
 
+  // Contribution fields
+  isPublic          Boolean           @default(false)
+  contributionStatus ContributionStatus @default(NONE)
+  publicDescription String?
+
   // Relations
   inboxes           Inbox[]
   messages          Message[]         @relation("DomainMessages")
@@ -128,6 +140,8 @@ model Domain {
   @@index([organizationId])
   @@index([isActive])
   @@index([status])
+  @@index([isPublic])
+  @@index([contributionStatus])
 }
 
 model Inbox {

@@ -1,0 +1,339 @@
+# TempMail Pro API Deployment for Kubernetes
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempmail-api
+  namespace: tempmail-pro
+  labels:
+    app: tempmail-api
+    version: v1
+    tier: backend
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: tempmail-api
+  template:
+    metadata:
+      labels:
+        app: tempmail-api
+        version: v1
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      serviceAccountName: tempmail-api
+      containers:
+      - name: api
+        image: tempmail-pro/api:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: tempmail-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: tempmail-config
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: tempmail-secrets
+              key: jwt-secret
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tempmail-secrets
+              key: stripe-secret
+        - name: WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: tempmail-secrets
+              key: webhook-secret
+        - name: SMTP_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: tempmail-config
+              key: smtp-host
+        - name: SMTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tempmail-config
+              key: smtp-port
+        - name: EMAIL_FROM
+          valueFrom:
+            configMapKeyRef:
+              name: tempmail-config
+              key: email-from
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: tempmail-config
+              key: aws-region
+        - name: S3_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: tempmail-config
+              key: s3-bucket
+        - name: LOG_LEVEL
+          value: "info"
+        - name: MAX_REQUEST_SIZE
+          value: "10485760"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: uploads
+          mountPath: /app/uploads
+      - name: metrics-collector
+        image: prom/node-exporter:latest
+        ports:
+        - name: metrics
+          containerPort: 9100
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: tempmail-uploads-pvc
+      nodeSelector:
+        kubernetes.io/os: linux
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - tempmail-api
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: "tempmail-pro/workload"
+        operator: "Equal"
+        value: "api"
+        effect: "NoSchedule"
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempmail-api
+  namespace: tempmail-pro
+  annotations:
+    iam.amazonaws.com/role: tempmail-api-role
+---
+# HPA Configuration
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tempmail-api-hpa
+  namespace: tempmail-pro
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tempmail-api
+  minReplicas: 5
+  maxReplicas: 50
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 10
+        periodSeconds: 15
+      selectPolicy: Max
+---
+# Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tempmail-api-netpol
+  namespace: tempmail-pro
+spec:
+  podSelector:
+    matchLabels:
+      app: tempmail-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: tempmail-web
+    - podSelector:
+        matchLabels:
+          app: nginx-ingress
+    ports:
+    - protocol: TCP
+      port: 3000
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 25
+    - protocol: TCP
+      port: 587
+---
+# Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tempmail-api-pdb
+  namespace: tempmail-pro
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: tempmail-api
+---
+# Service Monitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempmail-api-metrics
+  namespace: tempmail-pro
+  labels:
+    app: tempmail-api
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: tempmail-api
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s

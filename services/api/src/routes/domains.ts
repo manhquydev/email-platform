@@ -46,23 +46,26 @@ export async function domainRoutes(app: FastifyInstance) {
         ? { organizationId: query.data.organizationId }
         : {}
       : query.data.organizationId
-      ? { organizationId: query.data.organizationId }
-      : {
-        OR: [
-          { ownerId: user.userId },
-          {
-            organization: {
-              members: {
-                some: {
-                  userId: user.userId,
-                  isActive: true
+        ? { organizationId: query.data.organizationId }
+        : {
+          OR: [
+            { ownerId: user.userId },
+            {
+              organization: {
+                members: {
+                  some: {
+                    userId: user.userId,
+                    isActive: true
+                  }
                 }
               }
-            }
-          },
-          { isPublic: true },
-        ]
-      };
+            },
+            { isPublic: true },
+            // PENDING contributions are visible to owner via ownerId check above
+            // But if we want to filter specifically by contributionStatus, consumer can filter client side or we add query param
+
+          ]
+        };
 
     const searchWhere = query.data.search
       ? {
@@ -115,7 +118,7 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(409).send({ error: "Domain already exists", domain: existing });
     }
 
-    let ownerId = user.userId;
+    let ownerId: string | undefined | null = user.userId;
     let orgId = null;
 
     // If organizationId is provided, check permissions
@@ -145,7 +148,7 @@ export async function domainRoutes(app: FastifyInstance) {
         ownerId,
         organizationId: orgId,
         isPublic: isAdmin, // Admin-created domains are public by default
-      },
+      } as any,
       include: {
         owner: {
           select: { id: true, email: true }
@@ -202,6 +205,10 @@ export async function domainRoutes(app: FastifyInstance) {
     // But the Point is to check if the DOMAIN OWNER put it in DNS.
 
     try {
+      if (!domain.verificationToken) {
+        return reply.status(400).send({ error: "Domain has no verification token" });
+      }
+
       const { verifyDomainOwnership } = await import("../utils/dns");
       const isVerified = await verifyDomainOwnership(domain.name, domain.verificationToken);
 
@@ -224,7 +231,7 @@ export async function domainRoutes(app: FastifyInstance) {
       data: { status: "VERIFIED" },
     });
 
-    await recordAudit(user.userId, "DOMAIN_VERIFIED", { domainId: domain.id, name: domain.name });
+    await recordAudit(userId, "DOMAIN_VERIFIED", { domainId: domain.id, name: domain.name });
 
     return { domain: updated };
   });
@@ -329,7 +336,7 @@ export async function domainRoutes(app: FastifyInstance) {
       where: { id: params.data.id },
       data: {
         ...(body.data.isPublic !== undefined ? { isPublic: body.data.isPublic } : {}),
-      },
+      } as any,
     });
 
     if (body.data.isPublic !== undefined) {
@@ -339,6 +346,109 @@ export async function domainRoutes(app: FastifyInstance) {
         isPublic: body.data.isPublic,
       });
     }
+
+    return { domain: updated };
+  });
+
+  // User: Contribute Domain
+  app.post("/domains/:id/contribute", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({ publicDescription: z.string().optional() }).safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const domain = await prisma.domain.findUnique({
+      where: { id: params.data.id }
+    });
+
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+
+    // Only owner can contribute
+    if (domain.ownerId !== user.userId) {
+      return reply.status(403).send({ error: "Only the direct owner can contribute a domain" });
+    }
+
+    // Must be verified
+    if (domain.status !== 'VERIFIED') {
+      return reply.status(400).send({ error: "Domain must be verified before contributing" });
+    }
+
+    if (domain.isPublic) {
+      return reply.status(400).send({ error: "Domain is already public" });
+    }
+
+    const updated = await prisma.domain.update({
+      where: { id: domain.id },
+      data: {
+        contributionStatus: ContributionStatus.PENDING,
+        publicDescription: body.data.publicDescription
+      }
+    });
+
+    await recordAudit(user.userId, "DOMAIN_CONTRIBUTION_REQUESTED", {
+      domainId: domain.id,
+      name: domain.name
+    });
+
+    return { domain: updated };
+  });
+
+  // Admin: Approve Contribution
+  app.post("/admin/domains/:id/approve", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: "Invalid ID" });
+
+    const user = request.user as { userId: string; role: string };
+    if (user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Admin access required" });
+    }
+
+    const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
+    if (!domain) return reply.status(404).send({ error: "Domain not found" });
+
+    const updated = await prisma.domain.update({
+      where: { id: params.data.id },
+      data: {
+        contributionStatus: 'APPROVED',
+        isPublic: true
+      } as any
+    });
+
+    await recordAudit(user.userId, "DOMAIN_CONTRIBUTION_APPROVED", {
+      domainId: domain.id,
+      name: domain.name
+    });
+
+    return { domain: updated };
+  });
+
+  // Admin: Reject Contribution
+  app.post("/admin/domains/:id/reject", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: "Invalid ID" });
+
+    const user = request.user as { userId: string; role: string };
+    if (user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Admin access required" });
+    }
+
+    const updated = await prisma.domain.update({
+      where: { id: params.data.id },
+      data: {
+        contributionStatus: 'REJECTED',
+        isPublic: false
+      } as any
+    });
+
+    await recordAudit(user.userId, "DOMAIN_CONTRIBUTION_REJECTED", {
+      domainId: params.data.id
+    });
 
     return { domain: updated };
   });

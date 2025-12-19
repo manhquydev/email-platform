@@ -1,0 +1,679 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: TempMail Pro Multi-Region Infrastructure Setup
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: tempmail-pro
+    Description: Project name for resource tagging
+
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues: [dev, staging, prod]
+    Description: Environment type
+
+  DomainName:
+    Type: String
+    Default: tempmail.pro
+    Description: Primary domain name
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    Description: Database password (at least 8 characters)
+
+  InstanceType:
+    Type: String
+    Default: m6g.large
+    AllowedValues: [t4g.large, m6g.large, c6g.large, r6g.large]
+    Description: EC2 instance type for application servers
+
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: EC2 Key Pair for SSH access
+
+  VpcCidr:
+    Type: String
+    Default: 10.0.0.0/16
+    Description: CIDR block for VPC
+
+  PublicSubnetCidr1:
+    Type: String
+    Default: 10.0.1.0/24
+    Description: CIDR block for public subnet 1
+
+  PublicSubnetCidr2:
+    Type: String
+    Default: 10.0.2.0/24
+    Description: CIDR block for public subnet 2
+
+  PrivateSubnetCidr1:
+    Type: String
+    Default: 10.0.11.0/24
+    Description: CIDR block for private subnet 1
+
+  PrivateSubnetCidr2:
+    Type: String
+    Default: 10.0.12.0/24
+    Description: CIDR block for private subnet 2
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: ami-0c02fb55956c7d316
+      Region: US East (N. Virginia)
+    eu-west-1:
+      AMI: ami-0d729a607b67079e1
+      Region: EU West (Ireland)
+    ap-southeast-1:
+      AMI: ami-01f87c43c4e656c42
+      Region: AP Southeast (Singapore)
+
+Resources:
+  # VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-vpc'
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Internet Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-igw'
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  # Public Subnets
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetCidr1
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-public-1'
+        - Key: Type
+          Value: Public
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetCidr2
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-public-2'
+        - Key: Type
+          Value: Public
+
+  # Private Subnets
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetCidr1
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-private-1'
+        - Key: Type
+          Value: Private
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetCidr2
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-private-2'
+        - Key: Type
+          Value: Private
+
+  # NAT Gateway
+  NATGateway:
+    Type: AWS::EC2::NatGateway
+    DependsOn: AttachGateway
+    Properties:
+      AllocationId: !GetAtt 'ElasticIP.AllocationId'
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-nat'
+
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    DependsOn: AttachGateway
+    Properties:
+      Domain: vpc
+
+  # Route Tables
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-public-rt'
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-private-rt'
+
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGateway
+
+  # Route Table Associations
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
+
+  # Security Groups
+  ApplicationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for TempMail Pro application
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-app-sg'
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS database
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref ApplicationSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-db-sg'
+
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Redis cluster
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref ApplicationSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-redis-sg'
+
+  # RDS PostgreSQL Subnet Group
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS database
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-db-subnet-group'
+
+  # RDS PostgreSQL Instance
+  Database:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub '${ProjectName}-${Environment}-db'
+      DBInstanceClass: !Ref InstanceType
+      Engine: postgres
+      EngineVersion: '15.4'
+      MasterUsername: tempmail_admin
+      MasterUserPassword: !Ref DBPassword
+      AllocatedStorage: 100
+      StorageType: io1
+      Iops: 3000
+      StorageEncrypted: true
+      DBName: tempmail_pro
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      BackupRetentionPeriod: 30
+      PreferredBackupWindow: '03:00-04:00'
+      PreferredMaintenanceWindow: 'sun:04:00-sun:05:00'
+      MultiAZ: false
+      PubliclyAccessible: false
+      StorageAutoScaling:
+        MaxCapacityStorageSize: 1000
+        AutoPause: false
+      EnableCloudwatchLogsExports:
+        - postgresql
+      DeletionPolicy: Snapshot
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-db'
+
+  # ElastiCache Subnet Group
+  CacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for ElastiCache
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  # ElastiCache Redis Cluster
+  RedisCluster:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupId: !Sub '${ProjectName}-${Environment}-redis'
+      Description: Redis cluster for TempMail Pro
+      NodeGroupConfiguration:
+        - PrimaryAvailabilityZone: !Select [0, !GetAZs '']
+          ReplicaAvailabilityZones:
+            - !Select [1, !GetAZs '']
+          NodeGroupId: '0001'
+          PrimaryNodeId: '0001'
+          ReplicaIds:
+            - '0002'
+      NumCacheClusters: 2
+      Engine: redis
+      EngineVersion: '7.0'
+      CacheNodeType: cache.r6g.large
+      Port: 6379
+      CacheParameterGroupName: default.redis7
+      SecurityGroupIds:
+        - !Ref RedisSecurityGroup
+      SubnetGroupName: !Ref CacheSubnetGroup
+      AutomaticFailoverEnabled: true
+      MultiAZEnabled: true
+      AtRestEncryptionEnabled: true
+      TransitEncryptionEnabled: true
+      AuthToken: !Ref RedisAuthToken
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-redis'
+
+  # S3 Bucket for static assets
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-${Environment}-assets-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: 'ExpireOldVersions'
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 90
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-assets'
+
+  # Application Load Balancer
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub '${ProjectName}-${Environment}-alb'
+      Scheme: internet-facing
+      Type: application
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroups:
+        - !Ref ApplicationSecurityGroup
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: false
+        - Key: idle_timeout.timeout_seconds
+          Value: 60
+        - Key: routing.http2.enabled
+          Value: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-alb'
+
+  # Target Group for API
+  APITargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub '${ProjectName}-${Environment}-api-tg'
+      Port: 3000
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: '3000'
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      Matcher:
+        HttpCode: '200'
+      TargetType: ip
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-api-tg'
+
+  # ALB Listener
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref SSLCertificate
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref APITargetGroup
+
+  # CloudWatch Log Group
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/ec2/${ProjectName}-${Environment}'
+      RetentionInDays: 14
+
+  # IAM Role for EC2
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub '${AssetsBucket}/*'
+
+  # Instance Profile
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2Role
+
+  # Launch Configuration for Auto Scaling Group
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+        - !Ref ApplicationSecurityGroup
+      KeyName: !Ref KeyPairName
+      IamInstanceProfile: !Ref InstanceProfile
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum update -y
+          yum install -y docker
+          systemctl start docker
+          systemctl enable docker
+          usermod -a -G docker ec2-user
+          # Install CloudWatch agent
+          yum install -y amazon-cloudwatch-agent
+          # Configure app
+          mkdir -p /app
+          # Pull and run application
+          docker run -d \
+            --name tempmail-api \
+            -p 3000:3000 \
+            -e DATABASE_URL=${Database.Endpoint} \
+            -e REDIS_URL=${RedisCluster.RedisEndpoint.Address} \
+            -e NODE_ENV=production \
+            tempmail-pro/api:latest
+          # Configure CloudWatch
+          cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << EOF
+          {
+            "agent": {
+              "metrics_collection_interval": 60
+            },
+            "logs": {
+              "logs_collected": {
+                "files": {
+                  "collect_list": [
+                    {
+                      "file_path": "/var/log/docker.log",
+                      "log_group_name": "${LogGroup}",
+                      "log_stream_name": "{instance_id}/docker"
+                    }
+                  ]
+                }
+              }
+            },
+            "metrics": {
+              "namespace": "TempMailPro",
+              "metrics_collected": {
+                "cpu": {
+                  "measurement": [
+                    "cpu_usage_idle",
+                    "cpu_usage_iowait",
+                    "cpu_usage_user",
+                    "cpu_usage_system"
+                  ]
+                },
+                "disk": {
+                  "measurement": [
+                    "used_percent"
+                  ],
+                  "resources": [
+                    "*"
+                  ]
+                }
+              }
+            }
+          }
+          EOF
+          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a start
+
+  # Auto Scaling Group
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      MinSize: 3
+      MaxSize: 20
+      DesiredCapacity: 5
+      TargetGroupARNs:
+        - !Ref APITargetGroup
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 300
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environment}-asg'
+          PropagateAtLaunch: true
+
+  # Scaling Policies
+  ScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      AdjustmentType: ChangeInCapacity
+      ScalingAdjustment: 2
+      Cooldown: 300
+
+  ScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      AdjustmentType: ChangeInCapacity
+      ScalingAdjustment: -1
+      Cooldown: 300
+
+  # CloudWatch Alarms
+  CPUHighAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-${Environment}-cpu-high'
+      AlarmDescription: CPU utilization is above 70%
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 70
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref ScaleUpPolicy
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value: !Ref AutoScalingGroup
+
+  CPULowAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-${Environment}-cpu-low'
+      AlarmDescription: CPU utilization is below 30%
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 30
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref ScaleDownPolicy
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value: !Ref AutoScalingGroup
+
+Parameters:
+  SSLCertificate:
+    Type: String
+    Description: ARN of SSL certificate for HTTPS
+
+  RedisAuthToken:
+    Type: String
+    Description: Auth token for Redis (must be at least 16 characters)
+    NoEcho: true
+    MinLength: 16
+
+Outputs:
+  VPCId:
+    Description: VPC ID
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-VPC-ID'
+
+  DatabaseEndpoint:
+    Description: RDS endpoint
+    Value: !GetAtt Database.Endpoint.Address
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-DB-Endpoint'
+
+  RedisEndpoint:
+    Description: Redis endpoint
+    Value: !GetAtt RedisCluster.RedisEndpoint.Address
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-Redis-Endpoint'
+
+  ALBDNSName:
+    Description: Load balancer DNS name
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-ALB-DNS'
+
+  AssetsBucket:
+    Description: S3 bucket for assets
+    Value: !Ref AssetsBucket
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-Assets-Bucket'

@@ -26,27 +26,40 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
 
     if (opts.token) headers.Authorization = `Bearer ${opts.token}`;
 
-    const res = await fetch(`${API_BASE}${path}`, {
-        method: opts.method ?? "GET",
-        headers,
-        body,
-    });
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-    const data: unknown = await res.json().catch(() => ({}));
-    if (!res.ok) {
-        const payload = (data as { error?: string; message?: string; details?: string }) ?? {};
-        // Prioritize 'message', then 'error', then default
-        const rawMsg = payload.message ?? payload.error ?? "Request failed";
-        const msg = getFriendlyErrorMessage(rawMsg);
+    try {
+        const res = await fetch(`${API_BASE}${path}`, {
+            method: opts.method ?? "GET",
+            headers,
+            body,
+            signal: controller.signal,
+        });
+        clearTimeout(id);
 
-        const details = payload.details;
+        const data: unknown = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            const payload = (data as { error?: string; message?: string; details?: string }) ?? {};
+            // Prioritize 'message', then 'error', then default
+            const rawMsg = payload.message ?? payload.error ?? "Request failed";
+            const msg = getFriendlyErrorMessage(rawMsg);
 
-        if (res.status === 401) {
-            window.dispatchEvent(new Event("auth:unauthorized"));
+            const details = payload.details;
+
+            if (res.status === 401) {
+                window.dispatchEvent(new Event("auth:unauthorized"));
+            }
+
+            throw new Error(details ? `${msg}: ${details}` : msg);
         }
 
-        throw new Error(details ? `${msg}: ${details}` : msg);
+        return data as T;
+    } catch (error) {
+        clearTimeout(id);
+        if ((error as Error).name === 'AbortError') {
+            throw new Error("Yêu cầu quá hạn. Vui lòng kiểm tra kết nối mạng.");
+        }
+        throw error;
     }
-
-    return data as T;
 }

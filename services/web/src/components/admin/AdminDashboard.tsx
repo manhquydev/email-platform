@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../../utils/api";
+import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
@@ -49,7 +50,7 @@ export function AdminDashboard({ token }: { token: string }) {
             setLastUpdated(new Date());
             if (showToast) toast.success("Đã cập nhật thống kê");
         } catch (err) {
-            toast.error("Không thể tải thống kê");
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }

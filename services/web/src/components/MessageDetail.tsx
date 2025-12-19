@@ -9,10 +9,11 @@ import { API_BASE, formatBytes } from "../utils/api";
 interface MessageDetailProps {
     message: Message | null;
     onComposeReply?: () => void;
+    onForward?: () => void;
     onBack?: () => void;
 }
 
-export function MessageDetail({ message, onComposeReply, onBack }: MessageDetailProps) {
+export function MessageDetail({ message, onComposeReply, onForward, onBack }: MessageDetailProps) {
     const [viewMode, setViewMode] = useState<"html" | "text">("html");
 
     if (!message) {
@@ -80,7 +81,12 @@ export function MessageDetail({ message, onComposeReply, onBack }: MessageDetail
                             <span className="hidden sm:inline">Trả lời</span>
                         </button>
                         {/* Forward */}
-                        <button className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift" title="Chuyển tiếp" data-tooltip="Chuyển tiếp">
+                        <button
+                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
+                            title="Chuyển tiếp"
+                            data-tooltip="Chuyển tiếp"
+                            onClick={onForward}
+                        >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                         {/* Export */}

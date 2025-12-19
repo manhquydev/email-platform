@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../../utils/api";
+import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 
 interface AbuseReport {
@@ -31,7 +32,7 @@ export function AdminReports({ token }: { token: string }) {
             const res = await api<{ data: AbuseReport[] }>("/abuse/reports", { token });
             setReports(res.data);
         } catch (err) {
-            toast.error("Không thể tải danh sách");
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }
@@ -52,7 +53,7 @@ export function AdminReports({ token }: { token: string }) {
             toast.success("Đã cập nhật");
             await loadReports();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
         }

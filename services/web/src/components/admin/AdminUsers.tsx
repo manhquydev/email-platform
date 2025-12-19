@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../../utils/api";
+import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 
 interface User {
@@ -34,8 +35,8 @@ export function AdminUsers({ token }: { token: string }) {
             const res = await api<{ data: User[]; meta: { total: number } }>(`/admin/users?${params}`, { token });
             setUsers(res.data);
             setTotal(res.meta.total);
-        } catch {
-            toast.error("Không thể tải danh sách");
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }
@@ -61,7 +62,7 @@ export function AdminUsers({ token }: { token: string }) {
             toast.success("Đã cập nhật quyền");
             await loadUsers();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
         }
@@ -78,7 +79,7 @@ export function AdminUsers({ token }: { token: string }) {
             toast.success(user.isDisabled ? "Đã kích hoạt tài khoản" : "Đã vô hiệu hóa tài khoản");
             await loadUsers();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
         }
@@ -94,7 +95,7 @@ export function AdminUsers({ token }: { token: string }) {
             toast.success("Đã xác thực email");
             await loadUsers();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
         }
@@ -111,7 +112,7 @@ export function AdminUsers({ token }: { token: string }) {
             setConfirmDelete(null);
             await loadUsers();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
         }
@@ -159,10 +160,10 @@ export function AdminUsers({ token }: { token: string }) {
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {users.map((user) => (
-                                    <tr key={user.id} className={`hover:bg-bg/50 ${user.isDisabled ? "opacity-50" : ""}`}>
+                                    <tr key={user.id} className={`hover:bg-bg/50 ${user.isDisabled ? "bg-gray-50" : ""}`}>
                                         <td className="px-4 py-3">
-                                            <div className="font-medium">{user.email}</div>
-                                            {user.isDisabled && <span className="text-xs text-red-500">Đã vô hiệu hóa</span>}
+                                            <div className={`font-medium ${user.isDisabled ? "text-muted" : ""}`}>{user.email}</div>
+                                            {user.isDisabled && <span className="text-xs text-red-500 font-medium">Đã khóa</span>}
                                         </td>
                                         <td className="px-4 py-3">
                                             <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded ${user.role === "ADMIN" ? "bg-purple-50 text-purple-600" : "bg-gray-100 text-gray-600"
@@ -192,7 +193,7 @@ export function AdminUsers({ token }: { token: string }) {
                                                 value={user.role}
                                                 onChange={(e) => handleRoleChange(user.id, e.target.value as "ADMIN" | "USER")}
                                                 disabled={updating === user.id}
-                                                className="text-xs py-1 px-2 w-20"
+                                                className="text-xs py-1 px-2 w-20 border border-border rounded"
                                             >
                                                 <option value="USER">USER</option>
                                                 <option value="ADMIN">ADMIN</option>
@@ -203,13 +204,13 @@ export function AdminUsers({ token }: { token: string }) {
                                                 <button
                                                     onClick={() => handleToggleDisable(user)}
                                                     disabled={updating === user.id}
-                                                    className={`text-xs px-2 py-1 rounded ${user.isDisabled
-                                                        ? "text-green-600 hover:bg-green-50"
-                                                        : "text-amber-600 hover:bg-amber-50"
+                                                    className={`text-xs px-3 py-1.5 rounded font-medium transition-colors border ${user.isDisabled
+                                                        ? "bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                                                        : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
                                                         } disabled:opacity-50`}
-                                                    title={user.isDisabled ? "Kích hoạt" : "Vô hiệu hóa"}
+                                                    title={user.isDisabled ? "Mở khóa tài khoản" : "Khóa tài khoản"}
                                                 >
-                                                    {user.isDisabled ? "Kích hoạt" : "Khóa"}
+                                                    {user.isDisabled ? "Mở khóa" : "Khóa"}
                                                 </button>
                                                 <button
                                                     onClick={() => setConfirmDelete(user)}

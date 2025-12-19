@@ -44,6 +44,12 @@ export function Dashboard() {
 
     const [showCompose, setShowCompose] = useState(false);
     const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+    const [composeInitialValues, setComposeInitialValues] = useState<{
+        initialSubject?: string;
+        initialBody?: string;
+        initialTo?: string;
+        initialFrom?: string;
+    }>({});
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Bulk selection state
@@ -473,6 +479,46 @@ export function Dashboard() {
         }
     };
 
+    // Extend Inbox expiration
+    const handleExtendInbox = async (inboxId: string) => {
+        if (!token) return;
+        setBusy(true);
+        try {
+            // Extend by 10 minutes (600000 ms)
+            const inbox = inboxes.find(i => i.id === inboxId);
+            if (!inbox) return;
+
+            const currentExpiresAt = inbox.expiresAt ? new Date(inbox.expiresAt).getTime() : Date.now();
+            const newExpiresAt = new Date(currentExpiresAt + 10 * 60 * 1000).toISOString();
+
+            await api(`/inboxes/${inboxId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ expiresAt: newExpiresAt }),
+                token
+            });
+
+            toast.success("Đã gia hạn thêm 10 phút!");
+            // Reload inboxes to update timer - wait a bit for DB propagation if needed
+            if (selectedDomain) loadInboxes(selectedDomain);
+        } catch (e) {
+            console.error(e);
+            toast.error("Lỗi gia hạn inbox");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const handleForwardEmail = useCallback(() => {
+        if (!selectedMessage) return;
+        const body = `\n\n\n-------- Forwarded Message --------\nFrom: ${selectedMessage.fromAddress}\nDate: ${selectedMessage.receivedAt}\nSubject: ${selectedMessage.subject}\nTo: ${selectedMessage.toAddress}\n\n${selectedMessage.textBody || ""}`;
+
+        setComposeInitialValues({
+            initialSubject: `Fwd: ${selectedMessage.subject}`,
+            initialBody: body,
+        });
+        setShowCompose(true);
+    }, [selectedMessage]);
+
     // Keyboard shortcuts
     useKeyboardShortcuts({
         messages,
@@ -511,6 +557,7 @@ export function Dashboard() {
                         onVerifyDomain={verifyDomain}
                         onDeleteDomain={deleteDomain}
                         onDeleteInbox={deleteInbox}
+                        onExtendInbox={handleExtendInbox}
                         onLogout={logout}
                         isAdmin={isAdmin}
                         currentUserId={user?.id}
@@ -587,6 +634,7 @@ export function Dashboard() {
                     <MessageDetail
                         message={selectedMessage}
                         onComposeReply={() => canSendOutbound && setShowCompose(true)}
+                        onForward={() => canSendOutbound && handleForwardEmail()}
                         onBack={() => setMobileView("list")}
                     />
                 </div>
@@ -597,7 +645,11 @@ export function Dashboard() {
                         <ComposeModal
                             token={token}
                             inboxes={inboxes}
-                            onClose={() => setShowCompose(false)}
+                            onClose={() => {
+                                setShowCompose(false);
+                                setComposeInitialValues({});
+                            }}
+                            {...composeInitialValues}
                         />
                     </Suspense>
                 )}

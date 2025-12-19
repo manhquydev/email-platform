@@ -10,7 +10,8 @@ import { Loading } from "../components/Loading";
 interface AuthContextType {
     token: string;
     user: User | null;
-    login: (email: string, pass: string) => Promise<void>;
+    login: (email: string, pass: string) => Promise<{ token?: string, user?: User, requires2FA?: boolean, tempToken?: string }>;
+    verify2FA: (tempToken: string, code: string) => Promise<void>;
     logout: () => void;
     busy: boolean;
 }
@@ -32,13 +33,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (email: string, pass: string) => {
         setBusy(true);
         try {
-            const res = await api<{ token: string, user: User }>("/auth/login", {
+            const res = await api<{ token?: string, user?: User, requires2FA?: boolean, tempToken?: string }>("/auth/login", {
                 method: "POST",
                 body: { email, password: pass },
             });
+            if (res.token && res.user) {
+                setToken(res.token);
+                setUser(res.user);
+                toast.success("Đăng nhập thành công");
+            }
+            return res;
+        } catch (e) {
+            const msg = (e as Error).toString();
+            toast.error(msg.replace("Error: ", ""));
+            throw e;
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const verify2FA = async (tempToken: string, code: string) => {
+        setBusy(true);
+        try {
+            const res = await api<{ token: string, user: User }>("/auth/2fa/verify", {
+                method: "POST",
+                body: { tempToken, code },
+            });
             setToken(res.token);
             setUser(res.user);
-            toast.success("Đăng nhập thành công");
+            toast.success("Xác thực thành công");
         } catch (e) {
             const msg = (e as Error).toString();
             toast.error(msg.replace("Error: ", ""));
@@ -76,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ token, user, login, logout, busy }}>
+        <AuthContext.Provider value={{ token, user, login, verify2FA, logout, busy }}>
             {children}
         </AuthContext.Provider>
     );

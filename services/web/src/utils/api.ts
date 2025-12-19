@@ -1,3 +1,5 @@
+import { getFriendlyErrorMessage } from "./errorMapping";
+
 export const API_BASE = (window.env?.API_BASE || import.meta.env.VITE_API_BASE || "http://localhost:3001").replace(/\/$/, "");
 export const PAGE_SIZE = { domains: 20, inboxes: 20, messages: 20 };
 
@@ -33,7 +35,10 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
     const data: unknown = await res.json().catch(() => ({}));
     if (!res.ok) {
         const payload = (data as { error?: string; message?: string; details?: string }) ?? {};
-        const msg = payload.error ?? payload.message ?? "Request failed";
+        // Prioritize 'message', then 'error', then default
+        const rawMsg = payload.message ?? payload.error ?? "Request failed";
+        const msg = getFriendlyErrorMessage(rawMsg);
+
         const details = payload.details;
         throw new Error(details ? `${msg}: ${details}` : msg);
     }

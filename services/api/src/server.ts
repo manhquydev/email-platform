@@ -6,6 +6,7 @@ import { register as promRegister, collectDefaultMetrics, Histogram } from "prom
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
 import { appConfig } from "./config";
+import { errorHandler } from "./utils/errorHandler";
 import { authRoutes } from "./routes/auth";
 import { domainRoutes } from "./routes/domains";
 import { inboxRoutes } from "./routes/inboxes";
@@ -49,6 +50,8 @@ export const buildServer = () => {
       } : undefined,
     }
   });
+
+  app.setErrorHandler(errorHandler);
 
   app.register(helmet, { global: true });
   app.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit

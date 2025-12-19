@@ -7,13 +7,17 @@ type Props = {
     token: string;
     inboxes: Inbox[];
     onClose: () => void;
+    initialSubject?: string;
+    initialBody?: string;
+    initialTo?: string;
+    initialFrom?: string;
 };
 
-export function ComposeModal({ token, inboxes, onClose }: Props) {
-    const [composeFrom, setComposeFrom] = useState("");
-    const [composeTo, setComposeTo] = useState("");
-    const [composeSubject, setComposeSubject] = useState("");
-    const [composeBody, setComposeBody] = useState("");
+export function ComposeModal({ token, inboxes, onClose, initialSubject = "", initialBody = "", initialTo = "", initialFrom = "" }: Props) {
+    const [composeFrom, setComposeFrom] = useState(initialFrom);
+    const [composeTo, setComposeTo] = useState(initialTo);
+    const [composeSubject, setComposeSubject] = useState(initialSubject);
+    const [composeBody, setComposeBody] = useState(initialBody);
     const [files, setFiles] = useState<File[]>([]);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");

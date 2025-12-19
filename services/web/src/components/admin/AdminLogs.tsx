@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../../utils/api";
+import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { formatDistanceToNow, format } from "date-fns";
 import { vi } from "date-fns/locale";
+
+// ... (retain interfaces)
 
 interface AuditLog {
     id: string;
@@ -48,7 +51,7 @@ export function AdminLogs({ token }: { token: string }) {
             setLogs(filteredData);
             setTotal(res.meta.total);
         } catch (err) {
-            toast.error("Không thể tải nhật ký");
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }
@@ -135,7 +138,7 @@ export function AdminLogs({ token }: { token: string }) {
 
             toast.success("Đã xuất file CSV");
         } catch (err) {
-            toast.error("Không thể xuất dữ liệu");
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     };
 

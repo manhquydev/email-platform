@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, type FormEvent } from "react";
 import { api } from "../utils/api";
+import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { AdminDashboard } from "./admin/AdminDashboard";
@@ -153,7 +154,7 @@ function RulesList({ token }: { token: string }) {
             const res = await api<{ data: any[] }>("/abuse/rules", { token });
             setRules(res.data);
         } catch (err) {
-            setError((err as Error).message);
+            setError(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }
@@ -177,7 +178,7 @@ function RulesList({ token }: { token: string }) {
             toast.success("Đã thêm quy tắc");
             await loadRules();
         } catch (err) {
-            setError((err as Error).message);
+            setError(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }
@@ -191,7 +192,7 @@ function RulesList({ token }: { token: string }) {
             toast.success("Đã xóa");
             await loadRules();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }
@@ -307,7 +308,7 @@ function DomainsList({ token }: { token: string }) {
             const res = await api<{ data: any[] }>("/domains?limit=100", { token });
             setDomains(res.data);
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
         }
@@ -324,7 +325,7 @@ function DomainsList({ token }: { token: string }) {
             toast.success("Đã xác thực");
             await loadDomains();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setVerifyingId(null);
         }
@@ -338,7 +339,7 @@ function DomainsList({ token }: { token: string }) {
             toast.success("Đã xóa");
             await loadDomains();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setDeletingId(null);
         }
@@ -360,7 +361,7 @@ function DomainsList({ token }: { token: string }) {
             toast.success(currentPublic ? "Đã chuyển sang riêng tư" : "Đã công khai cho tất cả");
             await loadDomains();
         } catch (err) {
-            toast.error((err as Error).message);
+            toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setTogglingId(null);
         }
@@ -444,8 +445,8 @@ function DomainsList({ token }: { token: string }) {
                                         onClick={() => handleTogglePublic(d.id, d.isPublic)}
                                         disabled={togglingId === d.id}
                                         className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded cursor-pointer transition-colors ${d.isPublic
-                                                ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
-                                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                            ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                             }`}
                                     >
                                         {togglingId === d.id ? (
@@ -574,7 +575,7 @@ function SettingsPanel({ token }: { token: string }) {
             setMsg("Đã cập nhật mật khẩu");
             setPassword("");
         } catch (error) {
-            setErr((error as Error).message);
+            setErr(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setBusy(false);
         }
@@ -590,7 +591,7 @@ function SettingsPanel({ token }: { token: string }) {
             setTotpSecret(res.secret);
             setTwoFAStep("setup");
         } catch (error) {
-            setTwoFAError((error as Error).message);
+            setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
         }
@@ -614,7 +615,7 @@ function SettingsPanel({ token }: { token: string }) {
             toast.success("2FA đã được kích hoạt!");
             loadProfile();
         } catch (error) {
-            setTwoFAError((error as Error).message);
+            setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
         }
@@ -632,7 +633,7 @@ function SettingsPanel({ token }: { token: string }) {
             setTwoFAStep("idle");
             loadProfile();
         } catch (error) {
-            setTwoFAError((error as Error).message);
+            setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
         }

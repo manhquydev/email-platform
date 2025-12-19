@@ -59,6 +59,7 @@ interface SidebarProps {
     onVerifyDomain: (domainId: string, token: string) => Promise<void>;
     onDeleteDomain: (domainId: string) => Promise<void>;
     onDeleteInbox: (inboxId: string) => Promise<void>;
+    onExtendInbox: (inboxId: string) => Promise<void>;
     onLogout: () => void;
     isAdmin: boolean;
     busy: boolean;
@@ -77,6 +78,7 @@ export function Sidebar({
     onVerifyDomain,
     onDeleteDomain,
     onDeleteInbox,
+    onExtendInbox,
     onLogout,
     isAdmin,
     busy
@@ -386,6 +388,24 @@ export function Sidebar({
                                     {icons.copy}
                                 </button>
                                 {/* Delete button - visible on hover */}
+                                {/* Extend button */}
+                                {inbox.expiresAt && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onExtendInbox(inbox.id);
+                                        }}
+                                        disabled={busy}
+                                        className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-surface rounded text-muted hover:text-green-600 transition-all flex-shrink-0"
+                                        title="Gia hạn (10 phút)"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3" />
+                                        </svg>
+                                    </button>
+                                )}
                                 {isOwnerOrAdmin && (
                                     <button
                                         onClick={(e) => {

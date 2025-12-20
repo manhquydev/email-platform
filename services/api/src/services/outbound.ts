@@ -35,16 +35,23 @@ export class OutboundService {
         subject: string,
         text?: string,
         html?: string,
-        attachments?: any[]
+        attachments?: any[],
+        options?: {
+            replyTo?: string;
+            headers?: Record<string, string>;
+            senderName?: string;
+        }
     ) {
         if (!process.env.OUTBOUND_SMTP_HOST) {
             throw new Error("Outbound email is not configured (OUTBOUND_SMTP_HOST missing)");
         }
 
         // Get mail configuration from environment
-        const mailFromName = process.env.MAIL_FROM_NAME || "TempMail Pro";
         const mailFromAddress = process.env.MAIL_FROM_ADDRESS || from;
         const mailDomain = process.env.MAIL_DOMAIN || "localhost";
+
+        // Allow overriding sender name
+        const mailFromName = options?.senderName || process.env.MAIL_FROM_NAME || "TempMail Pro";
 
         // Generate proper message ID
         const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${mailDomain}>`;
@@ -52,6 +59,7 @@ export class OutboundService {
         const info = await this.transporter.sendMail({
             from: `"${mailFromName}" <${mailFromAddress}>`,
             to,
+            replyTo: options?.replyTo,
             subject,
             text,
             html,
@@ -61,6 +69,7 @@ export class OutboundService {
                 'X-Mailer': 'TempMail Pro',
                 'X-Priority': '3',
                 'List-Unsubscribe': `<mailto:unsubscribe@${mailDomain}>`,
+                ...options?.headers // Merge custom headers
             },
         });
 

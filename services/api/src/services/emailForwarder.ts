@@ -3,30 +3,10 @@
  * Handles forwarding rules and email delivery to personal addresses
  */
 
-import nodemailer from "nodemailer";
 import { prisma } from "../lib/prisma";
 import { extractOTP } from "../utils/otpExtractor";
 import type { Message, Prisma } from "@prisma/client";
-
-// SMTP Configuration from environment
-const getTransporter = () => {
-    const host = process.env.FORWARD_SMTP_HOST;
-    const port = parseInt(process.env.FORWARD_SMTP_PORT || "587");
-    const user = process.env.FORWARD_SMTP_USER;
-    const pass = process.env.FORWARD_SMTP_PASS;
-
-    if (!host || !user || !pass) {
-        console.warn("[EmailForwarder] SMTP not configured for forwarding");
-        return null;
-    }
-
-    return nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-    });
-};
+import { outboundService } from "./outbound";
 
 // Generate 6-digit verification code
 export function generateVerificationCode(): string {
@@ -40,8 +20,8 @@ export async function sendForwardVerification(
     userId: string,
     email: string
 ): Promise<{ success: boolean; error?: string }> {
-    const transporter = getTransporter();
-    if (!transporter) {
+    // Check if outbound email is configured
+    if (!process.env.OUTBOUND_SMTP_HOST) {
         return { success: false, error: "SMTP chưa được cấu hình" };
     }
 
@@ -65,11 +45,11 @@ export async function sendForwardVerification(
         });
 
         // Send verification email
-        await transporter.sendMail({
-            from: `"TempMail Pro" <noreply@${process.env.MAIL_DOMAIN || 'manhquy.click'}>`,
-            to: email,
-            subject: "Xác minh địa chỉ email chuyển tiếp - TempMail Pro",
-            text: `
+        await outboundService.sendEmail(
+            process.env.MAIL_DOMAIN ? `noreply@${process.env.MAIL_DOMAIN}` : "noreply@tempmail.pro",
+            email,
+            "Xác minh địa chỉ email chuyển tiếp - TempMail Pro",
+            `
 Mã xác minh của bạn: ${code}
 
 Mã này có hiệu lực trong 30 phút.
@@ -79,7 +59,7 @@ Nếu bạn không yêu cầu xác minh này, hãy bỏ qua email này.
 ---
 TempMail Pro
       `,
-            html: `
+            `
 <!DOCTYPE html>
 <html>
 <head>
@@ -113,8 +93,8 @@ TempMail Pro
   </div>
 </body>
 </html>
-      `,
-        });
+      `
+        );
 
         return { success: true };
     } catch (error) {
@@ -376,8 +356,8 @@ export async function forwardMessageIfMatched(
 ): Promise<void> {
     if (!message.inbox.ownerId) return;
 
-    const transporter = getTransporter();
-    if (!transporter) return;
+    // Check if outbound email is configured
+    if (!process.env.OUTBOUND_SMTP_HOST) return;
 
     // Get active rules for this user and inbox
     const rules = await prisma.forwardingRule.findMany({
@@ -399,12 +379,12 @@ export async function forwardMessageIfMatched(
                 // Extract OTP if present
                 const otpResult = extractOTP(message.textBody || "");
 
-                // Forward the email
-                await transporter.sendMail({
-                    from: `"TempMail Forward" <noreply@${process.env.MAIL_DOMAIN || 'manhquy.click'}>`,
-                    to: rule.forwardTo,
-                    subject: `[FWD] ${message.subject || "(Không có tiêu đề)"}`,
-                    text: `
+                // Forward the email using OutboundService
+                await outboundService.sendEmail(
+                    process.env.MAIL_DOMAIN ? `noreply@${process.env.MAIL_DOMAIN}` : "noreply@tempmail.pro",
+                    rule.forwardTo,
+                    `[FWD] ${message.subject || "(Không có tiêu đề)"}`,
+                    `
 ────────────────────────────
 📩 Email được chuyển tiếp từ TempMail Pro
 ────────────────────────────
@@ -416,7 +396,7 @@ ${otpResult ? `\n🔢 Mã OTP: ${otpResult.code}\n` : ""}
 
 ${message.textBody || "(Không có nội dung)"}
           `,
-                    html: `
+                    `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
@@ -443,7 +423,16 @@ ${message.textBody || "(Không có nội dung)"}
 </body>
 </html>
           `,
-                });
+                    undefined,
+                    {
+                        senderName: "TempMail Forward",
+                        replyTo: message.fromAddress || undefined,
+                        headers: {
+                            "X-Original-From": message.fromAddress || "",
+                            "X-Original-To": message.toAddress || "",
+                        }
+                    }
+                );
 
                 // Update forward count
                 await prisma.forwardingRule.update({

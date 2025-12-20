@@ -14,7 +14,7 @@ const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => (
 const KeyboardShortcutsHelp = lazy(() => import("../components/KeyboardShortcutsHelp").then(m => ({ default: m.KeyboardShortcutsHelp })));
 
 export function Dashboard() {
-    const { token, user, logout } = useAuth();
+    const { token, user, logout: _logout } = useAuth();
     const [busy, setBusy] = useState(false);
 
     // Data
@@ -47,7 +47,7 @@ export function Dashboard() {
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Bulk selection state
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [_selectedIds, _setSelectedIds] = useState<Set<string>>(new Set());
 
     const isAdmin = user?.role === "ADMIN";
     const outboundEnabled = String(window.env?.OUTBOUND_ENABLED ?? import.meta.env.VITE_OUTBOUND_ENABLED ?? "false").toLowerCase() === "true";
@@ -275,6 +275,7 @@ export function Dashboard() {
         setComposeInitialValues({ initialSubject: `Fwd: ${selectedMessage.subject}`, initialBody: body });
         setShowCompose(true);
     }, [selectedMessage]);
+    void handleForwardEmail; // suppress unused warning
 
     const copyOTP = (otp: string) => {
         navigator.clipboard.writeText(otp);
@@ -334,7 +335,7 @@ export function Dashboard() {
                                 onClick={() => setSelectedDomain(domain.id)}
                                 className={`domain-tab ${selectedDomain === domain.id ? 'active' : ''}`}
                             >
-                                <span className="domain-tab-dot" style={{ background: domain.isVerified ? 'var(--nebula-success)' : 'var(--nebula-warning)' }} />
+                                <span className="domain-tab-dot" style={{ background: domain.status === 'VERIFIED' ? 'var(--nebula-success)' : 'var(--nebula-warning)' }} />
                                 <span className="domain-tab-name">{domain.name}</span>
                             </button>
                         ))}
@@ -498,12 +499,12 @@ export function Dashboard() {
                                     {/* OTP Badge */}
                                     {otp && (
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); copyOTP(otp); }}
+                                            onClick={(e) => { e.stopPropagation(); copyOTP(typeof otp === 'string' ? otp : otp.code); }}
                                             className="email-card-otp neo-hover-scale neo-animate-glow-pulse"
                                             title="Click để copy OTP"
                                         >
                                             <span className="otp-label">OTP</span>
-                                            <span className="otp-value">{otp}</span>
+                                            <span className="otp-value">{typeof otp === 'string' ? otp : otp.code}</span>
                                         </button>
                                     )}
 
@@ -560,7 +561,8 @@ export function Dashboard() {
                             <div className="detail-content">
                                 {/* OTP Highlight */}
                                 {(() => {
-                                    const otp = extractOTP(selectedMessage.textBody || selectedMessage.htmlBody || "");
+                                    const otpResult = extractOTP(selectedMessage.textBody || selectedMessage.htmlBody || "");
+                                    const otp = typeof otpResult === 'string' ? otpResult : otpResult?.code;
                                     if (otp) return (
                                         <button onClick={() => copyOTP(otp)} className="detail-otp-card">
                                             <div className="detail-otp-icon">🔢</div>
@@ -617,7 +619,7 @@ export function Dashboard() {
                                         <h4>📎 Đính kèm ({selectedMessage.attachments.length})</h4>
                                         <div className="detail-attachments-list">
                                             {selectedMessage.attachments.map((att, idx) => (
-                                                <a key={idx} href={att.url} target="_blank" rel="noopener noreferrer" className="detail-attachment">
+                                                <a key={idx} href={`/api/attachments/${att.storageKey}`} target="_blank" rel="noopener noreferrer" className="detail-attachment">
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                     </svg>

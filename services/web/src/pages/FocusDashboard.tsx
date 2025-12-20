@@ -12,7 +12,7 @@ import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
 
 export function FocusDashboard() {
-    const { token, user } = useAuth();
+    const { token, user: _user } = useAuth();
     const [busy, setBusy] = useState(false);
 
     // Data
@@ -28,7 +28,7 @@ export function FocusDashboard() {
     // UI States
     const [showDetail, setShowDetail] = useState(false);
     const [showCompose, setShowCompose] = useState(false);
-    const [showInboxPicker, setShowInboxPicker] = useState(false);
+    const [_showInboxPicker, _setShowInboxPicker] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     // --- Loaders ---
@@ -231,7 +231,7 @@ export function FocusDashboard() {
             {/* Header */}
             <div className="focus-stream-header">
                 <div className="focus-stream-title">
-                    <h1>{currentInbox?.address || "Chọn hộp thư"}</h1>
+                    <h1>{currentInbox ? `${currentInbox.localPart}@${currentInbox.domain?.name}` : "Chọn hộp thư"}</h1>
                     {messages.length > 0 && (
                         <span className="inbox-count">{messages.length} email</span>
                     )}
@@ -288,9 +288,9 @@ export function FocusDashboard() {
                             </div>
                         </div>
                         <div className="stream-detail-meta">
-                            <strong>Từ:</strong> {selectedMessage.fromName || selectedMessage.from}
+                            <strong>Từ:</strong> {selectedMessage.fromAddress}
                             <br />
-                            <strong>Đến:</strong> {selectedMessage.to}
+                            <strong>Đến:</strong> {selectedMessage.toAddress}
                             <br />
                             <strong>Ngày:</strong> {new Date(selectedMessage.receivedAt).toLocaleString('vi-VN')}
                         </div>
@@ -316,12 +316,11 @@ export function FocusDashboard() {
             <Suspense fallback={null}>
                 {showCompose && (
                     <ComposeModal
-                        isOpen={showCompose}
-                        onClose={() => setShowCompose(false)}
-                        domains={domains}
-                        onSuccess={async () => {
+                        token={token}
+                        inboxes={inboxes}
+                        onClose={() => {
                             setShowCompose(false);
-                            if (selectedDomain) await loadInboxes(selectedDomain);
+                            if (selectedDomain) loadInboxes(selectedDomain);
                         }}
                     />
                 )}

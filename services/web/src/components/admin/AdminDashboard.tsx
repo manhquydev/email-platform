@@ -3,9 +3,9 @@ import { api } from "../../utils/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    BarChart, Bar, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-    ComposedChart, Line, Legend
+    Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    Bar, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+    ComposedChart, Line
 } from "recharts";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -121,7 +121,7 @@ function StatCard({ label, value, trend, icon, color, delay = 0 }: {
     const animatedValue = useCountUp(value, 1200);
 
     return (
-        <GlassCard className={`p-5 animate-fade-in-up`} style={{ animationDelay: `${delay}ms` } as React.CSSProperties}>
+        <GlassCard className={`p-5 animate-fade-in-up delay-${delay}`}>
             <div className="flex items-start justify-between mb-3">
                 <div className={`p-2.5 rounded-xl bg-gradient-to-br ${color} shadow-lg`}>
                     <span className="text-white">{icon}</span>

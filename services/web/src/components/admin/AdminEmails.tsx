@@ -173,7 +173,7 @@ export function AdminEmails({ token }: { token: string }) {
                                         <PremiumButton
                                             variant="ghost"
                                             size="sm"
-                                            onClick={(e) => { e?.stopPropagation?.(); handleDeleteEmail(email.id); }}
+                                            onClick={() => { handleDeleteEmail(email.id); }}
                                             className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">

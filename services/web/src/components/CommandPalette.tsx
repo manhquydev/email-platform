@@ -24,7 +24,7 @@ interface Command {
 export function CommandPalette({
     isOpen,
     onClose,
-    domains,
+    domains: _domains,
     inboxes,
     onSelectInbox,
     onCreateInbox,
@@ -74,7 +74,7 @@ export function CommandPalette({
         // Inboxes
         ...inboxes.slice(0, 10).map(inbox => ({
             id: `inbox-${inbox.id}`,
-            label: `${inbox.address}`,
+            label: `${inbox.localPart}@${inbox.domain?.name || 'domain'}`,
             icon: <MailIcon />,
             action: () => { onSelectInbox(inbox); onClose(); },
             category: 'inbox' as const

@@ -85,7 +85,8 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                 </div>
 
                 {groupMessages.map(message => {
-                    const otp = extractOTP(message.textBody || message.subject);
+                    const otpResult = extractOTP(message.textBody || message.subject || '');
+                    const otp = typeof otpResult === 'string' ? otpResult : otpResult?.code;
                     const isUnread = !message.isRead;
                     const isSelected = message.id === selectedMessageId;
 
@@ -103,7 +104,7 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                             <div className="stream-card-content">
                                 <div className="stream-card-header">
                                     <span className="stream-card-sender">
-                                        {message.fromName || message.from}
+                                        {message.fromAddress}
                                     </span>
                                     <span className="stream-card-time">
                                         {formatRelativeTime(new Date(message.receivedAt))}

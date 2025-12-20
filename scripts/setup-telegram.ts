@@ -3,7 +3,6 @@
  * Usage: npx ts-node scripts/setup-telegram.ts
  */
 import { config } from "dotenv";
-import fetch from "node-fetch";
 import path from "path";
 
 // Load environment variables

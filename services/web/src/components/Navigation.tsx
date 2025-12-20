@@ -18,10 +18,13 @@ export function Navigation({ variant = "landing" }: NavigationProps) {
                 <Link to="/" className="site-nav-logo">
                     <div className="site-nav-logo-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+                            {/* Broken Infinity Logo */}
+                            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+                            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+                            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
                         </svg>
                     </div>
-                    <span className="site-nav-logo-text">TempMail Pro</span>
+                    <span className="site-nav-logo-text">Ephemera</span>
                 </Link>
 
                 {/* Desktop Links */}

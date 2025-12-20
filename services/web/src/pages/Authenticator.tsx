@@ -3,15 +3,36 @@ import { toast } from "react-hot-toast";
 import { authenticator } from "otplib";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE } from "../utils/api";
+import { AppShell } from "../layouts/AppShell";
 
 interface AuthenticatorAccount {
     id: string;
     serviceName: string;
     accountName?: string;
-    secret: string; // Decrypted by API
+    secret: string;
     issuer?: string;
 }
 
+// Service brand colors for visual distinction
+const SERVICE_COLORS: Record<string, { bg: string; icon: string }> = {
+    google: { bg: 'bg-red-500/10', icon: '🔴' },
+    github: { bg: 'bg-gray-800/20', icon: '⚫' },
+    microsoft: { bg: 'bg-blue-500/10', icon: '🔵' },
+    amazon: { bg: 'bg-orange-500/10', icon: '🟠' },
+    facebook: { bg: 'bg-blue-600/10', icon: '🔵' },
+    twitter: { bg: 'bg-sky-500/10', icon: '🐦' },
+    discord: { bg: 'bg-indigo-500/10', icon: '💜' },
+    slack: { bg: 'bg-purple-500/10', icon: '💬' },
+    default: { bg: 'bg-[var(--nebula-glow-violet)]', icon: '🔐' }
+};
+
+function getServiceColor(serviceName: string) {
+    const lower = serviceName.toLowerCase();
+    for (const [key, value] of Object.entries(SERVICE_COLORS)) {
+        if (lower.includes(key)) return value;
+    }
+    return SERVICE_COLORS.default;
+}
 
 export function Authenticator() {
     const { token } = useAuth();
@@ -19,6 +40,7 @@ export function Authenticator() {
     const [loading, setLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState(30);
     const [codes, setCodes] = useState<Record<string, string>>({});
+    const [copiedId, setCopiedId] = useState<string | null>(null);
 
     // Add Modal State
     const [isAdding, setIsAdding] = useState(false);
@@ -35,11 +57,11 @@ export function Authenticator() {
             if (res.ok) {
                 setAccounts(data.accounts);
             } else {
-                toast.error("Failed to load accounts");
+                toast.error("Không thể tải tài khoản");
             }
         } catch (err) {
             console.error(err);
-            toast.error("Error loading accounts");
+            toast.error("Lỗi khi tải tài khoản");
         } finally {
             setLoading(false);
         }
@@ -56,7 +78,6 @@ export function Authenticator() {
             const remaining = 30 - (epoch % 30);
             setTimeLeft(remaining);
 
-            // Regenerate codes if almost expired or not set
             if (remaining === 30 || Object.keys(codes).length === 0) {
                 const newCodes: Record<string, string> = {};
                 accounts.forEach(acc => {
@@ -73,9 +94,8 @@ export function Authenticator() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [accounts]); // Re-run when accounts change to generate immediately
+    }, [accounts]);
 
-    // Generate codes immediately when accounts load
     useEffect(() => {
         if (accounts.length > 0) {
             const newCodes: Record<string, string> = {};
@@ -102,12 +122,12 @@ export function Authenticator() {
                 body: JSON.stringify({
                     serviceName: newService,
                     accountName: newAccount,
-                    secret: newSecret.replace(/\s/g, "") // Remove spaces
+                    secret: newSecret.replace(/\s/g, "")
                 })
             });
 
             if (res.ok) {
-                toast.success("Account added!");
+                toast.success("Đã thêm tài khoản!");
                 setIsAdding(false);
                 setNewService("");
                 setNewAccount("");
@@ -115,144 +135,260 @@ export function Authenticator() {
                 fetchAccounts();
             } else {
                 const data = await res.json();
-                toast.error(data.error || "Failed to add account");
+                toast.error(data.error || "Không thể thêm tài khoản");
             }
         } catch (err) {
-            toast.error("Error adding account");
+            toast.error("Lỗi khi thêm tài khoản");
         }
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Delete ${name}?`)) return;
+        if (!confirm(`Xóa ${name}?`)) return;
         try {
             const res = await fetch(`${API_BASE}/auth/authenticator/accounts/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.ok) {
-                toast.success("Deleted");
+                toast.success("Đã xóa");
                 setAccounts(prev => prev.filter(a => a.id !== id));
             } else {
-                toast.error("Failed to delete");
+                toast.error("Không thể xóa");
             }
         } catch (err) {
-            toast.error("Error deleting");
+            toast.error("Lỗi khi xóa");
         }
     };
 
+    const copyCode = (id: string, code: string) => {
+        navigator.clipboard.writeText(code.replace(" ", ""));
+        setCopiedId(id);
+        toast.success("Đã sao chép!");
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
     return (
-        <div className="h-full flex flex-col bg-bg">
-            <header className="p-4 border-b border-border bg-surface flex justify-between items-center">
-                <div>
-                    <h1 className="text-lg font-bold">2FA Authenticator</h1>
-                    <p className="text-xs text-muted">Secure OTP Vault</p>
-                </div>
-                <button
-                    onClick={() => setIsAdding(true)}
-                    className="btn-primary text-sm px-3 py-1.5"
-                >
-                    + Add Account
-                </button>
-            </header>
-
-            <div className="flex-1 overflow-y-auto p-4">
-                {loading ? (
-                    <div className="text-center text-muted mt-10">Loading vault...</div>
-                ) : accounts.length === 0 ? (
-                    <div className="text-center text-muted mt-10 flex flex-col items-center">
-                        <svg className="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                        <p>No accounts yet.</p>
-                        <button onClick={() => setIsAdding(true)} className="text-primary mt-2 hover:underline">Add your first 2FA account</button>
+        <AppShell>
+            <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
+                {/* Premium Header */}
+                <div className="page-header">
+                    <div className="page-header-content">
+                        <div className="flex items-center">
+                            <div className="page-header-icon animate-nebula-pulse">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 className="page-header-title">Authenticator Vault</h1>
+                                <p className="page-header-subtitle">Quản lý mã OTP 2FA của bạn một cách an toàn</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsAdding(true)}
+                            className="btn-nebula btn-nebula-primary"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Thêm tài khoản
+                        </button>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {accounts.map(acc => {
-                            const code = codes[acc.id] || "--- ---";
-                            return (
-                                <div key={acc.id} className="bg-surface border border-border rounded-lg p-4 shadow-sm relative group overflow-hidden">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <h3 className="font-bold text-lg truncate" title={acc.serviceName}>{acc.serviceName}</h3>
-                                            <p className="text-xs text-muted truncate">{acc.accountName}</p>
-                                        </div>
-                                        <div className="w-6 h-6 rounded-full bg-bg border border-border flex items-center justify-center text-[10px] font-mono text-muted">
-                                            {timeLeft}s
+                </div>
+
+                {/* Content Area */}
+                <div className="max-w-6xl mx-auto px-6 py-8">
+                    {loading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="otp-card animate-pulse">
+                                    <div className="flex justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-[var(--nebula-elevated)]"></div>
+                                            <div>
+                                                <div className="h-4 w-20 bg-[var(--nebula-elevated)] rounded mb-2"></div>
+                                                <div className="h-3 w-32 bg-[var(--nebula-elevated)] rounded"></div>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="h-12 bg-[var(--nebula-elevated)] rounded-lg my-6"></div>
+                                    <div className="h-1 bg-[var(--nebula-elevated)] rounded"></div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : accounts.length === 0 ? (
+                        <div className="empty-state-nebula">
+                            <div className="empty-state-nebula-icon">
+                                <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <h3 className="empty-state-nebula-title">Chưa có tài khoản nào</h3>
+                            <p className="empty-state-nebula-description">
+                                Thêm tài khoản 2FA đầu tiên của bạn để bắt đầu quản lý mã OTP một cách an toàn.
+                            </p>
+                            <button onClick={() => setIsAdding(true)} className="btn-nebula btn-nebula-primary">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Thêm tài khoản đầu tiên
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {accounts.map(acc => {
+                                const code = codes[acc.id] || "--- ---";
+                                const formattedCode = code.length >= 6
+                                    ? `${code.slice(0, 3)} ${code.slice(3)}`
+                                    : code;
+                                const serviceColor = getServiceColor(acc.serviceName);
+                                const progressPercent = (timeLeft / 30) * 100;
 
-                                    <div className="my-4 flex justify-between items-center group/code cursor-pointer"
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(code.replace(" ", ""));
-                                            toast.success("Copied!");
-                                        }}
-                                        title="Click to copy"
-                                    >
-                                        <div className="text-3xl font-mono font-bold tracking-widest text-primary group-hover/code:scale-105 transition-transform">
-                                            {code.slice(0, 3)} {code.slice(3)}
+                                return (
+                                    <div key={acc.id} className="otp-card group animate-nebula-fade-in">
+                                        {/* Header */}
+                                        <div className="otp-card-header">
+                                            <div className="otp-card-service">
+                                                <div className={`otp-card-icon ${serviceColor.bg}`}>
+                                                    <span className="text-lg">{serviceColor.icon}</span>
+                                                </div>
+                                                <div>
+                                                    <div className="otp-card-name">{acc.serviceName}</div>
+                                                    <div className="otp-card-account">{acc.accountName || 'N/A'}</div>
+                                                </div>
+                                            </div>
+                                            <div className="otp-card-timer">
+                                                <span>{timeLeft}</span>
+                                                <svg className="otp-card-timer-ring" viewBox="0 0 36 36">
+                                                    <circle
+                                                        cx="18" cy="18" r="16"
+                                                        fill="none"
+                                                        stroke="var(--nebula-violet)"
+                                                        strokeWidth="2"
+                                                        strokeDasharray={`${progressPercent} 100`}
+                                                        strokeLinecap="round"
+                                                        transform="rotate(-90 18 18)"
+                                                        style={{ transition: 'stroke-dasharray 1s linear' }}
+                                                    />
+                                                </svg>
+                                            </div>
                                         </div>
-                                        <svg className="w-5 h-5 text-muted opacity-0 group-hover/code:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+
+                                        {/* OTP Code */}
+                                        <div
+                                            className="otp-card-code cursor-pointer"
+                                            onClick={() => copyCode(acc.id, code)}
+                                            title="Click để sao chép"
+                                        >
+                                            <div className={`otp-card-code-value ${copiedId === acc.id ? 'text-[var(--nebula-success)]' : ''}`}>
+                                                {copiedId === acc.id ? '✓ Copied' : formattedCode}
+                                            </div>
+                                        </div>
+
+                                        {/* Progress Bar */}
+                                        <div className="otp-card-progress">
+                                            <div
+                                                className="otp-card-progress-bar"
+                                                style={{ width: `${progressPercent}%` }}
+                                            />
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="otp-card-actions">
+                                            <button
+                                                onClick={() => copyCode(acc.id, code)}
+                                                className="btn-nebula btn-nebula-secondary text-xs"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                </svg>
+                                                Sao chép
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(acc.id, acc.serviceName)}
+                                                className="btn-nebula btn-nebula-ghost text-xs text-[var(--nebula-error)] hover:bg-red-500/10"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Xóa
+                                            </button>
+                                        </div>
                                     </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
 
-                                    {/* Progress Bar */}
-                                    <div className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-1000 ease-linear" style={{ width: `${(timeLeft / 30) * 100}%` }} />
-
+                {/* Add Modal */}
+                {isAdding && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-nebula-fade-in">
+                        <div className="glass-card-elevated w-full max-w-md animate-nebula-scale-in">
+                            <div className="glass-card-header">
+                                <h2 className="text-lg font-semibold" style={{ color: 'var(--nebula-text)' }}>Thêm tài khoản mới</h2>
+                                <button
+                                    onClick={() => setIsAdding(false)}
+                                    className="btn-nebula btn-nebula-ghost btn-nebula-icon"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form onSubmit={handleAdd} className="glass-card-body space-y-4">
+                                <div>
+                                    <label className="label-nebula">Tên dịch vụ *</label>
+                                    <input
+                                        className="input-nebula"
+                                        placeholder="VD: Google, GitHub, Facebook..."
+                                        required
+                                        value={newService}
+                                        onChange={e => setNewService(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="label-nebula">Tên tài khoản</label>
+                                    <input
+                                        className="input-nebula"
+                                        placeholder="VD: user@example.com"
+                                        value={newAccount}
+                                        onChange={e => setNewAccount(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="label-nebula">Secret Key *</label>
+                                    <input
+                                        className="input-nebula font-mono"
+                                        placeholder="Nhập mã Base32 secret"
+                                        required
+                                        value={newSecret}
+                                        onChange={e => setNewSecret(e.target.value.toUpperCase())}
+                                    />
+                                    <p className="text-xs mt-1" style={{ color: 'var(--nebula-text-muted)' }}>
+                                        Secret key từ ứng dụng hoặc trang web bạn muốn bảo vệ
+                                    </p>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-2">
                                     <button
-                                        onClick={() => handleDelete(acc.id, acc.serviceName)}
-                                        className="absolute top-2 right-2 p-1.5 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        title="Delete"
+                                        type="button"
+                                        onClick={() => setIsAdding(false)}
+                                        className="btn-nebula btn-nebula-secondary"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        Hủy
+                                    </button>
+                                    <button type="submit" className="btn-nebula btn-nebula-primary">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Lưu tài khoản
                                     </button>
                                 </div>
-                            );
-                        })}
+                            </form>
+                        </div>
                     </div>
                 )}
             </div>
-
-            {/* Manual Add Modal */}
-            {isAdding && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-surface p-6 rounded-lg shadow-xl w-full max-w-sm border border-border">
-                        <h2 className="text-lg font-bold mb-4">Add Account Manually</h2>
-                        <form onSubmit={handleAdd} className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-muted uppercase block mb-1">Service Name</label>
-                                <input
-                                    className="w-full input p-2 text-sm border rounded bg-bg text-text-main"
-                                    placeholder="e.g. Google"
-                                    required
-                                    value={newService}
-                                    onChange={e => setNewService(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-muted uppercase block mb-1">Account Name (Optional)</label>
-                                <input
-                                    className="w-full input p-2 text-sm border rounded bg-bg text-text-main"
-                                    placeholder="e.g. user@example.com"
-                                    value={newAccount}
-                                    onChange={e => setNewAccount(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-muted uppercase block mb-1">Secret Key</label>
-                                <input
-                                    className="w-full input p-2 text-sm border rounded bg-bg text-text-main font-mono"
-                                    placeholder="Base32 Key"
-                                    required
-                                    value={newSecret}
-                                    onChange={e => setNewSecret(e.target.value.toUpperCase())}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2 mt-6">
-                                <button type="button" onClick={() => setIsAdding(false)} className="px-3 py-1.5 text-sm hover:underline">Cancel</button>
-                                <button type="submit" className="btn-primary px-3 py-1.5 text-sm">Save</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </div>
+        </AppShell>
     );
 }

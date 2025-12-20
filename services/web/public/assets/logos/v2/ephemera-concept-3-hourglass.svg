@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CONCEPT 3: "Time Hourglass E" - Chữ E kết hợp đồng hồ cát -->
+<!-- Thể hiện: thời gian hữu hạn của email, sẽ biến mất khi hết giờ -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="c3-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="c3-sand" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA"/>
+      <stop offset="100%" style="stop-color:#3B82F6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Hourglass shape forming abstract "E" -->
+  <!-- Top wide part -->
+  <path d="
+    M 25 20
+    L 95 20
+    L 95 30
+    L 75 30
+    Q 60 45, 60 55
+    L 45 55
+    Q 45 45, 25 30
+    L 25 20
+    Z
+  " fill="url(#c3-gradient)" opacity="0.95"/>
+  
+  <!-- Middle narrow waist - the "middle bar" of E -->
+  <rect x="48" y="55" width="24" height="10" rx="2" fill="url(#c3-gradient)"/>
+  
+  <!-- Bottom wide part -->
+  <path d="
+    M 25 100
+    L 95 100
+    L 95 90
+    L 75 90
+    Q 60 75, 60 65
+    L 45 65
+    Q 45 75, 25 90
+    L 25 100
+    Z
+  " fill="url(#c3-gradient)" opacity="0.9"/>
+  
+  <!-- Top frame line -->
+  <rect x="20" y="16" width="80" height="4" rx="2" fill="url(#c3-gradient)"/>
+  
+  <!-- Bottom frame line -->
+  <rect x="20" y="100" width="80" height="4" rx="2" fill="url(#c3-gradient)"/>
+  
+  <!-- Falling sand particles (digital style - squares) -->
+  <rect x="58" y="68" width="4" height="4" fill="#60A5FA" opacity="0.8"/>
+  <rect x="56" y="74" width="3" height="3" fill="#60A5FA" opacity="0.6"/>
+  <rect x="61" y="76" width="3" height="3" fill="#93C5FD" opacity="0.5"/>
+  <rect x="58" y="80" width="2" height="2" fill="#93C5FD" opacity="0.4"/>
+  <rect x="55" y="82" width="2" height="2" fill="#BFDBFE" opacity="0.3"/>
+  <rect x="62" y="84" width="2" height="2" fill="#BFDBFE" opacity="0.25"/>
+  
+  <!-- Sand accumulated at bottom -->
+  <ellipse cx="60" cy="92" rx="20" ry="4" fill="url(#c3-sand)" opacity="0.6"/>
+</svg>

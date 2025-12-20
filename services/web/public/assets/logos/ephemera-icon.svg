@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Icon - Square/Round format for favicons and app icons -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#2563EB"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rounded square -->
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#iconGradient)"/>
+  
+  <!-- Stylized "E" formed by envelope -->
+  <g transform="translate(12, 14)">
+    <!-- Envelope body outline -->
+    <rect x="0" y="4" width="40" height="28" rx="3" fill="none" stroke="white" stroke-width="2.5"/>
+    <!-- Envelope flap / top of E -->
+    <path d="M0 7 L20 20 L40 7" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Middle line of E -->
+    <line x1="4" y1="20" x2="16" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+    <!-- Dissolving dots (ephemeral effect) -->
+    <circle cx="42" cy="8" r="2" fill="white" opacity="0.5"/>
+    <circle cx="44" cy="16" r="1.5" fill="white" opacity="0.35"/>
+    <circle cx="43" cy="24" r="1" fill="white" opacity="0.2"/>
+  </g>
+</svg>

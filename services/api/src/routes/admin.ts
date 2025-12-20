@@ -38,6 +38,62 @@ export async function adminRoutes(app: FastifyInstance) {
         };
     });
 
+    // Trends stats - compare this week vs last week
+    app.get("/admin/stats/trends", { preHandler: app.requireAdmin }, async () => {
+        const now = new Date();
+        const oneWeekAgo = new Date(now);
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const twoWeeksAgo = new Date(now);
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+        const [
+            usersThisWeek, usersLastWeek,
+            emailsThisWeek, emailsLastWeek,
+            inboxesThisWeek, inboxesLastWeek,
+            domainsThisWeek, domainsLastWeek
+        ] = await Promise.all([
+            prisma.user.count({ where: { createdAt: { gte: oneWeekAgo } } }),
+            prisma.user.count({ where: { createdAt: { gte: twoWeeksAgo, lt: oneWeekAgo } } }),
+            prisma.message.count({ where: { receivedAt: { gte: oneWeekAgo }, deletedAt: null } }),
+            prisma.message.count({ where: { receivedAt: { gte: twoWeeksAgo, lt: oneWeekAgo }, deletedAt: null } }),
+            prisma.inbox.count({ where: { createdAt: { gte: oneWeekAgo }, deletedAt: null } }),
+            prisma.inbox.count({ where: { createdAt: { gte: twoWeeksAgo, lt: oneWeekAgo }, deletedAt: null } }),
+            prisma.domain.count({ where: { createdAt: { gte: oneWeekAgo } } }),
+            prisma.domain.count({ where: { createdAt: { gte: twoWeeksAgo, lt: oneWeekAgo } } }),
+        ]);
+
+        const calcTrend = (current: number, previous: number) => {
+            if (previous === 0) return current > 0 ? 100 : 0;
+            return Math.round(((current - previous) / previous) * 100);
+        };
+
+        return {
+            trends: {
+                users: { current: usersThisWeek, previous: usersLastWeek, trend: calcTrend(usersThisWeek, usersLastWeek) },
+                emails: { current: emailsThisWeek, previous: emailsLastWeek, trend: calcTrend(emailsThisWeek, emailsLastWeek) },
+                inboxes: { current: inboxesThisWeek, previous: inboxesLastWeek, trend: calcTrend(inboxesThisWeek, inboxesLastWeek) },
+                domains: { current: domainsThisWeek, previous: domainsLastWeek, trend: calcTrend(domainsThisWeek, domainsLastWeek) },
+            }
+        };
+    });
+
+    // Recent activity feed
+    app.get("/admin/activity", { preHandler: app.requireAdmin }, async (request) => {
+        const query = z.object({
+            limit: z.coerce.number().min(1).max(50).optional(),
+        }).safeParse(request.query);
+
+        const limit = query.success ? (query.data.limit ?? 10) : 10;
+
+        const recentLogs = await prisma.auditLog.findMany({
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            include: { user: { select: { email: true } } }
+        });
+
+        return { activity: recentLogs };
+    });
+
     // Time-series stats for dashboard charts (last 7 days)
     app.get("/admin/stats/timeseries", { preHandler: app.requireAdmin }, async (request, reply) => {
         try {
@@ -250,6 +306,125 @@ export async function adminRoutes(app: FastifyInstance) {
         return { success: true };
     });
 
+    // Bulk operations on users
+    app.post("/admin/users/bulk", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const body = z.object({
+            userIds: z.array(z.string().uuid()).min(1).max(100),
+            action: z.enum(["enable", "disable", "delete"]),
+        }).safeParse(request.body);
+
+        if (!body.success) {
+            return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+        }
+
+        const adminId = (request.user as any)?.userId;
+        const { userIds, action } = body.data;
+
+        // Remove admin's own ID from the list to prevent self-modification
+        const filteredIds = userIds.filter(id => id !== adminId);
+
+        if (filteredIds.length === 0) {
+            return reply.status(400).send({ error: "No valid users to update" });
+        }
+
+        let affected = 0;
+
+        if (action === "enable") {
+            const result = await prisma.user.updateMany({
+                where: { id: { in: filteredIds } },
+                data: { isDisabled: false }
+            });
+            affected = result.count;
+        } else if (action === "disable") {
+            const result = await prisma.user.updateMany({
+                where: { id: { in: filteredIds } },
+                data: { isDisabled: true }
+            });
+            affected = result.count;
+        } else if (action === "delete") {
+            // Cascade delete for each user
+            for (const userId of filteredIds) {
+                try {
+                    await prisma.$transaction(async (tx) => {
+                        await tx.message.deleteMany({ where: { inbox: { domain: { ownerId: userId } } } });
+                        await tx.inbox.deleteMany({ where: { domain: { ownerId: userId } } });
+                        await tx.domain.deleteMany({ where: { ownerId: userId } });
+                        await tx.user.delete({ where: { id: userId } });
+                    });
+                    affected++;
+                } catch {
+                    // Skip if user not found or already deleted
+                }
+            }
+        }
+
+        await recordAudit(adminId ?? null, "BULK_USER_ACTION", {
+            action,
+            requestedCount: filteredIds.length,
+            affectedCount: affected
+        });
+
+        return { success: true, affected };
+    });
+
+    // Bulk operations on domains
+    app.post("/admin/domains/bulk", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const body = z.object({
+            domainIds: z.array(z.string()).min(1).max(100),
+            action: z.enum(["verify", "make_public", "make_private", "delete"]),
+        }).safeParse(request.body);
+
+        if (!body.success) {
+            return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+        }
+
+        const adminId = (request.user as any)?.userId;
+        const { domainIds, action } = body.data;
+
+        let affected = 0;
+
+        if (action === "verify") {
+            const result = await prisma.domain.updateMany({
+                where: { id: { in: domainIds }, status: { not: "VERIFIED" } },
+                data: { status: "VERIFIED" }
+            });
+            affected = result.count;
+        } else if (action === "make_public") {
+            const result = await prisma.domain.updateMany({
+                where: { id: { in: domainIds } },
+                data: { isPublic: true }
+            });
+            affected = result.count;
+        } else if (action === "make_private") {
+            const result = await prisma.domain.updateMany({
+                where: { id: { in: domainIds } },
+                data: { isPublic: false }
+            });
+            affected = result.count;
+        } else if (action === "delete") {
+            for (const domainId of domainIds) {
+                try {
+                    await prisma.$transaction(async (tx) => {
+                        await tx.message.deleteMany({ where: { inbox: { domainId } } });
+                        await tx.inbox.deleteMany({ where: { domainId } });
+                        await tx.domain.delete({ where: { id: domainId } });
+                    });
+                    affected++;
+                } catch {
+                    // Skip if domain not found
+                }
+            }
+        }
+
+        await recordAudit(adminId ?? null, "BULK_DOMAIN_ACTION", {
+            action,
+            requestedCount: domainIds.length,
+            affectedCount: affected
+        });
+
+        return { success: true, affected };
+    });
+
     // Force verify user email
     app.post("/admin/users/:id/verify", { preHandler: app.requireAdmin }, async (request, reply) => {
         const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
@@ -444,5 +619,121 @@ export async function adminRoutes(app: FastifyInstance) {
                 serverTime: new Date().toISOString(),
             }
         };
+    });
+
+    // =====================================
+    // Email Management (Admin Email Browser)
+    // =====================================
+
+    // List all emails with pagination and filtering
+    app.get("/admin/emails", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const query = z.object({
+            search: z.string().optional(),
+            inboxId: z.string().optional(),
+            startDate: z.string().optional(),
+            endDate: z.string().optional(),
+            limit: z.coerce.number().min(1).max(100).optional(),
+            offset: z.coerce.number().min(0).optional(),
+        }).safeParse(request.query);
+
+        if (!query.success) {
+            return reply.status(400).send({ error: "Invalid query" });
+        }
+
+        const where: any = { deletedAt: null };
+
+        if (query.data.search) {
+            where.OR = [
+                { subject: { contains: query.data.search, mode: "insensitive" } },
+                { fromAddress: { contains: query.data.search, mode: "insensitive" } },
+            ];
+        }
+
+        if (query.data.inboxId) {
+            where.inboxId = query.data.inboxId;
+        }
+
+        if (query.data.startDate) {
+            where.receivedAt = { ...where.receivedAt, gte: new Date(query.data.startDate) };
+        }
+
+        if (query.data.endDate) {
+            where.receivedAt = { ...where.receivedAt, lte: new Date(query.data.endDate) };
+        }
+
+        const [emails, total] = await Promise.all([
+            prisma.message.findMany({
+                where,
+                orderBy: { receivedAt: "desc" },
+                take: query.data.limit ?? 20,
+                skip: query.data.offset ?? 0,
+                select: {
+                    id: true,
+                    subject: true,
+                    fromAddress: true,
+                    receivedAt: true,
+                    isRead: true,
+                    inbox: {
+                        select: {
+                            localPart: true,
+                            domain: { select: { name: true } }
+                        }
+                    }
+                }
+            }),
+            prisma.message.count({ where })
+        ]);
+
+        return {
+            data: emails.map(e => ({
+                ...e,
+                toAddress: `${e.inbox.localPart}@${e.inbox.domain.name}`
+            })),
+            meta: { total, limit: query.data.limit ?? 20, offset: query.data.offset ?? 0 }
+        };
+    });
+
+    // Get single email details (for admin viewing)
+    app.get("/admin/emails/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string() }).safeParse(request.params);
+        if (!params.success) {
+            return reply.status(400).send({ error: "Invalid email ID" });
+        }
+
+        const email = await prisma.message.findUnique({
+            where: { id: params.data.id },
+            include: {
+                inbox: {
+                    select: {
+                        localPart: true,
+                        domain: { select: { name: true } },
+                        owner: { select: { email: true } }
+                    }
+                }
+            }
+        });
+
+        if (!email) {
+            return reply.status(404).send({ error: "Email not found" });
+        }
+
+        return { email };
+    });
+
+    // Delete email (admin action)
+    app.delete("/admin/emails/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string() }).safeParse(request.params);
+        if (!params.success) {
+            return reply.status(400).send({ error: "Invalid email ID" });
+        }
+
+        await prisma.message.update({
+            where: { id: params.data.id },
+            data: { deletedAt: new Date() }
+        });
+
+        await recordAudit(request.user.userId, "ADMIN_EMAIL_DELETED", { emailId: params.data.id });
+
+        return { success: true };
     });
 }

@@ -16,7 +16,7 @@ describe.skip("App", () => {
     window.history.pushState({}, 'Home', '/');
     render(<App />);
     // Wait for loading to finish and landing page to appear
-    const brand = await screen.findByText("TempMail Pro", {}, { timeout: 4000 });
+    const brand = await screen.findByText("Ephemera", {}, { timeout: 4000 });
     expect(brand).toBeInTheDocument();
   });
 });

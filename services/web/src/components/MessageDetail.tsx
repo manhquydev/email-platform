@@ -37,7 +37,12 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
 
                 <div className="hidden md:flex flex-col items-center">
                     <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center shadow-md mb-4 hover-glow">
-                        <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            {/* Broken Infinity Logo */}
+                            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+                            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+                            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
+                        </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-text-main mb-1">Chưa chọn email</h3>
                     <p className="text-sm">Vui lòng chọn một email từ danh sách để xem nội dung.</p>

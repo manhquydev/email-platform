@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Icon - Minimal single-color using currentColor -->
+<!-- Adapts to light/dark mode automatically -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+  <!-- Left loop - complete -->
+  <path d="
+    M 12 12
+    C 12 6, 3 6, 3 12
+    C 3 18, 12 18, 12 12
+  " stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Right loop - partial (breaking) -->
+  <path d="
+    M 12 12
+    C 12 6, 21 6, 21 12
+  " stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  
+  <!-- Dissolving dots -->
+  <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4"/>
+  <circle cx="22.5" cy="9.5" r="0.6" fill="currentColor" opacity="0.25"/>
+  <circle cx="22.5" cy="14.5" r="0.5" fill="currentColor" opacity="0.15"/>
+</svg>

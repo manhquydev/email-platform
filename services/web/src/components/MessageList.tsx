@@ -66,7 +66,12 @@ export function MessageList({
     if (!inbox) {
         return (
             <div className="h-full flex flex-col items-center justify-center text-muted p-4 text-center animate-fade-in">
-                <svg className="w-16 h-16 mb-3 opacity-30" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <svg className="w-16 h-16 mb-3 opacity-30" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+                    {/* Broken Infinity Logo */}
+                    <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+                    <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+                    <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
+                </svg>
                 <div className="text-lg font-medium mb-1">Chọn một hộp thư</div>
                 <div className="text-sm text-text-light">Chọn hộp thư từ sidebar để xem email</div>
             </div>
@@ -185,7 +190,7 @@ export function MessageList({
                                     rightLabel={msg.isPinned ? "Bỏ ghim" : "Ghim"}
                                 >
                                     <div
-                                        className={`group py-3 px-4 cursor-pointer relative list-item-interactive animate-fade-in-up border-b border-border hover:bg-bg/50 transition-colors ${selectedMessageId === msg.id ? 'bg-primary-light ring-1 ring-inset ring-primary-border' : ''} ${selectedIds.has(msg.id) ? 'bg-primary-light/50' : ''}`}
+                                        className={`group py-4 px-5 cursor-pointer relative list-item-interactive animate-fade-in-up border-b border-border hover:bg-bg/50 transition-colors ${selectedMessageId === msg.id ? 'bg-primary-light ring-1 ring-inset ring-primary-border' : ''} ${selectedIds.has(msg.id) ? 'bg-primary-light/50' : ''}`}
                                         style={{ animationDelay: `${messages.indexOf(msg) * 30}ms` }}
                                     >
                                         {/* Checkbox for bulk selection - aligned better */}
@@ -273,35 +278,35 @@ export function MessageList({
                                             </div>
                                         )}
 
-                                        <div onClick={() => onSelectMessage(msg)} className="pl-6 space-y-1">
-                                            <div className="flex justify-between items-baseline mb-0.5">
-                                                <div className={`text-sm truncate pr-28 ${!msg.isRead ? 'font-bold text-text-main' : 'font-medium text-text-main/80'}`}>
+                                        <div onClick={() => onSelectMessage(msg)} className="pl-6 space-y-1.5">
+                                            <div className="flex justify-between items-baseline gap-3 mb-1">
+                                                <div className={`text-[15px] truncate leading-snug ${!msg.isRead ? 'font-bold text-text-main' : 'font-medium text-text-main/80'}`}>
                                                     {msg.fromAddress || 'Không rõ người gửi'}
                                                 </div>
-                                                <div className="text-[11px] text-muted flex-shrink-0 whitespace-nowrap font-medium">
+                                                <div className="text-xs text-muted flex-shrink-0 whitespace-nowrap font-medium">
                                                     {formatDistanceToNow(new Date(msg.receivedAt), { addSuffix: true, locale: vi })}
                                                 </div>
                                             </div>
 
-                                            <div className={`text-xs pl-0 truncate mb-1 ${!msg.isRead ? 'font-semibold text-text-main' : 'text-text-main/90'}`}>
+                                            <div className={`text-sm truncate leading-snug ${!msg.isRead ? 'font-semibold text-text-main' : 'text-text-main/90'}`}>
                                                 {msg.subject || '(Không có tiêu đề)'}
                                             </div>
 
-                                            <div className="text-[12px] text-muted pl-0 truncate line-clamp-1 opacity-80">
-                                                {msg.textBody ? msg.textBody.substring(0, 100) : 'Không có nội dung xem trước...'}
-                                            </div>
+                                            <div className="text-[13px] text-muted truncate line-clamp-2 leading-relaxed opacity-80">
+                                                {msg.textBody ? msg.textBody.substring(0, 120) : 'Không có nội dung xem trước...'}
 
-                                            {msg.attachments && msg.attachments.length > 0 && (
-                                                <div className="mt-2 flex gap-1 flex-wrap">
-                                                    {msg.attachments.slice(0, 3).map((a: any) => (
-                                                        <span key={a.id} className="inline-flex items-center px-2 py-0.5 rounded-full bg-bg border border-border text-[10px] text-muted-foreground hover:bg-bg-dark transition-colors">
-                                                            <svg className="w-3 h-3 mr-1 opacity-70" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                                            {a.filename}
-                                                        </span>
-                                                    ))}
-                                                    {msg.attachments.length > 3 && <span className="text-[10px] text-muted flex items-center">+{msg.attachments.length - 3}</span>}
-                                                </div>
-                                            )}
+                                                {msg.attachments && msg.attachments.length > 0 && (
+                                                    <div className="mt-2 flex gap-1 flex-wrap">
+                                                        {msg.attachments.slice(0, 3).map((a: any) => (
+                                                            <span key={a.id} className="inline-flex items-center px-2 py-0.5 rounded-full bg-bg border border-border text-[10px] text-muted-foreground hover:bg-bg-dark transition-colors">
+                                                                <svg className="w-3 h-3 mr-1 opacity-70" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                                                {a.filename}
+                                                            </span>
+                                                        ))}
+                                                        {msg.attachments.length > 3 && <span className="text-[10px] text-muted flex items-center">+{msg.attachments.length - 3}</span>}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </SwipeableMessage>

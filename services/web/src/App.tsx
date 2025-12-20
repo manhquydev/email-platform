@@ -4,16 +4,19 @@ import { Suspense, lazy } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LandingPage } from "./pages/LandingPage";
-import { Login } from "./pages/Login";
-import { Register } from "./pages/Register";
-import { VerifyEmail } from "./pages/VerifyEmail";
 import { TermsOfService, PrivacyPolicy, AcceptableUse } from "./pages/Legal";
 import { MainLayout } from "./layouts/MainLayout";
+import { PublicLayout } from "./layouts/PublicLayout";
+import { AuthLayout } from "./layouts/AuthLayout";
 import { Loading } from "./components/Loading";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { VersionCheck } from "./components/VersionCheck";
 
-// Lazy load heavy components
+// Lazy load pages
+const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
+const Register = lazy(() => import("./pages/Register").then(m => ({ default: m.Register })));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail").then(m => ({ default: m.VerifyEmail })));
+const FocusDashboard = lazy(() => import("./pages/FocusDashboard").then(m => ({ default: m.FocusDashboard })));
 const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
 const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
 const Authenticator = lazy(() => import("./pages/Authenticator").then(m => ({ default: m.Authenticator })));
@@ -31,22 +34,27 @@ function App() {
           <ErrorBoundary>
             <Suspense fallback={<Loading fullScreen />}>
               <Routes>
-                {/* Public marketing page */}
-                <Route path="/" element={<LandingPage />} />
+                {/* Public pages with shared nav + footer */}
+                <Route element={<PublicLayout />}>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/acceptable-use" element={<AcceptableUse />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
+                </Route>
 
-                {/* Auth routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/verify-email" element={<VerifyEmail />} />
+                {/* Auth pages with minimal footer */}
+                <Route element={<AuthLayout />}>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                </Route>
 
-                {/* Legal pages */}
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/acceptable-use" element={<AcceptableUse />} />
+                {/* Focus Stream Dashboard - NEW */}
+                <Route path="/app" element={<FocusDashboard />} />
 
                 {/* Protected app routes */}
                 <Route element={<MainLayout />}>
-                  <Route path="/app" element={<Dashboard />} />
+                  <Route path="/app/classic" element={<Dashboard />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/authenticator" element={<Authenticator />} />
                   <Route path="/settings" element={<Settings />} />
@@ -66,3 +74,4 @@ function App() {
 }
 
 export default App;
+

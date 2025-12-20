@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CONCEPT 5: "Broken Loop" - Vòng lặp bị đứt, thể hiện cycle không hoàn chỉnh -->
+<!-- Thể hiện: email có vòng đời, nhưng cycle bị cắt đứt - biến mất -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="c5-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="c5-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="70%" style="stop-color:#60A5FA"/>
+      <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main loop - incomplete/broken -->
+  <!-- Left loop of infinity, full -->
+  <path d="
+    M 60 60
+    C 60 35, 25 35, 25 60
+    C 25 85, 60 85, 60 60
+  " fill="none" stroke="url(#c5-gradient)" stroke-width="10" stroke-linecap="round"/>
+  
+  <!-- Right loop - fading out, breaking -->
+  <path d="
+    M 60 60
+    C 60 35, 95 35, 95 60
+  " fill="none" stroke="url(#c5-fade)" stroke-width="10" stroke-linecap="round"/>
+  
+  <!-- Hidden "E" inside left loop using negative space -->
+  <!-- Small E formed by cutouts -->
+  <rect x="35" y="50" width="12" height="3" fill="#0A0A0B" rx="1"/>
+  <rect x="35" y="58" width="8" height="2" fill="#0A0A0B" rx="1"/>
+  <rect x="35" y="66" width="12" height="3" fill="#0A0A0B" rx="1"/>
+  
+  <!-- Dissolving end of right loop -->
+  <circle cx="95" cy="60" r="4" fill="#60A5FA" opacity="0.5"/>
+  <circle cx="100" cy="55" r="3" fill="#60A5FA" opacity="0.35"/>
+  <circle cx="102" cy="62" r="2.5" fill="#93C5FD" opacity="0.25"/>
+  <circle cx="98" cy="68" r="2" fill="#93C5FD" opacity="0.2"/>
+  <circle cx="105" cy="58" r="2" fill="#BFDBFE" opacity="0.15"/>
+  <circle cx="103" cy="52" r="1.5" fill="#BFDBFE" opacity="0.1"/>
+  <circle cx="107" cy="64" r="1" fill="#DBEAFE" opacity="0.08"/>
+</svg>

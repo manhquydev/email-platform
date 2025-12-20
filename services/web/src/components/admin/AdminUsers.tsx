@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { api } from "../../utils/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
+import {
+    GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
+    TableBody, TableRow, TableCell, StatusBadge, PremiumButton, PremiumInput,
+    EmptyState, LoadingSpinner, Pagination, BulkActionsBar
+} from "./AdminUIComponents";
 
 interface User {
     id: string;
@@ -23,6 +28,8 @@ export function AdminUsers({ token }: { token: string }) {
     const [page, setPage] = useState(0);
     const [total, setTotal] = useState(0);
     const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkLoading, setBulkLoading] = useState(false);
 
     const loadUsers = useCallback(async () => {
         setLoading(true);
@@ -35,6 +42,7 @@ export function AdminUsers({ token }: { token: string }) {
             const res = await api<{ data: User[]; meta: { total: number } }>(`/admin/users?${params}`, { token });
             setUsers(res.data);
             setTotal(res.meta.total);
+            setSelectedIds(new Set());
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
@@ -42,23 +50,13 @@ export function AdminUsers({ token }: { token: string }) {
         }
     }, [token, search, page]);
 
-    useEffect(() => {
-        loadUsers();
-    }, [loadUsers]);
-
-    // Reset page when search changes
-    useEffect(() => {
-        setPage(0);
-    }, [search]);
+    useEffect(() => { loadUsers(); }, [loadUsers]);
+    useEffect(() => { setPage(0); }, [search]);
 
     const handleRoleChange = async (userId: string, newRole: "ADMIN" | "USER") => {
         setUpdating(userId);
         try {
-            await api(`/admin/users/${userId}`, {
-                method: "PATCH",
-                token,
-                body: { role: newRole },
-            });
+            await api(`/admin/users/${userId}`, { method: "PATCH", token, body: { role: newRole } });
             toast.success("Đã cập nhật quyền");
             await loadUsers();
         } catch (err) {
@@ -71,11 +69,7 @@ export function AdminUsers({ token }: { token: string }) {
     const handleToggleDisable = async (user: User) => {
         setUpdating(user.id);
         try {
-            await api(`/admin/users/${user.id}`, {
-                method: "PATCH",
-                token,
-                body: { isDisabled: !user.isDisabled },
-            });
+            await api(`/admin/users/${user.id}`, { method: "PATCH", token, body: { isDisabled: !user.isDisabled } });
             toast.success(user.isDisabled ? "Đã kích hoạt tài khoản" : "Đã vô hiệu hóa tài khoản");
             await loadUsers();
         } catch (err) {
@@ -88,10 +82,7 @@ export function AdminUsers({ token }: { token: string }) {
     const handleForceVerify = async (userId: string) => {
         setUpdating(userId);
         try {
-            await api(`/admin/users/${userId}/verify`, {
-                method: "POST",
-                token,
-            });
+            await api(`/admin/users/${userId}/verify`, { method: "POST", token });
             toast.success("Đã xác thực email");
             await loadUsers();
         } catch (err) {
@@ -104,10 +95,7 @@ export function AdminUsers({ token }: { token: string }) {
     const handleDelete = async (user: User) => {
         setUpdating(user.id);
         try {
-            await api(`/admin/users/${user.id}`, {
-                method: "DELETE",
-                token,
-            });
+            await api(`/admin/users/${user.id}`, { method: "DELETE", token });
             toast.success(`Đã xóa ${user.email}`);
             setConfirmDelete(null);
             await loadUsers();
@@ -118,172 +106,202 @@ export function AdminUsers({ token }: { token: string }) {
         }
     };
 
+    const handleSelectAll = () => {
+        setSelectedIds(selectedIds.size === users.length ? new Set() : new Set(users.map(u => u.id)));
+    };
+
+    const handleSelectOne = (id: string) => {
+        const newSet = new Set(selectedIds);
+        newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+        setSelectedIds(newSet);
+    };
+
+    const handleBulkAction = async (action: "enable" | "disable" | "delete") => {
+        if (selectedIds.size === 0) return;
+        const labels = { enable: "kích hoạt", disable: "vô hiệu hóa", delete: "xóa" };
+        if (action === "delete" && !confirm(`Bạn có chắc muốn ${labels[action]} ${selectedIds.size} người dùng?`)) return;
+
+        setBulkLoading(true);
+        try {
+            const res = await api<{ affected: number }>("/admin/users/bulk", {
+                method: "POST", token, body: { userIds: Array.from(selectedIds), action }
+            });
+            toast.success(`Đã ${labels[action]} ${res.affected} người dùng`);
+            setSelectedIds(new Set());
+            await loadUsers();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
     const totalPages = Math.ceil(total / PAGE_SIZE);
+    const isAllSelected = users.length > 0 && selectedIds.size === users.length;
 
     return (
-        <div className="p-6 max-w-5xl">
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-xl font-semibold">Người dùng</h1>
-                    <p className="text-sm text-muted mt-1">
-                        Quản lý tài khoản trong hệ thống
-                        {total > 0 && <span className="ml-2 text-xs">({total} tổng)</span>}
-                    </p>
-                </div>
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="text-sm w-56"
-                />
-            </div>
+        <div className="p-6 max-w-7xl mx-auto">
+            <SectionHeader
+                title="Người dùng"
+                subtitle={`Quản lý tài khoản trong hệ thống${total > 0 ? ` (${total} tổng)` : ""}`}
+                action={
+                    <PremiumInput
+                        value={search}
+                        onChange={setSearch}
+                        placeholder="Tìm kiếm..."
+                        className="w-64"
+                        icon={
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                        }
+                    />
+                }
+            />
+
+            <BulkActionsBar selectedCount={selectedIds.size} onClear={() => setSelectedIds(new Set())}>
+                <PremiumButton variant="secondary" size="sm" onClick={() => handleBulkAction("enable")} disabled={bulkLoading}>
+                    ✓ Kích hoạt
+                </PremiumButton>
+                <PremiumButton variant="secondary" size="sm" onClick={() => handleBulkAction("disable")} disabled={bulkLoading}>
+                    ⊘ Vô hiệu hóa
+                </PremiumButton>
+                <PremiumButton variant="danger" size="sm" onClick={() => handleBulkAction("delete")} disabled={bulkLoading}>
+                    ✕ Xóa
+                </PremiumButton>
+            </BulkActionsBar>
 
             {loading ? (
-                <div className="flex items-center justify-center h-64">
-                    <div className="spinner"></div>
-                </div>
+                <LoadingSpinner />
             ) : (
-                <>
-                    <div className="bg-surface border border-border rounded-lg overflow-hidden">
-                        <table className="w-full text-sm">
-                            <thead className="bg-bg text-left">
-                                <tr>
-                                    <th className="px-4 py-3 font-medium text-muted">Email</th>
-                                    <th className="px-4 py-3 font-medium text-muted">Quyền</th>
-                                    <th className="px-4 py-3 font-medium text-muted">Trạng thái</th>
-                                    <th className="px-4 py-3 font-medium text-muted">Domains</th>
-                                    <th className="px-4 py-3 font-medium text-muted">Ngày tạo</th>
-                                    <th className="px-4 py-3 font-medium text-muted">Quyền</th>
-                                    <th className="px-4 py-3 font-medium text-muted text-right">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {users.map((user) => (
-                                    <tr key={user.id} className={`hover:bg-bg/50 ${user.isDisabled ? "bg-gray-50" : ""}`}>
-                                        <td className="px-4 py-3">
-                                            <div className={`font-medium ${user.isDisabled ? "text-muted" : ""}`}>{user.email}</div>
-                                            {user.isDisabled && <span className="text-xs text-red-500 font-medium">Đã khóa</span>}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded ${user.role === "ADMIN" ? "bg-purple-50 text-purple-600" : "bg-gray-100 text-gray-600"
-                                                }`}>
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {user.emailVerified ? (
-                                                <span className="text-green-600 text-xs">✓ Đã xác thực</span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleForceVerify(user.id)}
-                                                    disabled={updating === user.id}
-                                                    className="text-amber-600 text-xs hover:underline disabled:opacity-50"
-                                                >
-                                                    Xác thực →
-                                                </button>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-muted">{user._count.domains}</td>
-                                        <td className="px-4 py-3 text-muted">
-                                            {new Date(user.createdAt).toLocaleDateString("vi-VN")}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <select
-                                                value={user.role}
-                                                onChange={(e) => handleRoleChange(user.id, e.target.value as "ADMIN" | "USER")}
+                <GlassCard padding="p-0" hover={false}>
+                    <PremiumTable>
+                        <TableHeader>
+                            <tr>
+                                <TableHeaderCell className="w-10">
+                                    <input
+                                        type="checkbox"
+                                        checked={isAllSelected}
+                                        onChange={handleSelectAll}
+                                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
+                                    />
+                                </TableHeaderCell>
+                                <TableHeaderCell>Email</TableHeaderCell>
+                                <TableHeaderCell>Quyền</TableHeaderCell>
+                                <TableHeaderCell>Trạng thái</TableHeaderCell>
+                                <TableHeaderCell>Domains</TableHeaderCell>
+                                <TableHeaderCell>Ngày tạo</TableHeaderCell>
+                                <TableHeaderCell className="text-right">Hành động</TableHeaderCell>
+                            </tr>
+                        </TableHeader>
+                        <TableBody>
+                            {users.map((user) => (
+                                <TableRow key={user.id} className={selectedIds.has(user.id) ? "!bg-primary/5 dark:!bg-primary/10" : ""}>
+                                    <TableCell>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(user.id)}
+                                            onChange={() => handleSelectOne(user.id)}
+                                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className={`font-medium ${user.isDisabled ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
+                                            {user.email}
+                                        </div>
+                                        {user.isDisabled && <StatusBadge status="Đã khóa" variant="danger" />}
+                                    </TableCell>
+                                    <TableCell>
+                                        <select
+                                            value={user.role}
+                                            onChange={(e) => handleRoleChange(user.id, e.target.value as "ADMIN" | "USER")}
+                                            disabled={updating === user.id}
+                                            className="text-xs py-1.5 px-2 w-20 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                        >
+                                            <option value="USER">USER</option>
+                                            <option value="ADMIN">ADMIN</option>
+                                        </select>
+                                    </TableCell>
+                                    <TableCell>
+                                        {user.emailVerified ? (
+                                            <StatusBadge status="✓ Đã xác thực" variant="success" />
+                                        ) : (
+                                            <button
+                                                onClick={() => handleForceVerify(user.id)}
                                                 disabled={updating === user.id}
-                                                className="text-xs py-1 px-2 w-20 border border-border rounded"
+                                                className="text-xs text-amber-600 dark:text-amber-400 hover:underline disabled:opacity-50"
                                             >
-                                                <option value="USER">USER</option>
-                                                <option value="ADMIN">ADMIN</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-4 py-3 text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <button
-                                                    onClick={() => handleToggleDisable(user)}
-                                                    disabled={updating === user.id}
-                                                    className={`text-xs px-3 py-1.5 rounded font-medium transition-colors border ${user.isDisabled
-                                                        ? "bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
-                                                        : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-                                                        } disabled:opacity-50`}
-                                                    title={user.isDisabled ? "Mở khóa tài khoản" : "Khóa tài khoản"}
-                                                >
-                                                    {user.isDisabled ? "Mở khóa" : "Khóa"}
-                                                </button>
-                                                <button
-                                                    onClick={() => setConfirmDelete(user)}
-                                                    disabled={updating === user.id}
-                                                    className="text-xs px-2 py-1 rounded text-red-600 hover:bg-red-50 disabled:opacity-50"
-                                                >
-                                                    Xóa
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {users.length === 0 && (
-                            <div className="px-4 py-12 text-center text-muted text-sm">
-                                Không tìm thấy người dùng
-                            </div>
-                        )}
-                    </div>
+                                                Xác thực →
+                                            </button>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>{user._count.domains}</TableCell>
+                                    <TableCell>{new Date(user.createdAt).toLocaleDateString("vi-VN")}</TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <PremiumButton
+                                                variant={user.isDisabled ? "secondary" : "ghost"}
+                                                size="sm"
+                                                onClick={() => handleToggleDisable(user)}
+                                                disabled={updating === user.id}
+                                            >
+                                                {user.isDisabled ? "Mở khóa" : "Khóa"}
+                                            </PremiumButton>
+                                            <PremiumButton
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setConfirmDelete(user)}
+                                                disabled={updating === user.id}
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                            >
+                                                Xóa
+                                            </PremiumButton>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </PremiumTable>
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-between mt-4">
-                            <div className="text-sm text-muted">
-                                Trang {page + 1} / {totalPages}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setPage((p) => Math.max(0, p - 1))}
-                                    disabled={page === 0}
-                                    className="px-3 py-1.5 text-sm border border-border rounded-md hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    ← Trước
-                                </button>
-                                <button
-                                    onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                                    disabled={page >= totalPages - 1}
-                                    className="px-3 py-1.5 text-sm border border-border rounded-md hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Sau →
-                                </button>
-                            </div>
-                        </div>
+                    {users.length === 0 && (
+                        <EmptyState
+                            title="Không tìm thấy người dùng"
+                            description="Thử thay đổi từ khóa tìm kiếm"
+                        />
                     )}
-                </>
+                </GlassCard>
+            )}
+
+            {totalPages > 1 && (
+                <Pagination
+                    currentPage={page + 1}
+                    totalPages={totalPages}
+                    onPageChange={(p) => setPage(p - 1)}
+                />
             )}
 
             {/* Delete Confirmation Modal */}
             {confirmDelete && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-surface border border-border rounded-lg p-6 max-w-md mx-4">
-                        <h3 className="text-lg font-semibold mb-2">Xác nhận xóa</h3>
-                        <p className="text-sm text-muted mb-4">
-                            Bạn có chắc muốn xóa người dùng <strong>{confirmDelete.email}</strong>?
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                    <GlassCard className="max-w-md mx-4" hover={false}>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Xác nhận xóa</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                            Bạn có chắc muốn xóa người dùng <strong className="text-slate-900 dark:text-white">{confirmDelete.email}</strong>?
                             Tất cả domain, inbox và email của họ sẽ bị xóa vĩnh viễn.
                         </p>
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setConfirmDelete(null)}
-                                className="px-4 py-2 text-sm border border-border rounded-md hover:bg-bg"
-                            >
+                        <div className="flex justify-end gap-3">
+                            <PremiumButton variant="secondary" onClick={() => setConfirmDelete(null)}>
                                 Hủy
-                            </button>
-                            <button
+                            </PremiumButton>
+                            <PremiumButton
+                                variant="danger"
                                 onClick={() => handleDelete(confirmDelete)}
                                 disabled={updating === confirmDelete.id}
-                                className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                             >
                                 {updating === confirmDelete.id ? "Đang xóa..." : "Xóa"}
-                            </button>
+                            </PremiumButton>
                         </div>
-                    </div>
+                    </GlassCard>
                 </div>
             )}
         </div>

@@ -2,18 +2,26 @@ import { useState, useEffect, useCallback, type FormEvent } from "react";
 import { api } from "../utils/api";
 import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AdminDashboard } from "./admin/AdminDashboard";
 import { AdminUsers } from "./admin/AdminUsers";
 import { AdminReports } from "./admin/AdminReports";
 import { AdminLogs } from "./admin/AdminLogs";
+import { AdminEmails } from "./admin/AdminEmails";
 
-type TabType = "dashboard" | "users" | "rules" | "domains" | "reports" | "logs" | "settings";
+type TabType = "dashboard" | "users" | "emails" | "rules" | "domains" | "reports" | "logs" | "settings";
 
 interface Tab {
     id: TabType;
     label: string;
     icon: React.ReactNode;
+    badge?: number;
+}
+
+interface SidebarCounts {
+    openReports: number;
+    totalUsers: number;
+    totalDomains: number;
 }
 
 // SVG Icons - Simple and Consistent (Heroicons Outline style)
@@ -61,37 +69,133 @@ const icons = {
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5m7-7l-7 7 7 7" />
         </svg>
     ),
+    search: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+    ),
+    email: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        </svg>
+    ),
 };
 
-const tabs: Tab[] = [
-    { id: "dashboard", label: "Tổng quan", icon: icons.dashboard },
-    { id: "users", label: "Người dùng", icon: icons.users },
-    { id: "rules", label: "Quy tắc bảo vệ", icon: icons.shield },
-    { id: "domains", label: "Tên miền", icon: icons.globe },
-    { id: "reports", label: "Báo cáo", icon: icons.flag },
-    { id: "logs", label: "Nhật ký", icon: icons.clock },
-    { id: "settings", label: "Cài đặt", icon: icons.cog },
-];
+// Badge Component
+function Badge({ count, color = "red" }: { count: number; color?: "red" | "blue" | "green" }) {
+    if (count === 0) return null;
+
+    const colorClasses = {
+        red: "bg-red-500 text-white",
+        blue: "bg-blue-500 text-white",
+        green: "bg-green-500 text-white",
+    };
+
+    return (
+        <span className={`ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full ${colorClasses[color]}`}>
+            {count > 99 ? "99+" : count}
+        </span>
+    );
+}
 
 export function AdminPanel({ token }: { token: string }) {
     const [activeTab, setActiveTab] = useState<TabType>("dashboard");
+    const [counts, setCounts] = useState<SidebarCounts>({ openReports: 0, totalUsers: 0, totalDomains: 0 });
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    // Fetch counts for badges
+    useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const res = await api<{ stats: { openReports: number; totalUsers: number; totalDomains: number } }>("/admin/stats", { token });
+                setCounts({
+                    openReports: res.stats.openReports,
+                    totalUsers: res.stats.totalUsers,
+                    totalDomains: res.stats.totalDomains,
+                });
+            } catch {
+                // Silent fail for badge counts
+            }
+        };
+        fetchCounts();
+        // Refresh every 60 seconds
+        const interval = setInterval(fetchCounts, 60000);
+        return () => clearInterval(interval);
+    }, [token]);
+
+    // Load saved theme preference
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("admin-theme");
+        if (savedTheme === "dark") {
+            document.documentElement.classList.add("dark");
+            document.documentElement.setAttribute("data-theme", "dark");
+        } else if (savedTheme === "light") {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.setAttribute("data-theme", "light");
+        }
+    }, []);
+
+    const tabs: Tab[] = [
+        { id: "dashboard", label: "Tổng quan", icon: icons.dashboard },
+        { id: "users", label: "Người dùng", icon: icons.users, badge: counts.totalUsers },
+        { id: "emails", label: "Email", icon: icons.email },
+        { id: "rules", label: "Quy tắc bảo vệ", icon: icons.shield },
+        { id: "domains", label: "Tên miền", icon: icons.globe, badge: counts.totalDomains },
+        { id: "reports", label: "Báo cáo", icon: icons.flag, badge: counts.openReports },
+        { id: "logs", label: "Nhật ký", icon: icons.clock },
+        { id: "settings", label: "Cài đặt", icon: icons.cog },
+    ];
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            // Navigate to users tab with search
+            setActiveTab("users");
+        }
+    };
 
     return (
-        <div className="h-screen flex bg-bg admin-layout">
+        <div className="h-screen flex bg-white dark:bg-[#0A0A0B] admin-layout">
             {/* Sidebar */}
-            <div className="w-60 bg-surface border-r border-border flex flex-col admin-sidebar">
+            <div className={`${sidebarCollapsed ? "w-16" : "w-64"} bg-gray-50 dark:bg-[#0A0A0B] border-r border-gray-200 dark:border-white/10 flex flex-col admin-sidebar transition-all duration-200`}>
                 {/* Header */}
-                <div className="h-16 px-5 flex items-center border-b border-border">
+                <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 dark:border-white/10">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[#0A0A0B] dark:bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        <span className="font-semibold text-sm">Quản trị</span>
+                        {!sidebarCollapsed && <span className="font-semibold text-sm text-gray-900 dark:text-white">Quản trị</span>}
                     </div>
+                    <button
+                        onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded transition-colors"
+                        title={sidebarCollapsed ? "Mở rộng" : "Thu gọn"}
+                    >
+                        <svg className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
                 </div>
+
+                {/* Search Bar */}
+                {!sidebarCollapsed && (
+                    <form onSubmit={handleSearch} className="px-3 py-3 border-b border-gray-200 dark:border-white/10">
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">{icons.search}</span>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                        </div>
+                    </form>
+                )}
 
                 {/* Navigation */}
                 <nav className="flex-1 py-4 px-3 overflow-y-auto">
@@ -100,28 +204,62 @@ export function AdminPanel({ token }: { token: string }) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-center px-3 py-2 rounded-md text-sm transition-all duration-150 ${activeTab === tab.id
-                                    ? "bg-primary text-white shadow-sm"
-                                    : "text-text-main hover:bg-bg"
+                                className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${activeTab === tab.id
+                                    ? "bg-primary text-white shadow-lg shadow-primary/25"
+                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
                                     }`}
+                                title={sidebarCollapsed ? tab.label : undefined}
                             >
-                                <span className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${activeTab === tab.id ? "text-white" : "text-muted"}`}>
+                                <span className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${activeTab === tab.id ? "text-white" : "text-gray-500 dark:text-gray-400"}`}>
                                     {tab.icon}
                                 </span>
-                                <span className="ml-3">{tab.label}</span>
+                                {!sidebarCollapsed && (
+                                    <>
+                                        <span className="ml-3 flex-1 text-left">{tab.label}</span>
+                                        {tab.id === "reports" && tab.badge ? (
+                                            <Badge count={tab.badge} color="red" />
+                                        ) : null}
+                                    </>
+                                )}
+                                {sidebarCollapsed && tab.id === "reports" && counts.openReports > 0 && (
+                                    <span className="absolute right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                                )}
                             </button>
                         ))}
                     </div>
                 </nav>
 
                 {/* Footer */}
-                <div className="p-3 border-t border-border">
+                <div className="p-3 border-t border-gray-200 dark:border-white/10 space-y-2">
+                    {/* Dark Mode Toggle */}
+                    <button
+                        onClick={() => {
+                            const isDark = document.documentElement.classList.contains("dark");
+                            if (isDark) {
+                                document.documentElement.classList.remove("dark");
+                                document.documentElement.setAttribute("data-theme", "light");
+                                localStorage.setItem("admin-theme", "light");
+                            } else {
+                                document.documentElement.classList.add("dark");
+                                document.documentElement.setAttribute("data-theme", "dark");
+                                localStorage.setItem("admin-theme", "dark");
+                            }
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors ${sidebarCollapsed ? "justify-center" : ""}`}
+                        title={sidebarCollapsed ? "Chế độ tối/sáng" : undefined}
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                        </svg>
+                        {!sidebarCollapsed && <span>Chế độ tối/sáng</span>}
+                    </button>
                     <Link
                         to="/"
-                        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-muted hover:text-text-main hover:bg-bg transition-colors"
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors ${sidebarCollapsed ? "justify-center" : ""}`}
+                        title={sidebarCollapsed ? "Quay lại" : undefined}
                     >
                         {icons.back}
-                        <span>Quay lại</span>
+                        {!sidebarCollapsed && <span>Quay lại</span>}
                     </Link>
                 </div>
             </div>
@@ -130,6 +268,7 @@ export function AdminPanel({ token }: { token: string }) {
             <div className="flex-1 overflow-y-auto">
                 {activeTab === "dashboard" && <AdminDashboard token={token} />}
                 {activeTab === "users" && <AdminUsers token={token} />}
+                {activeTab === "emails" && <AdminEmails token={token} />}
                 {activeTab === "rules" && <RulesList token={token} />}
                 {activeTab === "domains" && <DomainsList token={token} />}
                 {activeTab === "reports" && <AdminReports token={token} />}
@@ -139,6 +278,7 @@ export function AdminPanel({ token }: { token: string }) {
         </div>
     );
 }
+
 
 function RulesList({ token }: { token: string }) {
     const [rules, setRules] = useState<any[]>([]);
@@ -302,11 +442,16 @@ function DomainsList({ token }: { token: string }) {
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [togglingId, setTogglingId] = useState<string | null>(null);
 
+    // Bulk selection state
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkLoading, setBulkLoading] = useState(false);
+
     const loadDomains = useCallback(async () => {
         setLoading(true);
         try {
             const res = await api<{ data: any[] }>("/domains?limit=100", { token });
             setDomains(res.data);
+            setSelectedIds(new Set());
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
@@ -367,48 +512,146 @@ function DomainsList({ token }: { token: string }) {
         }
     };
 
+    // Bulk selection handlers
+    const handleSelectAll = () => {
+        if (selectedIds.size === domains.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(domains.map(d => d.id)));
+        }
+    };
+
+    const handleSelectOne = (id: string) => {
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) {
+            newSet.delete(id);
+        } else {
+            newSet.add(id);
+        }
+        setSelectedIds(newSet);
+    };
+
+    const handleBulkAction = async (action: "verify" | "make_public" | "make_private" | "delete") => {
+        if (selectedIds.size === 0) return;
+
+        const actionLabels = {
+            verify: "xác thực",
+            make_public: "công khai",
+            make_private: "chuyển riêng tư",
+            delete: "xóa"
+        };
+
+        if (action === "delete") {
+            if (!confirm(`Bạn có chắc muốn xóa ${selectedIds.size} domain? Hành động này không thể hoàn tác.`)) {
+                return;
+            }
+        }
+
+        setBulkLoading(true);
+        try {
+            const res = await api<{ affected: number }>("/admin/domains/bulk", {
+                method: "POST",
+                token,
+                body: { domainIds: Array.from(selectedIds), action }
+            });
+            toast.success(`Đã ${actionLabels[action]} ${res.affected} domain`);
+            setSelectedIds(new Set());
+            await loadDomains();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
+    const isAllSelected = domains.length > 0 && selectedIds.size === domains.length;
+    const isSomeSelected = selectedIds.size > 0;
+
     if (loading) {
         return <div className="flex items-center justify-center h-64"><div className="spinner"></div></div>;
     }
 
     return (
-        <div className="p-6 max-w-5xl">
+        <div className="p-6 max-w-6xl">
             <div className="mb-6">
                 <h1 className="text-xl font-semibold">Tên miền</h1>
-                <p className="text-sm text-muted mt-1">Quản lý các tên miền trong hệ thống</p>
+                <p className="text-sm text-muted mt-1">Quản lý các tên miền trong hệ thống ({domains.length} tổng)</p>
             </div>
 
+            {/* Bulk Actions Bar */}
+            {isSomeSelected && (
+                <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between animate-fade-in">
+                    <span className="text-sm font-medium">Đã chọn {selectedIds.size} domain</span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => handleBulkAction("verify")}
+                            disabled={bulkLoading}
+                            className="px-3 py-1.5 text-sm bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100 disabled:opacity-50"
+                        >
+                            Xác thực
+                        </button>
+                        <button
+                            onClick={() => handleBulkAction("make_public")}
+                            disabled={bulkLoading}
+                            className="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50"
+                        >
+                            Công khai
+                        </button>
+                        <button
+                            onClick={() => handleBulkAction("make_private")}
+                            disabled={bulkLoading}
+                            className="px-3 py-1.5 text-sm bg-gray-50 text-gray-700 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-50"
+                        >
+                            Riêng tư
+                        </button>
+                        <button
+                            onClick={() => handleBulkAction("delete")}
+                            disabled={bulkLoading}
+                            className="px-3 py-1.5 text-sm bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100 disabled:opacity-50"
+                        >
+                            Xóa
+                        </button>
+                        <button
+                            onClick={() => setSelectedIds(new Set())}
+                            className="px-2 py-1.5 text-sm text-muted hover:text-text-main"
+                        >
+                            Bỏ chọn
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* DNS Configuration Help */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-blue-800 mb-2">📧 Cấu hình DNS để nhận email</h3>
-                <p className="text-sm text-blue-700 mb-3">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">📧 Cấu hình DNS để nhận email</h3>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
                     Để nhận được email, người dùng cần thêm các bản ghi DNS sau vào domain của họ:
                 </p>
-                <div className="bg-white rounded border border-blue-200 overflow-hidden">
+                <div className="bg-white dark:bg-white/5 rounded border border-blue-200 dark:border-blue-800/50 overflow-hidden">
                     <table className="w-full text-xs">
-                        <thead className="bg-blue-100">
+                        <thead className="bg-blue-100 dark:bg-blue-900/30">
                             <tr>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Type</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Host</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Value</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800">Mục đích</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Type</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Host</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Value</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Mục đích</th>
                             </tr>
                         </thead>
-                        <tbody className="text-blue-700">
-                            <tr className="border-t border-blue-200">
-                                <td className="px-3 py-2 font-mono font-bold text-red-600">MX</td>
+                        <tbody className="text-blue-700 dark:text-blue-400">
+                            <tr className="border-t border-blue-200 dark:border-blue-800/50">
+                                <td className="px-3 py-2 font-mono font-bold text-red-600 dark:text-red-400">MX</td>
                                 <td className="px-3 py-2 font-mono">@</td>
                                 <td className="px-3 py-2 font-mono">mail.[domain] (priority 10)</td>
                                 <td className="px-3 py-2">⚠️ Bắt buộc để nhận email</td>
                             </tr>
-                            <tr className="border-t border-blue-200">
-                                <td className="px-3 py-2 font-mono font-bold text-blue-600">A</td>
+                            <tr className="border-t border-blue-200 dark:border-blue-800/50">
+                                <td className="px-3 py-2 font-mono font-bold text-blue-600 dark:text-blue-400">A</td>
                                 <td className="px-3 py-2 font-mono">mail</td>
                                 <td className="px-3 py-2 font-mono">IP của mail server</td>
                                 <td className="px-3 py-2">Trỏ mail subdomain về IP</td>
                             </tr>
-                            <tr className="border-t border-blue-200">
-                                <td className="px-3 py-2 font-mono font-bold text-green-600">TXT</td>
+                            <tr className="border-t border-blue-200 dark:border-blue-800/50">
+                                <td className="px-3 py-2 font-mono font-bold text-green-600 dark:text-green-400">TXT</td>
                                 <td className="px-3 py-2 font-mono">@</td>
                                 <td className="px-3 py-2 font-mono">[verification token]</td>
                                 <td className="px-3 py-2">Xác minh sở hữu domain</td>
@@ -422,6 +665,14 @@ function DomainsList({ token }: { token: string }) {
                 <table className="w-full text-sm">
                     <thead className="bg-bg text-left">
                         <tr>
+                            <th className="px-4 py-3 font-medium text-muted w-10">
+                                <input
+                                    type="checkbox"
+                                    checked={isAllSelected}
+                                    onChange={handleSelectAll}
+                                    className="w-4 h-4 rounded border-border"
+                                />
+                            </th>
                             <th className="px-4 py-3 font-medium text-muted">Tên miền</th>
                             <th className="px-4 py-3 font-medium text-muted">Trạng thái</th>
                             <th className="px-4 py-3 font-medium text-muted">Công khai</th>
@@ -432,7 +683,15 @@ function DomainsList({ token }: { token: string }) {
                     </thead>
                     <tbody className="divide-y divide-border">
                         {domains.map((d) => (
-                            <tr key={d.id} className="hover:bg-bg/50">
+                            <tr key={d.id} className={`hover:bg-bg/50 ${selectedIds.has(d.id) ? "bg-primary/5" : ""}`}>
+                                <td className="px-4 py-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.has(d.id)}
+                                        onChange={() => handleSelectOne(d.id)}
+                                        className="w-4 h-4 rounded border-border"
+                                    />
+                                </td>
                                 <td className="px-4 py-3 font-medium">{d.name}</td>
                                 <td className="px-4 py-3">
                                     <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded ${d.status === "VERIFIED" ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"
@@ -451,21 +710,7 @@ function DomainsList({ token }: { token: string }) {
                                     >
                                         {togglingId === d.id ? (
                                             <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></span>
-                                        ) : d.isPublic ? (
-                                            <>
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                Public
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                </svg>
-                                                Private
-                                            </>
-                                        )}
+                                        ) : d.isPublic ? "Public" : "Private"}
                                     </button>
                                 </td>
                                 <td className="px-4 py-3 text-muted">{d.owner?.email || "—"}</td>
@@ -829,14 +1074,14 @@ function SettingsPanel({ token }: { token: string }) {
             </div>
 
             {/* Danger Zone */}
-            <div className="bg-red-50 border border-red-200 rounded-lg p-5 mt-6">
-                <h3 className="text-sm font-medium mb-2 text-red-800 flex items-center gap-2">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg p-5 mt-6">
+                <h3 className="text-sm font-medium mb-2 text-red-800 dark:text-red-300 flex items-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
                     Vùng nguy hiểm
                 </h3>
-                <p className="text-xs text-red-700 mb-3">
+                <p className="text-xs text-red-700 dark:text-red-400 mb-3">
                     Các thao tác này có thể ảnh hưởng đến toàn bộ hệ thống. Hãy cẩn thận!
                 </p>
                 <div className="flex gap-2">
@@ -846,7 +1091,7 @@ function SettingsPanel({ token }: { token: string }) {
                                 toast.success("Tính năng sẽ được thêm sau");
                             }
                         }}
-                        className="text-xs px-3 py-1.5 bg-white border border-red-300 text-red-700 rounded hover:bg-red-100"
+                        className="text-xs px-3 py-1.5 bg-white dark:bg-white/10 border border-red-300 dark:border-red-800/50 text-red-700 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-900/30"
                     >
                         Dọn dẹp nhật ký cũ
                     </button>

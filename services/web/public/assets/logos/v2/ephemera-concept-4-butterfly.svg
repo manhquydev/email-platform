@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CONCEPT 4: "Ephemera Butterfly" - Bướm phù du (ephemera trong tiếng Latin) -->
+<!-- Thể hiện: bướm phù du sống ngắn ngủi, biểu tượng của sự phù du, thoáng qua -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="c4-left" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA"/>
+      <stop offset="100%" style="stop-color:#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="c4-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#1D4ED8"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Left wing (stylized, geometric) -->
+  <path d="
+    M 60 40
+    Q 35 25, 20 35
+    Q 10 50, 25 60 
+    Q 15 70, 20 85
+    Q 35 95, 60 80
+    Q 50 60, 60 40
+    Z
+  " fill="url(#c4-left)"/>
+  
+  <!-- Right wing (mirror, slightly dissolving) -->
+  <path d="
+    M 60 40
+    Q 85 25, 100 35
+    Q 110 50, 95 60 
+    Q 105 70, 100 85
+    Q 85 95, 60 80
+    Q 70 60, 60 40
+    Z
+  " fill="url(#c4-right)" opacity="0.85"/>
+  
+  <!-- Wing pattern - left -->
+  <circle cx="35" cy="45" r="8" fill="none" stroke="white" stroke-width="2" opacity="0.4"/>
+  <circle cx="30" cy="72" r="6" fill="none" stroke="white" stroke-width="1.5" opacity="0.3"/>
+  
+  <!-- Wing pattern - right (dissolving) -->
+  <circle cx="85" cy="45" r="7" fill="none" stroke="white" stroke-width="1.5" opacity="0.3"/>
+  <circle cx="90" cy="72" r="5" fill="none" stroke="white" stroke-width="1" opacity="0.2"/>
+  
+  <!-- Body (center line) - forms subtle "E" negative space -->
+  <ellipse cx="60" cy="60" rx="4" ry="25" fill="#0A0A0B"/>
+  
+  <!-- Head -->
+  <circle cx="60" cy="32" r="5" fill="#0A0A0B"/>
+  
+  <!-- Antennae -->
+  <path d="M 58 28 Q 52 18, 48 15" stroke="#0A0A0B" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 62 28 Q 68 18, 72 15" stroke="#0A0A0B" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Dissolving particles from right wing -->
+  <rect x="102" y="40" width="3" height="3" fill="#3B82F6" opacity="0.3" rx="0.5"/>
+  <rect x="106" y="50" width="2" height="2" fill="#60A5FA" opacity="0.25"/>
+  <rect x="104" y="60" width="2.5" height="2.5" fill="#60A5FA" opacity="0.2"/>
+  <rect x="108" y="70" width="2" height="2" fill="#93C5FD" opacity="0.15"/>
+  <rect x="102" y="82" width="1.5" height="1.5" fill="#BFDBFE" opacity="0.1"/>
+</svg>

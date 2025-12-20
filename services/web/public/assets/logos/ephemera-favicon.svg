@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Favicon - Optimized for 16x16, 32x32 display -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="favGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#2563EB"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded background -->
+  <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#favGradient)"/>
+  
+  <!-- Simplified E shape -->
+  <path d="
+    M 7 8
+    L 24 8
+    L 24 11
+    L 11 11
+    L 11 14
+    L 20 14
+    L 20 17
+    L 11 17
+    L 11 21
+    L 24 21
+    L 24 24
+    L 7 24
+    Z
+  " fill="white"/>
+</svg>

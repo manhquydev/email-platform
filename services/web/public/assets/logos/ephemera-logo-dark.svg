@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Logo - Dark Mode Version -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="300" height="80">
+  <defs>
+    <linearGradient id="darkBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA"/>
+      <stop offset="100%" style="stop-color:#3B82F6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon Mark -->
+  <g id="logomark-dark">
+    <!-- Main envelope body -->
+    <rect x="8" y="18" width="44" height="34" rx="4" fill="url(#darkBlueGradient)"/>
+    <!-- Envelope flap -->
+    <path d="M8 22 L30 38 L52 22" stroke="#0A0A0B" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- E bars -->
+    <rect x="12" y="42" width="16" height="3" rx="1.5" fill="#0A0A0B" opacity="0.9"/>
+    <rect x="12" y="33" width="12" height="3" rx="1.5" fill="#0A0A0B" opacity="0.7"/>
+    <!-- Dissolving particles -->
+    <circle cx="54" cy="24" r="2" fill="#60A5FA" opacity="0.6"/>
+    <circle cx="58" cy="30" r="1.5" fill="#60A5FA" opacity="0.4"/>
+    <circle cx="56" cy="38" r="1" fill="#60A5FA" opacity="0.2"/>
+  </g>
+  
+  <!-- Wordmark - White for dark backgrounds -->
+  <text x="72" y="48" font-family="'Inter', 'Segoe UI', sans-serif" font-size="28" font-weight="600" fill="#FAFAFA" letter-spacing="-0.5">
+    <tspan>Ephemera</tspan>
+  </text>
+</svg>

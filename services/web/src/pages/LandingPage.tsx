@@ -2,168 +2,150 @@ import { Link, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
-// Feature data
+// Professional SVG icons
+const MailIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+    </svg>
+);
+
+const GlobeIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 003 12c0-1.605.42-3.113 1.157-4.418" />
+    </svg>
+);
+
+const ShieldIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+    </svg>
+);
+
+const BoltIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+    </svg>
+);
+
 const features = [
     {
-        icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-            </svg>
-        ),
+        Icon: MailIcon,
         title: "Email tạm thời",
-        description: "Tạo email tạm thời trong giây lát. Bảo vệ hộp thư chính khỏi spam và quảng cáo không mong muốn."
+        description: "Tạo email tạm thời trong giây lát. Bảo vệ hộp thư chính khỏi spam."
     },
     {
-        icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
-            </svg>
-        ),
+        Icon: GlobeIcon,
         title: "Domain tùy chỉnh",
-        description: "Sử dụng domain riêng của bạn. Tạo không giới hạn inbox với địa chỉ chuyên nghiệp."
+        description: "Sử dụng domain riêng của bạn. Tạo không giới hạn inbox."
     },
     {
-        icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-        ),
+        Icon: ShieldIcon,
         title: "Bảo mật tối đa",
-        description: "Dữ liệu được mã hóa end-to-end. Tự động xóa email sau thời gian định sẵn."
+        description: "Dữ liệu được mã hóa end-to-end. Tự động xóa khi hết hạn."
     },
     {
-        icon: (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-            </svg>
-        ),
+        Icon: BoltIcon,
         title: "API cho Developer",
-        description: "Tích hợp dễ dàng với API RESTful đầy đủ. Webhook hỗ trợ automation testing."
+        description: "Tích hợp dễ dàng với API RESTful đầy đủ. Webhook automation."
     }
 ];
 
 const steps = [
-    {
-        step: "01",
-        title: "Đăng ký tài khoản",
-        description: "Chỉ cần email và mật khẩu. Không cần xác minh phức tạp."
-    },
-    {
-        step: "02",
-        title: "Thêm domain của bạn",
-        description: "Cấu hình DNS đơn giản với hướng dẫn chi tiết từng bước."
-    },
-    {
-        step: "03",
-        title: "Tạo inbox & nhận email",
-        description: "Tạo inbox không giới hạn, nhận email realtime trong dashboard."
-    }
+    { step: "01", title: "Đăng ký tài khoản", description: "Chỉ cần email và mật khẩu" },
+    { step: "02", title: "Thêm domain của bạn", description: "Cấu hình DNS đơn giản" },
+    { step: "03", title: "Tạo inbox & nhận email", description: "Realtime trong dashboard" }
 ];
 
 export function LandingPage() {
     const { token } = useAuth();
-    const [emailDemo, setEmailDemo] = useState("user");
+    const [emailPrefix, setEmailPrefix] = useState("user");
     const [copied, setCopied] = useState(false);
+    const [typingIndex, setTypingIndex] = useState(0);
 
-    // ✅ useEffect MUST be called before any conditional returns (React Rules of Hooks)
-    // Animated email demo
+    const prefixes = ["user", "test", "signup", "verify", "demo"];
+
     useEffect(() => {
-        const emails = ["user", "test", "signup", "verify", "demo"];
-        let index = 0;
         const interval = setInterval(() => {
-            index = (index + 1) % emails.length;
-            setEmailDemo(emails[index]);
+            setTypingIndex((i) => (i + 1) % prefixes.length);
         }, 3000);
         return () => clearInterval(interval);
     }, []);
 
-    // Redirect authenticated users to app
-    if (token) {
-        return <Navigate to="/app" replace />;
-    }
+    useEffect(() => {
+        setEmailPrefix(prefixes[typingIndex]);
+    }, [typingIndex]);
+
+    if (token) return <Navigate to="/app" replace />;
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(`${emailDemo}@yourdomain.com`);
+        navigator.clipboard.writeText(`${emailPrefix}@yourdomain.com`);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
     return (
-        <div className="landing-page">
-            {/* Navigation */}
-            <nav className="landing-nav">
-                <div className="landing-nav-container">
-                    <Link to="/" className="landing-logo">
-                        <div className="landing-logo-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </div>
-                        <span className="landing-logo-text">TempMail Pro</span>
-                    </Link>
-                    <div className="landing-nav-links">
-                        <a href="#features" className="landing-nav-link">Tính năng</a>
-                        <a href="#how-it-works" className="landing-nav-link">Cách hoạt động</a>
-                        <Link to="/login" className="landing-nav-link">Đăng nhập</Link>
-                        <Link to="/register" className="btn-landing-primary">
-                            Bắt đầu miễn phí
-                        </Link>
-                    </div>
-                </div>
-            </nav>
+        <div className="landing neo-mesh-bg">
+            {/* 2025 Enhanced Background Effects */}
+            <div className="landing-bg">
+                <div className="landing-bg-gradient" />
+                <div className="landing-bg-grid" />
+                {/* Animated Blob Orbs */}
+                <div className="neo-blob-orb neo-blob-orb-violet" style={{ width: '400px', height: '400px', top: '10%', left: '5%' }} />
+                <div className="neo-blob-orb neo-blob-orb-cyan" style={{ width: '350px', height: '350px', top: '60%', right: '10%' }} />
+                <div className="neo-blob-orb neo-blob-orb-pink" style={{ width: '300px', height: '300px', bottom: '20%', left: '40%' }} />
+            </div>
+
+
+
+            {/* Navigation is now provided by PublicLayout */}
 
             {/* Hero Section */}
             <section className="landing-hero">
-                <div className="landing-hero-bg"></div>
                 <div className="landing-hero-content">
                     <div className="landing-hero-badge">
-                        <span className="landing-badge-dot"></span>
-                        Nền tảng email thế hệ mới
+                        <span className="landing-badge-dot" />
+                        <span>Nền tảng email thế hệ mới</span>
                     </div>
-                    <h1 className="landing-hero-title">
-                        Email tạm thời<br />
-                        <span className="landing-hero-gradient">không giới hạn</span>
+
+                    <h1 className="landing-hero-title neo-animate-fade-in-up">
+                        Email tạm thời
+                        <span className="landing-hero-gradient neo-text-gradient-animated"> không giới hạn</span>
                     </h1>
+
                     <p className="landing-hero-subtitle">
                         Bảo vệ quyền riêng tư với email tạm thời theo domain riêng.
                         Tạo inbox trong giây lát, nhận email realtime, tự động xóa khi hết hạn.
                     </p>
 
-                    {/* Email Demo Widget */}
+                    {/* Interactive Email Demo */}
                     <div className="landing-email-demo">
                         <div className="landing-email-widget">
-                            <div className="landing-email-input">
-                                <span className="landing-email-prefix">{emailDemo}</span>
+                            <div className="landing-email-address">
+                                <span className="landing-email-prefix">{emailPrefix}</span>
                                 <span className="landing-email-domain">@yourdomain.com</span>
                             </div>
-                            <button
-                                onClick={handleCopy}
-                                className="landing-email-copy"
-                            >
+                            <button onClick={handleCopy} className="landing-email-copy">
                                 {copied ? (
-                                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                     </svg>
                                 ) : (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
                                 )}
                             </button>
                         </div>
-                        <p className="landing-email-hint">
-                            ↑ Click để copy địa chỉ email mẫu
-                        </p>
                     </div>
 
-                    <div className="landing-hero-actions">
-                        <Link to="/register" className="btn-landing-primary btn-landing-lg">
+                    <div className="landing-hero-actions neo-animate-fade-in-up neo-stagger-3">
+                        <Link to="/register" className="landing-btn-primary neo-btn-magnetic neo-btn-shimmer">
                             Tạo tài khoản miễn phí
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                             </svg>
                         </Link>
-                        <Link to="/login" className="btn-landing-secondary btn-landing-lg">
+                        <Link to="/login" className="landing-btn-ghost neo-hover-scale">
                             Đăng nhập
                         </Link>
                     </div>
@@ -173,12 +155,12 @@ export function LandingPage() {
                             <span className="landing-stat-value">10K+</span>
                             <span className="landing-stat-label">Người dùng</span>
                         </div>
-                        <div className="landing-stat-divider"></div>
+                        <div className="landing-stat-divider" />
                         <div className="landing-stat">
                             <span className="landing-stat-value">1M+</span>
                             <span className="landing-stat-label">Email đã xử lý</span>
                         </div>
-                        <div className="landing-stat-divider"></div>
+                        <div className="landing-stat-divider" />
                         <div className="landing-stat">
                             <span className="landing-stat-value">99.9%</span>
                             <span className="landing-stat-label">Uptime</span>
@@ -188,22 +170,26 @@ export function LandingPage() {
             </section>
 
             {/* Features Section */}
-            <section id="features" className="landing-features">
-                <div className="landing-section-container">
+            <section id="features" className="landing-section">
+                <div className="landing-section-inner">
                     <div className="landing-section-header">
-                        <h2 className="landing-section-title">Tính năng nổi bật</h2>
-                        <p className="landing-section-subtitle">
-                            Mọi thứ bạn cần để quản lý email tạm thời một cách chuyên nghiệp
-                        </p>
+                        <span className="landing-section-tag">Tính năng</span>
+                        <h2>Mọi thứ bạn cần</h2>
+                        <p>Công cụ mạnh mẽ để quản lý email tạm thời chuyên nghiệp</p>
                     </div>
+
                     <div className="landing-features-grid">
-                        {features.map((feature, index) => (
-                            <div key={index} className="landing-feature-card">
-                                <div className="landing-feature-icon">
-                                    {feature.icon}
+                        {features.map((feature, i) => (
+                            <div
+                                key={i}
+                                className="landing-feature-card neo-card-float neo-card-glow-border neo-animate-fade-in-up"
+                                style={{ animationDelay: `${i * 0.1}s` }}
+                            >
+                                <div className="landing-feature-icon neo-animate-float" style={{ animationDelay: `${i * 0.2}s` }}>
+                                    <feature.Icon />
                                 </div>
-                                <h3 className="landing-feature-title">{feature.title}</h3>
-                                <p className="landing-feature-desc">{feature.description}</p>
+                                <h3>{feature.title}</h3>
+                                <p>{feature.description}</p>
                             </div>
                         ))}
                     </div>
@@ -211,277 +197,113 @@ export function LandingPage() {
             </section>
 
             {/* How It Works */}
-            <section id="how-it-works" className="landing-how-it-works">
-                <div className="landing-section-container">
+            <section id="how-it-works" className="landing-section landing-section-alt">
+                <div className="landing-section-inner">
                     <div className="landing-section-header">
-                        <h2 className="landing-section-title">Cách hoạt động</h2>
-                        <p className="landing-section-subtitle">
-                            Bắt đầu trong vài phút với 3 bước đơn giản
-                        </p>
+                        <span className="landing-section-tag">Cách hoạt động</span>
+                        <h2>Bắt đầu trong 3 bước</h2>
+                        <p>Đơn giản và nhanh chóng</p>
                     </div>
+
                     <div className="landing-steps">
-                        {steps.map((step, index) => (
-                            <div key={index} className="landing-step">
+                        {steps.map((step, i) => (
+                            <div key={i} className="landing-step">
                                 <div className="landing-step-number">{step.step}</div>
                                 <div className="landing-step-content">
-                                    <h3 className="landing-step-title">{step.title}</h3>
-                                    <p className="landing-step-desc">{step.description}</p>
+                                    <h3>{step.title}</h3>
+                                    <p>{step.description}</p>
                                 </div>
-                                {index < steps.length - 1 && (
-                                    <div className="landing-step-connector"></div>
-                                )}
+                                {i < steps.length - 1 && <div className="landing-step-line" />}
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Pricing Section */}
-            <section id="pricing" className="landing-pricing">
-                <div className="landing-section-container">
+            {/* Pricing */}
+            <section id="pricing" className="landing-section">
+                <div className="landing-section-inner">
                     <div className="landing-section-header">
-                        <h2 className="landing-section-title">Gói dịch vụ</h2>
-                        <p className="landing-section-subtitle">
-                            Lựa chọn gói phù hợp với nhu cầu của bạn
-                        </p>
+                        <span className="landing-section-tag">Bảng giá</span>
+                        <h2>Gói dịch vụ</h2>
+                        <p>Lựa chọn phù hợp với nhu cầu của bạn</p>
                     </div>
+
                     <div className="landing-pricing-grid">
-                        {/* Free Plan */}
+                        {/* Free */}
                         <div className="landing-pricing-card">
                             <div className="pricing-header">
-                                <h3 className="pricing-name">Miễn phí</h3>
+                                <span className="pricing-name">Miễn phí</span>
                                 <div className="pricing-price">
                                     <span className="pricing-amount">0₫</span>
                                     <span className="pricing-period">/tháng</span>
                                 </div>
                             </div>
                             <ul className="pricing-features">
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    1 Domain
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    5 Inbox
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Lưu trữ 7 ngày
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    API cơ bản
-                                </li>
+                                <li>✓ 1 Domain</li>
+                                <li>✓ 5 Inbox</li>
+                                <li>✓ Lưu trữ 7 ngày</li>
+                                <li>✓ API cơ bản</li>
                             </ul>
-                            <Link to="/register" className="btn-landing-secondary btn-landing-lg w-full justify-center">
-                                Bắt đầu miễn phí
-                            </Link>
+                            <Link to="/register" className="pricing-btn">Bắt đầu miễn phí</Link>
                         </div>
 
-                        {/* Pro Plan */}
-                        <div className="landing-pricing-card featured">
-                            <div className="pricing-badge">Phổ biến nhất</div>
+                        {/* Pro */}
+                        <div className="landing-pricing-card landing-pricing-featured">
+                            <div className="pricing-featured-badge">Phổ biến nhất</div>
                             <div className="pricing-header">
-                                <h3 className="pricing-name">Pro</h3>
+                                <span className="pricing-name">Pro</span>
                                 <div className="pricing-price">
                                     <span className="pricing-amount">199K</span>
                                     <span className="pricing-period">/tháng</span>
                                 </div>
                             </div>
                             <ul className="pricing-features">
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    5 Domains
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Inbox không giới hạn
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Lưu trữ 30 ngày
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    API đầy đủ + Webhook
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Hỗ trợ ưu tiên
-                                </li>
+                                <li>✓ 5 Domains</li>
+                                <li>✓ Inbox không giới hạn</li>
+                                <li>✓ Lưu trữ 30 ngày</li>
+                                <li>✓ API + Webhook</li>
+                                <li>✓ Hỗ trợ ưu tiên</li>
                             </ul>
-                            <Link to="/register" className="btn-landing-primary btn-landing-lg w-full justify-center">
-                                Nâng cấp Pro
-                            </Link>
+                            <Link to="/register" className="pricing-btn pricing-btn-primary">Nâng cấp Pro</Link>
                         </div>
 
-                        {/* Enterprise Plan */}
+                        {/* Enterprise */}
                         <div className="landing-pricing-card">
                             <div className="pricing-header">
-                                <h3 className="pricing-name">Enterprise</h3>
+                                <span className="pricing-name">Enterprise</span>
                                 <div className="pricing-price">
                                     <span className="pricing-amount">Liên hệ</span>
                                 </div>
                             </div>
                             <ul className="pricing-features">
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Domain không giới hạn
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Lưu trữ vĩnh viễn
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    SLA 99.99%
-                                </li>
-                                <li>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    On-premise deployment
-                                </li>
+                                <li>✓ Domain không giới hạn</li>
+                                <li>✓ Lưu trữ vĩnh viễn</li>
+                                <li>✓ SLA 99.99%</li>
+                                <li>✓ On-premise deployment</li>
                             </ul>
-                            <a href="#" className="btn-landing-secondary btn-landing-lg w-full justify-center">
-                                Liên hệ sales
-                            </a>
+                            <button className="pricing-btn">Liên hệ sales</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Testimonials/Trust Section */}
-            <section className="landing-testimonials">
-                <div className="landing-section-container">
-                    <div className="landing-section-header">
-                        <h2 className="landing-section-title">Được tin dùng bởi</h2>
-                        <p className="landing-section-subtitle">
-                            Hơn 10,000 developer và doanh nghiệp đang sử dụng TempMail Pro
-                        </p>
-                    </div>
-                    <div className="landing-testimonials-grid">
-                        <div className="testimonial-card">
-                            <div className="testimonial-content">
-                                <p>"Giải pháp hoàn hảo cho testing automation. Setup nhanh, API rõ ràng, support rất nhanh."</p>
-                            </div>
-                            <div className="testimonial-author">
-                                <div className="testimonial-avatar">HN</div>
-                                <div className="testimonial-info">
-                                    <span className="testimonial-name">Hùng Nguyễn</span>
-                                    <span className="testimonial-role">QA Lead, Tech Corp</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="testimonial-card">
-                            <div className="testimonial-content">
-                                <p>"Không còn phải dùng personal email cho testing nữa. Inbox tạm thời giúp team dev làm việc hiệu quả hơn nhiều."</p>
-                            </div>
-                            <div className="testimonial-author">
-                                <div className="testimonial-avatar">MT</div>
-                                <div className="testimonial-info">
-                                    <span className="testimonial-name">Minh Trần</span>
-                                    <span className="testimonial-role">Senior Developer, StartupXYZ</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="testimonial-card">
-                            <div className="testimonial-content">
-                                <p>"Domain custom của TempMail Pro giúp chúng tôi có giải pháp email testing chuyên nghiệp với brand riêng."</p>
-                            </div>
-                            <div className="testimonial-author">
-                                <div className="testimonial-avatar">LP</div>
-                                <div className="testimonial-info">
-                                    <span className="testimonial-name">Linh Phạm</span>
-                                    <span className="testimonial-role">CTO, DigitalAgency</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* CTA Section */}
+            {/* CTA */}
             <section className="landing-cta">
-                <div className="landing-cta-container">
-                    <div className="landing-cta-content">
-                        <h2 className="landing-cta-title">
-                            Sẵn sàng bảo vệ quyền riêng tư?
-                        </h2>
-                        <p className="landing-cta-subtitle">
-                            Tạo tài khoản miễn phí ngay hôm nay và trải nghiệm sự khác biệt
-                        </p>
-                        <div className="landing-cta-actions">
-                            <Link to="/register" className="btn-landing-cta">
-                                Bắt đầu miễn phí
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </Link>
-                        </div>
-                    </div>
+                <div className="landing-cta-inner">
+                    <h2>Sẵn sàng bảo vệ quyền riêng tư?</h2>
+                    <p>Tạo tài khoản miễn phí ngay hôm nay</p>
+                    <Link to="/register" className="landing-btn-cta neo-btn-magnetic neo-btn-shimmer neo-animate-glow-pulse">
+                        Bắt đầu ngay
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </Link>
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="landing-footer">
-                <div className="landing-footer-container">
-                    <div className="landing-footer-brand">
-                        <div className="landing-logo">
-                            <div className="landing-logo-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </div>
-                            <span className="landing-logo-text">TempMail Pro</span>
-                        </div>
-                        <p className="landing-footer-tagline">
-                            Nền tảng email tạm thời chuyên nghiệp
-                        </p>
-                    </div>
-                    <div className="landing-footer-links">
-                        <div className="landing-footer-group">
-                            <h4>Sản phẩm</h4>
-                            <a href="#features">Tính năng</a>
-                            <a href="#how-it-works">Cách hoạt động</a>
-                            <Link to="/login">Đăng nhập</Link>
-                        </div>
-                        <div className="landing-footer-group">
-                            <h4>Hỗ trợ</h4>
-                            <a href="#">Tài liệu API</a>
-                            <a href="#">Hướng dẫn DNS</a>
-                            <a href="#">Liên hệ</a>
-                        </div>
-                    </div>
-                </div>
-                <div className="landing-footer-bottom">
-                    <p>© 2024 TempMail Pro. All rights reserved.</p>
-                </div>
-            </footer>
+
+            {/* Footer is now provided by PublicLayout */}
         </div>
     );
 }

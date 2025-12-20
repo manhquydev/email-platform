@@ -1,15 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <!-- Background Circle -->
-  <rect width="48" height="48" rx="12" fill="url(#gradient)"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Favicon - Optimized for 32x32 and 16x16 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Background - Void Black -->
+  <rect width="48" height="48" rx="10" fill="#0A0A0B"/>
   
-  <!-- Mail Icon -->
-  <path d="M12 16L24 26L36 16M12 32V16H36V32H12Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  
-  <!-- Gradient Definition -->
-  <defs>
-    <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#0ea5e9"/>
-    </linearGradient>
-  </defs>
+  <!-- Simplified Broken Infinity -->
+  <g transform="translate(8, 13)">
+    <!-- Left loop -->
+    <path d="
+      M 16 11
+      C 16 3, 3 3, 3 11
+      C 3 19, 16 19, 16 11
+    " fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    
+    <!-- Right partial loop -->
+    <path d="
+      M 16 11
+      C 16 3, 29 3, 29 11
+    " fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+    
+    <!-- Simple dissolve dots -->
+    <circle cx="30" cy="11" r="1.5" fill="white" opacity="0.4"/>
+    <circle cx="32" cy="8" r="1" fill="white" opacity="0.25"/>
+  </g>
 </svg>

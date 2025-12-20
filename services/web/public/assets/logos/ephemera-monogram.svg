@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Monogram - Ultra minimal "E" symbol -->
+<!-- Inspired by Google "G" simplicity - single letter recognition -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="monoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#2563EB"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Simple bold "E" with dissolving right edge -->
+  <path d="
+    M 8 8
+    L 38 8
+    L 38 14
+    L 16 14
+    L 16 21
+    L 32 21
+    L 32 27
+    L 16 27
+    L 16 34
+    L 38 34
+    L 38 40
+    L 8 40
+    Z
+  " fill="url(#monoGradient)"/>
+  
+  <!-- Dissolving particles on right side -->
+  <circle cx="42" cy="11" r="2" fill="#3B82F6" opacity="0.5"/>
+  <circle cx="44" cy="24" r="1.5" fill="#3B82F6" opacity="0.35"/>
+  <circle cx="42" cy="37" r="1" fill="#3B82F6" opacity="0.2"/>
+</svg>

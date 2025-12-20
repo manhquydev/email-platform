@@ -1,17 +1,30 @@
-/**
- * Script to setup Telegram Webhook
- * Usage: npx ts-node scripts/setup-telegram.ts
- */
-import { config } from "dotenv";
 import path from "path";
+import fs from "fs";
 
-// Load environment variables
-config();
-config({ path: path.join(__dirname, "../services/api/.env") });
+// Simple manual .env parser to avoid external dependencies
+function loadEnvRaw(filePath: string) {
+    if (!fs.existsSync(filePath)) return;
+    const content = fs.readFileSync(filePath, "utf-8");
+    content.split("\n").forEach(line => {
+        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+        if (match) {
+            const key = match[1];
+            let value = match[2] || "";
+            if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+            if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+            process.env[key] = value.trim();
+        }
+    });
+}
+
+// Load environment variables manually
+const envPath = path.join(process.cwd(), "services/api/.env");
+loadEnvRaw(envPath);
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const WEB_URL = process.env.WEB_URL; // e.g. https://app.manhquy.click
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
+const API_URL_ENV = process.env.API_URL;
 
 async function setupWebhook() {
     if (!BOT_TOKEN) {

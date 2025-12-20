@@ -96,6 +96,12 @@ export function Sidebar({
 
     const activeDomain = domains.find(d => d.id === selectedDomainId);
     const isOwnerOrAdmin = activeDomain && (isAdmin || activeDomain.ownerId === currentUserId);
+    // Allow inbox creation on: owned domains, admin access, OR public/shared domains
+    const canCreateInbox = activeDomain && activeDomain.status === 'VERIFIED' && (
+        isAdmin ||
+        activeDomain.ownerId === currentUserId ||
+        activeDomain.isPublic
+    );
 
     const handleCreateDomain = async () => {
         if (!newDomainName.trim()) return;
@@ -287,7 +293,7 @@ export function Sidebar({
                             </span>
                         )}
                     </div>
-                    {activeDomain && isOwnerOrAdmin && (
+                    {activeDomain && canCreateInbox && (
                         <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
                             <button
                                 onClick={async () => {

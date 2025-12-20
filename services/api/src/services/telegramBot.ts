@@ -65,6 +65,37 @@ export async function sendTelegramMessage(
 }
 
 /**
+ * Answer a callback query to acknowledge button presses
+ */
+export async function respondToCallbackQuery(
+    callbackQueryId: string,
+    options?: {
+        text?: string;
+        showAlert?: boolean;
+    }
+): Promise<boolean> {
+    const token = getBotToken();
+    if (!token) return false;
+
+    try {
+        const response = await fetch(`${TELEGRAM_API_BASE}${token}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                callback_query_id: callbackQueryId,
+                text: options?.text,
+                show_alert: options?.showAlert,
+            }),
+        });
+
+        return response.ok;
+    } catch (error) {
+        console.error('[Telegram] Answer callback error:', error);
+        return false;
+    }
+}
+
+/**
  * Create a link token for user to connect Telegram
  */
 export async function createTelegramLinkToken(userId: string): Promise<string> {
@@ -394,6 +425,22 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
             '/help - Xem trợ giúp',
             { parseMode: 'Markdown' }
         );
+    }
+
+    // Handle Callback Queries (Button clicks)
+    else if (update.callback_query) {
+        const callbackData = update.callback_query.data;
+
+        if (callbackData?.startsWith('copy_otp:')) {
+            const otp = callbackData.split(':')[1];
+            await respondToCallbackQuery(update.callback_query.id, {
+                text: `Mã OTP đã được sao chép: ${otp}`,
+                showAlert: true
+            });
+        } else {
+            // Acknowledge other callbacks
+            await respondToCallbackQuery(update.callback_query.id);
+        }
     }
 }
 

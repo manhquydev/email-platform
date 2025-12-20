@@ -5,15 +5,37 @@ import fs from "fs";
 function loadEnvRaw(filePath: string) {
     if (!fs.existsSync(filePath)) return;
     const content = fs.readFileSync(filePath, "utf-8");
-    content.split("\n").forEach(line => {
-        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-        if (match) {
-            const key = match[1];
-            let value = match[2] || "";
-            if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
-            if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
-            process.env[key] = value.trim();
+    content.split(/\r?\n/).forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) return;
+
+        // Split by = but handle values that might contain =
+        const firstEquals = trimmed.indexOf("=");
+        if (firstEquals === -1) return;
+
+        const key = trimmed.slice(0, firstEquals).trim();
+        let value = trimmed.slice(firstEquals + 1).trim();
+
+        // Handle inline comments: if value is quoted, comment must be after the closing quote
+        if (value.startsWith('"')) {
+            const closingQuote = value.indexOf('"', 1);
+            if (closingQuote !== -1) {
+                value = value.slice(1, closingQuote);
+            }
+        } else if (value.startsWith("'")) {
+            const closingQuote = value.indexOf("'", 1);
+            if (closingQuote !== -1) {
+                value = value.slice(1, closingQuote);
+            }
+        } else {
+            // No quotes, just strip everything after first #
+            const commentIndex = value.indexOf("#");
+            if (commentIndex !== -1) {
+                value = value.slice(0, commentIndex).trim();
+            }
         }
+
+        process.env[key] = value;
     });
 }
 

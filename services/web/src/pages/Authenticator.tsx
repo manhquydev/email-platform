@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { authenticator } from "otplib";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE } from "../utils/api";
 
 interface AuthenticatorAccount {
     id: string;
@@ -10,6 +11,7 @@ interface AuthenticatorAccount {
     secret: string; // Decrypted by API
     issuer?: string;
 }
+
 
 export function Authenticator() {
     const { token } = useAuth();
@@ -26,7 +28,7 @@ export function Authenticator() {
 
     const fetchAccounts = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE}/auth/authenticator/accounts`, {
+            const res = await fetch(`${API_BASE}/auth/authenticator/accounts`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -91,7 +93,7 @@ export function Authenticator() {
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE}/auth/authenticator/accounts`, {
+            const res = await fetch(`${API_BASE}/auth/authenticator/accounts`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -123,7 +125,7 @@ export function Authenticator() {
     const handleDelete = async (id: string, name: string) => {
         if (!confirm(`Delete ${name}?`)) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE}/auth/authenticator/accounts/${id}`, {
+            const res = await fetch(`${API_BASE}/auth/authenticator/accounts/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` }
             });

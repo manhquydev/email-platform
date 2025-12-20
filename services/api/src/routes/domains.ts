@@ -203,10 +203,33 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: "Not authorized to update this domain" });
     }
 
-    // Handle isPublic changes
+    // Handle isPublic changes - allow owner or admin
     if (body.data.isPublic !== undefined) {
-      if (user.role !== "ADMIN") {
-        return reply.status(403).send({ error: "Only admin can change domain visibility manually" });
+      // Domain must be verified before sharing
+      if (body.data.isPublic && domain.status !== "VERIFIED") {
+        return reply.status(400).send({
+          error: "Domain phải được xác thực trước khi chia sẻ",
+          code: "DOMAIN_NOT_VERIFIED"
+        });
+      }
+
+      // Validate un-sharing: Check if others are using the domain
+      if (domain.isPublic && body.data.isPublic === false) {
+        const othersInboxes = await prisma.inbox.count({
+          where: {
+            domainId: domain.id,
+            ownerId: { not: user.userId },
+            deletedAt: null,
+          }
+        });
+
+        if (othersInboxes > 0 && user.role !== "ADMIN") {
+          return reply.status(400).send({
+            error: "Không thể tắt chia sẻ khi người khác đang sử dụng domain",
+            details: `Có ${othersInboxes} hộp thư của người dùng khác trên domain này`,
+            code: "DOMAIN_HAS_DEPENDENTS"
+          });
+        }
       }
     }
 
@@ -229,14 +252,23 @@ export async function domainRoutes(app: FastifyInstance) {
 
     const dataToUpdate: any = { ...body.data };
 
+    // Track when domain was shared
+    if (body.data.isPublic === true && !domain.isPublic) {
+      dataToUpdate.sharedAt = new Date();
+    } else if (body.data.isPublic === false && domain.isPublic) {
+      dataToUpdate.sharedAt = null;
+    }
+
     // Auto-set isPublic on APPROVAL, unset on REJECTED/NONE
     if (body.data.contributionStatus === "APPROVED") {
       dataToUpdate.isPublic = true;
+      dataToUpdate.sharedAt = new Date();
     } else if (
       body.data.contributionStatus === "REJECTED" ||
       body.data.contributionStatus === "NONE"
     ) {
       dataToUpdate.isPublic = false;
+      dataToUpdate.sharedAt = null;
     }
 
     const updated = await prisma.domain.update({

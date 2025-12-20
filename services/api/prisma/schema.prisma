@@ -78,6 +78,7 @@ model User {
   createdAt    DateTime @default(now())
   auditLogs    AuditLog[]
   domains      Domain[]
+  inboxes      Inbox[]
   authenticatorAccounts AuthenticatorAccount[]
 }
 
@@ -92,14 +93,19 @@ model Domain {
   ownerId            String?
   isPublic           Boolean       @default(false)
   contributionStatus ContributionStatus @default(NONE)
+  sharedAt           DateTime?     // When domain was shared publicly
+  shareNote          String?       // Owner's note for why domain is shared
 }
 
 model Inbox {
   id             String        @id @default(uuid())
   domain         Domain        @relation(fields: [domainId], references: [id], onDelete: Cascade)
   domainId       String
+  owner          User?         @relation(fields: [ownerId], references: [id])
+  ownerId        String?       // Required on creation - tracks email ownership
   localPart      String
   createdAt      DateTime      @default(now())
+  claimedAt      DateTime      @default(now()) // When email was claimed/created
   expiresAt      DateTime?
   flags          Json?
   deletedAt      DateTime?
@@ -108,6 +114,7 @@ model Inbox {
   labels         Label[]
 
   @@unique([domainId, localPart])
+  @@index([ownerId])
 }
 
 model Message {

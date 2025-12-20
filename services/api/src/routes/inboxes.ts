@@ -17,9 +17,14 @@ export async function inboxRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid query" });
     }
 
+    const user = request.user as { userId: string; role: string };
+    const isAdmin = user.role === "ADMIN";
+
     const domainFilter = query.data.domain;
     const where = {
       deletedAt: null,
+      // Filter by owner - users only see their own inboxes, admins see all
+      ...(isAdmin ? {} : { ownerId: user.userId }),
       ...(domainFilter ? { domain: { name: domainFilter } } : {}),
       ...(query.data.search
         ? { localPart: { contains: query.data.search, mode: "insensitive" as const } }
@@ -28,7 +33,7 @@ export async function inboxRoutes(app: FastifyInstance) {
     const [inboxes, total] = await Promise.all([
       prisma.inbox.findMany({
         where,
-        include: { domain: true },
+        include: { domain: true, owner: { select: { email: true } } },
         orderBy: { createdAt: "desc" },
         take: query.data.limit ?? 100,
         skip: query.data.offset ?? 0,
@@ -77,12 +82,19 @@ export async function inboxRoutes(app: FastifyInstance) {
     const inbox = existing
       ? await prisma.inbox.update({
         where: { id: existing.id },
-        data: { deletedAt: null, expiresAt: expiresAt ? new Date(expiresAt) : null },
+        data: {
+          deletedAt: null,
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
+          ownerId: user.userId, // Claim ownership on reactivation
+          claimedAt: new Date(),
+        },
       })
       : await prisma.inbox.create({
         data: {
           domainId,
           localPart,
+          ownerId: user.userId, // Set owner on creation (first-come-first-served)
+          claimedAt: new Date(),
           expiresAt: expiresAt ? new Date(expiresAt) : null,
         },
       });
@@ -113,8 +125,8 @@ export async function inboxRoutes(app: FastifyInstance) {
 
     const user = request.user as { userId: string; role: string };
 
-    // Check permission: domain owner or admin
-    if (inbox.domain.ownerId !== user.userId && user.role !== "ADMIN") {
+    // Check permission: inbox owner or admin (NOT domain owner - ownership is per-inbox)
+    if (inbox.ownerId !== user.userId && user.role !== "ADMIN") {
       return reply.status(403).send({ error: "Not authorized to delete this inbox" });
     }
 

@@ -438,4 +438,28 @@ export async function authRoutes(app: FastifyInstance) {
 
     return { ok: true };
   });
+
+  // Get current user profile
+  app.get("/auth/me", { preHandler: app.authenticate }, async (request, reply) => {
+    const userId = (request.user as any).userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        emailVerified: true,
+        twoFactorEnabled: true,
+        tier: true,
+        _count: { select: { domains: true, inboxes: true } }
+      }
+    });
+
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+
+    return { user };
+  });
 }

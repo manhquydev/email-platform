@@ -17,6 +17,8 @@ import { VersionCheck } from "./components/VersionCheck";
 const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
 const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
 const Authenticator = lazy(() => import("./pages/Authenticator").then(m => ({ default: m.Authenticator })));
+const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.Settings })));
+const MyDomains = lazy(() => import("./pages/MyDomains").then(m => ({ default: m.MyDomains })));
 
 function App() {
   return (
@@ -46,6 +48,8 @@ function App() {
                   <Route path="/app" element={<Dashboard />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/authenticator" element={<Authenticator />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/my-domains" element={<MyDomains />} />
                 </Route>
 
                 {/* Fallback */}

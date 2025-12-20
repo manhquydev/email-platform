@@ -52,6 +52,28 @@ export const runRetentionSweep = async (log: { info: Function; error: Function; 
       await prisma.inbox.deleteMany({ where: { id: { in: inboxIds } } });
     }
 
+    // Cleanup expired Telegram Link Tokens
+    await prisma.telegramLinkToken.deleteMany({
+      where: {
+        expiresAt: { lt: now }
+      }
+    });
+
+    // Cleanup expired Forward Verifications that were not verified
+    await prisma.forwardVerification.deleteMany({
+      where: {
+        expiresAt: { lt: now },
+        verifiedAt: null
+      }
+    });
+
+    // Also cleanup successful verifications older than 24 hours
+    await prisma.forwardVerification.deleteMany({
+      where: {
+        verifiedAt: { lt: new Date(now.getTime() - 24 * 60 * 60 * 1000) }
+      }
+    });
+
     log.info(
       {
         deletedMessages: messageIds.length,

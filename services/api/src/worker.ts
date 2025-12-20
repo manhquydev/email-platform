@@ -14,6 +14,8 @@ import { checkSpam, shouldRejectEmail, formatSpamSymbols } from './services/spam
 import { scanBuffer, hasVirus, getDetectedViruses } from './services/virusScanner';
 import { syncMessageToMaildir } from './services/maildirSync';
 import { processFiltersForMessage } from './services/emailFilters';
+import { notifyNewEmail } from './services/telegramBot';
+import { forwardMessageIfMatched } from './services/emailForwarder';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -254,6 +256,22 @@ export const setupEmailWorker = (logger: Logger) => {
                     if (messageWithRelations) {
                         await syncMessageToMaildir(messageWithRelations as any);
                         logger.info({ messageId: message.id }, 'synced message to Maildir');
+
+                        // Release 2: Telegram Notification
+                        try {
+                            if (messageWithRelations.inbox.ownerId) {
+                                await notifyNewEmail(messageWithRelations.inbox.ownerId, messageWithRelations as any);
+                            }
+                        } catch (telegramErr) {
+                            logger.warn({ err: telegramErr }, 'failed to send Telegram notification');
+                        }
+
+                        // Release 3: Email Forwarding
+                        try {
+                            await forwardMessageIfMatched(messageWithRelations as any);
+                        } catch (forwardErr) {
+                            logger.warn({ err: forwardErr }, 'failed to forward email');
+                        }
                     }
                 } catch (maildirErr) {
                     logger.warn({ err: maildirErr }, 'failed to sync message to Maildir');

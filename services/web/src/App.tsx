@@ -19,6 +19,7 @@ const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin }
 const Authenticator = lazy(() => import("./pages/Authenticator").then(m => ({ default: m.Authenticator })));
 const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.Settings })));
 const MyDomains = lazy(() => import("./pages/MyDomains").then(m => ({ default: m.MyDomains })));
+const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default: m.Forwarding })));
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
                   <Route path="/authenticator" element={<Authenticator />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/my-domains" element={<MyDomains />} />
+                  <Route path="/forwarding" element={<Forwarding />} />
                 </Route>
 
                 {/* Fallback */}

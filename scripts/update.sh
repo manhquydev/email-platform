@@ -112,11 +112,20 @@ fi
 # =============================================================================
 log_step "2/7 - Cleanup Orphans & Network Issues"
 
-log_info "Removing orphan containers..."
+log_info "Stopping all existing containers..."
 run_cmd docker compose -f $COMPOSE_FILE down --remove-orphans 2>/dev/null || true
 
-log_info "Pruning unused networks (except named volumes)..."
+# Force remove any conflicting containers by name pattern
+log_info "Removing any conflicting containers..."
+for container in $(docker ps -aq --filter "name=email-platform" 2>/dev/null); do
+    run_cmd docker rm -f "$container" 2>/dev/null || true
+done
+
+log_info "Pruning unused networks..."
 run_cmd docker network prune -f 2>/dev/null || true
+
+# Remove the specific network if it exists (to avoid conflicts)
+run_cmd docker network rm email-platform_email_network 2>/dev/null || true
 
 log_success "Cleanup completed"
 

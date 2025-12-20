@@ -197,7 +197,7 @@ export function AdminDashboard({ token }: { token: string }) {
                 <div className="lg:col-span-2 bg-surface border border-border rounded-lg p-5">
                     <h3 className="text-sm font-medium mb-4">Hoạt động email (7 ngày)</h3>
                     <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={150}>
                             <AreaChart data={timeseries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorEmails" x1="0" y1="0" x2="0" y2="1">
@@ -240,7 +240,7 @@ export function AdminDashboard({ token }: { token: string }) {
                 <div className="bg-surface border border-border rounded-lg p-5">
                     <h3 className="text-sm font-medium mb-4">Trạng thái tên miền</h3>
                     <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={150}>
                             <PieChart>
                                 <Pie
                                     data={[
@@ -270,7 +270,7 @@ export function AdminDashboard({ token }: { token: string }) {
             <div className="mt-4 bg-surface border border-border rounded-lg p-5">
                 <h3 className="text-sm font-medium mb-4">Hoạt động theo ngày</h3>
                 <div className="h-48">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={150}>
                         <BarChart data={timeseries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                             <XAxis

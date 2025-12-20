@@ -65,11 +65,7 @@ export function LandingPage() {
     const [emailDemo, setEmailDemo] = useState("user");
     const [copied, setCopied] = useState(false);
 
-    // Redirect authenticated users to app
-    if (token) {
-        return <Navigate to="/app" replace />;
-    }
-
+    // ✅ useEffect MUST be called before any conditional returns (React Rules of Hooks)
     // Animated email demo
     useEffect(() => {
         const emails = ["user", "test", "signup", "verify", "demo"];
@@ -80,6 +76,11 @@ export function LandingPage() {
         }, 3000);
         return () => clearInterval(interval);
     }, []);
+
+    // Redirect authenticated users to app
+    if (token) {
+        return <Navigate to="/app" replace />;
+    }
 
     const handleCopy = () => {
         navigator.clipboard.writeText(`${emailDemo}@yourdomain.com`);

@@ -62,6 +62,11 @@ export function Register() {
     const [registered, setRegistered] = useState(false);
     const { token } = useAuth();
 
+    // ✅ useForm MUST be called before any conditional returns (React Rules of Hooks)
+    const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
+        resolver: zodResolver(registerSchema),
+    });
+
     // Redirect if already logged in
     if (token) {
         return <Navigate to="/app" replace />;
@@ -71,10 +76,6 @@ export function Register() {
     if (registered) {
         return <Navigate to="/login" replace />;
     }
-
-    const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
-        resolver: zodResolver(registerSchema),
-    });
 
     const onSubmit = async (data: RegisterForm) => {
         setBusy(true);

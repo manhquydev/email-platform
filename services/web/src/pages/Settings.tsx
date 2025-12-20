@@ -37,6 +37,16 @@ export function Settings() {
     const [twoFABusy, setTwoFABusy] = useState(false);
     const [twoFAError, setTwoFAError] = useState("");
 
+    // Telegram integration states
+    const [telegramStatus, setTelegramStatus] = useState<{
+        linked: boolean;
+        linkedAt?: string;
+        notifyOnEmail: boolean;
+    } | null>(null);
+    const [telegramLinkToken, setTelegramLinkToken] = useState<string | null>(null);
+    const [telegramBotLink, setTelegramBotLink] = useState<string | null>(null);
+    const [telegramBusy, setTelegramBusy] = useState(false);
+
     const loadProfile = useCallback(async () => {
         if (!token) return;
         setLoading(true);
@@ -62,7 +72,70 @@ export function Settings() {
 
     useEffect(() => {
         loadProfile();
+        loadTelegramStatus();
     }, [loadProfile]);
+
+    const loadTelegramStatus = async () => {
+        if (!token) return;
+        try {
+            const status = await api<{ linked: boolean; linkedAt?: string; notifyOnEmail: boolean }>(
+                "/telegram/status",
+                { token }
+            );
+            setTelegramStatus(status);
+        } catch {
+            // Telegram not configured, ignore
+        }
+    };
+
+    const generateTelegramLink = async () => {
+        setTelegramBusy(true);
+        try {
+            const res = await api<{ token: string; botLink: string }>(
+                "/telegram/link-token",
+                { method: "POST", token }
+            );
+            setTelegramLinkToken(res.token);
+            setTelegramBotLink(res.botLink);
+            toast.success("Mã liên kết đã được tạo!");
+        } catch (error) {
+            toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setTelegramBusy(false);
+        }
+    };
+
+    const unlinkTelegram = async () => {
+        if (!confirm("Bạn có chắc muốn hủy liên kết Telegram?")) return;
+        setTelegramBusy(true);
+        try {
+            await api("/telegram/unlink", { method: "DELETE", token });
+            setTelegramStatus({ linked: false, notifyOnEmail: true });
+            toast.success("Đã hủy liên kết Telegram");
+        } catch (error) {
+            toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setTelegramBusy(false);
+        }
+    };
+
+    const toggleTelegramNotify = async () => {
+        if (!telegramStatus) return;
+        setTelegramBusy(true);
+        try {
+            await api("/telegram/preferences", {
+                method: "PATCH",
+                token,
+                body: { notifyOnEmail: !telegramStatus.notifyOnEmail }
+            });
+            setTelegramStatus(prev => prev ? { ...prev, notifyOnEmail: !prev.notifyOnEmail } : null);
+            toast.success(telegramStatus.notifyOnEmail ? "Đã tắt thông báo" : "Đã bật thông báo");
+        } catch (error) {
+            toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setTelegramBusy(false);
+        }
+    };
 
     const handlePasswordChange = async (e: FormEvent) => {
         e.preventDefault();
@@ -355,6 +428,112 @@ export function Settings() {
                                 <button onClick={disable2FA} disabled={twoFABusy} className="btn btn-secondary text-red-600 hover:bg-red-50">
                                     {twoFABusy ? "Đang xử lý..." : "Tắt 2FA"}
                                 </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Telegram Integration */}
+                    <div className="bg-surface border border-border rounded-xl p-6">
+                        <h3 className="font-medium mb-4 flex items-center gap-2">
+                            <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                            </svg>
+                            Thông báo Telegram
+                        </h3>
+
+                        {telegramStatus?.linked ? (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-green-600">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-sm font-medium">Đã liên kết Telegram</span>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 bg-bg rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                                        </svg>
+                                        <span className="text-sm">Thông báo email mới</span>
+                                    </div>
+                                    <button
+                                        onClick={toggleTelegramNotify}
+                                        disabled={telegramBusy}
+                                        className={`relative w-11 h-6 rounded-full transition-colors ${telegramStatus.notifyOnEmail ? 'bg-green-500' : 'bg-gray-300'}`}
+                                    >
+                                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow ${telegramStatus.notifyOnEmail ? 'translate-x-5' : ''}`} />
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={unlinkTelegram}
+                                    disabled={telegramBusy}
+                                    className="btn btn-secondary text-red-600 hover:bg-red-50"
+                                >
+                                    {telegramBusy ? "Đang xử lý..." : "Hủy liên kết"}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <p className="text-sm text-muted">
+                                    Nhận thông báo tin nhắn mới qua Telegram Bot. Bạn sẽ được thông báo ngay khi có email đến, bao gồm mã OTP.
+                                </p>
+
+                                {telegramLinkToken ? (
+                                    <div className="space-y-3">
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                            <p className="text-sm text-blue-800 mb-2">Mã liên kết của bạn:</p>
+                                            <div className="flex items-center gap-3">
+                                                <code className="text-2xl font-mono font-bold text-blue-600 tracking-widest">
+                                                    {telegramLinkToken}
+                                                </code>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(telegramLinkToken);
+                                                        toast.success("Đã copy mã!");
+                                                    }}
+                                                    className="p-2 hover:bg-blue-100 rounded transition-colors"
+                                                >
+                                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-blue-600 mt-2">Mã có hiệu lực trong 15 phút</p>
+                                        </div>
+
+                                        <a
+                                            href={telegramBotLink || '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-primary inline-flex items-center gap-2"
+                                        >
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                                            </svg>
+                                            Mở Telegram Bot
+                                        </a>
+
+                                        <button
+                                            onClick={() => {
+                                                setTelegramLinkToken(null);
+                                                setTelegramBotLink(null);
+                                            }}
+                                            className="btn btn-secondary text-sm"
+                                        >
+                                            Hủy
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={generateTelegramLink}
+                                        disabled={telegramBusy}
+                                        className="btn btn-primary"
+                                    >
+                                        {telegramBusy ? "Đang tạo..." : "Liên kết Telegram"}
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

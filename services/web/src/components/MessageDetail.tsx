@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import DOMPurify from "dompurify";
 import toast from "react-hot-toast";
 import type { Message } from "../types";
 import { format, formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { API_BASE, formatBytes } from "../utils/api";
+import { extractOTP } from "../utils/otpExtractor";
+import { useCopyOTP } from "../hooks/useCopyToClipboard";
+
 
 interface MessageDetailProps {
     message: Message | null;
@@ -15,6 +18,14 @@ interface MessageDetailProps {
 
 export function MessageDetail({ message, onComposeReply, onForward, onBack }: MessageDetailProps) {
     const [viewMode, setViewMode] = useState<"html" | "text">("html");
+    const { copy: copyOTP, copied: otpCopied } = useCopyOTP();
+
+    // Extract OTP from email content
+    const detectedOTP = useMemo(() => {
+        if (!message) return null;
+        const content = message.textBody || message.htmlBody?.replace(/<[^>]*>/g, '') || '';
+        return extractOTP(content);
+    }, [message]);
 
     if (!message) {
         return (
@@ -147,6 +158,57 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
                     </div>
                 </div>
             </div>
+
+            {/* OTP Detection Banner */}
+            {detectedOTP && (
+                <div className="px-6 py-3 border-b border-border bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
+                                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider">
+                                    Mã xác thực được phát hiện
+                                </div>
+                                <div className="text-2xl font-mono font-bold text-green-800 dark:text-green-300 tracking-widest">
+                                    {detectedOTP.code}
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => copyOTP(detectedOTP.code)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${otpCopied
+                                ? 'bg-green-600 text-white'
+                                : 'bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-800 dark:hover:bg-green-700 dark:text-green-300'
+                                }`}
+                        >
+                            {otpCopied ? (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Đã copy!
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    Copy OTP
+                                </>
+                            )}
+                        </button>
+                    </div>
+                    {detectedOTP.confidence !== 'high' && (
+                        <div className="mt-2 text-xs text-green-600 dark:text-green-500">
+                            * Xin kiểm tra lại mã trước khi sử dụng
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Attachments Area */}
             {message.attachments && message.attachments.length > 0 && (

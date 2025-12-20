@@ -75,16 +75,19 @@ model User {
   stripeSubscriptionId String?
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
   trialEndsAt  DateTime?
-  // Telegram Integration
   telegramChatId    String?   @unique  // Telegram chat ID for notifications
   telegramLinkedAt  DateTime?          // When Telegram was linked
   notifyOnEmail     Boolean   @default(true) // Send notification when email received
+  // Email Forwarding
+  verifiedForwardEmails String[] // List of verified personal emails for forwarding
   createdAt    DateTime @default(now())
   auditLogs    AuditLog[]
   domains      Domain[]
   inboxes      Inbox[]
   authenticatorAccounts AuthenticatorAccount[]
   telegramLinkTokens TelegramLinkToken[]
+  forwardingRules ForwardingRule[]
+  forwardVerifications ForwardVerification[]
 }
 
 model Domain {
@@ -117,6 +120,7 @@ model Inbox {
   messages       Message[]
   emailFilters   EmailFilter[]
   labels         Label[]
+  forwardingRules ForwardingRule[]
 
   @@unique([domainId, localPart])
   @@index([ownerId])
@@ -308,3 +312,47 @@ model TelegramLinkToken {
   @@index([token])
 }
 
+// Email Forwarding Rule
+model ForwardingRule {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  inbox        Inbox?   @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  inboxId      String?  // null = all inboxes
+  
+  // Rule name/description
+  name         String   @default("Unnamed Rule")
+  
+  // Conditions (JSON)
+  // { senderDomains?: string[], containsOTP?: boolean, subjectContains?: string }
+  conditions   Json     @default("{}")
+  
+  // Destination - must be verified
+  forwardTo    String   // Verified personal email address
+  
+  // Status
+  isActive     Boolean  @default(true)
+  forwardCount Int      @default(0)
+  lastForwardAt DateTime?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId, isActive])
+  @@index([inboxId])
+}
+
+// Forward Email Verification
+model ForwardVerification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  email     String   // Email to verify
+  code      String   // 6-digit verification code
+  expiresAt DateTime
+  verifiedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, email])
+  @@index([email, code])
+}

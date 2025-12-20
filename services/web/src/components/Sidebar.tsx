@@ -4,6 +4,8 @@ import type { Domain, Inbox } from "../types";
 import { useNavigate } from "react-router-dom";
 import { CountdownTimer } from "./CountdownTimer";
 import { ThemeToggle } from "./ThemeToggle";
+import { QuickGenerateCard } from "./QuickGenerateCard";
+import { useAuth } from "../context/AuthContext";
 
 // Professional SVG Icons
 const icons = {
@@ -84,6 +86,7 @@ export function Sidebar({
     busy
 }: SidebarProps) {
     const navigate = useNavigate();
+    const { token } = useAuth();
     const [isCreatingDomain, setIsCreatingDomain] = useState(false);
     const [newDomainName, setNewDomainName] = useState("");
 
@@ -149,6 +152,19 @@ export function Sidebar({
                         </optgroup>
                     )}
                 </select>
+
+                {/* Quick Generate Card - Prominent 1-click email creation */}
+                <QuickGenerateCard
+                    domains={domains}
+                    token={token}
+                    onInboxCreated={(_inboxId, email) => {
+                        // Reload inboxes after creation
+                        if (activeDomain) {
+                            onSelectDomain(activeDomain.id);
+                        }
+                        toast.success(`Email mới: ${email}`);
+                    }}
+                />
 
                 {/* Domain Actions/Details */}
                 {activeDomain && (

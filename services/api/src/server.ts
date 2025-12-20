@@ -19,6 +19,7 @@ import { adminRoutes } from "./routes/admin";
 import { billingRoutes } from "./routes/billing";
 import { filterRoutes } from "./routes/filters";
 import { authenticatorRoutes } from "./routes/authenticator";
+import { telegramRoutes } from "./routes/telegram";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -146,6 +147,7 @@ export const buildServer = () => {
   app.register(billingRoutes);
   app.register(filterRoutes);
   app.register(authenticatorRoutes);
+  app.register(telegramRoutes);
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);
   }

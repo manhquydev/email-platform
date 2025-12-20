@@ -75,11 +75,16 @@ model User {
   stripeSubscriptionId String?
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
   trialEndsAt  DateTime?
+  // Telegram Integration
+  telegramChatId    String?   @unique  // Telegram chat ID for notifications
+  telegramLinkedAt  DateTime?          // When Telegram was linked
+  notifyOnEmail     Boolean   @default(true) // Send notification when email received
   createdAt    DateTime @default(now())
   auditLogs    AuditLog[]
   domains      Domain[]
   inboxes      Inbox[]
   authenticatorAccounts AuthenticatorAccount[]
+  telegramLinkTokens TelegramLinkToken[]
 }
 
 model Domain {
@@ -288,3 +293,18 @@ model AuthenticatorAccount {
 
   @@index([userId])
 }
+
+// Telegram Link Token - temporary token to link Telegram to user account
+model TelegramLinkToken {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  token     String   @unique  // 6-digit alphanumeric code
+  expiresAt DateTime           // Token expiration (15 minutes)
+  usedAt    DateTime?          // When token was used (null if not used)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+

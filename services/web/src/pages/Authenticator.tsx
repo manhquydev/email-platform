@@ -3,7 +3,7 @@ import { toast } from "react-hot-toast";
 import { authenticator } from "otplib";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE } from "../utils/api";
-import { AppShell } from "../layouts/AppShell";
+import { SecondaryLayout } from "../layouts/SecondaryLayout";
 
 interface AuthenticatorAccount {
     id: string;
@@ -168,7 +168,7 @@ export function Authenticator() {
     };
 
     return (
-        <AppShell>
+        <SecondaryLayout>
             <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
                 {/* Premium Header */}
                 <div className="page-header">
@@ -389,6 +389,6 @@ export function Authenticator() {
                     </div>
                 )}
             </div>
-        </AppShell>
+        </SecondaryLayout>
     );
 }

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api";
 import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
-import { AppShell } from "../layouts/AppShell";
+import { SecondaryLayout } from "../layouts/SecondaryLayout";
 
 interface UserProfile {
     id: string;
@@ -237,11 +237,11 @@ export function Settings() {
 
     if (loading) {
         return (
-            <AppShell>
+            <SecondaryLayout>
                 <div className="flex items-center justify-center h-full" style={{ background: 'var(--nebula-void)' }}>
                     <div className="spinner" />
                 </div>
-            </AppShell>
+            </SecondaryLayout>
         );
     }
 
@@ -252,7 +252,7 @@ export function Settings() {
     ];
 
     return (
-        <AppShell>
+        <SecondaryLayout>
             <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
                 {/* Page Header */}
                 <div className="page-header">
@@ -717,7 +717,7 @@ export function Settings() {
                     </div>
                 </div>
             </div>
-        </AppShell>
+        </SecondaryLayout>
     );
 }
 

@@ -170,7 +170,16 @@ export async function linkTelegramAccount(
 /**
  * Unlink Telegram account
  */
-export async function unlinkTelegramAccount(userId: string): Promise<boolean> {
+export async function unlinkTelegramAccount(userId: string, notifyUser: boolean = true): Promise<boolean> {
+    // Get current chatId before unlinking
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { telegramChatId: true }
+    });
+
+    const chatId = user?.telegramChatId;
+
+    // Clear the link
     await prisma.user.update({
         where: { id: userId },
         data: {
@@ -178,6 +187,26 @@ export async function unlinkTelegramAccount(userId: string): Promise<boolean> {
             telegramLinkedAt: null,
         }
     });
+
+    // Notify user via bot if they have a chatId and notifyUser is true
+    if (chatId && notifyUser) {
+        const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
+        const message = `📱 <b>Hủy liên kết thành công</b>
+
+Bạn đã hủy liên kết Telegram khỏi tài khoản email.
+
+Để liên kết lại:
+1. Vào <b>Cài đặt → Thông báo</b>
+2. Nhấn "Liên kết Telegram"
+3. Gửi mã liên kết cho bot này`;
+
+        await sendTelegramMessage(chatId, message, 'HTML', {
+            inline_keyboard: [[
+                { text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }
+            ]]
+        });
+    }
+
     return true;
 }
 
@@ -351,9 +380,9 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
         });
 
         if (user) {
-            await unlinkTelegramAccount(user.id);
+            await unlinkTelegramAccount(user.id, false); // Don't send auto notification, we have custom message
             await sendTelegramMessage(chatId,
-                '✅ Đã hủy liên kết tài khoản Telegram.',
+                '✅ Đã hủy liên kết tài khoản Telegram.\\n\\nBạn có thể liên kết lại bất cứ lúc nào bằng lệnh /link',
                 { parseMode: 'Markdown' }
             );
         } else {

@@ -564,19 +564,37 @@ export function Settings() {
                                 <div className="glass-card-body">
                                     {telegramStatus?.linked ? (
                                         <div className="space-y-4">
-                                            <div className="flex items-center gap-2" style={{ color: 'var(--nebula-success)' }}>
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                <span className="text-sm font-medium">Đã liên kết Telegram</span>
+                                            {/* Linked Status Banner */}
+                                            <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                                                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(16, 185, 129, 0.2)' }}>
+                                                    <svg className="w-5 h-5" style={{ color: 'var(--nebula-success)' }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium" style={{ color: 'var(--nebula-success)' }}>Đã liên kết Telegram</p>
+                                                    {telegramStatus.linkedAt && (
+                                                        <p className="text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
+                                                            Liên kết từ: {new Date(telegramStatus.linkedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
 
+                                            {/* Notification Toggle */}
                                             <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--nebula-elevated)' }}>
-                                                <div className="flex items-center gap-2">
-                                                    <svg className="w-4 h-4" style={{ color: 'var(--nebula-text-muted)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                                                    </svg>
-                                                    <span className="text-sm" style={{ color: 'var(--nebula-text)' }}>Thông báo email mới</span>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6, 182, 212, 0.1)' }}>
+                                                        <svg className="w-4 h-4" style={{ color: 'var(--nebula-cyan)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>Thông báo email mới</span>
+                                                        <p className="text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
+                                                            {telegramStatus.notifyOnEmail ? 'Đang bật' : 'Đang tắt'}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                                 <button
                                                     onClick={toggleTelegramNotify}
@@ -587,20 +605,54 @@ export function Settings() {
                                                 </button>
                                             </div>
 
+                                            {/* Unlink Button */}
                                             <button
                                                 onClick={unlinkTelegram}
                                                 disabled={telegramBusy}
-                                                className="btn-nebula btn-nebula-secondary"
+                                                className="btn-nebula btn-nebula-secondary w-full flex items-center justify-center gap-2"
                                                 style={{ color: 'var(--nebula-error)' }}
                                             >
-                                                {telegramBusy ? "Đang xử lý..." : "Hủy liên kết"}
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.181 8.68a4.503 4.503 0 0 1 1.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 0 0 6.364 6.364l3.536-3.536m5.657-5.657 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364L12.75 4.87" />
+                                                </svg>
+                                                {telegramBusy ? "Đang xử lý..." : "Hủy liên kết Telegram"}
                                             </button>
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
-                                            <p style={{ color: 'var(--nebula-text-muted)' }}>
-                                                Nhận thông báo tin nhắn mới qua Telegram Bot. Bạn sẽ được thông báo ngay khi có email đến, bao gồm mã OTP.
-                                            </p>
+                                            {/* Benefits description */}
+                                            <div className="p-4 rounded-xl" style={{ background: 'var(--nebula-elevated)', border: '1px solid var(--nebula-border)' }}>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6, 182, 212, 0.1)' }}>
+                                                        <svg className="w-4 h-4" style={{ color: 'var(--nebula-cyan)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium mb-1" style={{ color: 'var(--nebula-text)' }}>Nhận thông báo tức thì</p>
+                                                        <p className="text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
+                                                            Email mới, mã OTP, và thông tin quan trọng sẽ được gửi ngay đến Telegram của bạn.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* How to link - Step by step */}
+                                            <div className="space-y-3">
+                                                <p className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>Cách liên kết:</p>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--nebula-purple)' }}>1</div>
+                                                    <span className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>Nhấn nút bên dưới để lấy mã liên kết</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--nebula-purple)' }}>2</div>
+                                                    <span className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>Mở Telegram Bot và gửi mã</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--nebula-purple)' }}>3</div>
+                                                    <span className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>Hoàn tất! Bạn sẽ nhận thông báo ngay</span>
+                                                </div>
+                                            </div>
 
                                             {telegramLinkToken ? (
                                                 <div className="space-y-4">

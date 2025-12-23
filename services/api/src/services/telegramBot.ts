@@ -342,12 +342,14 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 '2️⃣ Nhấn "Liên kết Telegram"\n' +
                 '3️⃣ Copy mã và gửi: /link [mã]\n\n' +
                 '💡 <i>Hoặc nhấn nút bên dưới để mở trang cài đặt</i>',
-                'HTML',
                 {
-                    inline_keyboard: [
-                        [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }],
-                        [{ text: '❓ Trợ giúp', callback_data: 'show_help' }]
-                    ]
+                    parseMode: 'HTML',
+                    replyMarkup: {
+                        inline_keyboard: [
+                            [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }],
+                            [{ text: '❓ Trợ giúp', callback_data: 'show_help' }]
+                        ]
+                    }
                 }
             );
         }
@@ -416,17 +418,19 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 `📧 <b>Thông báo email:</b> ${status.notifyOnEmail ? '✅ Đang bật' : '❌ Đang tắt'}\n` +
                 `📅 <b>Liên kết từ:</b> ${status.linkedAt ? new Date(status.linkedAt).toLocaleDateString('vi-VN') : 'N/A'}\n\n` +
                 '💡 <i>Nhấn nút bên dưới để thay đổi cài đặt</i>',
-                'HTML',
                 {
-                    inline_keyboard: [
-                        [
-                            { text: status.notifyOnEmail ? '🔔 Tắt thông báo' : '🔔 Bật thông báo', callback_data: status.notifyOnEmail ? 'toggle_notify_off' : 'toggle_notify_on' }
-                        ],
-                        [
-                            { text: '🔓 Hủy liên kết', callback_data: 'confirm_unlink' },
-                            { text: '🌐 Mở Web', url: `${webUrl}/app` }
+                    parseMode: 'HTML',
+                    replyMarkup: {
+                        inline_keyboard: [
+                            [
+                                { text: status.notifyOnEmail ? '🔔 Tắt thông báo' : '🔔 Bật thông báo', callback_data: status.notifyOnEmail ? 'toggle_notify_off' : 'toggle_notify_on' }
+                            ],
+                            [
+                                { text: '🔓 Hủy liên kết', callback_data: 'confirm_unlink' },
+                                { text: '🌐 Mở Web', url: `${webUrl}/app` }
+                            ]
                         ]
-                    ]
+                    }
                 }
             );
         } else {
@@ -438,11 +442,13 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 '1. Vào <b>Cài đặt → Thông báo</b> trên web\n' +
                 '2. Nhấn "Liên kết Telegram" và lấy mã\n' +
                 '3. Gửi: /link [mã]',
-                'HTML',
                 {
-                    inline_keyboard: [
-                        [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }]
-                    ]
+                    parseMode: 'HTML',
+                    replyMarkup: {
+                        inline_keyboard: [
+                            [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }]
+                        ]
+                    }
                 }
             );
         }
@@ -483,11 +489,13 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
             '/notify_on - Bật thông báo email\n' +
             '/notify_off - Tắt thông báo email\n\n' +
             '<b>💡 Mẹo:</b> Bạn có thể nhấn nút trong tin nhắn để thao tác nhanh hơn!',
-            'HTML',
             {
-                inline_keyboard: [
-                    [{ text: '🌐 Mở Ephemera Web', url: `${webUrl}/app` }]
-                ]
+                parseMode: 'HTML',
+                replyMarkup: {
+                    inline_keyboard: [
+                        [{ text: '🌐 Mở Ephemera Web', url: `${webUrl}/app` }]
+                    ]
+                }
             }
         );
     }
@@ -521,8 +529,7 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 '/start - Bắt đầu\n/link [mã] - Liên kết\n/unlink - Hủy liên kết\n\n' +
                 '<b>⚙️ Cài đặt:</b>\n' +
                 '/settings - Quản lý cài đặt\n/notify_on - Bật thông báo\n/notify_off - Tắt thông báo',
-                'HTML',
-                { inline_keyboard: [[{ text: '🌐 Mở Web', url: `${webUrl}/app` }]] }
+                { parseMode: 'HTML', replyMarkup: { inline_keyboard: [[{ text: '🌐 Mở Web', url: `${webUrl}/app` }]] } }
             );
         }
         // Toggle notification on
@@ -531,7 +538,7 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
             if (user) {
                 await updateTelegramNotifyPreference(user.id, true);
                 await respondToCallbackQuery(callbackQuery.id, { text: '✅ Đã bật thông báo!' });
-                await sendTelegramMessage(chatId, '✅ Đã bật thông báo email.\n\nSử dụng /settings để xem cài đặt.', 'HTML');
+                await sendTelegramMessage(chatId, '✅ Đã bật thông báo email.\n\nSử dụng /settings để xem cài đặt.', { parseMode: 'HTML' });
             }
         }
         // Toggle notification off
@@ -540,7 +547,7 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
             if (user) {
                 await updateTelegramNotifyPreference(user.id, false);
                 await respondToCallbackQuery(callbackQuery.id, { text: '✅ Đã tắt thông báo!' });
-                await sendTelegramMessage(chatId, '✅ Đã tắt thông báo email.\n\nSử dụng /settings để xem cài đặt.', 'HTML');
+                await sendTelegramMessage(chatId, '✅ Đã tắt thông báo email.\n\nSử dụng /settings để xem cài đặt.', { parseMode: 'HTML' });
             }
         }
         // Confirm unlink
@@ -550,12 +557,14 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 '⚠️ <b>Xác nhận hủy liên kết?</b>\n\n' +
                 'Bạn sẽ không nhận được thông báo email nữa.\n\n' +
                 'Nhấn nút bên dưới để xác nhận:',
-                'HTML',
                 {
-                    inline_keyboard: [
-                        [{ text: '✅ Xác nhận hủy', callback_data: 'do_unlink' }],
-                        [{ text: '❌ Hủy bỏ', callback_data: 'cancel_unlink' }]
-                    ]
+                    parseMode: 'HTML',
+                    replyMarkup: {
+                        inline_keyboard: [
+                            [{ text: '✅ Xác nhận hủy', callback_data: 'do_unlink' }],
+                            [{ text: '❌ Hủy bỏ', callback_data: 'cancel_unlink' }]
+                        ]
+                    }
                 }
             );
         }

@@ -21,6 +21,7 @@ import { filterRoutes } from "./routes/filters";
 import { authenticatorRoutes } from "./routes/authenticator";
 import { telegramRoutes } from "./routes/telegram";
 import { forwardingRoutes } from "./routes/forwarding";
+import { setupBotCommands } from "./services/telegramBot";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -161,5 +162,11 @@ export const startHttpServer = async (): Promise<FastifyInstance> => {
   const app = buildServer();
   await app.listen({ port: appConfig.httpPort, host: "0.0.0.0" });
   app.log.info(`HTTP API running on :${appConfig.httpPort}`);
+
+  // Setup Telegram bot commands menu
+  setupBotCommands().catch(err => {
+    app.log.error('Failed to setup Telegram bot commands:', err);
+  });
+
   return app;
 };

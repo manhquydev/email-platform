@@ -23,6 +23,45 @@ export function generateLinkToken(): string {
 }
 
 /**
+ * Setup bot commands menu in Telegram
+ * This should be called once on server startup
+ */
+export async function setupBotCommands(): Promise<boolean> {
+    const token = getBotToken();
+    if (!token) {
+        console.log('[Telegram] Bot token not configured, skipping command setup');
+        return false;
+    }
+
+    const commands = [
+        { command: 'start', description: '🚀 Bắt đầu sử dụng bot' },
+        { command: 'link', description: '🔗 Liên kết tài khoản (cần mã)' },
+        { command: 'settings', description: '⚙️ Xem và thay đổi cài đặt' },
+        { command: 'unlink', description: '🔓 Hủy liên kết Telegram' },
+        { command: 'help', description: '❓ Xem hướng dẫn sử dụng' },
+    ];
+
+    try {
+        const response = await fetch(`${TELEGRAM_API_BASE}${token}/setMyCommands`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ commands }),
+        });
+
+        if (response.ok) {
+            console.log('[Telegram] Bot commands menu set successfully');
+            return true;
+        } else {
+            console.error('[Telegram] Failed to set commands:', await response.text());
+            return false;
+        }
+    } catch (error) {
+        console.error('[Telegram] Error setting commands:', error);
+        return false;
+    }
+}
+
+/**
  * Send a message via Telegram Bot API
  */
 export async function sendTelegramMessage(
@@ -165,6 +204,66 @@ export async function linkTelegramAccount(
     ]);
 
     return { success: true, userId: linkToken.userId };
+}
+
+/**
+ * Force link Telegram account - unlinks from old user and links to new user
+ */
+export async function forceLinkTelegramAccount(
+    token: string,
+    chatId: string
+): Promise<{ success: boolean; error?: string; userId?: string; oldUserEmail?: string }> {
+    const linkToken = await prisma.telegramLinkToken.findFirst({
+        where: {
+            token: token.toUpperCase(),
+            usedAt: null,
+            expiresAt: { gt: new Date() }
+        },
+        include: { user: true }
+    });
+
+    if (!linkToken) {
+        return { success: false, error: 'Mã không hợp lệ hoặc đã hết hạn' };
+    }
+
+    // Find the old user linked to this Telegram account
+    const oldUser = await prisma.user.findFirst({
+        where: { telegramChatId: chatId }
+    });
+
+    // Unlink old user if exists
+    if (oldUser && oldUser.id !== linkToken.userId) {
+        await prisma.user.update({
+            where: { id: oldUser.id },
+            data: {
+                telegramChatId: null,
+                telegramLinkedAt: null,
+                notifyOnEmail: false,
+            }
+        });
+    }
+
+    // Link the account to new user
+    await prisma.$transaction([
+        prisma.user.update({
+            where: { id: linkToken.userId },
+            data: {
+                telegramChatId: chatId,
+                telegramLinkedAt: new Date(),
+                notifyOnEmail: true,
+            }
+        }),
+        prisma.telegramLinkToken.update({
+            where: { id: linkToken.id },
+            data: { usedAt: new Date() }
+        })
+    ]);
+
+    return {
+        success: true,
+        userId: linkToken.userId,
+        oldUserEmail: oldUser?.email
+    };
 }
 
 /**
@@ -329,10 +428,28 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                     { parseMode: 'Markdown' }
                 );
             } else {
-                await sendTelegramMessage(chatId,
-                    `❌ *Liên kết thất bại*\n\n${result.error}`,
-                    { parseMode: 'Markdown' }
-                );
+                // Check if error is "already linked to another user" - offer force link option
+                if (result.error?.includes('đã được liên kết với người dùng khác')) {
+                    await sendTelegramMessage(chatId,
+                        '❌ <b>Liên kết thất bại</b>\n\n' +
+                        'Tài khoản Telegram này đã được liên kết với người dùng khác.\n\n' +
+                        '💡 <i>Bạn có thể hủy liên kết cũ và liên kết với tài khoản mới bằng nút bên dưới.</i>',
+                        {
+                            parseMode: 'HTML',
+                            replyMarkup: {
+                                inline_keyboard: [
+                                    [{ text: '🔄 Liên kết mạnh (Hủy liên kết cũ)', callback_data: `force_link:${token}` }],
+                                    [{ text: '❌ Hủy bỏ', callback_data: 'cancel_action' }]
+                                ]
+                            }
+                        }
+                    );
+                } else {
+                    await sendTelegramMessage(chatId,
+                        `❌ *Liên kết thất bại*\n\n${result.error}`,
+                        { parseMode: 'Markdown' }
+                    );
+                }
             }
         } else {
             // Welcome message with Ephemera branding and inline keyboard
@@ -585,6 +702,31 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
         }
         // Cancel unlink
         else if (callbackData === 'cancel_unlink') {
+            await respondToCallbackQuery(callbackQuery.id, { text: 'Đã hủy thao tác' });
+        }
+        // Force link - unlink old user and link new user
+        else if (callbackData?.startsWith('force_link:')) {
+            const token = callbackData.split(':')[1];
+            const result = await forceLinkTelegramAccount(token, chatId);
+
+            if (result.success) {
+                await respondToCallbackQuery(callbackQuery.id, { text: '✅ Liên kết thành công!' });
+                await sendTelegramMessage(chatId,
+                    '✅ <b>Liên kết thành công!</b>\n\n' +
+                    'Đã hủy liên kết cũ và liên kết với tài khoản mới.\n\n' +
+                    'Bạn sẽ nhận thông báo khi có email mới. Sử dụng /settings để tùy chỉnh.',
+                    { parseMode: 'HTML' }
+                );
+            } else {
+                await respondToCallbackQuery(callbackQuery.id, { text: '❌ Thất bại!' });
+                await sendTelegramMessage(chatId,
+                    `❌ <b>Liên kết thất bại</b>\n\n${result.error}`,
+                    { parseMode: 'HTML' }
+                );
+            }
+        }
+        // Cancel action (generic)
+        else if (callbackData === 'cancel_action') {
             await respondToCallbackQuery(callbackQuery.id, { text: 'Đã hủy thao tác' });
         }
         // Default

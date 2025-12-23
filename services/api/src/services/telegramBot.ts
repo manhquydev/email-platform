@@ -617,6 +617,13 @@ interface TelegramUpdate {
             id: number;
             first_name: string;
         };
+        message?: {
+            message_id: number;
+            chat: {
+                id: number;
+                type: string;
+            };
+        };
         data?: string;
     };
 }

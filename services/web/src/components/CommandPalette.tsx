@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import type { Inbox, Domain } from "../types";
 
 interface CommandPaletteProps {
@@ -10,6 +11,8 @@ interface CommandPaletteProps {
     onSelectInbox: (inbox: Inbox) => void;
     onCreateInbox: () => void;
     onSearch: (query: string) => void;
+    currentInboxEmail?: string;
+    onCopyEmail?: () => void;
 }
 
 interface Command {
@@ -28,12 +31,16 @@ export function CommandPalette({
     inboxes,
     onSelectInbox,
     onCreateInbox,
-    onSearch
+    onSearch,
+    currentInboxEmail,
+    onCopyEmail
 }: CommandPaletteProps) {
     const [query, setQuery] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const isAdmin = user?.role === "ADMIN";
 
     // Build command list
     const commands: Command[] = [
@@ -46,14 +53,15 @@ export function CommandPalette({
             action: () => { navigate('/app'); onClose(); },
             category: 'navigation'
         },
-        {
+        // Admin navigation - only show for admins
+        ...(isAdmin ? [{
             id: 'nav-admin',
             label: 'Quản trị viên',
             icon: <SettingsIcon />,
             shortcut: 'G A',
             action: () => { navigate('/admin'); onClose(); },
-            category: 'navigation'
-        },
+            category: 'navigation' as const
+        }] : []),
         // Actions
         {
             id: 'action-new-inbox',
@@ -63,6 +71,15 @@ export function CommandPalette({
             action: () => { onCreateInbox(); onClose(); },
             category: 'action'
         },
+        // Copy email action (if available)
+        ...(currentInboxEmail && onCopyEmail ? [{
+            id: 'action-copy-email',
+            label: `Sao chép: ${currentInboxEmail}`,
+            icon: <CopyIcon />,
+            shortcut: 'C',
+            action: () => { onCopyEmail(); onClose(); },
+            category: 'action' as const
+        }] : []),
         {
             id: 'action-refresh',
             label: 'Làm mới',
@@ -245,8 +262,15 @@ const MailIcon = () => (
     </svg>
 );
 
+const CopyIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+    </svg>
+);
+
 const SearchIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
 );
+

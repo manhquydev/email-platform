@@ -7,6 +7,7 @@ import { Loading } from "../components/Loading";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
 import { EmailStream } from "../components/EmailStream";
 import { QuickGenerateCard } from "../components/QuickGenerateCard";
+import { InboxToolbar } from "../components/InboxToolbar";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 // Lazy load modals
@@ -200,6 +201,50 @@ export function FocusDashboard() {
     const unreadCount = messages.filter(m => !m.isRead).length;
     const currentInbox = inboxes.find(i => i.id === selectedInbox);
 
+    // Copy email to clipboard
+    const handleCopyEmail = useCallback(() => {
+        if (currentInbox) {
+            const email = `${currentInbox.localPart}@${currentInbox.domain?.name}`;
+            navigator.clipboard.writeText(email);
+            toast.success("Đã sao chép địa chỉ email!", { icon: "📋", duration: 2000 });
+        }
+    }, [currentInbox]);
+
+    // Delete inbox
+    const handleDeleteInbox = async (inbox: Inbox) => {
+        try {
+            setBusy(true);
+            await api(`/inboxes/${inbox.id}`, { method: "DELETE", token });
+            setInboxes(prev => prev.filter(i => i.id !== inbox.id));
+            if (selectedInbox === inbox.id) {
+                setSelectedInbox("");
+                setMessages([]);
+            }
+            toast.success("Đã xóa hộp thư");
+        } catch (e) {
+            console.error(e);
+            toast.error("Không thể xóa hộp thư");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    // Keyboard shortcut for copy
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // C for copy email (only when not in input)
+            if (e.key === 'c' && !e.metaKey && !e.ctrlKey && !e.altKey &&
+                document.activeElement?.tagName !== 'INPUT' &&
+                document.activeElement?.tagName !== 'TEXTAREA' &&
+                currentInbox) {
+                e.preventDefault();
+                handleCopyEmail();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [handleCopyEmail, currentInbox]);
+
     if (busy && messages.length === 0) {
         return (
             <FocusStreamLayout
@@ -231,19 +276,20 @@ export function FocusDashboard() {
             onSearch={handleSearch}
             unreadCount={unreadCount}
         >
-            {/* Header */}
+            {/* Header with InboxToolbar */}
             <div className="focus-stream-header">
-                <div className="focus-stream-title">
-                    <h1>{currentInbox ? `${currentInbox.localPart}@${currentInbox.domain?.name}` : "Chọn hộp thư"}</h1>
-                    {messages.length > 0 && (
-                        <span className="inbox-count">{messages.length} email</span>
-                    )}
-                </div>
+                <InboxToolbar
+                    inboxes={inboxes}
+                    currentInbox={currentInbox || null}
+                    onSelectInbox={handleSelectInbox}
+                    onCreateInbox={handleCreateInbox}
+                    onDeleteInbox={handleDeleteInbox}
+                />
                 <div className="focus-stream-actions">
                     <button
                         className="icon-rail-item"
                         onClick={() => selectedInbox && loadMessages(selectedInbox)}
-                        title="Làm mới"
+                        title="Làm mới (R)"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 20, height: 20 }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />

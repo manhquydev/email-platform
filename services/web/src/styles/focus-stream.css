@@ -1690,3 +1690,413 @@
 .inline-search-input::placeholder {
     color: var(--color-text-muted);
 }
+
+/* ============================================
+   INBOX TOOLBAR - Quick inbox management
+   ============================================ */
+
+.inbox-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px;
+}
+
+.inbox-toolbar--empty {
+    justify-content: center;
+}
+
+/* Inbox Selector */
+.inbox-toolbar-selector {
+    position: relative;
+}
+
+.inbox-toolbar-current {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    max-width: 320px;
+}
+
+.inbox-toolbar-current:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+[data-theme="dark"] .inbox-toolbar-current {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .inbox-toolbar-current:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #60A5FA;
+}
+
+.inbox-toolbar-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.inbox-toolbar-email {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+
+.inbox-toolbar-chevron {
+    width: 14px;
+    height: 14px;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+
+/* Dropdown */
+.inbox-toolbar-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 320px;
+    max-width: 400px;
+    background: var(--color-surface);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    z-index: 200;
+    animation: slideDown 0.15s ease;
+}
+
+[data-theme="dark"] .inbox-toolbar-dropdown {
+    background: #18181B;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.inbox-toolbar-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .inbox-toolbar-dropdown-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.inbox-toolbar-dropdown-count {
+    padding: 2px 8px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+[data-theme="dark"] .inbox-toolbar-dropdown-count {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60A5FA;
+}
+
+.inbox-toolbar-dropdown-list {
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.inbox-toolbar-dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+    text-align: left;
+}
+
+.inbox-toolbar-dropdown-item:hover {
+    background: var(--color-primary-light);
+}
+
+[data-theme="dark"] .inbox-toolbar-dropdown-item:hover {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.inbox-toolbar-dropdown-item.active {
+    background: var(--color-primary-light);
+}
+
+[data-theme="dark"] .inbox-toolbar-dropdown-item.active {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.inbox-toolbar-dropdown-email {
+    flex: 1;
+    font-size: 14px;
+    color: var(--color-text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inbox-toolbar-dropdown-copy {
+    padding: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.1s ease;
+}
+
+.inbox-toolbar-dropdown-item:hover .inbox-toolbar-dropdown-copy {
+    opacity: 1;
+}
+
+.inbox-toolbar-dropdown-copy:hover {
+    background: var(--color-bg);
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .inbox-toolbar-dropdown-copy:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.inbox-toolbar-dropdown-create {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    background: var(--color-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.inbox-toolbar-dropdown-create:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* TTL Indicator */
+.inbox-toolbar-ttl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+[data-theme="dark"] .inbox-toolbar-ttl {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60A5FA;
+}
+
+.inbox-toolbar-ttl.expired {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+/* Action Buttons */
+.inbox-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.inbox-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text-main);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.inbox-toolbar-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.inbox-toolbar-btn:hover {
+    background: var(--color-bg);
+    border-color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .inbox-toolbar-btn {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .inbox-toolbar-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Copy Button - Primary Style */
+.inbox-toolbar-btn--copy {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.inbox-toolbar-btn--copy:hover {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Delete Button */
+.inbox-toolbar-btn--delete {
+    color: var(--color-text-muted);
+}
+
+.inbox-toolbar-btn--delete:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
+/* Create Button */
+.inbox-toolbar-btn--create {
+    padding: 8px;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.inbox-toolbar-btn--create:hover {
+    background: var(--color-primary-light);
+}
+
+[data-theme="dark"] .inbox-toolbar-btn--create:hover {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+/* Delete Confirmation */
+.inbox-toolbar-delete-container {
+    position: relative;
+}
+
+.inbox-toolbar-confirm {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    padding: 16px;
+    background: var(--color-surface);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-border);
+    z-index: 200;
+    animation: slideDown 0.15s ease;
+    white-space: nowrap;
+}
+
+[data-theme="dark"] .inbox-toolbar-confirm {
+    background: #18181B;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.inbox-toolbar-confirm p {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-main);
+    margin-bottom: 12px;
+}
+
+.inbox-toolbar-confirm-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.inbox-toolbar-confirm-actions button {
+    flex: 1;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-main);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.inbox-toolbar-confirm-actions button:hover {
+    background: var(--color-bg);
+}
+
+.inbox-toolbar-confirm-actions button.danger {
+    background: #EF4444;
+    border-color: #EF4444;
+    color: white;
+}
+
+.inbox-toolbar-confirm-actions button.danger:hover {
+    background: #DC2626;
+}
+
+/* Create Button for Empty State */
+.inbox-toolbar-create {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.inbox-toolbar-create svg {
+    width: 20px;
+    height: 20px;
+}
+
+.inbox-toolbar-create:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}

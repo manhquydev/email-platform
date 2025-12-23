@@ -2100,3 +2100,547 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
+
+/* ============================================
+   TAB NAVIGATION
+   ============================================ */
+
+.tab-navigation {
+    padding: 0 16px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+[data-theme="dark"] .tab-navigation {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-navigation-list {
+    display: flex;
+    gap: 4px;
+}
+
+.tab-navigation-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tab-navigation-item:hover {
+    color: var(--color-text-main);
+    background: var(--color-primary-light);
+}
+
+[data-theme="dark"] .tab-navigation-item:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.tab-navigation-item.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.tab-navigation-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-navigation-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.tab-navigation-badge {
+    padding: 2px 8px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ============================================
+   INBOX MANAGER
+   ============================================ */
+
+.inbox-manager-header {
+    background: var(--color-surface);
+}
+
+.inbox-manager-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.inbox-manager-list-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Toolbar */
+.inbox-manager-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+[data-theme="dark"] .inbox-manager-toolbar {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.inbox-manager-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.inbox-manager-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.inbox-manager-select-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-text-main);
+    cursor: pointer;
+}
+
+.inbox-manager-select-all input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.inbox-manager-batch-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.inbox-manager-batch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-main);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.inbox-manager-batch-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.inbox-manager-batch-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.inbox-manager-batch-btn--danger:hover {
+    border-color: #EF4444;
+    color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.inbox-manager-filter,
+.inbox-manager-sort {
+    padding: 6px 12px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-main);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .inbox-manager-filter,
+[data-theme="dark"] .inbox-manager-sort {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.inbox-manager-create-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--color-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.inbox-manager-create-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.inbox-manager-create-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* Inbox List */
+.inbox-manager-list {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Empty state */
+.inbox-manager-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.inbox-manager-empty svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.inbox-manager-empty h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    margin-bottom: 8px;
+}
+
+.inbox-manager-empty p {
+    margin-bottom: 20px;
+}
+
+.inbox-manager-empty button {
+    padding: 10px 24px;
+    background: var(--color-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Footer */
+.inbox-manager-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+/* Messages tab */
+.inbox-manager-messages {
+    padding: 16px;
+}
+
+.inbox-manager-messages-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.inbox-manager-messages-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.inbox-manager-messages-count {
+    padding: 4px 10px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.inbox-manager-no-inbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.inbox-manager-no-inbox svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.inbox-manager-no-inbox h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    margin-bottom: 8px;
+}
+
+.inbox-manager-no-inbox button {
+    margin-top: 16px;
+    padding: 10px 24px;
+    background: var(--color-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ============================================
+   INBOX CARD
+   ============================================ */
+
+.inbox-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .inbox-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.inbox-card:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .inbox-card:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.inbox-card.selected {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+}
+
+[data-theme="dark"] .inbox-card.selected {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.inbox-card.active {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Checkbox */
+.inbox-card-checkbox {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.inbox-card-checkbox input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.inbox-card-checkbox-custom {
+    position: absolute;
+    inset: 0;
+    background: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.inbox-card-checkbox input:checked+.inbox-card-checkbox-custom {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.inbox-card-checkbox input:checked+.inbox-card-checkbox-custom::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Content */
+.inbox-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.inbox-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.inbox-card-email {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inbox-card-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.inbox-card-status--active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22C55E;
+}
+
+.inbox-card-status--expiring {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+}
+
+.inbox-card-status--expired {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+.inbox-card-status--permanent {
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+}
+
+.inbox-card-status-icon {
+    font-size: 10px;
+}
+
+.inbox-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.inbox-card-meta svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+}
+
+.inbox-card-count,
+.inbox-card-domain {
+    display: flex;
+    align-items: center;
+}
+
+/* Actions */
+.inbox-card-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.inbox-card:hover .inbox-card-actions {
+    opacity: 1;
+}
+
+.inbox-card-action {
+    padding: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.inbox-card-action svg {
+    width: 18px;
+    height: 18px;
+}
+
+.inbox-card-action:hover {
+    background: var(--color-bg);
+    color: var(--color-text-main);
+}
+
+.inbox-card-action--copy:hover {
+    color: var(--color-primary);
+}
+
+.inbox-card-action--view:hover {
+    color: #22C55E;
+}
+
+.inbox-card-action--delete:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}

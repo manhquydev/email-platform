@@ -16,6 +16,7 @@ import { VersionCheck } from "./components/VersionCheck";
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const Register = lazy(() => import("./pages/Register").then(m => ({ default: m.Register })));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail").then(m => ({ default: m.VerifyEmail })));
+const InboxManager = lazy(() => import("./pages/InboxManager").then(m => ({ default: m.InboxManager })));
 const FocusDashboard = lazy(() => import("./pages/FocusDashboard").then(m => ({ default: m.FocusDashboard })));
 const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
 const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
@@ -52,8 +53,11 @@ function App() {
                   <Route path="/register" element={<Register />} />
                 </Route>
 
-                {/* Focus Stream Dashboard - NEW */}
-                <Route path="/app" element={<FocusDashboard />} />
+                {/* NEW: Inbox Manager with tabs */}
+                <Route path="/app" element={<InboxManager />} />
+
+                {/* Legacy Focus Stream Dashboard */}
+                <Route path="/app/stream" element={<FocusDashboard />} />
 
                 {/* Protected app routes */}
                 <Route element={<MainLayout />}>

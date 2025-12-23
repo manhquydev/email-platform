@@ -200,10 +200,13 @@ Bạn đã hủy liên kết Telegram khỏi tài khoản email.
 2. Nhấn "Liên kết Telegram"
 3. Gửi mã liên kết cho bot này`;
 
-        await sendTelegramMessage(chatId, message, 'HTML', {
-            inline_keyboard: [[
-                { text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }
-            ]]
+        await sendTelegramMessage(chatId, message, {
+            parseMode: 'HTML',
+            replyMarkup: {
+                inline_keyboard: [[
+                    { text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }
+                ]]
+            }
         });
     }
 
@@ -576,7 +579,7 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 await respondToCallbackQuery(callbackQuery.id, { text: '✅ Đã hủy liên kết!' });
                 await sendTelegramMessage(chatId,
                     '✅ <b>Đã hủy liên kết</b>\n\nBạn có thể liên kết lại bất cứ lúc nào bằng lệnh /start',
-                    'HTML'
+                    { parseMode: 'HTML' }
                 );
             }
         }

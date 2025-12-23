@@ -21,6 +21,7 @@ export type Inbox = {
     createdAt: string;
     expiresAt?: string | null;
     domain?: Domain;
+    _count?: { messages: number };
 };
 
 export type Attachment = {

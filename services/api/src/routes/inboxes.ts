@@ -33,7 +33,11 @@ export async function inboxRoutes(app: FastifyInstance) {
     const [inboxes, total] = await Promise.all([
       prisma.inbox.findMany({
         where,
-        include: { domain: true, owner: { select: { email: true } } },
+        include: {
+          domain: true,
+          owner: { select: { email: true } },
+          _count: { select: { messages: { where: { deletedAt: null } } } }
+        },
         orderBy: { createdAt: "desc" },
         take: query.data.limit ?? 100,
         skip: query.data.offset ?? 0,

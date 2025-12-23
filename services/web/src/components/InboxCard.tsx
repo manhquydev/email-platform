@@ -48,8 +48,8 @@ export function InboxCard({
 
     const ttl = getTTLInfo();
 
-    // Get message count (if available)
-    const messageCount = (inbox as Inbox & { messageCount?: number }).messageCount || 0;
+    // Get message count from API
+    const messageCount = inbox._count?.messages ?? 0;
 
     const handleCopy = (e: React.MouseEvent) => {
         e.stopPropagation();

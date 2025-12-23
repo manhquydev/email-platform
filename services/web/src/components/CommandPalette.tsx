@@ -57,7 +57,7 @@ export function CommandPalette({
         // Actions
         {
             id: 'action-new-inbox',
-            label: 'Tạo hộp thư mới',
+            label: 'Tạo địa chỉ email mới',
             icon: <PlusIcon />,
             shortcut: 'N',
             action: () => { onCreateInbox(); onClose(); },

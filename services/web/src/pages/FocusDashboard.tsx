@@ -11,6 +11,7 @@ import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 // Lazy load modals
 const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
+const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").then(m => ({ default: m.CreateInboxModal })));
 
 export function FocusDashboard() {
     const { token, user: _user } = useAuth();
@@ -29,6 +30,7 @@ export function FocusDashboard() {
     // UI States
     const [showDetail, setShowDetail] = useState(false);
     const [showCompose, setShowCompose] = useState(false);
+    const [showCreateInbox, setShowCreateInbox] = useState(false);
     const [_showInboxPicker, _setShowInboxPicker] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -124,7 +126,7 @@ export function FocusDashboard() {
     };
 
     const handleCreateInbox = () => {
-        setShowCompose(true);
+        setShowCreateInbox(true);
     };
 
     const handleSearch = (query: string) => {
@@ -348,6 +350,23 @@ export function FocusDashboard() {
                         onClose={() => {
                             setShowCompose(false);
                             if (selectedDomain) loadInboxes(selectedDomain);
+                        }}
+                    />
+                )}
+            </Suspense>
+
+            {/* Create Inbox Modal */}
+            <Suspense fallback={null}>
+                {showCreateInbox && (
+                    <CreateInboxModal
+                        domains={domains}
+                        token={token}
+                        onClose={() => setShowCreateInbox(false)}
+                        onInboxCreated={(id, email) => {
+                            if (selectedDomain) loadInboxes(selectedDomain);
+                            setSelectedInbox(id);
+                            setShowCreateInbox(false);
+                            toast.success(`Đã tạo: ${email}`);
                         }}
                     />
                 )}

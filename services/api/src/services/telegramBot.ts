@@ -303,15 +303,15 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 );
             }
         } else {
-            // Welcome message
+            // Welcome message (use HTML to avoid Markdown escape issues)
             await sendTelegramMessage(chatId,
-                '👋 *Chào mừng đến với TempMail Pro Bot!*\n\n' +
+                '👋 <b>Chào mừng đến với TempMail Pro Bot!</b>\n\n' +
                 'Để liên kết tài khoản, hãy:\n' +
                 '1. Vào Settings trên web\n' +
                 '2. Click "Liên kết Telegram"\n' +
                 '3. Nhập mã code được cung cấp\n\n' +
-                'Hoặc nhấn /link <mã_code>',
-                { parseMode: 'Markdown' }
+                'Hoặc nhấn /link [mã code]',
+                { parseMode: 'HTML' }
             );
         }
     }
@@ -338,8 +338,7 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
             }
         } else {
             await sendTelegramMessage(chatId,
-                '💡 Sử dụng: /link <mã_code>\n\nLấy mã code từ Settings trên web.',
-                { parseMode: 'Markdown' }
+                '💡 Sử dụng: /link [mã code]\n\nLấy mã code từ Settings trên web.'
             );
         }
     }

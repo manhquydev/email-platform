@@ -271,7 +271,7 @@ export function InboxManager() {
         if (!msg.isRead) {
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
             try {
-                await api(`/messages/${msg.id}`, { method: "PATCH", token, body: { isRead: true } });
+                await api(`/messages/${msg.id}/read`, { method: "PATCH", token, body: { isRead: true } });
             } catch (e) { console.error(e); }
         }
     };

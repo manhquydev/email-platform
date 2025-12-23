@@ -142,7 +142,7 @@ export function FocusDashboard() {
         if (!msg.isRead) {
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
             try {
-                await api(`/messages/${msg.id}`, {
+                await api(`/messages/${msg.id}/read`, {
                     method: "PATCH",
                     token,
                     body: { isRead: true }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconRail } from "../components/IconRail";
 import { CommandPalette } from "../components/CommandPalette";
+import { SearchBar } from "../components/SearchBar";
 import type { Domain, Inbox } from "../types";
 import toast from "react-hot-toast";
 
@@ -26,11 +27,13 @@ export function FocusStreamLayout({
 }: FocusStreamLayoutProps) {
     const navigate = useNavigate();
     const [showCommandPalette, setShowCommandPalette] = useState(false);
+    const [showSearchBar, setShowSearchBar] = useState(false);
     const [isFocusMode, setIsFocusMode] = useState(false);
     const [isNavExpanded, setIsNavExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-    // Focus Mode toggle - FIX: Show floating button to exit focus mode
+    // Focus Mode toggle
     const handleFocusModeToggle = useCallback(() => {
         setIsFocusMode(prev => {
             const newValue = !prev;
@@ -50,18 +53,35 @@ export function FocusStreamLayout({
         if (action === 'settings') {
             navigate('/settings');
         } else if (action === 'logout') {
-            // Trigger logout - in a real app, this would call auth context
             localStorage.removeItem('token');
             window.location.href = '/login';
         }
     }, [navigate]);
 
+    // Handle search with recent searches tracking
+    const handleSearch = useCallback((query: string) => {
+        onSearch(query);
+        // Add to recent searches (avoid duplicates, max 5)
+        setRecentSearches(prev => {
+            const filtered = prev.filter(s => s !== query);
+            return [query, ...filtered].slice(0, 5);
+        });
+    }, [onSearch]);
+
     // Global keyboard shortcuts
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        // Cmd+K or Ctrl+K to open command palette
+        // Cmd+K to open command palette (Quick Actions)
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
             e.preventDefault();
+            setShowSearchBar(false);
             setShowCommandPalette(prev => !prev);
+        }
+
+        // Cmd+/ or Ctrl+/ to open search bar
+        if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+            e.preventDefault();
+            setShowCommandPalette(false);
+            setShowSearchBar(prev => !prev);
         }
 
         // F for Focus mode (only when not in input)
@@ -75,6 +95,7 @@ export function FocusStreamLayout({
         // Escape to close panels
         if (e.key === 'Escape') {
             setShowCommandPalette(false);
+            setShowSearchBar(false);
             setShowUserMenu(false);
             if (isFocusMode) {
                 setIsFocusMode(false);
@@ -110,7 +131,14 @@ export function FocusStreamLayout({
     return (
         <div className={`focus-stream-layout ${isFocusMode ? 'focus-mode' : ''} ${isNavExpanded ? 'nav-expanded' : ''}`}>
             <IconRail
-                onSearchClick={() => setShowCommandPalette(true)}
+                onSearchClick={() => {
+                    setShowCommandPalette(false);
+                    setShowSearchBar(true);
+                }}
+                onQuickActionsClick={() => {
+                    setShowSearchBar(false);
+                    setShowCommandPalette(true);
+                }}
                 onFocusModeClick={handleFocusModeToggle}
                 onNavToggle={handleNavToggle}
                 onUserClick={() => setShowUserMenu(prev => !prev)}
@@ -164,6 +192,15 @@ export function FocusStreamLayout({
                 {children}
             </main>
 
+            {/* Search Bar - Dedicated for Email Search */}
+            <SearchBar
+                isOpen={showSearchBar}
+                onClose={() => setShowSearchBar(false)}
+                onSearch={handleSearch}
+                recentSearches={recentSearches}
+            />
+
+            {/* Command Palette - Quick Actions for Power Users */}
             <CommandPalette
                 isOpen={showCommandPalette}
                 onClose={() => setShowCommandPalette(false)}
@@ -171,7 +208,7 @@ export function FocusStreamLayout({
                 inboxes={inboxes}
                 onSelectInbox={onSelectInbox}
                 onCreateInbox={onCreateInbox}
-                onSearch={onSearch}
+                onSearch={handleSearch}
             />
         </div>
     );

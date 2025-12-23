@@ -32,6 +32,7 @@ export function FocusStreamLayout({
     const [isNavExpanded, setIsNavExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Focus Mode toggle
     const handleFocusModeToggle = useCallback(() => {
@@ -130,6 +131,11 @@ export function FocusStreamLayout({
 
     return (
         <div className={`focus-stream-layout ${isFocusMode ? 'focus-mode' : ''} ${isNavExpanded ? 'nav-expanded' : ''}`}>
+            {/* Mobile Navigation Overlay */}
+            {isMobileNavOpen && (
+                <div className="mobile-nav-overlay" onClick={() => setIsMobileNavOpen(false)} />
+            )}
+
             <IconRail
                 onSearchClick={() => {
                     setShowCommandPalette(false);
@@ -191,6 +197,21 @@ export function FocusStreamLayout({
             <main className="focus-stream-main">
                 {children}
             </main>
+
+            {/* Mobile Nav Toggle Button */}
+            <button
+                className="mobile-nav-toggle"
+                onClick={() => setIsMobileNavOpen(prev => !prev)}
+                style={{ display: 'none' }}
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    {isMobileNavOpen ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                </svg>
+            </button>
 
             {/* Search Bar - Dedicated for Email Search */}
             <SearchBar

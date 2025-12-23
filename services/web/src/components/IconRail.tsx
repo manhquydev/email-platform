@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface IconRailProps {
-    onSearchClick: () => void;        // Opens SearchBar (real search)
-    onQuickActionsClick: () => void;  // Opens CommandPalette (quick actions)
+    onSearchClick: () => void;
+    onQuickActionsClick: () => void;
     onFocusModeClick?: () => void;
     onNavToggle?: () => void;
     onUserClick?: () => void;
@@ -27,49 +26,25 @@ export function IconRail({
     const { user } = useAuth();
     const isAdmin = user?.role === "ADMIN";
 
-    // Secondary nav dropdown state
-    const [showSecondaryMenu, setShowSecondaryMenu] = useState(false);
-    const secondaryMenuRef = useRef<HTMLDivElement>(null);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (secondaryMenuRef.current && !secondaryMenuRef.current.contains(e.target as Node)) {
-                setShowSecondaryMenu(false);
-            }
-        };
-        if (showSecondaryMenu) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [showSecondaryMenu]);
-
-    const isSecondaryActive = ['/authenticator', '/my-domains', '/forwarding'].includes(location.pathname);
-
     return (
         <nav className={`icon-rail ${isExpanded ? 'expanded' : ''}`}>
             {/* Header: Logo + Expand Toggle */}
             <div className="icon-rail-header">
                 <Link to="/" className="icon-rail-logo" title="Ephemera">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        {/* Broken Infinity - Left loop complete */}
                         <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
-                        {/* Right loop - partial/fading */}
                         <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
-                        {/* Dissolving dots */}
                         <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
-                        <circle cx="22.5" cy="9.5" r="0.6" fill="currentColor" opacity="0.25" />
                     </svg>
                     {isExpanded && <span className="icon-rail-brand">Ephemera</span>}
                 </Link>
 
-                {/* Expand/Collapse Toggle */}
                 <button
                     className="icon-rail-toggle"
                     onClick={onNavToggle}
                     title={isExpanded ? "Thu gọn ([)" : "Mở rộng ([)"}
                 >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 16, height: 16 }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                         {isExpanded ? (
                             <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
                         ) : (
@@ -96,7 +71,7 @@ export function IconRail({
                     )}
                 </Link>
 
-                {/* Search - Opens SearchBar (Real Search) */}
+                {/* Search */}
                 <button
                     className="icon-rail-item"
                     onClick={onSearchClick}
@@ -108,7 +83,7 @@ export function IconRail({
                     {isExpanded && <span className="icon-rail-label">Tìm kiếm</span>}
                 </button>
 
-                {/* Quick Actions - Opens Command Palette */}
+                {/* Quick Actions */}
                 <button
                     className="icon-rail-item"
                     onClick={onQuickActionsClick}
@@ -122,57 +97,44 @@ export function IconRail({
 
                 <div className="icon-rail-separator" />
 
-                {/* Secondary Nav Group - Dropdown */}
-                <div className="icon-rail-secondary-container" ref={secondaryMenuRef}>
-                    <button
-                        className={`icon-rail-item ${isSecondaryActive ? 'active' : ''}`}
-                        onClick={() => setShowSecondaryMenu(!showSecondaryMenu)}
-                        title="Công cụ khác"
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                        </svg>
-                        {isExpanded && <span className="icon-rail-label">Thêm</span>}
-                    </button>
+                {/* Domains */}
+                <Link
+                    to="/my-domains"
+                    className={`icon-rail-item ${location.pathname === '/my-domains' ? 'active' : ''}`}
+                    title="Domain của tôi"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {isExpanded && <span className="icon-rail-label">Domains</span>}
+                </Link>
 
-                    {/* Secondary Dropdown Menu */}
-                    {showSecondaryMenu && (
-                        <div className="icon-rail-dropdown">
-                            <Link
-                                to="/authenticator"
-                                className={`icon-rail-dropdown-item ${location.pathname === '/authenticator' ? 'active' : ''}`}
-                                onClick={() => setShowSecondaryMenu(false)}
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                                </svg>
-                                <span>Xác thực 2FA</span>
-                            </Link>
-                            <Link
-                                to="/my-domains"
-                                className={`icon-rail-dropdown-item ${location.pathname === '/my-domains' ? 'active' : ''}`}
-                                onClick={() => setShowSecondaryMenu(false)}
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
-                                </svg>
-                                <span>Domain của tôi</span>
-                            </Link>
-                            <Link
-                                to="/forwarding"
-                                className={`icon-rail-dropdown-item ${location.pathname === '/forwarding' ? 'active' : ''}`}
-                                onClick={() => setShowSecondaryMenu(false)}
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                                </svg>
-                                <span>Chuyển tiếp</span>
-                            </Link>
-                        </div>
-                    )}
-                </div>
+                {/* Forwarding */}
+                <Link
+                    to="/forwarding"
+                    className={`icon-rail-item ${location.pathname === '/forwarding' ? 'active' : ''}`}
+                    title="Chuyển tiếp email"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                    </svg>
+                    {isExpanded && <span className="icon-rail-label">Chuyển tiếp</span>}
+                </Link>
 
-                {/* Focus Mode - Visual Toggle (not navigation) */}
+                {/* 2FA Authenticator */}
+                <Link
+                    to="/authenticator"
+                    className={`icon-rail-item ${location.pathname === '/authenticator' ? 'active' : ''}`}
+                    title="Xác thực 2FA"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                    </svg>
+                    {isExpanded && <span className="icon-rail-label">2FA</span>}
+                </Link>
+
+                {/* Focus Mode */}
                 <button
                     className={`icon-rail-item icon-rail-item--mode ${isFocusMode ? 'active' : ''}`}
                     onClick={onFocusModeClick}
@@ -215,7 +177,7 @@ export function IconRail({
                     {isExpanded && <span className="icon-rail-label">Cài đặt</span>}
                 </Link>
 
-                {/* User Avatar - Clickable */}
+                {/* User Avatar */}
                 <button
                     className="icon-rail-avatar"
                     onClick={(e) => {

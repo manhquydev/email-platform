@@ -13,3 +13,7 @@ services/web/node_modules
 services/web/dist
 postgres-data
 redis-data
+
+# Local credentials - NEVER push to git
+.agent/credentials.local.md
+.agent/*.local.*

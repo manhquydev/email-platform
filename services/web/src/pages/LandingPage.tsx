@@ -288,17 +288,43 @@ export function LandingPage() {
                 </div>
             </section>
 
-            {/* CTA */}
-            <section className="landing-cta">
-                <div className="landing-cta-inner">
-                    <h2>Sẵn sàng bảo vệ quyền riêng tư?</h2>
-                    <p>Tạo tài khoản miễn phí ngay hôm nay</p>
-                    <Link to="/register" className="landing-btn-cta neo-btn-magnetic neo-btn-shimmer neo-animate-glow-pulse">
-                        Bắt đầu ngay
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </Link>
+            {/* CTA - Crystal Horizon (v3) */}
+            <section className="landing-cta-crystal">
+                <div className="landing-cta-prism neo-glass-medium neo-animate-fade-in-up">
+                    <div className="prism-shimmer"></div>
+
+                    <div className="prism-content">
+                        <div className="crystal-visual neo-animate-float">
+                            <div className="crystal-card">
+                                <div className="crystal-reflection"></div>
+                                <div className="crystal-content">
+                                    <div className="crystal-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                        </svg>
+                                    </div>
+                                    <div className="crystal-text">user-x9z2@ephemera.com</div>
+                                    <div className="crystal-badge">Đã bảo vệ</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 className="prism-title">
+                            Tương lai của <span className="neo-text-gradient-aurora">quyền riêng tư</span> là ở đây.
+                        </h2>
+                        <p className="prism-subtitle">
+                            Bắt đầu hành trình số ẩn danh của bạn với Ephemera. Đơn giản. An toàn. Tức thì.
+                        </p>
+
+                        <div className="prism-actions">
+                            <Link to="/register" className="neo-btn-magnetic neo-btn-magnetic-primary neo-btn-shimmer">
+                                Khởi tạo ngay
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </section>
 

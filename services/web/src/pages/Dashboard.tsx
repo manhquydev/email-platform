@@ -7,6 +7,8 @@ import { Loading } from "../components/Loading";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { AppShell } from "../layouts/AppShell";
 import { extractOTP } from "../utils/otpExtractor";
+import { Sidebar } from "../components/Sidebar";
+import { QuickGenerateCard } from "../components/QuickGenerateCard";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 // Lazy load heavy modal components
@@ -37,7 +39,6 @@ export function Dashboard() {
     const [showDetail, setShowDetail] = useState(false);
     const [showCompose, setShowCompose] = useState(false);
     const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
-    const [showInboxPicker, setShowInboxPicker] = useState(false);
     const [composeInitialValues, setComposeInitialValues] = useState<{
         initialSubject?: string;
         initialBody?: string;
@@ -60,13 +61,19 @@ export function Dashboard() {
             const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
             setDomains(res.data);
             if (res.data.length > 0 && !selectedDomain) {
-                setSelectedDomain(res.data[0].id);
+                // Prefer owned domains if available, else first public one
+                const myDomains = res.data.filter(d => d.ownerId === user?.id);
+                if (myDomains.length > 0) {
+                    setSelectedDomain(myDomains[0].id);
+                } else {
+                    setSelectedDomain(res.data[0].id);
+                }
             }
         } catch (e) {
             console.error(e);
             toast.error("Lỗi tải danh sách domain");
         }
-    }, [token, selectedDomain]);
+    }, [token, selectedDomain, user?.id]);
 
     const loadInboxes = useCallback(async (domainId: string) => {
         if (!token) return;
@@ -74,19 +81,26 @@ export function Dashboard() {
         try {
             const domain = domains.find(d => d.id === domainId);
             if (!domain) return;
+            // Get ALL inboxes for this domain that I can see
+            // Note: API might filter for us. Assuming /inboxes returns my inboxes or all if I am admin?
+            // Actually, usually /inboxes list returns inboxes I own or created.
             const params = new URLSearchParams({ domain: domain.name, limit: "100" });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res.data);
-            setMessages([]);
-            setSelectedMessage(null);
-            setSelectedInbox("");
+
+            // Clear message view if switching domains (unless inbox was kept)
+            if (!res.data.find(i => i.id === selectedInbox)) {
+                setMessages([]);
+                setSelectedMessage(null);
+                setSelectedInbox("");
+            }
         } catch (e) {
             console.error("Load Inboxes Error:", e);
             toast.error("Lỗi tải danh sách inbox");
         } finally {
             setBusy(false);
         }
-    }, [token, domains]);
+    }, [token, domains, selectedInbox]);
 
     const loadMessages = useCallback(async (inboxId: string, params: { offset?: number, append?: boolean, background?: boolean } = {}) => {
         if (!token) return;
@@ -156,7 +170,49 @@ export function Dashboard() {
         return () => { document.title = "Email Platform"; };
     }, [messages]);
 
-    // --- Actions ---
+    // --- Domain Actions ---
+    const createDomain = async (name: string) => {
+        setBusy(true);
+        try {
+            await api("/domains", { method: "POST", token, body: { name } });
+            toast.success("Đã thêm tên miền");
+            await loadDomains();
+        } catch (e) {
+            toast.error("Lỗi thêm domain: " + (e as Error).message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const verifyDomain = async (domainId: string, verifyToken: string) => {
+        setBusy(true);
+        try {
+            await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: verifyToken } });
+            toast.success("Đã xác thực tên miền!");
+            await loadDomains();
+        } catch (error) {
+            toast.error("Lỗi xác thực: " + (error as Error).message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const deleteDomain = async (domainId: string) => {
+        if (!confirm("Bạn có chắc chắn muốn xóa domain này? Tất cả các hộp thư sẽ bị xóa.")) return;
+        setBusy(true);
+        try {
+            await api(`/domains/${domainId}`, { method: "DELETE", token });
+            toast.success("Đã xóa tên miền");
+            if (selectedDomain === domainId) setSelectedDomain("");
+            await loadDomains();
+        } catch (error) {
+            toast.error("Lỗi xóa domain: " + (error as Error).message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    // --- Inbox Actions ---
     const createInbox = async (domainId: string, localPart: string, expiresAt?: number) => {
         setBusy(true);
         try {
@@ -193,6 +249,26 @@ export function Dashboard() {
         }
     };
 
+    const handleExtendInbox = async (inboxId: string) => {
+        if (!token) return;
+        setBusy(true);
+        try {
+            const inbox = inboxes.find(i => i.id === inboxId);
+            if (!inbox) return;
+            const currentExpiresAt = inbox.expiresAt ? new Date(inbox.expiresAt).getTime() : Date.now();
+            const newExpiresAt = new Date(currentExpiresAt + 10 * 60 * 1000).toISOString();
+            await api(`/inboxes/${inboxId}`, { method: "PATCH", body: JSON.stringify({ expiresAt: newExpiresAt }), token });
+            toast.success("Đã gia hạn thêm 10 phút!");
+            if (selectedDomain) loadInboxes(selectedDomain);
+        } catch (e) {
+            console.error(e);
+            toast.error("Lỗi gia hạn inbox");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    // --- Message Actions ---
     const handleSelectMessage = async (msg: Message) => {
         setSelectedMessage(msg);
         setShowDetail(true);
@@ -216,12 +292,10 @@ export function Dashboard() {
         }
     };
 
-    const handleDeleteMessage = useCallback(async () => {
-        if (!selectedMessage) return;
+    const handleDeleteMessage = useCallback(async (msgId: string) => {
         try {
             setBusy(true);
-            await api(`/messages/${selectedMessage.id}`, { method: "DELETE", token });
-            setMessages(prev => prev.filter(m => m.id !== selectedMessage.id));
+            setMessages(prev => prev.filter(m => m.id !== msgId));
             setSelectedMessage(null);
             setShowDetail(false);
             toast.success("Đã xóa email");
@@ -231,7 +305,7 @@ export function Dashboard() {
         } finally {
             setBusy(false);
         }
-    }, [selectedMessage, token]);
+    }, [token]);
 
     const handleTogglePin = async (msgId: string, isPinned: boolean) => {
         setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned } : m));
@@ -243,25 +317,6 @@ export function Dashboard() {
             console.error(e);
             setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned: !isPinned } : m));
             toast.error("Không thể cập nhật");
-        }
-    };
-
-    const handleExtendInbox = async (inboxId: string) => {
-        if (!token) return;
-        setBusy(true);
-        try {
-            const inbox = inboxes.find(i => i.id === inboxId);
-            if (!inbox) return;
-            const currentExpiresAt = inbox.expiresAt ? new Date(inbox.expiresAt).getTime() : Date.now();
-            const newExpiresAt = new Date(currentExpiresAt + 10 * 60 * 1000).toISOString();
-            await api(`/inboxes/${inboxId}`, { method: "PATCH", body: JSON.stringify({ expiresAt: newExpiresAt }), token });
-            toast.success("Đã gia hạn thêm 10 phút!");
-            if (selectedDomain) loadInboxes(selectedDomain);
-        } catch (e) {
-            console.error(e);
-            toast.error("Lỗi gia hạn inbox");
-        } finally {
-            setBusy(false);
         }
     };
 
@@ -286,7 +341,7 @@ export function Dashboard() {
         messages,
         selectedMessageId: selectedMessage?.id,
         onSelectMessage: handleKeyboardSelect,
-        onDeleteMessage: handleDeleteMessage,
+        onDeleteMessage: selectedMessage ? () => handleDeleteMessage(selectedMessage.id) : undefined,
         onMarkUnread: selectedMessage ? () => handleMarkUnread(selectedMessage.id) : undefined,
         onReply: canSendOutbound ? () => setShowCompose(true) : undefined,
         onRefresh: selectedInbox ? () => loadMessages(selectedInbox) : undefined,
@@ -296,9 +351,9 @@ export function Dashboard() {
         enabled: !showCompose && !showKeyboardHelp,
     });
 
-    // Helper functions
-    const selectedDomainObj = domains.find(d => d.id === selectedDomain);
     const selectedInboxObj = inboxes.find(i => i.id === selectedInbox);
+    const selectedDomainObj = domains.find(d => d.id === selectedDomain);
+
     const formatTime = (date: string) => {
         const d = new Date(date);
         const now = new Date();
@@ -311,130 +366,76 @@ export function Dashboard() {
 
     return (
         <AppShell>
-            <div className="modern-dashboard">
-                {/* Left Panel - Inbox Selector */}
-                <aside className="dashboard-sidebar">
-                    <div className="sidebar-header">
-                        <h2>Hộp thư</h2>
-                        <button
-                            className="btn-nebula btn-nebula-icon btn-nebula-ghost"
-                            onClick={() => setShowKeyboardHelp(true)}
-                            title="Phím tắt (?)"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </button>
-                    </div>
+            <div className="modern-dashboard flex h-full overflow-hidden">
+                {/* Replaced old sidebar with the Shared Sidebar Component */}
+                <div className="w-[300px] flex-shrink-0 h-full">
+                    <Sidebar
+                        domains={domains}
+                        inboxes={inboxes}
+                        selectedDomainId={selectedDomain}
+                        selectedInboxId={selectedInbox}
+                        currentUserId={user?.id}
+                        onSelectDomain={setSelectedDomain}
+                        onSelectInbox={setSelectedInbox}
+                        onCreateDomain={createDomain}
+                        onCreateInbox={createInbox}
+                        onVerifyDomain={verifyDomain}
+                        onDeleteDomain={deleteDomain}
+                        onDeleteInbox={deleteInbox}
+                        onExtendInbox={handleExtendInbox}
+                        onLogout={_logout}
+                        isAdmin={isAdmin}
+                        busy={busy}
+                    />
+                </div>
 
-                    {/* Domain Tabs */}
-                    <div className="domain-tabs">
-                        {domains.map(domain => (
-                            <button
-                                key={domain.id}
-                                onClick={() => setSelectedDomain(domain.id)}
-                                className={`domain-tab ${selectedDomain === domain.id ? 'active' : ''}`}
-                            >
-                                <span className="domain-tab-dot" style={{ background: domain.status === 'VERIFIED' ? 'var(--nebula-success)' : 'var(--nebula-warning)' }} />
-                                <span className="domain-tab-name">{domain.name}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Inboxes List */}
-                    <div className="inbox-list">
-                        {inboxes.length === 0 && !busy && (
-                            <div className="inbox-empty">
-                                <p>Chưa có hộp thư nào</p>
-                                <button
-                                    onClick={() => setShowInboxPicker(true)}
-                                    className="btn-nebula btn-nebula-primary btn-nebula-sm"
-                                >
-                                    + Tạo hộp thư
-                                </button>
-                            </div>
-                        )}
-                        {inboxes.map(inbox => (
-                            <div
-                                key={inbox.id}
-                                onClick={() => setSelectedInbox(inbox.id)}
-                                className={`inbox-item ${selectedInbox === inbox.id ? 'active' : ''}`}
-                            >
-                                <div className="inbox-item-main">
-                                    <span className="inbox-item-email">{inbox.localPart}@</span>
-                                    {inbox.expiresAt && (
-                                        <span className="inbox-item-expires">
-                                            {Math.max(0, Math.floor((new Date(inbox.expiresAt).getTime() - Date.now()) / 60000))}m
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="inbox-item-actions">
-                                    {inbox.expiresAt && (
-                                        <button onClick={(e) => { e.stopPropagation(); handleExtendInbox(inbox.id); }} title="Gia hạn">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-                                                <circle cx="12" cy="12" r="10" />
-                                            </svg>
-                                        </button>
-                                    )}
-                                    <button onClick={(e) => { e.stopPropagation(); deleteInbox(inbox.id); }} title="Xóa">
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Create Inbox Button */}
-                    {selectedDomainObj && (
-                        <div className="sidebar-footer">
-                            <button
-                                onClick={() => setShowInboxPicker(true)}
-                                className="btn-nebula btn-nebula-secondary w-full"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                </svg>
-                                Tạo hộp thư mới
-                            </button>
-                        </div>
-                    )}
-                </aside>
-
-                {/* Main Panel - Email List */}
-                <main className="dashboard-main">
+                {/* Main Panel - Email List (Keep existing or upgrade?) 
+                    Keeping existing logic for now but wrapped in a flex container 
+                */}
+                <main className="flex-1 flex flex-col h-full bg-bg relative overflow-hidden">
                     {/* Search & Filter Bar */}
-                    <div className="email-toolbar">
-                        <div className="email-search">
-                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <div className="email-toolbar border-b border-border p-3 flex items-center justify-between bg-surface">
+                        <div className="email-search flex items-center gap-2 bg-bg px-3 py-2 rounded-lg border border-border flex-1 max-w-xl">
+                            <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input
                                 ref={searchInputRef}
                                 type="text"
+                                className="bg-transparent border-none outline-none text-sm w-full"
                                 placeholder="Tìm kiếm email... (from:, is:unread, before:)"
                                 value={messageSearch}
                                 onChange={(e) => setMessageSearch(e.target.value)}
                             />
                         </div>
-                        <div className="email-toolbar-actions">
+                        <div className="email-toolbar-actions flex items-center gap-2">
+                            {canSendOutbound && (
+                                <button
+                                    onClick={() => setShowCompose(true)}
+                                    className="btn-primary flex items-center gap-2 px-4 py-2 text-sm"
+                                    title="Soạn thảo Email mới (N)"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                    </svg>
+                                    <span>Soạn thư</span>
+                                </button>
+                            )}
                             <button
                                 onClick={() => setMessageHasAttachments(!messageHasAttachments)}
-                                className={`toolbar-btn ${messageHasAttachments ? 'active' : ''}`}
+                                className={`p-2 rounded hover:bg-bg ${messageHasAttachments ? 'text-primary bg-primary/10' : 'text-muted'}`}
                                 title="Lọc có đính kèm"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                 </svg>
                             </button>
                             <button
                                 onClick={() => selectedInbox && loadMessages(selectedInbox)}
-                                className="toolbar-btn"
+                                className="p-2 rounded hover:bg-bg text-muted hover:text-primary"
                                 title="Làm mới (R)"
                             >
-                                <svg className={`w-4 h-4 ${busy ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <svg className={`w-5 h-5 ${busy ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
                             </button>
@@ -442,28 +443,42 @@ export function Dashboard() {
                     </div>
 
                     {/* Email List */}
-                    <div className="email-list">
+                    <div className="email-list flex-1 overflow-y-auto p-4 space-y-3">
                         {!selectedInbox && (
-                            <div className="email-list-empty">
-                                <div className="empty-icon">
-                                    <svg fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            <div className="flex flex-col items-center justify-center h-full text-muted max-w-md mx-auto">
+                                <div className="p-4 bg-surface rounded-full mb-6 ring-8 ring-primary/5">
+                                    <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                                     </svg>
                                 </div>
-                                <h3>Chọn một hộp thư</h3>
-                                <p>Chọn hộp thư từ sidebar bên trái để xem email</p>
+                                <h3 className="text-xl font-bold text-text-main mb-2">Chào mừng bạn trở lại!</h3>
+                                <p className="text-sm text-center mb-8">
+                                    Chọn hộp thư từ sidebar bên trái để xem email hoặc tạo một địa chỉ mới ngay lập tức bên dưới.
+                                </p>
+
+                                <div className="w-full">
+                                    <QuickGenerateCard
+                                        domains={domains}
+                                        token={token}
+                                        onInboxCreated={(id, email) => {
+                                            loadInboxes(selectedDomain);
+                                            setSelectedInbox(id);
+                                            toast.success(`Đã tạo: ${email}`);
+                                        }}
+                                    />
+                                </div>
                             </div>
                         )}
 
                         {selectedInbox && messages.length === 0 && !busy && (
-                            <div className="email-list-empty">
-                                <div className="empty-icon">
-                                    <svg fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+                            <div className="flex flex-col items-center justify-center h-full text-muted">
+                                <div className="p-4 bg-surface rounded-full mb-4">
+                                    <svg className="w-12 h-12 opacity-50" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
                                     </svg>
                                 </div>
-                                <h3>Chưa có email nào</h3>
-                                <p>Email gửi đến {selectedInboxObj?.localPart}@{selectedDomainObj?.name} sẽ xuất hiện ở đây</p>
+                                <h3 className="text-lg font-medium">Chưa có email nào</h3>
+                                <p className="text-sm">Email gửi đến {selectedInboxObj?.localPart}@{selectedDomainObj?.name} sẽ xuất hiện ở đây</p>
                             </div>
                         )}
 
@@ -473,57 +488,57 @@ export function Dashboard() {
                                 <div
                                     key={msg.id}
                                     onClick={() => handleSelectMessage(msg)}
-                                    className={`email-card neo-hover-lift ${selectedMessage?.id === msg.id ? 'active neo-animate-glow-pulse' : ''} ${!msg.isRead ? 'unread' : ''}`}
+                                    className={`email-card cursor-pointer p-4 rounded-xl border border-border bg-surface hover:shadow-lg hover:border-primary/50 transition-all ${selectedMessage?.id === msg.id ? 'ring-2 ring-primary/50' : ''} ${!msg.isRead ? 'bg-primary/5 border-primary/20' : ''}`}
                                     style={{ animationDelay: `${index * 0.05}s` }}
                                 >
-                                    {/* Unread indicator */}
-                                    {!msg.isRead && <div className="email-card-unread-dot neo-animate-glow-pulse" />}
-
-                                    {/* Avatar */}
-                                    <div className="email-card-avatar">
-                                        {msg.fromAddress?.charAt(0).toUpperCase() || "?"}
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-2">
+                                            {!msg.isRead && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
+                                            <div className="font-semibold text-text-main">{msg.fromAddress?.split("@")[0] || "Unknown"}</div>
+                                            <div className="text-xs text-muted">({msg.fromAddress})</div>
+                                        </div>
+                                        <div className="text-xs text-muted font-medium">{formatTime(msg.receivedAt)}</div>
                                     </div>
 
-                                    {/* Content */}
-                                    <div className="email-card-content">
-                                        <div className="email-card-header">
-                                            <span className="email-card-sender">{msg.fromAddress?.split("@")[0] || "Unknown"}</span>
-                                            <span className="email-card-time">{formatTime(msg.receivedAt)}</span>
-                                        </div>
-                                        <div className="email-card-subject">{msg.subject || "(Không có tiêu đề)"}</div>
-                                        <div className="email-card-preview">
-                                            {msg.textBody?.slice(0, 100) || "Không có nội dung..."}
-                                        </div>
+                                    <div className="font-medium text-text-main mb-1 line-clamp-1">{msg.subject || "(Không có tiêu đề)"}</div>
+                                    <div className="text-sm text-text-muted line-clamp-2 mb-2">
+                                        {msg.textBody?.slice(0, 150) || "Không có nội dung..."}
                                     </div>
 
-                                    {/* OTP Badge */}
-                                    {otp && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); copyOTP(typeof otp === 'string' ? otp : otp.code); }}
-                                            className="email-card-otp neo-hover-scale neo-animate-glow-pulse"
-                                            title="Click để copy OTP"
-                                        >
-                                            <span className="otp-label">OTP</span>
-                                            <span className="otp-value">{typeof otp === 'string' ? otp : otp.code}</span>
-                                        </button>
-                                    )}
-
-                                    {/* Pin indicator */}
-                                    {msg.isPinned && (
-                                        <div className="email-card-pin neo-animate-float">📌</div>
-                                    )}
+                                    <div className="flex items-center gap-2 mt-2">
+                                        {otp && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); copyOTP(typeof otp === 'string' ? otp : otp.code); }}
+                                                className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 text-primary rounded-md text-xs font-bold hover:bg-primary/20 transition-colors"
+                                                title="Click để copy OTP"
+                                            >
+                                                <span>🔢 OTP: {typeof otp === 'string' ? otp : otp.code}</span>
+                                            </button>
+                                        )}
+                                        {msg.attachments && msg.attachments.length > 0 && (
+                                            <div className="flex items-center gap-1 text-xs text-muted bg-surface-elevated px-2 py-1 rounded-md">
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                                {msg.attachments.length} tệp
+                                            </div>
+                                        )}
+                                        {msg.isPinned && (
+                                            <div className="text-xs text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-md">📌 Đã ghim</div>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })}
 
                         {/* Load More */}
                         {messages.length < messageTotal && (
-                            <button
-                                onClick={() => selectedInbox && loadMessages(selectedInbox, { offset: messageOffset + PAGE_SIZE.messages, append: true })}
-                                className="load-more-btn"
-                            >
-                                Tải thêm ({messages.length}/{messageTotal})
-                            </button>
+                            <div className="flex justify-center pt-4 pb-8">
+                                <button
+                                    onClick={() => selectedInbox && loadMessages(selectedInbox, { offset: messageOffset + PAGE_SIZE.messages, append: true })}
+                                    className="px-4 py-2 bg-surface border border-border rounded-lg text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors"
+                                >
+                                    Tải thêm ({messages.length}/{messageTotal})
+                                </button>
+                            </div>
                         )}
                     </div>
                 </main>
@@ -531,99 +546,124 @@ export function Dashboard() {
                 {/* Slide-over Detail Panel */}
                 {showDetail && selectedMessage && (
                     <>
-                        <div className="detail-overlay neo-glass-light" onClick={() => setShowDetail(false)} />
-                        <aside className="detail-panel neo-glass-heavy neo-animate-slide-in-right">
-                            <div className="detail-header">
-                                <button onClick={() => setShowDetail(false)} className="btn-nebula btn-nebula-ghost btn-nebula-icon">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                                <div className="detail-header-actions">
-                                    <button onClick={() => handleMarkUnread(selectedMessage.id)} className="btn-nebula btn-nebula-ghost btn-nebula-icon" title="Đánh dấu chưa đọc">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-10" onClick={() => setShowDetail(false)} />
+                        <aside className="absolute right-0 top-0 bottom-0 w-[500px] bg-surface border-l border-border shadow-2xl z-20 flex flex-col animate-slide-in-right">
+                            <div className="p-4 border-b border-border flex items-center justify-between bg-bg/50 backdrop-blur">
+                                <div className="flex gap-2">
+                                    <button onClick={() => setShowDetail(false)} className="p-2 hover:bg-surface rounded-full text-muted hover:text-text-main">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => handleMarkUnread(selectedMessage.id)} className="p-2 hover:bg-surface rounded-full text-muted hover:text-primary" title="Đánh dấu chưa đọc">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                         </svg>
                                     </button>
-                                    <button onClick={() => handleTogglePin(selectedMessage.id, !selectedMessage.isPinned)} className="btn-nebula btn-nebula-ghost btn-nebula-icon" title={selectedMessage.isPinned ? "Bỏ ghim" : "Ghim"}>
-                                        <svg className="w-4 h-4" fill={selectedMessage.isPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <button onClick={() => handleTogglePin(selectedMessage.id, !selectedMessage.isPinned)} className={`p-2 hover:bg-surface rounded-full ${selectedMessage.isPinned ? 'text-yellow-500' : 'text-muted hover:text-yellow-500'}`} title={selectedMessage.isPinned ? "Bỏ ghim" : "Ghim"}>
+                                        <svg className="w-5 h-5" fill={selectedMessage.isPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                                         </svg>
                                     </button>
-                                    <button onClick={handleDeleteMessage} className="btn-nebula btn-nebula-ghost btn-nebula-icon text-[var(--nebula-error)]" title="Xóa">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <button onClick={() => selectedMessage && handleDeleteMessage(selectedMessage.id)} className="p-2 hover:bg-red-50 rounded-full text-muted hover:text-red-500" title="Xóa">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="detail-content">
+                            <div className="flex-1 overflow-y-auto p-6">
                                 {/* OTP Highlight */}
                                 {(() => {
                                     const otpResult = extractOTP(selectedMessage.textBody || selectedMessage.htmlBody || "");
                                     const otp = typeof otpResult === 'string' ? otpResult : otpResult?.code;
                                     if (otp) return (
-                                        <button onClick={() => copyOTP(otp)} className="detail-otp-card">
-                                            <div className="detail-otp-icon">🔢</div>
-                                            <div className="detail-otp-info">
-                                                <span className="detail-otp-label">Mã xác minh</span>
-                                                <span className="detail-otp-value">{otp}</span>
+                                        <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-primary text-white rounded-lg font-bold">🔢</div>
+                                                <div>
+                                                    <div className="text-xs text-primary font-semibold uppercase tracking-wider">Mã xác minh</div>
+                                                    <div className="text-xl font-bold font-mono tracking-widest">{otp}</div>
+                                                </div>
                                             </div>
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                            </svg>
-                                        </button>
+                                            <button onClick={() => copyOTP(otp)} className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     );
                                     return null;
                                 })()}
 
                                 {/* Email Meta */}
-                                <div className="detail-meta">
-                                    <div className="detail-meta-row">
-                                        <span className="detail-meta-label">Từ</span>
-                                        <span className="detail-meta-value">{selectedMessage.fromAddress}</span>
-                                    </div>
-                                    <div className="detail-meta-row">
-                                        <span className="detail-meta-label">Đến</span>
-                                        <span className="detail-meta-value">{selectedMessage.toAddress}</span>
-                                    </div>
-                                    <div className="detail-meta-row">
-                                        <span className="detail-meta-label">Ngày</span>
-                                        <span className="detail-meta-value">
-                                            {new Date(selectedMessage.receivedAt).toLocaleString("vi-VN")}
-                                        </span>
+                                <div className="space-y-4 mb-6">
+                                    <h2 className="text-xl font-bold leading-tight">{selectedMessage.subject || "(Không có tiêu đề)"}</h2>
+
+                                    <div className="flex flex-col gap-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted">Từ:</span>
+                                            <span className="font-medium">{selectedMessage.fromAddress}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted">Đến:</span>
+                                            <span className="font-medium">{selectedMessage.toAddress}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted">Thời gian:</span>
+                                            <span>{new Date(selectedMessage.receivedAt).toLocaleString("vi-VN")}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Subject */}
-                                <h2 className="detail-subject">{selectedMessage.subject || "(Không có tiêu đề)"}</h2>
+                                <div className="h-px bg-border my-6" />
 
                                 {/* Body */}
-                                <div className="detail-body">
+                                <div className="min-h-[200px]">
                                     {selectedMessage.htmlBody ? (
-                                        <iframe
-                                            srcDoc={selectedMessage.htmlBody}
-                                            sandbox="allow-same-origin"
-                                            title="Email content"
-                                            className="detail-iframe"
-                                        />
+                                        <div className="prose dark:prose-invert max-w-none">
+                                            <iframe
+                                                srcDoc={selectedMessage.htmlBody}
+                                                sandbox="allow-same-origin"
+                                                title="Email content"
+                                                className="w-full min-h-[400px] border-none bg-white rounded-lg"
+                                            />
+                                        </div>
                                     ) : (
-                                        <pre className="detail-text">{selectedMessage.textBody || "Không có nội dung"}</pre>
+                                        <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-text-main">
+                                            {selectedMessage.textBody || "Không có nội dung"}
+                                        </pre>
                                     )}
                                 </div>
 
                                 {/* Attachments */}
                                 {selectedMessage.attachments && selectedMessage.attachments.length > 0 && (
-                                    <div className="detail-attachments">
-                                        <h4>📎 Đính kèm ({selectedMessage.attachments.length})</h4>
-                                        <div className="detail-attachments-list">
+                                    <div className="mt-8 pt-6 border-t border-border">
+                                        <h4 className="font-semibold mb-4 flex items-center gap-2">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                            Đính kèm ({selectedMessage.attachments.length})
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-3">
                                             {selectedMessage.attachments.map((att, idx) => (
-                                                <a key={idx} href={`/api/attachments/${att.storageKey}`} target="_blank" rel="noopener noreferrer" className="detail-attachment">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                    <span>{att.filename || `Tệp ${idx + 1}`}</span>
+                                                <a
+                                                    key={idx}
+                                                    href={`/api/attachments/${att.storageKey}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-3 p-3 bg-surface border border-border rounded-lg hover:border-primary/50 transition-colors group"
+                                                >
+                                                    <div className="p-2 bg-bg rounded group-hover:bg-white transition-colors">
+                                                        <svg className="w-5 h-5 text-muted group-hover:text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-sm font-medium truncate">{att.filename || `Tệp ${idx + 1}`}</div>
+                                                        <div className="text-xs text-muted">Click để tải xuống</div>
+                                                    </div>
                                                 </a>
                                             ))}
                                         </div>
@@ -632,52 +672,6 @@ export function Dashboard() {
                             </div>
                         </aside>
                     </>
-                )}
-
-                {/* Create Inbox Modal */}
-                {showInboxPicker && selectedDomainObj && (
-                    <div className="modal-overlay" onClick={() => setShowInboxPicker(false)}>
-                        <div className="modal-content animate-nebula-scale-in" onClick={e => e.stopPropagation()}>
-                            <h3>Tạo hộp thư mới</h3>
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                const form = e.target as HTMLFormElement;
-                                const localPart = (form.elements.namedItem("localPart") as HTMLInputElement).value;
-                                const expires = (form.elements.namedItem("expires") as HTMLSelectElement).value;
-                                createInbox(selectedDomainObj.id, localPart, expires ? parseInt(expires) : undefined);
-                                setShowInboxPicker(false);
-                            }}>
-                                <div className="modal-field">
-                                    <label className="label-nebula">Địa chỉ email</label>
-                                    <div className="input-email-combo">
-                                        <input
-                                            name="localPart"
-                                            type="text"
-                                            placeholder="username"
-                                            className="input-nebula"
-                                            required
-                                            autoFocus
-                                        />
-                                        <span>@{selectedDomainObj.name}</span>
-                                    </div>
-                                </div>
-                                <div className="modal-field">
-                                    <label className="label-nebula">Thời gian hết hạn</label>
-                                    <select name="expires" className="input-nebula">
-                                        <option value="">Không hết hạn</option>
-                                        <option value="300000">5 phút</option>
-                                        <option value="600000">10 phút</option>
-                                        <option value="1800000">30 phút</option>
-                                        <option value="3600000">1 giờ</option>
-                                    </select>
-                                </div>
-                                <div className="modal-actions">
-                                    <button type="button" onClick={() => setShowInboxPicker(false)} className="btn-nebula btn-nebula-secondary">Hủy</button>
-                                    <button type="submit" className="btn-nebula btn-nebula-primary">Tạo hộp thư</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                 )}
 
                 {/* Compose Modal */}

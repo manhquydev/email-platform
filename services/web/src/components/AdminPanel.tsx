@@ -156,26 +156,34 @@ export function AdminPanel({ token }: { token: string }) {
     };
 
     return (
-        <div className="h-screen flex bg-white dark:bg-[#0A0A0B] admin-layout">
-            {/* Sidebar */}
-            <div className={`${sidebarCollapsed ? "w-16" : "w-64"} bg-gray-50 dark:bg-[#0A0A0B] border-r border-gray-200 dark:border-white/10 flex flex-col admin-sidebar transition-all duration-200`}>
+        <div className="h-screen flex">
+            {/* Sidebar with glassmorphism */}
+            <div
+                className={`${sidebarCollapsed ? "w-16" : "w-64"} flex flex-col admin-sidebar transition-all duration-200 backdrop-blur-xl`}
+                style={{
+                    background: 'var(--neo-glass-bg-medium)',
+                    borderRight: '1px solid var(--neo-glass-border)',
+                    boxShadow: 'var(--neo-shadow-float)'
+                }}
+            >
                 {/* Header */}
-                <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 dark:border-white/10">
+                <div className="h-16 px-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--nebula-border)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-[#0A0A0B] dark:bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--nebula-violet)' }}>
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        {!sidebarCollapsed && <span className="font-semibold text-sm text-gray-900 dark:text-white">Quản trị</span>}
+                        {!sidebarCollapsed && <span className="font-semibold text-sm" style={{ color: 'var(--nebula-text)' }}>Quản trị</span>}
                     </div>
                     <button
                         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                        className="p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded transition-colors"
+                        className="p-1 rounded transition-colors hover:opacity-80"
+                        style={{ color: 'var(--nebula-text-muted)' }}
                         title={sidebarCollapsed ? "Mở rộng" : "Thu gọn"}
                     >
-                        <svg className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className={`w-4 h-4 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
@@ -183,15 +191,15 @@ export function AdminPanel({ token }: { token: string }) {
 
                 {/* Search Bar */}
                 {!sidebarCollapsed && (
-                    <form onSubmit={handleSearch} className="px-3 py-3 border-b border-gray-200 dark:border-white/10">
+                    <form onSubmit={handleSearch} className="px-3 py-3" style={{ borderBottom: '1px solid var(--nebula-border)' }}>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">{icons.search}</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--nebula-text-muted)' }}>{icons.search}</span>
                             <input
                                 type="text"
                                 placeholder="Tìm kiếm..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                className="input-nebula pl-9"
                             />
                         </div>
                     </form>
@@ -204,13 +212,21 @@ export function AdminPanel({ token }: { token: string }) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${activeTab === tab.id
-                                    ? "bg-primary text-white shadow-lg shadow-primary/25"
-                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
+                                className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${activeTab === tab.id
+                                    ? "shadow-lg"
+                                    : "hover:opacity-80"
                                     }`}
+                                style={activeTab === tab.id ? {
+                                    background: 'linear-gradient(135deg, var(--nebula-violet), var(--nebula-violet-dark))',
+                                    color: 'var(--nebula-text-inverse)',
+                                    boxShadow: 'var(--nebula-shadow-glow)'
+                                } : {
+                                    color: 'var(--nebula-text-secondary)',
+                                    background: 'transparent'
+                                }}
                                 title={sidebarCollapsed ? tab.label : undefined}
                             >
-                                <span className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${activeTab === tab.id ? "text-white" : "text-gray-500 dark:text-gray-400"}`}>
+                                <span className="w-5 h-5 flex items-center justify-center flex-shrink-0">
                                     {tab.icon}
                                 </span>
                                 {!sidebarCollapsed && (
@@ -222,7 +238,7 @@ export function AdminPanel({ token }: { token: string }) {
                                     </>
                                 )}
                                 {sidebarCollapsed && tab.id === "reports" && counts.openReports > 0 && (
-                                    <span className="absolute right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                                    <span className="absolute right-2 w-2 h-2 rounded-full" style={{ background: 'var(--nebula-error)' }}></span>
                                 )}
                             </button>
                         ))}
@@ -230,7 +246,7 @@ export function AdminPanel({ token }: { token: string }) {
                 </nav>
 
                 {/* Footer */}
-                <div className="p-3 border-t border-gray-200 dark:border-white/10 space-y-2">
+                <div className="p-3 space-y-2" style={{ borderTop: '1px solid var(--nebula-border)' }}>
                     {/* Dark Mode Toggle */}
                     <button
                         onClick={() => {
@@ -245,7 +261,8 @@ export function AdminPanel({ token }: { token: string }) {
                                 localStorage.setItem("admin-theme", "dark");
                             }
                         }}
-                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors ${sidebarCollapsed ? "justify-center" : ""}`}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors hover:opacity-80 ${sidebarCollapsed ? "justify-center" : ""}`}
+                        style={{ color: 'var(--nebula-text-secondary)' }}
                         title={sidebarCollapsed ? "Chế độ tối/sáng" : undefined}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -255,7 +272,8 @@ export function AdminPanel({ token }: { token: string }) {
                     </button>
                     <Link
                         to="/"
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors ${sidebarCollapsed ? "justify-center" : ""}`}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors hover:opacity-80 ${sidebarCollapsed ? "justify-center" : ""}`}
+                        style={{ color: 'var(--nebula-text-secondary)' }}
                         title={sidebarCollapsed ? "Quay lại" : undefined}
                     >
                         {icons.back}
@@ -631,9 +649,9 @@ function DomainsList({ token }: { token: string }) {
                     <table className="w-full text-xs">
                         <thead className="bg-blue-100 dark:bg-blue-900/30">
                             <tr>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Type</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Host</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Value</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Loại</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Tên</th>
+                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Giá trị</th>
                                 <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Mục đích</th>
                             </tr>
                         </thead>

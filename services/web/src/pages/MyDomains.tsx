@@ -195,9 +195,9 @@ export function MyDomains() {
                                 <table className="w-full text-sm">
                                     <thead style={{ background: 'var(--nebula-elevated)' }}>
                                         <tr>
-                                            <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Type</th>
-                                            <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Host</th>
-                                            <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Value</th>
+                                            <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Loại</th>
+                                            <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Tên</th>
+                                            <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Giá trị</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -260,14 +260,14 @@ export function MyDomains() {
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <h3 className="font-semibold text-lg" style={{ color: 'var(--nebula-text)' }}>{domain.name}</h3>
                                                         <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${domain.status === "VERIFIED"
-                                                                ? "bg-[rgba(16,185,129,0.1)] text-[var(--nebula-success)]"
-                                                                : "bg-[rgba(245,158,11,0.1)] text-[var(--nebula-warning)]"
+                                                            ? "bg-[rgba(16,185,129,0.1)] text-[var(--nebula-success)]"
+                                                            : "bg-[rgba(245,158,11,0.1)] text-[var(--nebula-warning)]"
                                                             }`}>
-                                                            {domain.status === "VERIFIED" ? "✓ Verified" : "⏳ Pending"}
+                                                            {domain.status === "VERIFIED" ? "✓ Đã xác thực" : "⏳ Đang chờ"}
                                                         </span>
                                                         {domain.isPublic && (
                                                             <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-[var(--nebula-glow-violet)] text-[var(--nebula-violet)]">
-                                                                🌐 Public
+                                                                🌐 Công khai
                                                             </span>
                                                         )}
                                                     </div>

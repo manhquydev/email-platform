@@ -3088,122 +3088,660 @@
     box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 }
 
-/* CTA - Ephemera Monochrome */
-.landing-cta {
+/* CTA - The Cosmic Gateway (v2) */
+.landing-cta-gateway {
     position: relative;
-    z-index: 1;
-    padding: 80px var(--nebula-space-lg);
-    background: linear-gradient(135deg, #0A0A0B 0%, #18181B 50%, #27272A 100%);
-}
-
-.landing-cta-inner {
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: center;
-    color: white;
-}
-
-.landing-cta-inner h2 {
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: var(--nebula-space-sm);
-}
-
-.landing-cta-inner p {
-    font-size: 1.0625rem;
-    opacity: 0.9;
-    margin-bottom: var(--nebula-space-xl);
-}
-
-.landing-btn-cta {
-    display: inline-flex;
+    z-index: 10;
+    padding: 140px var(--nebula-space-lg);
+    background: radial-gradient(circle at center, rgba(30, 20, 50, 0.6) 0%, var(--nebula-bg) 70%);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
     align-items: center;
-    gap: var(--nebula-space-sm);
-    padding: 16px 32px;
-    background: white;
-    border-radius: var(--nebula-radius-lg);
+}
+
+.landing-cta-portal {
+    position: relative;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 100px 40px;
+    border-radius: 40px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 5, 20, 0.6);
+    backdrop-filter: blur(24px);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 40px 120px rgba(0, 0, 0, 0.5),
+        inset 0 0 60px rgba(139, 92, 246, 0.05);
+    /* Inner subtle glow */
+}
+
+/* The Portal Glow - Background Effect */
+.portal-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 60%);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: -1;
+    animation: portalPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes portalPulse {
+    0% {
+        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+
+    100% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+}
+
+/* Cyber Artifact - The Centerpiece */
+.cyber-artifact-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 50px;
+    perspective: 1000px;
+}
+
+.cyber-artifact {
+    position: relative;
+    width: 320px;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.2),
+        inset 0 0 20px rgba(139, 92, 246, 0.1);
+    transform-style: preserve-3d;
+}
+
+.artifact-core {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     color: var(--nebula-violet);
-    font-size: 1rem;
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    transition: all var(--nebula-transition-fast);
 }
 
-.landing-btn-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+.artifact-icon svg {
+    width: 24px;
+    height: 24px;
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
 }
 
-.landing-btn-cta svg {
+.artifact-text {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 1.1rem;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    letter-spacing: 0.05em;
+}
+
+/* Orbiting Animation */
+.orbit-ring {
+    position: absolute;
+    width: 360px;
+    height: 120px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotateX(75deg);
+    pointer-events: none;
+    animation: rotateRing 20s linear infinite;
+}
+
+.orbit-object {
+    position: absolute;
+    top: 50%;
+    width: 36px;
+    height: 36px;
+    margin-top: -18px;
+    margin-left: -18px;
+    background: var(--nebula-surface);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nebula-violet-light);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+    animation: counterRotate 20s linear infinite;
+    /* Keeps icon upright */
+}
+
+.orbit-object.shield {
+    left: 100%;
+}
+
+.orbit-object.key {
+    left: 0%;
+}
+
+.orbit-object svg {
     width: 18px;
     height: 18px;
 }
 
-/* Footer */
-.landing-footer {
+@keyframes rotateRing {
+    0% {
+        transform: translate(-50%, -50%) rotateX(75deg) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotateX(75deg) rotate(360deg);
+    }
+}
+
+@keyframes counterRotate {
+    0% {
+        transform: rotate(0deg) rotateX(-75deg) scale(1.5);
+    }
+
+    /* Scale simulates depth */
+    25% {
+        transform: rotate(-90deg) rotateX(-75deg) scale(0.8);
+    }
+
+    50% {
+        transform: rotate(-180deg) rotateX(-75deg) scale(0.6);
+    }
+
+    75% {
+        transform: rotate(-270deg) rotateX(-75deg) scale(0.8);
+    }
+
+    100% {
+        transform: rotate(-360deg) rotateX(-75deg) scale(1.5);
+    }
+}
+
+/* Typography & Actions */
+.portal-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+}
+
+.portal-subtitle {
+    font-size: 1.25rem;
+    color: var(--nebula-text-muted);
+    max-width: 600px;
+    margin: 0 auto 48px;
+    line-height: 1.6;
+}
+
+.portal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Button Glow Enhancements */
+.neo-btn-glow-border {
+    position: relative;
+    background: transparent;
+    overflow: hidden;
+}
+
+.neo-btn-glow-border::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(90deg, transparent, var(--nebula-violet), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.8;
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .portal-title {
+        font-size: 2.2rem;
+    }
+
+    .landing-cta-gateway {
+        padding: 80px 20px;
+    }
+
+    .landing-cta-portal {
+        padding: 60px 20px;
+    }
+
+    .cyber-artifact {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .orbit-ring {
+        width: 260px;
+    }
+
+    /* Smaller orbit on mobile */
+}
+
+/* ============================================
+   CRYSTAL HORIZON (CTA v3)
+   ============================================ */
+
+.landing-cta-crystal {
+    position: relative;
+    z-index: 10;
+    padding: 120px var(--nebula-space-lg);
+    background: radial-gradient(circle at center, rgba(240, 245, 255, 0.8) 0%, #F1F5F9 100%);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+[data-theme="dark"] .landing-cta-crystal {
+    background: radial-gradient(circle at center, #1E293B 0%, #0F172A 100%);
+}
+
+.landing-cta-prism {
+    position: relative;
+    max-width: 960px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 80px 60px;
+    border-radius: 48px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(40px);
+    box-shadow:
+        0 20px 80px rgba(0, 0, 0, 0.05),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+}
+
+[data-theme="dark"] .landing-cta-prism {
+    background: rgba(30, 41, 59, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 40px 100px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Aurora Shimmer */
+.prism-shimmer {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg at 50% 50%,
+            transparent 0deg,
+            rgba(139, 92, 246, 0.08) 60deg,
+            rgba(6, 182, 212, 0.08) 120deg,
+            rgba(236, 72, 153, 0.08) 180deg,
+            transparent 360deg);
+    animation: rotateShimmer 20s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+}
+
+@keyframes rotateShimmer {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Crystal Visual */
+.crystal-visual {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 48px;
+    perspective: 1200px;
+}
+
+.crystal-card {
+    position: relative;
+    width: auto;
+    display: inline-flex;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 100px;
+    box-shadow:
+        0 10px 30px rgba(139, 92, 246, 0.15),
+        inset 0 0 20px rgba(255, 255, 255, 0.8);
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-theme="dark"] .crystal-card {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+.crystal-card:hover {
+    transform: translateY(-5px) rotateX(10deg);
+}
+
+.crystal-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+}
+
+.crystal-icon {
+    color: var(--nebula-violet);
+    display: flex;
+    align-items: center;
+}
+
+.crystal-icon svg {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 0 8px var(--nebula-violet));
+}
+
+.crystal-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--nebula-text);
+    letter-spacing: -0.02em;
+}
+
+.crystal-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.prism-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+    color: var(--nebula-text);
+}
+
+.prism-subtitle {
+    font-size: 1.25rem;
+    color: var(--nebula-text-muted);
+    max-width: 580px;
+    margin: 0 auto 40px;
+    line-height: 1.6;
+}
+
+.prism-actions {
+    display: flex;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .landing-cta-crystal {
+        padding: 80px 20px;
+    }
+
+    .landing-cta-prism {
+        padding: 40px 24px;
+        border-radius: 32px;
+    }
+
+    .prism-title {
+        font-size: 2rem;
+    }
+
+    .crystal-card {
+        padding: 10px 16px;
+        gap: 8px;
+        width: 100%;
+        flex-direction: column;
+        border-radius: 20px;
+    }
+
+    .crystal-content {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .crystal-text {
+        font-size: 0.9rem;
+    }
+}
+
+/* Site Footer - Premium Glass */
+.site-footer {
     position: relative;
     z-index: 1;
     background: var(--nebula-surface);
     border-top: 1px solid var(--nebula-border);
+    padding-top: 80px;
 }
 
-.landing-footer-inner {
-    max-width: 1100px;
+.site-footer-container {
+    max-width: 1200px;
     margin: 0 auto;
-    padding: var(--nebula-space-2xl) var(--nebula-space-lg);
+    padding: 0 var(--nebula-space-lg) 60px;
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: var(--nebula-space-2xl);
+    grid-template-columns: 1.5fr 2fr;
+    gap: 80px;
 }
 
-@media (max-width: 768px) {
-    .landing-footer-inner {
+@media (max-width: 968px) {
+    .site-footer-container {
         grid-template-columns: 1fr;
+        gap: 60px;
     }
 }
 
-.landing-footer-brand p {
-    font-size: 0.875rem;
-    color: var(--nebula-text-muted);
-    margin-top: var(--nebula-space-sm);
-}
-
-.landing-footer-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+.site-footer-brand {
+    display: flex;
+    flex-direction: column;
     gap: var(--nebula-space-lg);
 }
 
-.landing-footer-links h4 {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--nebula-text);
-    margin-bottom: var(--nebula-space-md);
-}
-
-.landing-footer-links a {
-    display: block;
-    padding: 4px 0;
-    font-size: 0.875rem;
-    color: var(--nebula-text-muted);
+.site-footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     text-decoration: none;
-    transition: color var(--nebula-transition-fast);
 }
 
-.landing-footer-links a:hover {
+.site-footer-logo-icon {
+    width: 40px;
+    height: 40px;
     color: var(--nebula-violet);
 }
 
-.landing-footer-bottom {
-    padding: var(--nebula-space-lg);
-    text-align: center;
+.site-footer-logo-text {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.site-footer-tagline {
+    font-size: 1rem;
+    color: var(--nebula-text-muted);
+    line-height: 1.7;
+    max-width: 360px;
+}
+
+.site-footer-social {
+    display: flex;
+    gap: var(--nebula-space-lg);
+}
+
+.site-footer-social a {
+    color: var(--nebula-text-muted);
+    transition: all var(--nebula-transition-normal);
+}
+
+.site-footer-social a:hover {
+    color: var(--nebula-violet);
+    transform: translateY(-2px);
+}
+
+.site-footer-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--nebula-space-xl);
+}
+
+@media (max-width: 640px) {
+    .site-footer-links {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+}
+
+.site-footer-group h4 {
+    font-size: 0.8125rem;
+    font-weight: 800;
+    color: var(--nebula-text);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--nebula-space-xl);
+}
+
+.site-footer-group a {
+    display: block;
+    color: var(--nebula-text-muted);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    margin-bottom: var(--nebula-space-md);
+    transition: all var(--nebula-transition-fast);
+}
+
+.site-footer-group a:hover {
+    color: var(--nebula-violet);
+    padding-left: 4px;
+}
+
+.site-footer-bottom {
+    border-top: 1px solid var(--nebula-border);
+    padding: 30px var(--nebula-space-lg);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.site-footer-bottom-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--nebula-space-md);
+}
+
+.site-footer-copyright {
+    font-size: 0.875rem;
+    color: var(--nebula-text-muted);
+}
+
+.site-footer-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    color: var(--nebula-text-muted);
+    background: var(--nebula-elevated);
+    padding: 6px 12px;
+    border-radius: var(--nebula-radius-full);
+    border: 1px solid var(--nebula-border);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #10B981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #10B981;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Minimal Footer */
+.site-footer-minimal {
+    padding: 40px var(--nebula-space-lg);
     border-top: 1px solid var(--nebula-border);
 }
 
-.landing-footer-bottom p {
-    font-size: 0.8125rem;
+.site-footer-minimal-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.site-footer-minimal-links {
+    display: flex;
+    gap: var(--nebula-space-xl);
+}
+
+.site-footer-minimal-links a {
     color: var(--nebula-text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color var(--nebula-transition-fast);
+}
+
+.site-footer-minimal-links a:hover {
+    color: var(--nebula-violet);
 }
 
 /* ============================================

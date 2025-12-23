@@ -125,11 +125,14 @@ export function Sidebar({
     const sharedDomains = currentUserId ? domains.filter(d => d.ownerId !== currentUserId) : domains;
 
     return (
-        <div className="flex flex-col h-full border-r border-border bg-surface">
+        <div className="flex flex-col h-full glass-card-elevated rounded-2xl overflow-hidden shadow-xl border border-[var(--nebula-border)]">
             {/* 1. Domain Switcher Header */}
-            <div className="p-3 border-b border-border">
-                <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">
-                    Tên Miền (Domains)
+            <div className="p-4 border-b border-[var(--nebula-border)] bg-[var(--nebula-surface-elevated)]/50">
+                <label className="text-xs font-semibold text-[var(--nebula-text-muted)] uppercase tracking-wider mb-2 block flex items-center gap-2">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                    </svg>
+                    Tên miền
                 </label>
                 <select
                     className="w-full text-sm font-medium"
@@ -197,9 +200,9 @@ export function Sidebar({
                                         <table className="w-full text-[9px]">
                                             <thead className="bg-yellow-100">
                                                 <tr>
-                                                    <th className="px-1 py-0.5 text-left font-semibold text-yellow-800">Type</th>
-                                                    <th className="px-1 py-0.5 text-left font-semibold text-yellow-800">Host</th>
-                                                    <th className="px-1 py-0.5 text-left font-semibold text-yellow-800">Value</th>
+                                                    <th className="px-1 py-0.5 text-left font-semibold text-yellow-800">Loại</th>
+                                                    <th className="px-1 py-0.5 text-left font-semibold text-yellow-800">Tên</th>
+                                                    <th className="px-1 py-0.5 text-left font-semibold text-yellow-800">Giá trị</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="text-yellow-700">
@@ -209,7 +212,7 @@ export function Sidebar({
                                                     <td className="px-1 py-0.5 font-mono flex items-center gap-1">
                                                         <span className="truncate">mail.{activeDomain.name}</span>
                                                         <span className="text-muted">(10)</span>
-                                                        <button onClick={() => { navigator.clipboard.writeText(`mail.${activeDomain.name}`); toast.success('Đã copy MX!'); }} className="p-0.5 text-muted hover:text-primary hover:bg-gray-100 rounded transition-colors">{icons.copy}</button>
+                                                        <button onClick={() => { navigator.clipboard.writeText(`mail.${activeDomain.name}`); toast.success('Đã sao chép MX!'); }} className="p-0.5 text-muted hover:text-primary hover:bg-gray-100 rounded transition-colors">{icons.copy}</button>
                                                     </td>
                                                 </tr>
                                                 <tr className="border-t border-yellow-200">
@@ -217,7 +220,7 @@ export function Sidebar({
                                                     <td className="px-1 py-0.5 font-mono">mail</td>
                                                     <td className="px-1 py-0.5 font-mono flex items-center gap-1">
                                                         <span>165.22.48.193</span>
-                                                        <button onClick={() => { navigator.clipboard.writeText('165.22.48.193'); toast.success('Đã copy IP!'); }} className="p-0.5 text-muted hover:text-primary hover:bg-gray-100 rounded transition-colors">{icons.copy}</button>
+                                                        <button onClick={() => { navigator.clipboard.writeText('165.22.48.193'); toast.success('Đã sao chép IP!'); }} className="p-0.5 text-muted hover:text-primary hover:bg-gray-100 rounded transition-colors">{icons.copy}</button>
                                                     </td>
                                                 </tr>
                                                 <tr className="border-t border-yellow-200">
@@ -225,7 +228,7 @@ export function Sidebar({
                                                     <td className="px-1 py-0.5 font-mono">@</td>
                                                     <td className="px-1 py-0.5 font-mono flex items-center gap-1">
                                                         <span className="break-all truncate">{activeDomain.verificationToken}</span>
-                                                        <button onClick={() => { navigator.clipboard.writeText(activeDomain.verificationToken); toast.success('Đã copy TXT!'); }} className="p-0.5 text-muted hover:text-primary hover:bg-gray-100 rounded transition-colors flex-shrink-0">{icons.copy}</button>
+                                                        <button onClick={() => { navigator.clipboard.writeText(activeDomain.verificationToken); toast.success('Đã sao chép TXT!'); }} className="p-0.5 text-muted hover:text-primary hover:bg-gray-100 rounded transition-colors flex-shrink-0">{icons.copy}</button>
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -402,10 +405,10 @@ export function Sidebar({
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         navigator.clipboard.writeText(fullEmail);
-                                        toast.success(`Đã copy: ${fullEmail}`);
+                                        toast.success(`Đã sao chép: ${fullEmail}`);
                                     }}
                                     className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-surface rounded text-muted hover:text-primary transition-all flex-shrink-0"
-                                    title="Copy địa chỉ email"
+                                    title="Sao chép địa chỉ email"
                                 >
                                     {icons.copy}
                                 </button>

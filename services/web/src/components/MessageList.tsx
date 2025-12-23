@@ -65,11 +65,9 @@ export function MessageList({
 
     if (!inbox) {
         return (
-            <div className="h-full flex flex-col items-center justify-center text-muted p-4 text-center animate-fade-in">
-                <svg className="w-16 h-16 mb-3 opacity-30" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
-                    {/* Broken Infinity Logo */}
-                    <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
-                    <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-muted">
+                <svg className="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
                     <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
                 </svg>
                 <div className="text-lg font-medium mb-1">Chọn một hộp thư</div>
@@ -77,6 +75,7 @@ export function MessageList({
             </div>
         );
     }
+
 
     // Skeleton Loading Component
     const SkeletonMessage = () => (

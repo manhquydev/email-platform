@@ -6,12 +6,12 @@ interface KeyboardShortcutsHelpProps {
 
 export function KeyboardShortcutsHelp({ onClose }: KeyboardShortcutsHelpProps) {
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
             <div
-                className="bg-surface rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-border"
+                className="glass-card-elevated rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 border border-[var(--nebula-border)] bg-[var(--nebula-surface-elevated)]"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-text-main">Phím tắt bàn phím</h2>
                     <button
                         onClick={onClose}
@@ -41,3 +41,4 @@ export function KeyboardShortcutsHelp({ onClose }: KeyboardShortcutsHelpProps) {
         </div>
     );
 }
+

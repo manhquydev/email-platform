@@ -24,12 +24,15 @@ const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.S
 const MyDomains = lazy(() => import("./pages/MyDomains").then(m => ({ default: m.MyDomains })));
 const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default: m.Forwarding })));
 
+import { ScrollToTop } from "./components/ScrollToTop";
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <Toaster position="top-right" />
         <BrowserRouter>
+          <ScrollToTop />
           <VersionCheck />
           <ErrorBoundary>
             <Suspense fallback={<Loading fullScreen />}>

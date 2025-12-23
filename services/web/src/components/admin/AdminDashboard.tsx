@@ -88,26 +88,32 @@ function useCountUp(end: number, duration: number = 1000) {
     return count;
 }
 
-// Glassmorphism Card Component
+// Glassmorphism Card Component - using Ephemera CSS variables
 function GlassCard({ children, className = "", hover = true }: {
     children: React.ReactNode;
     className?: string;
     hover?: boolean;
 }) {
     return (
-        <div className={`
-            relative overflow-hidden rounded-2xl
-            bg-gradient-to-br from-white/90 to-white/70
-            dark:from-[#18181B]/90 dark:to-[#18181B]/70
-            backdrop-blur-xl border border-white/30 dark:border-white/10
-            shadow-lg shadow-black/5 dark:shadow-black/30
-            ${hover ? "transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.02] hover:border-primary/30" : ""}
-            ${className}
-        `}>
+        <div
+            className={`
+                glass-card-elevated relative overflow-hidden
+                ${hover ? "transition-all duration-300 hover:shadow-xl hover:scale-[1.01]" : ""}
+                ${className}
+            `}
+            style={{
+                background: 'var(--neo-glass-bg-medium)',
+                backdropFilter: 'var(--neo-glass-blur-medium)',
+                border: '1px solid var(--neo-glass-border)',
+                borderRadius: 'var(--nebula-radius-xl)',
+                boxShadow: 'var(--neo-shadow-float)'
+            }}
+        >
             {children}
         </div>
     );
 }
+
 
 // Stat Card with Sparkline
 function StatCard({ label, value, trend, icon, color, delay = 0 }: {
@@ -205,19 +211,19 @@ function ActivityFeedItem({ item, index }: { item: ActivityItem; index: number }
 
     return (
         <div
-            className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0 animate-fade-in-up"
-            style={{ animationDelay: `${index * 100}ms` } as React.CSSProperties}
+            className="flex items-center gap-3 py-3 last:border-0 animate-fade-in-up"
+            style={{ animationDelay: `${index * 100}ms`, borderBottom: '1px solid var(--nebula-border-subtle)' } as React.CSSProperties}
         >
             <div className={`w-2.5 h-2.5 rounded-full ${action.color} ring-4 ring-opacity-20 ring-current flex-shrink-0`} />
             <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-slate-800 dark:text-white">{action.label}</span>
+                <span className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>{action.label}</span>
                 {item.user && (
-                    <span className="text-xs text-slate-500 dark:text-slate-400 ml-2 truncate">
+                    <span className="text-xs ml-2 truncate" style={{ color: 'var(--nebula-text-muted)' }}>
                         {item.user.email}
                     </span>
                 )}
             </div>
-            <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
+            <span className="text-xs flex-shrink-0" style={{ color: 'var(--nebula-text-muted)' }}>
                 {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true, locale: vi })}
             </span>
         </div>
@@ -297,21 +303,21 @@ export function AdminDashboard({ token }: { token: string }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <h1 className="text-2xl font-bold" style={{ color: 'var(--nebula-text)' }}>
                         Tổng quan hệ thống
                     </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Thống kê realtime Dashboard</p>
+                    <p className="text-sm mt-1" style={{ color: 'var(--nebula-text-muted)' }}>Thống kê realtime Dashboard</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {lastUpdated && (
-                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
+                            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--nebula-success)' }} />
                             Cập nhật: {lastUpdated.toLocaleTimeString("vi-VN")}
                         </div>
                     )}
                     <button
                         onClick={() => loadStats(true)}
-                        className="px-4 py-2 text-sm font-medium bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-colors flex items-center gap-2"
+                        className="btn-nebula-secondary flex items-center gap-2"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />

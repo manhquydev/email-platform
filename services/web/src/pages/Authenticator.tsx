@@ -281,7 +281,7 @@ export function Authenticator() {
                                             title="Click để sao chép"
                                         >
                                             <div className={`otp-card-code-value ${copiedId === acc.id ? 'text-[var(--nebula-success)]' : ''}`}>
-                                                {copiedId === acc.id ? '✓ Copied' : formattedCode}
+                                                {copiedId === acc.id ? '✓ Đã sao chép' : formattedCode}
                                             </div>
                                         </div>
 

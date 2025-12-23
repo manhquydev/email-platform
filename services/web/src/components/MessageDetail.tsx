@@ -29,10 +29,10 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
 
     if (!message) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-bg text-muted animate-fade-in">
+            <div className="h-full flex flex-col items-center justify-center p-8 animate-fade-in text-center">
                 {/* Mobile empty state */}
                 <div className="md:hidden w-full h-full flex items-center justify-center">
-                    <p className="text-sm">Chạm vào một email để xem nội dung</p>
+                    <p className="text-sm text-[var(--nebula-text-muted)]">Chạm vào một email để xem nội dung</p>
                 </div>
 
                 <div className="hidden md:flex flex-col items-center">

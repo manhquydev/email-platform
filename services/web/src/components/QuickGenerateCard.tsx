@@ -78,13 +78,20 @@ export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGener
 
     if (verifiedDomains.length === 0) {
         return (
-            <div className="quick-generate-card empty">
-                <div className="quick-generate-icon">📧</div>
-                <p className="text-muted text-sm">
-                    Chưa có domain nào được xác thực.
-                    <br />
-                    Hãy thêm và xác thực domain để bắt đầu.
+            <div className="p-6 md:p-8 rounded-2xl flex flex-col items-center justify-center text-center bg-[var(--nebula-surface-elevated)] border border-[var(--nebula-border)] border-dashed">
+                <div className="w-16 h-16 bg-[var(--nebula-surface-elevated)] rounded-full flex items-center justify-center mb-4 ring-4 ring-[var(--nebula-border)]/50 shadow-inner">
+                    <span className="text-3xl filter grayscale opacity-70">📧</span>
+                </div>
+                <h4 className="text-base font-bold text-[var(--nebula-text)] mb-2">Chưa có domain khả dụng</h4>
+                <p className="text-[var(--nebula-text-secondary)] text-sm max-w-xs mb-4">
+                    Tài khoản của bạn chưa có domain nào được xác thực hoặc tất cả các domain đã hết hạn.
                 </p>
+                <button
+                    onClick={() => window.location.href = '/app?tab=domains'}
+                    className="btn-nebula btn-nebula-primary btn-nebula-sm"
+                >
+                    + Quản lý Domain
+                </button>
             </div>
         );
     }

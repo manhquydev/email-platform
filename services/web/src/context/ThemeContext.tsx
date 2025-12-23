@@ -13,7 +13,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
     const [theme, setThemeState] = useState<Theme>(() => {
         const stored = localStorage.getItem('theme') as Theme;
-        return stored || 'system';
+        // Default to dark theme to match Ephemera landing page style
+        return stored || 'dark';
     });
 
     const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');

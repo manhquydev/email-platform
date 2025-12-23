@@ -19,10 +19,10 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
     const isAdmin = user?.role === 'ADMIN';
 
     const navItems = [
-        { path: '/app', label: 'Inbox', icon: InboxIcon },
-        { path: '/my-domains', label: 'Domains', icon: GlobeIcon },
-        { path: '/forwarding', label: 'Forwarding', icon: ForwardIcon },
-        { path: '/authenticator', label: '2FA', icon: ShieldIcon },
+        { path: '/app', label: 'Hộp thư', icon: InboxIcon },
+        { path: '/my-domains', label: 'Tên miền', icon: GlobeIcon },
+        { path: '/forwarding', label: 'Chuyển tiếp', icon: ForwardIcon },
+        { path: '/authenticator', label: 'Xác thực 2 bước', icon: ShieldIcon },
     ];
 
     // Close menu on click outside
@@ -41,23 +41,34 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
     };
 
     return (
-        <div className="app-shell">
+        <div className="app-shell neo-mesh-bg min-h-screen flex flex-col text-[var(--nebula-text)] font-sans selection:bg-[var(--nebula-primary)] selection:text-white">
+            {/* Ephemera Background Effects - subtle for app pages */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+                <div className="neo-blob-orb neo-blob-orb-violet" style={{ width: '350px', height: '350px', top: '5%', right: '5%', opacity: 0.25 }} />
+                <div className="neo-blob-orb neo-blob-orb-cyan" style={{ width: '280px', height: '280px', bottom: '15%', left: '8%', opacity: 0.2 }} />
+                <div className="neo-blob-orb neo-blob-orb-pink" style={{ width: '200px', height: '200px', top: '50%', left: '50%', opacity: 0.15 }} />
+            </div>
+
             {/* Top Navigation */}
-            <header className="app-topnav">
+            <header className="app-topnav h-16 glass-card-elevated border-b border-[var(--nebula-border)] sticky top-0 z-50 px-4 md:px-6 flex items-center justify-between transition-all duration-300">
                 {/* Logo */}
-                <Link to="/app" className="app-topnav-logo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        {/* Broken Infinity Logo */}
-                        <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
-                        <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
-                        <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
-                    </svg>
-                    <span className="hidden sm:inline">Ephemera</span>
+                <Link to="/app" className="app-topnav-logo flex items-center gap-3 group">
+                    <div className="relative w-8 h-8 flex items-center justify-center bg-[var(--nebula-surface-elevated)] rounded-xl border border-[var(--nebula-border)] shadow-sm group-hover:shadow-[var(--nebula-glow)] group-hover:border-[var(--nebula-primary)] transition-all duration-300">
+                        <svg className="w-5 h-5 text-[var(--nebula-primary)] group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            {/* Broken Infinity Logo */}
+                            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+                            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+                            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
+                        </svg>
+                    </div>
+                    <span className="hidden sm:inline text-lg font-bold tracking-tight bg-gradient-to-r from-[var(--nebula-text)] to-[var(--nebula-text-muted)] bg-clip-text text-transparent group-hover:to-[var(--nebula-primary)] transition-all duration-300">
+                        Ephemera
+                    </span>
                 </Link>
 
                 {/* Mobile Menu Button */}
                 <button
-                    className="btn-nebula btn-nebula-ghost btn-nebula-icon md:hidden"
+                    className="btn-nebula btn-nebula-ghost btn-nebula-icon md:hidden text-[var(--nebula-text-secondary)] hover:bg-[var(--nebula-surface-elevated)]"
                     onClick={() => setShowMobileNav(!showMobileNav)}
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -66,39 +77,49 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
                 </button>
 
                 {/* Desktop Navigation */}
-                <nav className="app-topnav-nav">
+                <nav className="app-topnav-nav hidden md:flex items-center gap-1">
                     {navItems.map(item => (
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`app-topnav-link ${location.pathname === item.path ? 'active' : ''}`}
+                            className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 group overflow-hidden ${location.pathname === item.path
+                                ? 'text-[var(--nebula-primary)] bg-[var(--nebula-primary-light)] ring-1 ring-[var(--nebula-primary-border)] shadow-[var(--nebula-glow-sm)]'
+                                : 'text-[var(--nebula-text-secondary)] hover:text-[var(--nebula-text)] hover:bg-[var(--nebula-surface-hover)]'
+                                }`}
                         >
                             <item.icon />
                             <span>{item.label}</span>
+                            {location.pathname === item.path && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--nebula-primary)]/5 to-transparent skew-x-12 translate-x-[-150%] animate-shimmer" />
+                            )}
                         </Link>
                     ))}
                     {isAdmin && (
                         <Link
                             to="/admin"
-                            className={`app-topnav-link ${location.pathname === '/admin' ? 'active' : ''}`}
+                            className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${location.pathname === '/admin'
+                                ? 'text-[var(--nebula-violet)] bg-[var(--nebula-violet)]/10 ring-1 ring-[var(--nebula-violet)]/30'
+                                : 'text-[var(--nebula-text-secondary)] hover:text-[var(--nebula-violet)] hover:bg-[var(--nebula-surface-hover)]'
+                                }`}
                         >
                             <AdminIcon />
-                            <span>Admin</span>
+                            <span>Quản trị</span>
                         </Link>
                     )}
                 </nav>
 
                 {/* Actions */}
-                <div className="app-topnav-actions">
+                <div className="app-topnav-actions flex items-center gap-3">
                     {showSearch && (
-                        <div className="app-topnav-search hidden sm:block">
-                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <div className="app-topnav-search hidden sm:flex items-center bg-[var(--nebula-surface-elevated)] border border-[var(--nebula-border)] rounded-full px-3 py-1.5 focus-within:ring-2 focus-within:ring-[var(--nebula-primary)]/30 focus-within:border-[var(--nebula-primary)] transition-all duration-200">
+                            <svg className="w-4 h-4 text-[var(--nebula-text-muted)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                             <input
                                 type="text"
                                 placeholder="Tìm kiếm..."
                                 onChange={(e) => onSearch?.(e.target.value)}
+                                className="bg-transparent border-none outline-none text-sm ml-2 w-48 text-[var(--nebula-text)] placeholder-[var(--nebula-text-muted)]"
                             />
                         </div>
                     )}
@@ -108,7 +129,7 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
                     {/* User Menu */}
                     <div className="relative" ref={menuRef}>
                         <button
-                            className="app-topnav-avatar"
+                            className="app-topnav-avatar w-9 h-9 rounded-full bg-gradient-to-br from-[var(--nebula-violet)] to-[var(--nebula-pink)] flex items-center justify-center text-white text-sm font-bold shadow-[var(--nebula-glow)] hover:shadow-[var(--nebula-glow-strong)] hover:scale-105 transition-all duration-200 border-2 border-[var(--nebula-void)]"
                             onClick={() => setShowUserMenu(!showUserMenu)}
                             title={user?.email}
                         >
@@ -116,23 +137,25 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
                         </button>
 
                         {showUserMenu && (
-                            <div className="absolute right-0 top-full mt-2 w-56 glass-card-elevated animate-nebula-scale-in z-50">
-                                <div className="p-3 border-b border-[var(--nebula-border)]">
-                                    <div className="text-sm font-medium text-[var(--nebula-text)]">{user?.email}</div>
-                                    <div className="text-xs text-[var(--nebula-text-muted)]">{user?.role}</div>
+                            <div className="absolute right-0 top-full mt-2 w-60 glass-card-elevated animate-nebula-scale-in z-50 rounded-xl overflow-hidden shadow-2xl ring-1 ring-[var(--nebula-border)]">
+                                <div className="p-4 border-b border-[var(--nebula-border)] bg-[var(--nebula-surface-elevated)]/50">
+                                    <div className="text-sm font-semibold text-[var(--nebula-text)] truncate">{user?.email}</div>
+                                    <div className="text-xs font-medium text-[var(--nebula-primary)] bg-[var(--nebula-primary-light)] px-2 py-0.5 rounded-full inline-block mt-1 border border-[var(--nebula-primary-border)]">
+                                        {user?.role === 'ADMIN' ? 'Quản trị viên' : 'Thành viên'}
+                                    </div>
                                 </div>
-                                <div className="p-1">
+                                <div className="p-1.5 space-y-0.5">
                                     <Link
                                         to="/settings"
-                                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[var(--nebula-elevated)] text-[var(--nebula-text-secondary)]"
+                                        className="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-[var(--nebula-surface-hover)] text-[var(--nebula-text-secondary)] hover:text-[var(--nebula-text)] transition-colors"
                                         onClick={() => setShowUserMenu(false)}
                                     >
                                         <SettingsIcon />
-                                        Cài đặt
+                                        Cài đặt tài khoản
                                     </Link>
                                     <button
                                         onClick={() => { logout(); setShowUserMenu(false); }}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[var(--nebula-elevated)] text-[var(--nebula-error)]"
+                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-[var(--nebula-error-bg)]/10 text-[var(--nebula-error)] hover:text-[var(--nebula-error-hover)] transition-colors"
                                     >
                                         <LogoutIcon />
                                         Đăng xuất
@@ -146,13 +169,19 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
 
             {/* Mobile Navigation Overlay */}
             {showMobileNav && (
-                <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setShowMobileNav(false)}>
-                    <nav className="absolute top-16 left-0 right-0 bg-[var(--nebula-surface)] border-b border-[var(--nebula-border)] p-2 animate-nebula-slide-in">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-fade-in" onClick={() => setShowMobileNav(false)}>
+                    <nav
+                        className="absolute top-16 left-0 right-0 glass-card-elevated border-b border-[var(--nebula-border)] p-2 animate-nebula-slide-in shadow-2xl"
+                        onClick={e => e.stopPropagation()}
+                    >
                         {navItems.map(item => (
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm ${location.pathname === item.path ? 'bg-[var(--nebula-glow-violet)] text-[var(--nebula-violet)]' : 'text-[var(--nebula-text-secondary)]'}`}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-all ${location.pathname === item.path
+                                    ? 'bg-[var(--nebula-primary-light)] text-[var(--nebula-primary)] shadow-[var(--nebula-glow-sm)]'
+                                    : 'text-[var(--nebula-text-secondary)] hover:bg-[var(--nebula-surface-hover)] hover:text-[var(--nebula-text)]'
+                                    }`}
                                 onClick={() => setShowMobileNav(false)}
                             >
                                 <item.icon />
@@ -162,11 +191,14 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
                         {isAdmin && (
                             <Link
                                 to="/admin"
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm ${location.pathname === '/admin' ? 'bg-[var(--nebula-glow-violet)] text-[var(--nebula-violet)]' : 'text-[var(--nebula-text-secondary)]'}`}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-all ${location.pathname === '/admin'
+                                    ? 'bg-[var(--nebula-violet)]/10 text-[var(--nebula-violet)]'
+                                    : 'text-[var(--nebula-text-secondary)] hover:bg-[var(--nebula-surface-hover)] hover:text-[var(--nebula-violet)]'
+                                    }`}
                                 onClick={() => setShowMobileNav(false)}
                             >
                                 <AdminIcon />
-                                <span>Admin</span>
+                                <span>Quản trị</span>
                             </Link>
                         )}
                     </nav>
@@ -174,7 +206,7 @@ export function AppShell({ children, showSearch = false, onSearch }: AppShellPro
             )}
 
             {/* Main Content */}
-            <main className="app-content">
+            <main className="app-content flex-1 relative overflow-hidden flex flex-col">
                 {children}
             </main>
         </div>

@@ -6,6 +6,7 @@ import { parseSearchQuery } from "../utils/searchParser";
 import { Loading } from "../components/Loading";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
 import { EmailStream } from "../components/EmailStream";
+import { QuickGenerateCard } from "../components/QuickGenerateCard";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 // Lazy load modals
@@ -249,13 +250,39 @@ export function FocusDashboard() {
                 </div>
             </div>
 
-            {/* Email Stream */}
+            {/* Email Stream or Welcome State */}
             <div className="focus-stream-content">
-                <EmailStream
-                    messages={messages}
-                    selectedMessageId={selectedMessage?.id || null}
-                    onSelectMessage={handleSelectMessage}
-                />
+                {!selectedInbox ? (
+                    <div className="flex flex-col items-center justify-center h-full text-muted max-w-md mx-auto p-8 text-center">
+                        <div className="p-4 bg-surface rounded-full mb-6 ring-8 ring-primary/5">
+                            <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-text-main mb-2">Chào mừng bạn trở lại!</h3>
+                        <p className="text-sm mb-8">
+                            Chọn hộp thư từ sidebar bên trái để xem email hoặc tạo một địa chỉ mới ngay lập tức bên dưới.
+                        </p>
+
+                        <div className="w-full">
+                            <QuickGenerateCard
+                                domains={domains}
+                                token={token}
+                                onInboxCreated={(id, email) => {
+                                    loadInboxes(selectedDomain);
+                                    setSelectedInbox(id);
+                                    toast.success(`Đã tạo: ${email}`);
+                                }}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <EmailStream
+                        messages={messages}
+                        selectedMessageId={selectedMessage?.id || null}
+                        onSelectMessage={handleSelectMessage}
+                    />
+                )}
             </div>
 
             {/* Detail Overlay */}

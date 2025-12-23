@@ -36,6 +36,7 @@ beforeEach(async () => {
         prisma.inbox.deleteMany(),
         prisma.domain.deleteMany(),
         prisma.rule.deleteMany(),
+        prisma.telegramLinkToken.deleteMany(),
         prisma.user.deleteMany(),
     ]);
 });

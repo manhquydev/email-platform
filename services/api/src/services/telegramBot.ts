@@ -384,8 +384,7 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
             );
         } else {
             await sendTelegramMessage(chatId,
-                '❌ Tài khoản chưa được liên kết. Sử dụng /link <mã_code>',
-                { parseMode: 'Markdown' }
+                '❌ Tài khoản chưa được liên kết. Sử dụng /link [mã code]'
             );
         }
     }
@@ -414,15 +413,15 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
     else if (update.message?.text === '/help') {
         const chatId = update.message.chat.id.toString();
         await sendTelegramMessage(chatId,
-            '📚 *Danh sách lệnh*\n\n' +
+            '📚 <b>Danh sách lệnh</b>\n\n' +
             '/start - Bắt đầu\n' +
-            '/link <code> - Liên kết tài khoản\n' +
+            '/link [code] - Liên kết tài khoản\n' +
             '/unlink - Hủy liên kết\n' +
             '/settings - Xem cài đặt\n' +
-            '/notify\\_on - Bật thông báo\n' +
-            '/notify\\_off - Tắt thông báo\n' +
+            '/notify_on - Bật thông báo\n' +
+            '/notify_off - Tắt thông báo\n' +
             '/help - Xem trợ giúp',
-            { parseMode: 'Markdown' }
+            { parseMode: 'HTML' }
         );
     }
 

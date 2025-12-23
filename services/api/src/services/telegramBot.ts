@@ -332,15 +332,23 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 );
             }
         } else {
-            // Welcome message (use HTML to avoid Markdown escape issues)
+            // Welcome message with Ephemera branding and inline keyboard
+            const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
             await sendTelegramMessage(chatId,
-                '👋 <b>Chào mừng đến với TempMail Pro Bot!</b>\n\n' +
-                'Để liên kết tài khoản, hãy:\n' +
-                '1. Vào Settings trên web\n' +
-                '2. Click "Liên kết Telegram"\n' +
-                '3. Nhập mã code được cung cấp\n\n' +
-                'Hoặc nhấn /link [mã code]',
-                { parseMode: 'HTML' }
+                '👋 <b>Chào mừng đến với Ephemera Bot!</b>\n\n' +
+                '📬 Bot này giúp bạn nhận thông báo email tức thì, bao gồm mã OTP và tin nhắn quan trọng.\n\n' +
+                '<b>Để bắt đầu:</b>\n' +
+                '1️⃣ Vào <b>Cài đặt → Thông báo</b> trên web\n' +
+                '2️⃣ Nhấn "Liên kết Telegram"\n' +
+                '3️⃣ Copy mã và gửi: /link [mã]\n\n' +
+                '💡 <i>Hoặc nhấn nút bên dưới để mở trang cài đặt</i>',
+                'HTML',
+                {
+                    inline_keyboard: [
+                        [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }],
+                        [{ text: '❓ Trợ giúp', callback_data: 'show_help' }]
+                    ]
+                }
             );
         }
     }
@@ -402,18 +410,40 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
 
         if (user) {
             const status = await getTelegramStatus(user.id);
+            const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
             await sendTelegramMessage(chatId,
-                '⚙️ *Cài đặt*\n\n' +
-                `📧 Thông báo email: ${status.notifyOnEmail ? '✅ Bật' : '❌ Tắt'}\n\n` +
-                'Sử dụng:\n' +
-                '/notify\\_on - Bật thông báo\n' +
-                '/notify\\_off - Tắt thông báo\n' +
-                '/unlink - Hủy liên kết',
-                { parseMode: 'Markdown' }
+                '⚙️ <b>Cài đặt Ephemera Bot</b>\n\n' +
+                `📧 <b>Thông báo email:</b> ${status.notifyOnEmail ? '✅ Đang bật' : '❌ Đang tắt'}\n` +
+                `📅 <b>Liên kết từ:</b> ${status.linkedAt ? new Date(status.linkedAt).toLocaleDateString('vi-VN') : 'N/A'}\n\n` +
+                '💡 <i>Nhấn nút bên dưới để thay đổi cài đặt</i>',
+                'HTML',
+                {
+                    inline_keyboard: [
+                        [
+                            { text: status.notifyOnEmail ? '🔔 Tắt thông báo' : '🔔 Bật thông báo', callback_data: status.notifyOnEmail ? 'toggle_notify_off' : 'toggle_notify_on' }
+                        ],
+                        [
+                            { text: '🔓 Hủy liên kết', callback_data: 'confirm_unlink' },
+                            { text: '🌐 Mở Web', url: `${webUrl}/app` }
+                        ]
+                    ]
+                }
             );
         } else {
+            const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
             await sendTelegramMessage(chatId,
-                '❌ Tài khoản chưa được liên kết. Sử dụng /link [mã code]'
+                '❌ <b>Chưa liên kết</b>\n\n' +
+                'Tài khoản Telegram này chưa được liên kết với Ephemera.\n\n' +
+                '💡 Để liên kết, hãy:\n' +
+                '1. Vào <b>Cài đặt → Thông báo</b> trên web\n' +
+                '2. Nhấn "Liên kết Telegram" và lấy mã\n' +
+                '3. Gửi: /link [mã]',
+                'HTML',
+                {
+                    inline_keyboard: [
+                        [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }]
+                    ]
+                }
             );
         }
     }
@@ -441,32 +471,113 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
     // Handle /help command
     else if (update.message?.text === '/help') {
         const chatId = update.message.chat.id.toString();
+        const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
         await sendTelegramMessage(chatId,
-            '📚 <b>Danh sách lệnh</b>\n\n' +
-            '/start - Bắt đầu\n' +
-            '/link [code] - Liên kết tài khoản\n' +
-            '/unlink - Hủy liên kết\n' +
-            '/settings - Xem cài đặt\n' +
-            '/notify_on - Bật thông báo\n' +
-            '/notify_off - Tắt thông báo\n' +
-            '/help - Xem trợ giúp',
-            { parseMode: 'HTML' }
+            '📚 <b>Trợ giúp Ephemera Bot</b>\n\n' +
+            '<b>🔗 Liên kết:</b>\n' +
+            '/start - Bắt đầu sử dụng bot\n' +
+            '/link [mã] - Liên kết với tài khoản\n' +
+            '/unlink - Hủy liên kết\n\n' +
+            '<b>⚙️ Cài đặt:</b>\n' +
+            '/settings - Xem và quản lý cài đặt\n' +
+            '/notify_on - Bật thông báo email\n' +
+            '/notify_off - Tắt thông báo email\n\n' +
+            '<b>💡 Mẹo:</b> Bạn có thể nhấn nút trong tin nhắn để thao tác nhanh hơn!',
+            'HTML',
+            {
+                inline_keyboard: [
+                    [{ text: '🌐 Mở Ephemera Web', url: `${webUrl}/app` }]
+                ]
+            }
         );
     }
 
     // Handle Callback Queries (Button clicks)
     else if (update.callback_query) {
-        const callbackData = update.callback_query.data;
+        const callbackQuery = update.callback_query;
+        const callbackData = callbackQuery.data;
+        const chatId = callbackQuery.message?.chat.id.toString();
 
+        if (!chatId) {
+            await respondToCallbackQuery(callbackQuery.id);
+            return;
+        }
+
+        // Copy OTP
         if (callbackData?.startsWith('copy_otp:')) {
             const otp = callbackData.split(':')[1];
-            await respondToCallbackQuery(update.callback_query.id, {
-                text: `Mã OTP đã được sao chép: ${otp}`,
+            await respondToCallbackQuery(callbackQuery.id, {
+                text: `Mã OTP: ${otp}`,
                 showAlert: true
             });
-        } else {
-            // Acknowledge other callbacks
-            await respondToCallbackQuery(update.callback_query.id);
+        }
+        // Show help
+        else if (callbackData === 'show_help') {
+            await respondToCallbackQuery(callbackQuery.id);
+            const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
+            await sendTelegramMessage(chatId,
+                '📚 <b>Trợ giúp Ephemera Bot</b>\n\n' +
+                '<b>🔗 Liên kết:</b>\n' +
+                '/start - Bắt đầu\n/link [mã] - Liên kết\n/unlink - Hủy liên kết\n\n' +
+                '<b>⚙️ Cài đặt:</b>\n' +
+                '/settings - Quản lý cài đặt\n/notify_on - Bật thông báo\n/notify_off - Tắt thông báo',
+                'HTML',
+                { inline_keyboard: [[{ text: '🌐 Mở Web', url: `${webUrl}/app` }]] }
+            );
+        }
+        // Toggle notification on
+        else if (callbackData === 'toggle_notify_on') {
+            const user = await prisma.user.findFirst({ where: { telegramChatId: chatId } });
+            if (user) {
+                await updateTelegramNotifyPreference(user.id, true);
+                await respondToCallbackQuery(callbackQuery.id, { text: '✅ Đã bật thông báo!' });
+                await sendTelegramMessage(chatId, '✅ Đã bật thông báo email.\n\nSử dụng /settings để xem cài đặt.', 'HTML');
+            }
+        }
+        // Toggle notification off
+        else if (callbackData === 'toggle_notify_off') {
+            const user = await prisma.user.findFirst({ where: { telegramChatId: chatId } });
+            if (user) {
+                await updateTelegramNotifyPreference(user.id, false);
+                await respondToCallbackQuery(callbackQuery.id, { text: '✅ Đã tắt thông báo!' });
+                await sendTelegramMessage(chatId, '✅ Đã tắt thông báo email.\n\nSử dụng /settings để xem cài đặt.', 'HTML');
+            }
+        }
+        // Confirm unlink
+        else if (callbackData === 'confirm_unlink') {
+            await respondToCallbackQuery(callbackQuery.id);
+            await sendTelegramMessage(chatId,
+                '⚠️ <b>Xác nhận hủy liên kết?</b>\n\n' +
+                'Bạn sẽ không nhận được thông báo email nữa.\n\n' +
+                'Nhấn nút bên dưới để xác nhận:',
+                'HTML',
+                {
+                    inline_keyboard: [
+                        [{ text: '✅ Xác nhận hủy', callback_data: 'do_unlink' }],
+                        [{ text: '❌ Hủy bỏ', callback_data: 'cancel_unlink' }]
+                    ]
+                }
+            );
+        }
+        // Do unlink
+        else if (callbackData === 'do_unlink') {
+            const user = await prisma.user.findFirst({ where: { telegramChatId: chatId } });
+            if (user) {
+                await unlinkTelegramAccount(user.id, false);
+                await respondToCallbackQuery(callbackQuery.id, { text: '✅ Đã hủy liên kết!' });
+                await sendTelegramMessage(chatId,
+                    '✅ <b>Đã hủy liên kết</b>\n\nBạn có thể liên kết lại bất cứ lúc nào bằng lệnh /start',
+                    'HTML'
+                );
+            }
+        }
+        // Cancel unlink
+        else if (callbackData === 'cancel_unlink') {
+            await respondToCallbackQuery(callbackQuery.id, { text: 'Đã hủy thao tác' });
+        }
+        // Default
+        else {
+            await respondToCallbackQuery(callbackQuery.id);
         }
     }
 }

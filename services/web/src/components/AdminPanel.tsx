@@ -11,8 +11,9 @@ import { AdminEmails } from "./admin/AdminEmails";
 import { AdminSubscriptions } from "./admin/AdminSubscriptions";
 import { AdminSystem } from "./admin/AdminSystem";
 import { AdminDomains } from "./admin/AdminDomains";
+import { AdminInboxes } from "./admin/AdminInboxes";
 
-type TabType = "dashboard" | "users" | "subscriptions" | "emails" | "rules" | "domains" | "reports" | "logs" | "system" | "settings";
+type TabType = "dashboard" | "users" | "subscriptions" | "inboxes" | "emails" | "rules" | "domains" | "reports" | "logs" | "system" | "settings";
 
 interface Tab {
     id: TabType;
@@ -92,6 +93,11 @@ const icons = {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3V7.5a3 3 0 013-3h13.5a3 3 0 013 3v3.75a3 3 0 01-3 3m-13.5 0h13.5m-13.5 0a3 3 0 00-3 3v3.75a3 3 0 003 3h13.5a3 3 0 003-3v-3.75a3 3 0 00-3-3m-13.5 0h13.5" />
         </svg>
     ),
+    inbox: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        </svg>
+    ),
 };
 
 // Badge Component
@@ -153,6 +159,7 @@ export function AdminPanel({ token }: { token: string }) {
         { id: "dashboard", label: "Tổng quan", icon: icons.dashboard },
         { id: "users", label: "Người dùng", icon: icons.users, badge: counts.totalUsers },
         { id: "subscriptions", label: "Gói cước", icon: icons.creditCard },
+        { id: "inboxes", label: "Hộp thư", icon: icons.inbox },
         { id: "emails", label: "Email", icon: icons.email },
         { id: "rules", label: "Quy tắc bảo vệ", icon: icons.shield },
         { id: "domains", label: "Tên miền", icon: icons.globe, badge: counts.totalDomains },
@@ -302,6 +309,7 @@ export function AdminPanel({ token }: { token: string }) {
                 {activeTab === "dashboard" && <AdminDashboard token={token} />}
                 {activeTab === "users" && <AdminUsers token={token} />}
                 {activeTab === "subscriptions" && <AdminSubscriptions token={token} />}
+                {activeTab === "inboxes" && <AdminInboxes token={token} />}
                 {activeTab === "emails" && <AdminEmails token={token} />}
                 {activeTab === "rules" && <RulesList token={token} />}
                 {activeTab === "domains" && <AdminDomains token={token} />}

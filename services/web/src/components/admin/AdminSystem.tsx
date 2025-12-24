@@ -189,7 +189,7 @@ export function AdminSystem({ token }: { token: string }) {
                                     <PremiumInput
                                         type="number"
                                         value={retentionDays}
-                                        onChange={(val) => { }} // Controlled manually via button
+                                        onChange={(_val) => { }} // Controlled manually via button
                                         placeholder="30"
                                         id="retention-input"
                                     />

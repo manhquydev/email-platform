@@ -11,6 +11,7 @@ export async function inboxRoutes(app: FastifyInstance) {
         search: z.string().optional(),
         limit: z.coerce.number().min(1).max(200).optional(),
         offset: z.coerce.number().min(0).optional(),
+        personal: z.enum(["true", "false"]).optional(),
       })
       .safeParse(request.query);
     if (!query.success) {
@@ -19,12 +20,14 @@ export async function inboxRoutes(app: FastifyInstance) {
 
     const user = request.user as { userId: string; role: string };
     const isAdmin = user.role === "ADMIN";
+    const isPersonal = query.data.personal === "true";
 
     const domainFilter = query.data.domain;
     const where = {
       deletedAt: null,
-      // Filter by owner - users only see their own inboxes, admins see all
-      ...(isAdmin ? {} : { ownerId: user.userId }),
+      // Filter by owner - users only see their own inboxes
+      // Admins see all UNLESS they explicitly ask for their personal ones
+      ...((isAdmin && !isPersonal) ? {} : { ownerId: user.userId }),
       ...(domainFilter ? { domain: { name: domainFilter } } : {}),
       ...(query.data.search
         ? { localPart: { contains: query.data.search, mode: "insensitive" as const } }

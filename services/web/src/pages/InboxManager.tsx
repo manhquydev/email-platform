@@ -66,7 +66,11 @@ export function InboxManager() {
         try {
             const domain = domains.find(d => d.id === selectedDomain);
             if (!domain) return;
-            const params = new URLSearchParams({ domain: domain.name, limit: "100" });
+            const params = new URLSearchParams({
+                domain: domain.name,
+                limit: "100",
+                personal: "true" // Always fetch my own inboxes in App view
+            });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res.data);
         } catch (e) {

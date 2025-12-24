@@ -50,7 +50,7 @@ export function PremiumTable({ children, className = "" }: {
 }) {
     return (
         <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
-            <table className={`w - full border - collapse ${className} `}>
+            <table className={`w-full border-collapse ${className}`}>
                 {children}
             </table>
         </div>
@@ -67,7 +67,7 @@ export function TableHeader({ children }: { children: React.ReactNode }) {
 
 export function TableHeaderCell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
     return (
-        <th className={`text - left text - xs font - semibold text - gray - 600 dark: text - gray - 300 uppercase tracking - wider px - 4 py - 3 ${className} `}>
+        <th className={`text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider px-4 py-3 ${className}`}>
             {children}
         </th>
     );
@@ -84,7 +84,7 @@ export function TableRow({ children, className = "", onClick }: {
 }) {
     return (
         <tr
-            className={`bg - white dark: bg - [#18181B] hover: bg - gray - 50 dark: hover: bg - white / 5 transition - colors ${onClick ? "cursor-pointer" : ""} ${className} `}
+            className={`bg-white dark:bg-[#18181B] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${onClick ? "cursor-pointer" : ""} ${className}`}
             onClick={onClick}
         >
             {children}
@@ -94,7 +94,7 @@ export function TableRow({ children, className = "", onClick }: {
 
 export function TableCell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
     return (
-        <td className={`px - 4 py - 3 text - sm text - gray - 700 dark: text - gray - 300 ${className} `}>
+        <td className={`px-4 py-3 text-sm text-gray-700 dark:text-gray-300 ${className}`}>
             {children}
         </td>
     );
@@ -114,7 +114,7 @@ export function StatusBadge({ status, variant = "default" }: {
     };
 
     return (
-        <span className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium ${variants[variant]} `}>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]}`}>
             {status}
         </span>
     );
@@ -147,9 +147,9 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
             onClick={onClick}
             disabled={disabled}
             className={`
-    inline - flex items - center justify - center gap - 2 font - medium rounded - xl
-    transition - all duration - 200
-    disabled: opacity - 50 disabled: cursor - not - allowed
+    inline-flex items-center justify-center gap-2 font-medium rounded-xl
+    transition-all duration-200
+    disabled:opacity-50 disabled:cursor-not-allowed
                 ${variants[variant]}
                 ${sizes[size]}
                 ${className}
@@ -182,12 +182,12 @@ export function PremiumInput({ value, onChange, placeholder, type = "text", clas
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 className={`
-    w - full rounded - xl border border - gray - 200 dark: border - white / 10
-    bg - white dark: bg - white / 5
-    text - gray - 900 dark: text - white
-    placeholder: text - gray - 400 dark: placeholder: text - gray - 500
-    focus: border - primary focus: ring - 2 focus: ring - primary / 20
-    transition - all duration - 200
+    w-full rounded-xl border border-gray-200 dark:border-white/10
+    bg-white dark:bg-white/5
+    text-gray-900 dark:text-white
+    placeholder:text-gray-400 dark:placeholder:text-gray-500
+    focus:border-primary focus:ring-2 focus:ring-primary/20
+    transition-all duration-200
                     ${icon ? "pl-10 pr-4 py-2.5" : "px-4 py-2.5"}
     `}
             />
@@ -207,12 +207,12 @@ export function PremiumSelect({ value, onChange, options, className = "" }: {
             value={value}
             onChange={(e) => onChange(e.target.value)}
             className={`
-    rounded - xl border border - gray - 200 dark: border - white / 10
-    bg - white dark: bg - [#18181B]
-    text - gray - 900 dark: text - white
-    px - 4 py - 2.5
-    focus: border - primary focus: ring - 2 focus: ring - primary / 20
-    transition - all duration - 200
+    rounded-xl border border-gray-200 dark:border-white/10
+    bg-white dark:bg-[#18181B]
+    text-gray-900 dark:text-white
+    px-4 py-2.5
+    focus:border-primary focus:ring-2 focus:ring-primary/20
+    transition-all duration-200
                 ${className}
     `}
         >
@@ -248,7 +248,7 @@ export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 
     return (
         <div className="flex items-center justify-center py-12">
-            <div className={`${sizes[size]} border - primary / 30 rounded - full animate - spin border - t - primary`} />
+            <div className={`${sizes[size]} border-primary/30 rounded-full animate-spin border-t-primary`} />
         </div>
     );
 }

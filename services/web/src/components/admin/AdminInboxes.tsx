@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { api } from "../../utils/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
@@ -28,6 +29,7 @@ export function AdminInboxes({ token }: { token: string }) {
     const [page, setPage] = useState(0);
     const [total, setTotal] = useState(0);
     const [updating, setUpdating] = useState<string | null>(null);
+    const { user } = useAuth();
 
     const loadInboxes = useCallback(async () => {
         setLoading(true);
@@ -67,7 +69,8 @@ export function AdminInboxes({ token }: { token: string }) {
     const handleTransfer = async (inbox: Inbox) => {
         if (!confirm(`Chuyển quyền sở hữu hộp thư ${inbox.localPart}@${inbox.domain.name}?`)) return;
 
-        const email = prompt("Nhập email chủ sở hữu mới (để trống để lấy về Admin):", "admin@example.com");
+        const defaultEmail = user?.email || "admin@example.com";
+        const email = prompt("Nhập email chủ sở hữu mới (để trống để lấy về Admin):", defaultEmail);
         if (email === null) return; // Cancelled
 
         setUpdating(inbox.id);

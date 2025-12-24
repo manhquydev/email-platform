@@ -1,4 +1,4 @@
-# TempMail Pro - robots.txt
+# Ephemera - robots.txt
 # https://manhquy.click/
 
 User-agent: *

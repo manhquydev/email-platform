@@ -1,5 +1,6 @@
-
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { ThemeProvider } from "../context/ThemeContext";
 import { Login } from "./Login";
 import { vi } from "vitest";
 
@@ -30,7 +31,13 @@ vi.mock("../components/Navigation", () => ({
 
 describe("Login Page", () => {
     it("renders login form correctly", () => {
-        render(<Login />);
+        render(
+            <MemoryRouter>
+                <ThemeProvider>
+                    <Login />
+                </ThemeProvider>
+            </MemoryRouter>
+        );
 
         // Check for main title
         expect(screen.getByText("Chào mừng trở lại")).toBeInTheDocument();

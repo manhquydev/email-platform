@@ -27,7 +27,7 @@ export function IconRail({
     const isAdmin = user?.role === "ADMIN";
 
     return (
-        <nav className={`icon-rail ${isExpanded ? 'expanded' : ''}`}>
+        <nav className={`icon-rail ${isExpanded ? 'expanded' : ''} hidden md:flex`}>
             {/* Header: Logo + Expand Toggle */}
             <div className="icon-rail-header">
                 <Link to="/" className="icon-rail-logo" title="Ephemera">

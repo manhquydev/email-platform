@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { IconRail } from "../components/IconRail";
+import { MobileNavigation, usePullToRefresh, PullToRefreshIndicator } from "../components/MobileNavigation";
 
 interface SecondaryLayoutProps {
     children: React.ReactNode;
@@ -13,6 +15,7 @@ interface SecondaryLayoutProps {
  */
 export function SecondaryLayout({ children, title }: SecondaryLayoutProps) {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isNavExpanded, setIsNavExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -55,8 +58,27 @@ export function SecondaryLayout({ children, title }: SecondaryLayoutProps) {
         return () => document.removeEventListener('click', handleClickOutside);
     }, [showUserMenu]);
 
+    // Pull to Refresh logic
+    const { pullDistance, isRefreshing, threshold } = usePullToRefresh(async () => {
+        window.location.reload();
+    });
+
+    const handleMobileTabChange = (tab: string) => {
+        if (tab === 'inbox') navigate('/app');
+        if (tab === 'domains') navigate('/my-domains');
+        if (tab === 'settings') navigate('/settings');
+    };
+
+    const activeTab = location.pathname.includes('/my-domains') ? 'domains' :
+        location.pathname.includes('/settings') ? 'settings' : 'inbox';
+
     return (
         <div className={`focus-stream-layout ${isNavExpanded ? 'nav-expanded' : ''}`}>
+            <PullToRefreshIndicator
+                pullDistance={pullDistance}
+                threshold={threshold}
+                isRefreshing={isRefreshing}
+            />
             <IconRail
                 onSearchClick={() => { }}
                 onQuickActionsClick={() => { }}
@@ -96,16 +118,32 @@ export function SecondaryLayout({ children, title }: SecondaryLayoutProps) {
                 </div>
             )}
 
-            <main className="focus-stream-main">
-                <div className="focus-stream-content" style={{ maxWidth: '1200px' }}>
-                    {title && (
-                        <div className="focus-stream-header" style={{ border: 'none', padding: '0 0 24px 0', marginBottom: '24px' }}>
-                            <h1 style={{ fontSize: '24px', fontWeight: 700 }}>{title}</h1>
-                        </div>
-                    )}
-                    {children}
-                </div>
-            </main>
+            <AnimatePresence mode="wait">
+                <motion.main
+                    key={location.pathname}
+                    className="focus-stream-main"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                    <div className="focus-stream-content" style={{ maxWidth: '1200px' }}>
+                        {title && (
+                            <div className="focus-stream-header" style={{ border: 'none', padding: '0 0 24px 0', marginBottom: '24px' }}>
+                                <h1 style={{ fontSize: '24px', fontWeight: 700 }}>{title}</h1>
+                            </div>
+                        )}
+                        {children}
+                    </div>
+                </motion.main>
+            </AnimatePresence>
+
+            <MobileNavigation
+                activeTab={activeTab}
+                onTabChange={handleMobileTabChange}
+                unreadCount={0}
+                onCompose={() => navigate('/app')}
+            />
         </div>
     );
 }

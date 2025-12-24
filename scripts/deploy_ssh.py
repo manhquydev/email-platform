@@ -1,0 +1,87 @@
+import subprocess
+import sys
+
+# Install paramiko if not available
+try:
+    import paramiko
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "paramiko", "-q"])
+    import paramiko
+
+# SSH connection details
+HOST = "165.22.48.193"
+USERNAME = "root"
+PASSWORD = "Manhquy203@"
+
+def run_ssh_commands():
+    print(f"🔗 Connecting to {HOST}...")
+    
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    
+    try:
+        client.connect(HOST, username=USERNAME, password=PASSWORD, timeout=30)
+        print("✅ Connected successfully!")
+        
+        # Commands to run
+        commands = [
+            # Get Telegram config
+            "cd /root/email-platform. && cat services/api/.env | grep TELEGRAM || echo 'No TELEGRAM config found'",
+            # Pull latest code
+            "cd /root/email-platform. && git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main 2>&1 | tail -5",
+        ]
+        
+        bot_token = None
+        webhook_secret = None
+        
+        for cmd in commands:
+            print(f"\n📍 Running: {cmd[:50]}...")
+            stdin, stdout, stderr = client.exec_command(cmd, timeout=60)
+            output = stdout.read().decode()
+            error = stderr.read().decode()
+            
+            if output:
+                print(output)
+                # Extract token if found
+                for line in output.split('\n'):
+                    if 'TELEGRAM_BOT_TOKEN=' in line:
+                        bot_token = line.split('=', 1)[1].strip().strip('"').strip("'")
+                    if 'TELEGRAM_WEBHOOK_SECRET=' in line:
+                        webhook_secret = line.split('=', 1)[1].strip().strip('"').strip("'")
+            if error:
+                print(f"stderr: {error}")
+        
+        # Setup webhook if token found
+        if bot_token:
+            print(f"\n📱 Found Bot Token: {bot_token[:20]}...")
+            
+            webhook_url = "https://api.manhquy.click/telegram/webhook"
+            
+            # Build curl command for setWebhook
+            if webhook_secret:
+                curl_cmd = f'''curl -s -X POST "https://api.telegram.org/bot{bot_token}/setWebhook" -H "Content-Type: application/json" -d '{{"url": "{webhook_url}", "allowed_updates": ["message", "callback_query"], "secret_token": "{webhook_secret}"}}'
+                '''
+            else:
+                curl_cmd = f'''curl -s -X POST "https://api.telegram.org/bot{bot_token}/setWebhook" -H "Content-Type: application/json" -d '{{"url": "{webhook_url}", "allowed_updates": ["message", "callback_query"]}}'
+                '''
+            
+            print(f"\n🔧 Setting webhook to: {webhook_url}")
+            stdin, stdout, stderr = client.exec_command(curl_cmd, timeout=30)
+            print(stdout.read().decode())
+            
+            # Verify webhook
+            print("\n📋 Verifying webhook...")
+            stdin, stdout, stderr = client.exec_command(f'curl -s "https://api.telegram.org/bot{bot_token}/getWebhookInfo"', timeout=30)
+            print(stdout.read().decode())
+        else:
+            print("\n❌ TELEGRAM_BOT_TOKEN not found in .env")
+        
+        client.close()
+        print("\n✅ Done!")
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        client.close()
+
+if __name__ == "__main__":
+    run_ssh_commands()

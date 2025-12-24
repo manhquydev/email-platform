@@ -5044,3 +5044,130 @@ a:focus-visible {
     display: block;
   }
 }
+
+/* ====================================
+   MOBILE OPTIMIZATION (Nebula Glass)
+   ==================================== */
+
+.mobile-nav-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 64px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.mobile-nav-item.active {
+  color: var(--color-primary);
+}
+
+.mobile-nav-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background: var(--color-danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 999px;
+  border: 2px solid var(--color-surface);
+  line-height: 1;
+}
+
+.mobile-nav-compose {
+  width: 48px;
+  height: 48px;
+  background: var(--gradient-primary);
+  color: white;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  transform: translateY(-12px);
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.mobile-nav-compose:active {
+  transform: translateY(-12px) scale(0.92);
+}
+
+.mobile-nav-label {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+/* Safe areas for mobile */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Layout adjustments for mobile nav */
+@media (max-width: 768px) {
+
+  .focus-stream-main,
+  .modern-dashboard,
+  .app-content {
+    padding-bottom: 72px;
+    /* Space for bottom nav */
+  }
+}
+
+/* Skeleton Loaders */
+.skeleton-base {
+  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.05) 25%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.inbox-card-skeleton {
+  padding: 1rem;
+  background: var(--neo-glass-bg);
+  backdrop-filter: blur(var(--neo-glass-blur));
+  border: 1px solid var(--neo-glass-border);
+  border-radius: var(--radius-xl);
+  margin-bottom: 1rem;
+}
+
+.message-item-skeleton {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

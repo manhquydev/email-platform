@@ -6,7 +6,8 @@ import { InboxCard } from "../components/InboxCard";
 import { TabNavigation, InboxTabIcon, MessagesTabIcon } from "../components/TabNavigation";
 import { EmailStream } from "../components/EmailStream";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
-import { Loading } from "../components/Loading";
+import { usePullToRefresh, PullToRefreshIndicator } from "../components/MobileNavigation";
+import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 import { lazy, Suspense } from "react";
 
@@ -283,20 +284,16 @@ export function InboxManager() {
 
     const unreadCount = messages.filter(m => !m.isRead).length;
 
-    if (busy && inboxes.length === 0) {
-        return (
-            <FocusStreamLayout
-                domains={domains}
-                inboxes={inboxes}
-                onSelectInbox={handleSelectInbox}
-                onCreateInbox={() => setShowCreateModal(true)}
-                onSearch={handleSearch}
-                unreadCount={unreadCount}
-            >
-                <Loading />
-            </FocusStreamLayout>
-        );
-    }
+    // Pull to Refresh logic
+    const { pullDistance, isRefreshing, threshold } = usePullToRefresh(async () => {
+        if (activeTab === 'inboxes') {
+            await loadInboxes();
+        } else if (activeInbox) {
+            await loadMessages(activeInbox.id);
+        }
+    });
+
+
 
     return (
         <FocusStreamLayout
@@ -307,6 +304,11 @@ export function InboxManager() {
             onSearch={handleSearch}
             unreadCount={unreadCount}
         >
+            <PullToRefreshIndicator
+                pullDistance={pullDistance}
+                threshold={threshold}
+                isRefreshing={isRefreshing}
+            />
             {/* Tab Navigation */}
             <div className="inbox-manager-header">
                 <TabNavigation
@@ -387,7 +389,9 @@ export function InboxManager() {
 
                         {/* Inbox List */}
                         <div className="inbox-manager-list">
-                            {filteredInboxes.length === 0 ? (
+                            {busy && inboxes.length === 0 ? (
+                                Array(5).fill(0).map((_, i) => <InboxCardSkeleton key={i} />)
+                            ) : filteredInboxes.length === 0 ? (
                                 <div className="inbox-manager-empty">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
@@ -434,11 +438,17 @@ export function InboxManager() {
                                     <h2>{activeInbox.localPart}@{activeInbox.domain?.name}</h2>
                                     <span className="inbox-manager-messages-count">{messages.length} emails</span>
                                 </div>
-                                <EmailStream
-                                    messages={messages}
-                                    selectedMessageId={selectedMessage?.id || null}
-                                    onSelectMessage={handleSelectMessage}
-                                />
+                                {busy && messages.length === 0 ? (
+                                    <div className="space-y-0">
+                                        {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                                    </div>
+                                ) : (
+                                    <EmailStream
+                                        messages={messages}
+                                        selectedMessageId={selectedMessage?.id || null}
+                                        onSelectMessage={handleSelectMessage}
+                                    />
+                                )}
                             </>
                         ) : (
                             <div className="inbox-manager-no-inbox">

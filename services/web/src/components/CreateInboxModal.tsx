@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import type { Domain } from '../types';
 import { api } from '../utils/api';
-import { useCopyEmail } from '../hooks/useCopyToClipboard';
 
 interface CreateInboxModalProps {
     domains: Domain[];
@@ -11,86 +11,59 @@ interface CreateInboxModalProps {
     onInboxCreated?: (inboxId: string, email: string) => void;
 }
 
-// Generate random string for email
 const generateRandomName = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+    const adjectives = ['swift', 'silent', 'bright', 'cool', 'blue', 'dark', 'light', 'neon', 'epic', 'pure'];
+    const nouns = ['user', 'ghost', 'fox', 'wolf', 'soul', 'wave', 'storm', 'mist', 'star', 'void'];
+    const rand = Math.floor(Math.random() * 10000);
+    return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}-${rand}`;
 };
 
 export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: CreateInboxModalProps) {
     const [loading, setLoading] = useState(false);
     const [localPart, setLocalPart] = useState(generateRandomName());
-    const [selectedDomainId, setSelectedDomainId] = useState<string>('');
-    const { copy } = useCopyEmail();
+    const [selectedDomainId, setSelectedDomainId] = useState<string>(domains.find(d => d.isPublic)?.id || domains[0]?.id || '');
 
-    // Get verified domains only
     const verifiedDomains = domains.filter(d => d.status === 'VERIFIED');
+    const activeDomain = verifiedDomains.find(d => d.id === selectedDomainId) || verifiedDomains[0];
+    const previewEmail = activeDomain ? `${localPart}@${activeDomain.name}` : '';
 
-    // Auto-select first verified domain if none selected
-    const activeDomainId = selectedDomainId || (verifiedDomains.length > 0 ? verifiedDomains[0].id : '');
-    const activeDomain = domains.find(d => d.id === activeDomainId);
+    const handleRandomize = () => setLocalPart(generateRandomName());
 
-    const handleRandomize = () => {
-        setLocalPart(generateRandomName());
-    };
-
-    const handleCreate = useCallback(async () => {
-        if (!token || !activeDomain) {
-            toast.error('Vui lòng chọn domain');
-            return;
-        }
-
-        if (!localPart.trim()) {
-            toast.error('Vui lòng nhập địa chỉ email');
-            return;
-        }
-
-        // Validate local part
-        const localPartRegex = /^[a-zA-Z0-9._-]+$/;
-        if (!localPartRegex.test(localPart)) {
-            toast.error('Địa chỉ email chỉ được chứa chữ cái, số, dấu chấm, gạch ngang và gạch dưới');
-            return;
-        }
-
+    const handleCreate = async () => {
+        if (!activeDomain || !localPart.trim() || !token) return;
         setLoading(true);
         try {
-            const response = await api<{ id: string }>('/inboxes', {
+            const res = await api<{ id: string }>('/inboxes', {
                 method: 'POST',
                 token,
-                body: {
-                    domainId: activeDomain.id,
-                    localPart: localPart.trim().toLowerCase(),
-                    expiresAt: null, // Permanent by default
-                },
+                body: { domainId: activeDomain.id, localPart: localPart.trim() }
             });
-
-            const email = `${localPart.trim().toLowerCase()}@${activeDomain.name}`;
-
-            // Auto-copy to clipboard
-            await copy(email, `Đã tạo và copy: ${email}`);
-
-            // Callback to parent
-            if (onInboxCreated) {
-                onInboxCreated(response.id, email);
-            }
-        } catch (error) {
-            console.error('Failed to create inbox:', error);
-            toast.error('Không thể tạo email: ' + (error as Error).message);
+            toast.success('Đã tạo hộp thư mới!');
+            onInboxCreated?.(res.id, previewEmail);
+            onClose();
+        } catch (e) {
+            toast.error('Lỗi: ' + (e as Error).message);
         } finally {
             setLoading(false);
         }
-    }, [token, activeDomain, localPart, copy, onInboxCreated]);
-
-    const previewEmail = activeDomain ? `${localPart.toLowerCase()}@${activeDomain.name}` : '';
+    };
 
     return (
-        <>
-            <div className="modal-overlay" onClick={onClose} />
-            <div className="create-inbox-modal">
+        <AnimatePresence>
+            <motion.div
+                className="modal-overlay"
+                onClick={onClose}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            />
+            <motion.div
+                className="create-inbox-modal"
+                initial={{ opacity: 0, y: "100%" }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            >
                 <div className="create-inbox-header">
                     <h2>Tạo địa chỉ email mới</h2>
                     <button onClick={onClose} className="modal-close" title="Đóng">
@@ -149,7 +122,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                                 <label htmlFor="domain">Domain</label>
                                 <select
                                     id="domain"
-                                    value={activeDomainId}
+                                    value={selectedDomainId}
                                     onChange={(e) => setSelectedDomainId(e.target.value)}
                                     className="form-select"
                                 >
@@ -193,7 +166,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                         </button>
                     </div>
                 )}
-            </div>
-        </>
+            </motion.div>
+        </AnimatePresence>
     );
 }

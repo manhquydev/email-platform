@@ -511,8 +511,12 @@ export function InboxManager() {
                         domains={domains}
                         token={token}
                         onClose={() => setShowCreateModal(false)}
-                        onInboxCreated={(_id, email) => {
-                            loadInboxes();
+                        onInboxCreated={(_id, email, domainId) => {
+                            if (domainId && domainId !== selectedDomain) {
+                                setSelectedDomain(domainId);
+                            } else {
+                                loadInboxes();
+                            }
                             setShowCreateModal(false);
                             toast.success(`Đã tạo: ${email}`);
                         }}

@@ -8,7 +8,7 @@ interface CreateInboxModalProps {
     domains: Domain[];
     token: string | null;
     onClose: () => void;
-    onInboxCreated?: (inboxId: string, email: string) => void;
+    onInboxCreated?: (inboxId: string, email: string, domainId: string) => void;
 }
 
 const generateRandomName = () => {
@@ -39,7 +39,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                 body: { domainId: activeDomain.id, localPart: localPart.trim() }
             });
             toast.success('Đã tạo hộp thư mới!');
-            onInboxCreated?.(res.id, previewEmail);
+            onInboxCreated?.(res.id, previewEmail, activeDomain.id);
             onClose();
         } catch (e) {
             toast.error('Lỗi: ' + (e as Error).message);

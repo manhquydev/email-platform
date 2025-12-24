@@ -64,6 +64,36 @@ export function AdminInboxes({ token }: { token: string }) {
         }
     };
 
+    const handleTransfer = async (inbox: Inbox) => {
+        if (!confirm(`Chuyển quyền sở hữu hộp thư ${inbox.localPart}@${inbox.domain.name}?`)) return;
+
+        const email = prompt("Nhập email chủ sở hữu mới (để trống để lấy về Admin):", "admin@example.com");
+        if (email === null) return; // Cancelled
+
+        setUpdating(inbox.id);
+        try {
+            const payload: any = {};
+            if (email) payload.ownerEmail = email;
+            else {
+                toast.error("Vui lòng nhập email");
+                return;
+            }
+
+            await api(`/inboxes/${inbox.id}`, {
+                method: "PATCH",
+                token,
+                body: payload
+            });
+
+            toast.success(`Đã chuyển sang cho ${payload.ownerEmail}`);
+            await loadInboxes();
+        } catch (e) {
+            toast.error(getFriendlyErrorMessage((e as Error).message));
+        } finally {
+            setUpdating(null);
+        }
+    };
+
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
     return (
@@ -131,17 +161,32 @@ export function AdminInboxes({ token }: { token: string }) {
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <PremiumButton
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDelete(inbox.id, `${inbox.localPart}@${inbox.domain.name}`)}
-                                            disabled={updating === inbox.id}
-                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                            </svg>
-                                        </PremiumButton>
+                                        <div className="flex justify-end gap-1">
+                                            <PremiumButton
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleTransfer(inbox)}
+                                                disabled={!!updating}
+                                                className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                                title="Chuyển quyền sở hữu"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                                </svg>
+                                            </PremiumButton>
+                                            <PremiumButton
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDelete(inbox.id, `${inbox.localPart}@${inbox.domain.name}`)}
+                                                disabled={updating === inbox.id}
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                title="Xóa hộp thư"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                </svg>
+                                            </PremiumButton>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

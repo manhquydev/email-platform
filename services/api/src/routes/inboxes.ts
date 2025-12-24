@@ -147,4 +147,76 @@ export async function inboxRoutes(app: FastifyInstance) {
 
     return { success: true };
   });
+
+  // PATCH inbox - Admin update (transfer ownership)
+  app.patch("/inboxes/:id", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({
+      ownerId: z.string().uuid().optional(),
+      ownerEmail: z.string().email().optional(),
+      expiresAt: z.string().datetime().nullable().optional(),
+    }).safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    if (user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Only admin can update inboxes" });
+    }
+
+    const inbox = await prisma.inbox.findUnique({
+      where: { id: params.data.id },
+      include: { domain: true },
+    });
+
+    if (!inbox) {
+      return reply.status(404).send({ error: "Inbox not found" });
+    }
+
+    const dataToUpdate: any = {};
+
+    // Handle expiry update
+    if (body.data.expiresAt !== undefined) {
+      dataToUpdate.expiresAt = body.data.expiresAt ? new Date(body.data.expiresAt) : null;
+    }
+
+    // Handle ownership transfer
+    if (body.data.ownerId || body.data.ownerEmail) {
+      let newOwnerId = body.data.ownerId;
+
+      if (body.data.ownerEmail) {
+        const targetUser = await prisma.user.findUnique({
+          where: { email: body.data.ownerEmail }
+        });
+        if (!targetUser) {
+          return reply.status(404).send({ error: "Target user not found" });
+        }
+        newOwnerId = targetUser.id;
+      }
+
+      if (newOwnerId && newOwnerId !== inbox.ownerId) {
+        dataToUpdate.ownerId = newOwnerId;
+        dataToUpdate.claimedAt = new Date(); // Reset claim time for new owner
+      }
+    }
+
+    const updated = await prisma.inbox.update({
+      where: { id: params.data.id },
+      data: dataToUpdate,
+      include: { owner: { select: { email: true } }, domain: true }
+    });
+
+    if (dataToUpdate.ownerId) {
+      await recordAudit(user.userId, "INBOX_TRANSFERRED", {
+        inboxId: inbox.id,
+        email: `${inbox.localPart}@${inbox.domain.name}`,
+        fromOwnerId: inbox.ownerId,
+        toOwnerId: dataToUpdate.ownerId,
+      });
+    }
+
+    return { inbox: updated };
+  });
 }

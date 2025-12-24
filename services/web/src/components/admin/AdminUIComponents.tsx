@@ -121,13 +121,14 @@ export function StatusBadge({ status, variant = "default" }: {
 }
 
 // Premium Button Component
-export function PremiumButton({ children, onClick, variant = "primary", size = "md", disabled = false, className = "" }: {
+export function PremiumButton({ children, onClick, variant = "primary", size = "md", disabled = false, className = "", title }: {
     children: React.ReactNode;
     onClick?: () => void;
     variant?: "primary" | "secondary" | "danger" | "ghost";
     size?: "sm" | "md" | "lg";
     disabled?: boolean;
     className?: string;
+    title?: string;
 }) {
     const variants = {
         primary: "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/25",
@@ -146,6 +147,7 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
         <button
             onClick={onClick}
             disabled={disabled}
+            title={title}
             className={`
     inline-flex items-center justify-center gap-2 font-medium rounded-xl
     transition-all duration-200

@@ -61,6 +61,12 @@ const main = async () => {
   const smtp = startSmtpServer(app.log);
   const worker = setupEmailWorker(app.log);
 
+  // Verify outbound email connection on startup
+  const { outboundService } = await import("./services/outbound");
+  outboundService.verifyConnection().catch(err => {
+    app.log.error({ err }, "Initial SMTP verification failed");
+  });
+
   // periodic retention sweep
   const retentionInterval = setInterval(() => {
     runRetentionSweep(app.log);

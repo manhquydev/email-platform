@@ -69,6 +69,21 @@ cp /etc/hosts /var/spool/postfix/etc/
 
 # Initialize Postfix
 newaliases || true
+
+# Configure Outbound Relay if variables are provided
+if [ -n "${RELAY_HOST}" ]; then
+    echo "Configuring outbound relay: ${RELAY_HOST}"
+    postconf -e "relayhost = [${RELAY_HOST}]:${RELAY_PORT:-2525}"
+    
+    if [ -n "${RELAY_USER}" ] && [ -n "${RELAY_PASS}" ]; then
+        echo "Configuring SASL authentication for relay..."
+        echo "[${RELAY_HOST}]:${RELAY_PORT:-2525} ${RELAY_USER}:${RELAY_PASS}" > /etc/postfix/sasl_passwd
+        postmap /etc/postfix/sasl_passwd
+        chown root:root /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+        chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+    fi
+fi
+
 postfix check
 
 echo "=== Configuration Complete ==="

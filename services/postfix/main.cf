@@ -59,3 +59,12 @@ smtpd_banner = $myhostname ESMTP Ephemera
 
 # Disable local mail delivery
 local_transport = error:local mail delivery is disabled
+
+# SASL Authentication for Outbound Relay
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+smtp_sasl_tls_security_options = noanonymous
+
+# Postfix relayhost - will be set by entrypoint.sh if provided
+# relayhost = [smtp.sendgrid.net]:2525

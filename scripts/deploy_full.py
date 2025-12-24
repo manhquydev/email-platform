@@ -20,7 +20,7 @@ def deploy():
         
         commands = [
             f"cd {PROJECT_DIR} && git pull {GIT_URL} main",
-            f"cd {PROJECT_DIR} && docker compose -f docker-compose.prod.yml up -d --build api web",
+            f"cd {PROJECT_DIR} && docker compose -f docker-compose.prod.yml up -d --build api web postfix",
             # Wait a few seconds for API to stabilize before migration
             "sleep 5",
             f"cd {PROJECT_DIR} && docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy"

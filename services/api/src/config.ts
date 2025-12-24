@@ -52,6 +52,10 @@ export const appConfig = {
   captchaSecret: process.env.CAPTCHA_SECRET,
   webUrl: process.env.WEB_URL ?? "http://localhost:5173",
   trustProxy: (process.env.TRUST_PROXY ?? "true").toLowerCase() === "true",
+  // Google API Fallback
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  googleRefreshToken: process.env.GOOGLE_REFRESH_TOKEN,
   outboundEnabled: (process.env.OUTBOUND_ENABLED ?? "false").toLowerCase() === "true",
   mailDomain: process.env.MAIL_DOMAIN ?? "localhost",
   mailFromName: process.env.MAIL_FROM_NAME ?? "Ephemera",

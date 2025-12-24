@@ -77,7 +77,7 @@ services:
       REDIS_PORT: 6379
       # Self-hosted Postfix SMTP (local container)
       OUTBOUND_SMTP_HOST: postfix
-      OUTBOUND_SMTP_PORT: 587
+      OUTBOUND_SMTP_PORT: 25
       OUTBOUND_SMTP_USER: ""
       OUTBOUND_SMTP_PASS: ""
       OUTBOUND_SMTP_SECURE: "false"
@@ -116,6 +116,10 @@ services:
       MAIL_DOMAIN: ${DOMAIN:-localhost}
       MAIL_HOSTNAME: mail.${DOMAIN:-localhost}
       DKIM_SELECTOR: mail
+      RELAY_HOST: ${RELAY_HOST}
+      RELAY_PORT: ${RELAY_PORT:-2525}
+      RELAY_USER: ${RELAY_USER}
+      RELAY_PASS: ${RELAY_PASS}
     volumes:
       - postfix_dkim:/etc/opendkim/keys
     networks:

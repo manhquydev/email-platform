@@ -84,7 +84,7 @@ services:
       OUTBOUND_ENABLED: "true"
       # Mail configuration
       MAIL_DOMAIN: ${DOMAIN:-localhost}
-      MAIL_FROM_NAME: "TempMail Pro"
+      MAIL_FROM_NAME: "Ephemera"
       MAIL_FROM_ADDRESS: "noreply@${DOMAIN:-localhost}"
       # TEMPORARY: Set to false until PTR record is configured
       # Change to true after setting up PTR record with DigitalOcean

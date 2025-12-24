@@ -1,6 +1,6 @@
 # Multi-Region Deployment Architecture
 
-This document describes the multi-region architecture for TempMail Pro.
+This document describes the multi-region architecture for Ephemera.
 
 ## Architecture Overview
 

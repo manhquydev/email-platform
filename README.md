@@ -1,4 +1,4 @@
-# TempMail Pro - Email Platform
+# Ephemera - Email Platform
 
 > 🚀 **Production Ready** | [manhquy.click](https://manhquy.click)
 

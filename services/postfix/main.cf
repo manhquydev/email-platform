@@ -1,4 +1,4 @@
-# Postfix main configuration for TempMail Pro
+# Postfix main configuration for Ephemera
 # ============================================
 
 # Basic settings (will be overridden by entrypoint.sh)
@@ -55,7 +55,7 @@ maillog_file = /dev/stdout
 compatibility_level = 3.6
 
 # SMTP banner
-smtpd_banner = $myhostname ESMTP TempMail Pro
+smtpd_banner = $myhostname ESMTP Ephemera
 
 # Disable local mail delivery
 local_transport = error:local mail delivery is disabled

@@ -97,7 +97,7 @@ export function FocusDashboard() {
 
     // --- Effects ---
     useEffect(() => { loadDomains(); }, [token]);
-    useEffect(() => { if (selectedDomain) loadInboxes(selectedDomain); }, [selectedDomain]);
+    useEffect(() => { if (selectedDomain) loadInboxes(selectedDomain); }, [selectedDomain, loadInboxes]);
     useEffect(() => {
         if (selectedInbox) {
             loadMessages(selectedInbox);

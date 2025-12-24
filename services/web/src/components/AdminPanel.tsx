@@ -11,7 +11,6 @@ import { AdminEmails } from "./admin/AdminEmails";
 import { AdminSubscriptions } from "./admin/AdminSubscriptions";
 import { AdminSystem } from "./admin/AdminSystem";
 import { AdminDomains } from "./admin/AdminDomains";
-import { AdminDomains } from "./admin/AdminDomains";
 
 type TabType = "dashboard" | "users" | "subscriptions" | "emails" | "rules" | "domains" | "reports" | "logs" | "system" | "settings";
 

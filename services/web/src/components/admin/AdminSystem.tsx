@@ -4,7 +4,7 @@ import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import {
     GlassCard, SectionHeader, PremiumButton, PremiumInput,
-    LoadingSpinner, StatusBadge
+    LoadingSpinner
 } from "./AdminUIComponents";
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer

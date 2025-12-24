@@ -161,13 +161,15 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
 }
 
 // Premium Input Component
-export function PremiumInput({ value, onChange, placeholder, type = "text", className = "", icon }: {
+export function PremiumInput({ value, onChange, placeholder, type = "text", className = "", icon, id, disabled }: {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
     type?: string;
     className?: string;
     icon?: React.ReactNode;
+    id?: string;
+    disabled?: boolean;
 }) {
     return (
         <div className={`relative ${className} `}>
@@ -177,10 +179,12 @@ export function PremiumInput({ value, onChange, placeholder, type = "text", clas
                 </span>
             )}
             <input
+                id={id}
                 type={type}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
+                disabled={disabled}
                 className={`
     w-full rounded-xl border border-gray-200 dark:border-white/10
     bg-white dark:bg-white/5
@@ -188,6 +192,7 @@ export function PremiumInput({ value, onChange, placeholder, type = "text", clas
     placeholder:text-gray-400 dark:placeholder:text-gray-500
     focus:border-primary focus:ring-2 focus:ring-primary/20
     transition-all duration-200
+    disabled:opacity-50 disabled:cursor-not-allowed
                     ${icon ? "pl-10 pr-4 py-2.5" : "px-4 py-2.5"}
     `}
             />

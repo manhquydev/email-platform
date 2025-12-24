@@ -75,6 +75,8 @@ model User {
   stripeSubscriptionId String?
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
   trialEndsAt  DateTime?
+  subscriptionEndsAt DateTime? // Explicit end date for time-based subscriptions
+  credits      Int      @default(0) // Usage-based credits
   telegramChatId    String?   @unique  // Telegram chat ID for notifications
   telegramLinkedAt  DateTime?          // When Telegram was linked
   notifyOnEmail     Boolean   @default(true) // Send notification when email received
@@ -88,6 +90,7 @@ model User {
   telegramLinkTokens TelegramLinkToken[]
   forwardingRules ForwardingRule[]
   forwardVerifications ForwardVerification[]
+  redemptions  CodeRedemption[]
 }
 
 model Domain {
@@ -363,4 +366,72 @@ model SystemSetting {
   value       String
   description String?
   updatedAt   DateTime @updatedAt
+}
+
+// --- Subscription & Redemption System ---
+
+enum PackageType {
+  TIME_BASED
+  USAGE_BASED
+}
+
+enum CodeStatus {
+  ACTIVE
+  USED    // specific to single-use codes that are exhausted
+  EXPIRED // date passed
+  REVOKED // manually disabled
+}
+
+model ServicePackage {
+  id          String   @id @default(uuid())
+  name        String   // e.g. "Premium Monthly", "100 Email Credits"
+  description String?
+  price       Decimal  @default(0)
+  currency    String   @default("VND")
+  type        PackageType
+  
+  // Time based params
+  durationDays Int?    // e.g. 30
+  targetTier   SubscriptionTier? // e.g. PROFESSIONAL
+  
+  // Usage based params
+  creditAmount Int?    // e.g. 100
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  codes       RedemptionCode[]
+}
+
+model RedemptionCode {
+  id          String         @id @default(uuid())
+  code        String         @unique // The actual string user types
+  packageId   String
+  package     ServicePackage @relation(fields: [packageId], references: [id])
+  
+  maxUses     Int            @default(1)
+  usedCount   Int            @default(0)
+  
+  expiresAt   DateTime?      // When the code itself expires (cannot be redeemed after)
+  status      CodeStatus     @default(ACTIVE)
+  
+  createdBy   String?        // Admin ID who created it
+  createdAt   DateTime       @default(now())
+  
+  redemptions CodeRedemption[]
+  
+  @@index([code])
+}
+
+model CodeRedemption {
+  id        String         @id @default(uuid())
+  codeId    String
+  code      RedemptionCode @relation(fields: [codeId], references: [id])
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  redeemedAt DateTime      @default(now())
+  
+  @@index([userId])
+  @@index([codeId])
 }

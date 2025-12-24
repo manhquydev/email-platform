@@ -14,10 +14,12 @@ interface UserProfile {
     emailVerified: string | null;
     twoFactorEnabled: boolean;
     tier: string;
+    subscriptionEndsAt?: string | null;
+    credits: number;
     _count: { domains: number; inboxes: number };
 }
 
-type SettingsTab = 'account' | 'security' | 'notifications';
+type SettingsTab = 'account' | 'subscription' | 'security' | 'notifications';
 
 export function Settings() {
     const { token, user } = useAuth();
@@ -50,6 +52,29 @@ export function Settings() {
     const [telegramBotLink, setTelegramBotLink] = useState<string | null>(null);
     const [telegramBusy, setTelegramBusy] = useState(false);
 
+    // Subscription states
+    const [redeemCode, setRedeemCode] = useState("");
+    const [redeemBusy, setRedeemBusy] = useState(false);
+
+    const handleRedeem = async () => {
+        if (!redeemCode.trim()) return;
+        setRedeemBusy(true);
+        try {
+            const res = await api<{ message: string; user: any }>("/subscription/redeem", {
+                method: "POST",
+                token,
+                body: { code: redeemCode }
+            });
+            toast.success(res.message);
+            setRedeemCode("");
+            loadProfile();
+        } catch (error) {
+            toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setRedeemBusy(false);
+        }
+    };
+
     const loadProfile = useCallback(async () => {
         if (!token) return;
         setLoading(true);
@@ -65,6 +90,8 @@ export function Settings() {
                 emailVerified: null,
                 twoFactorEnabled: false,
                 tier: "FREE",
+                subscriptionEndsAt: null,
+                credits: 0,
                 _count: { domains: 0, inboxes: 0 }
             });
         } finally {
@@ -247,6 +274,7 @@ export function Settings() {
 
     const tabs = [
         { id: 'account' as const, label: 'Tài khoản', icon: UserIcon },
+        { id: 'subscription' as const, label: 'Gói cước', icon: CreditCardIcon },
         { id: 'security' as const, label: 'Bảo mật', icon: ShieldIcon },
         { id: 'notifications' as const, label: 'Thông báo', icon: BellIcon },
     ];
@@ -400,6 +428,65 @@ export function Settings() {
                                     </div>
                                 </div>
                             </>
+                        )}
+
+                        {/* Subscription Tab */}
+                        {activeTab === 'subscription' && (
+                            <div className="space-y-6">
+                                {/* Current Plan Card */}
+                                <div className="glass-card">
+                                    <div className="glass-card-header">
+                                        <h3 className="font-semibold" style={{ color: 'var(--nebula-text)' }}>Gói dịch vụ hiện tại</h3>
+                                    </div>
+                                    <div className="glass-card-body">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div>
+                                                <div className="text-sm mb-1" style={{ color: 'var(--nebula-text-muted)' }}>Cấp độ</div>
+                                                <div className="text-2xl font-bold" style={{ color: 'var(--nebula-text)' }}>
+                                                    {profile?.tier}
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-sm mb-1" style={{ color: 'var(--nebula-text-muted)' }}>Tín dụng (Credits)</div>
+                                                <div className="text-2xl font-bold" style={{ color: 'var(--nebula-success)' }}>
+                                                    {profile?.credits || 0}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {profile?.subscriptionEndsAt && (
+                                            <div className="p-4 rounded-xl mb-6" style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                                                <p className="text-sm" style={{ color: 'var(--nebula-blue)' }}>
+                                                    Gói cước sẽ hết hạn vào: <span className="font-semibold">{new Date(profile.subscriptionEndsAt).toLocaleDateString("vi-VN")}</span>
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <div className="border-t pt-6" style={{ borderColor: 'var(--nebula-border)' }}>
+                                            <h4 className="text-sm font-medium mb-4" style={{ color: 'var(--nebula-text)' }}>Nhập mã quy đổi</h4>
+                                            <div className="flex gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={redeemCode}
+                                                    onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
+                                                    placeholder="XXXX-XXXX-XXXX"
+                                                    className="input-nebula flex-1 font-mono uppercase"
+                                                />
+                                                <button
+                                                    onClick={handleRedeem}
+                                                    disabled={redeemBusy || !redeemCode}
+                                                    className="btn-nebula btn-nebula-primary"
+                                                >
+                                                    {redeemBusy ? "Đang xử lý..." : "Quy đổi"}
+                                                </button>
+                                            </div>
+                                            <p className="text-xs mt-2" style={{ color: 'var(--nebula-text-muted)' }}>
+                                                Nhập mã từ thẻ quà tặng hoặc sự kiện để nâng cấp gói hoặc nhận thêm credits.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         {/* Security Tab */}
@@ -742,6 +829,14 @@ function BellIcon() {
     return (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+    );
+}
+
+function CreditCardIcon() {
+    return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
         </svg>
     );
 }

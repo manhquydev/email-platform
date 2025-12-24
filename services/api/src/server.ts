@@ -21,6 +21,7 @@ import { filterRoutes } from "./routes/filters";
 import { authenticatorRoutes } from "./routes/authenticator";
 import { telegramRoutes } from "./routes/telegram";
 import { forwardingRoutes } from "./routes/forwarding";
+import { subscriptionRoutes } from "./routes/subscription";
 import { setupBotCommands } from "./services/telegramBot";
 
 declare module "fastify" {
@@ -151,6 +152,7 @@ export const buildServer = () => {
   app.register(authenticatorRoutes);
   app.register(telegramRoutes);
   app.register(forwardingRoutes);
+  app.register(subscriptionRoutes);
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);
   }

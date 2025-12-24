@@ -452,6 +452,8 @@ export async function authRoutes(app: FastifyInstance) {
         emailVerified: true,
         twoFactorEnabled: true,
         tier: true,
+        subscriptionEndsAt: true,
+        credits: true,
         _count: { select: { domains: true, inboxes: true } }
       }
     });

@@ -7,6 +7,8 @@ import {
     TableBody, TableRow, TableCell, StatusBadge, PremiumInput,
     EmptyState, LoadingSpinner, Pagination
 } from "./AdminUIComponents";
+import { PackagesManager } from "./subscription/PackagesManager";
+import { CodesManager } from "./subscription/CodesManager";
 
 interface User {
     id: string;
@@ -20,6 +22,44 @@ interface User {
 const PAGE_SIZE = 20;
 
 export function AdminSubscriptions({ token }: { token: string }) {
+    const [activeTab, setActiveTab] = useState<"users" | "packages" | "codes">("users");
+
+    return (
+        <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <SectionHeader
+                title="Gói cước & Thanh toán"
+                subtitle="Quản lý cấp độ dịch vụ, gói cước và mã quy đổi"
+            />
+
+            {/* Tab Navigation */}
+            <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-1">
+                <TabButton active={activeTab === "users"} onClick={() => setActiveTab("users")} label="Người dùng" />
+                <TabButton active={activeTab === "packages"} onClick={() => setActiveTab("packages")} label="Gói dịch vụ" />
+                <TabButton active={activeTab === "codes"} onClick={() => setActiveTab("codes")} label="Mã quy đổi" />
+            </div>
+
+            {activeTab === "users" && <UsersManager token={token} />}
+            {activeTab === "packages" && <PackagesManager token={token} />}
+            {activeTab === "codes" && <CodesManager token={token} />}
+        </div>
+    );
+}
+
+function TabButton({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${active
+                ? "bg-white dark:bg-slate-800 text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+        >
+            {label}
+        </button>
+    );
+}
+
+function UsersManager({ token }: { token: string }) {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
@@ -34,8 +74,6 @@ export function AdminSubscriptions({ token }: { token: string }) {
             if (search) params.set("search", search);
             params.set("limit", String(PAGE_SIZE));
             params.set("offset", String(page * PAGE_SIZE));
-            // In a real app we might have a specific /admin/subscriptions endpoint,
-            // but for now we reuse /admin/users which we updated to include tier info.
             const res = await api<{ data: User[]; meta: { total: number } }>(`/admin/users?${params}`, { token });
             setUsers(res.data);
             setTotal(res.meta.total);
@@ -68,19 +106,16 @@ export function AdminSubscriptions({ token }: { token: string }) {
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <SectionHeader
-                title="Gói cước & Thanh toán"
-                subtitle="Quản lý cấp độ dịch vụ của người dùng"
-                action={
-                    <PremiumInput
-                        value={search}
-                        onChange={setSearch}
-                        placeholder="Tìm email khách hàng..."
-                        className="w-64"
-                    />
-                }
-            />
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Danh sách người dùng</h3>
+                <PremiumInput
+                    value={search}
+                    onChange={setSearch}
+                    placeholder="Tìm email khách hàng..."
+                    className="w-64"
+                />
+            </div>
 
             {loading ? (
                 <LoadingSpinner />
@@ -127,7 +162,7 @@ export function AdminSubscriptions({ token }: { token: string }) {
                                             value={user.tier}
                                             onChange={(e) => handleTierChange(user.id, e.target.value)}
                                             disabled={updating === user.id}
-                                            className="text-xs py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800"
+                                            className="text-xs py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 cursor-pointer hover:border-blue-500 transition-colors"
                                         >
                                             <option value="FREE">FREE</option>
                                             <option value="STARTER">STARTER</option>
@@ -141,7 +176,7 @@ export function AdminSubscriptions({ token }: { token: string }) {
                     </PremiumTable>
 
                     {users.length === 0 && (
-                        <EmptyState title="Không tìm thấy dữ liệu" description="Thử lại với email khác" />
+                        <EmptyState title="Không tìm thấy dữ liệu" description="Thử lại với từ khóa khác" />
                     )}
                 </GlassCard>
             )}

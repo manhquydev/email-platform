@@ -1,0 +1,275 @@
+import { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { prisma } from "../lib/prisma";
+import { recordAudit } from "../utils/audit";
+import { customAlphabet } from "nanoid";
+
+const generateCode = customAlphabet("2346789ABCDEFGHJKLMNPQRTUVWXYZ", 12); // removing similar chars like I, 1, O, 0, 5, S
+
+export async function subscriptionRoutes(app: FastifyInstance) {
+    // ==========================================
+    // Admin: Service Packages Management
+    // ==========================================
+
+    // List Packages
+    app.get("/admin/packages", { preHandler: app.requireAdmin }, async () => {
+        const packages = await prisma.servicePackage.findMany({
+            orderBy: { createdAt: "desc" },
+            include: {
+                _count: { select: { codes: true } }
+            }
+        });
+        return { packages };
+    });
+
+    // Create Package
+    app.post("/admin/packages", { preHandler: app.requireAdmin }, async (req, reply) => {
+        const schema = z.object({
+            name: z.string().min(1),
+            description: z.string().optional(),
+            price: z.coerce.number().min(0).default(0),
+            currency: z.string().default("VND"),
+            type: z.enum(["TIME_BASED", "USAGE_BASED"]),
+            durationDays: z.coerce.number().optional(),
+            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
+            creditAmount: z.coerce.number().optional(),
+            isActive: z.boolean().default(true),
+        });
+
+        const result = schema.safeParse(req.body);
+        if (!result.success) return reply.status(400).send({ error: "Invalid payload", details: result.error.flatten() });
+
+        const pkg = await prisma.servicePackage.create({
+            data: result.data
+        });
+
+        await recordAudit((req.user as any).userId, "CREATE_PACKAGE", { packageId: pkg.id, name: pkg.name });
+
+        return { package: pkg };
+    });
+
+    // Update Package
+    app.put("/admin/packages/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
+        const params = z.object({ id: z.string().uuid() }).parse(req.params);
+        const schema = z.object({
+            name: z.string().optional(),
+            description: z.string().optional(),
+            isActive: z.boolean().optional(),
+            // Usually we don't allow changing core logic (type, duration) to avoid inconsistencies with existing codes
+            // But for simplicity, we allow mostly cosmetic updates or disabling
+        });
+
+        const body = schema.parse(req.body);
+
+        const pkg = await prisma.servicePackage.update({
+            where: { id: params.id },
+            data: body
+        });
+
+        return { package: pkg };
+    });
+
+    // ==========================================
+    // Admin: Redemption Codes Management
+    // ==========================================
+
+    // List Codes (Paginated)
+    app.get("/admin/codes", { preHandler: app.requireAdmin }, async (req, reply) => {
+        const schema = z.object({
+            limit: z.coerce.number().default(20),
+            offset: z.coerce.number().default(0),
+            packageId: z.string().optional(),
+            search: z.string().optional(),
+            status: z.enum(["ACTIVE", "USED", "EXPIRED", "REVOKED"]).optional()
+        });
+
+        const query = schema.parse(req.query);
+        const where: any = {};
+        if (query.packageId) where.packageId = query.packageId;
+        if (query.status) where.status = query.status;
+        if (query.search) where.code = { contains: query.search };
+
+        const [codes, total] = await Promise.all([
+            prisma.redemptionCode.findMany({
+                where,
+                take: query.limit,
+                skip: query.offset,
+                orderBy: { createdAt: "desc" },
+                include: { package: { select: { name: true, type: true } } }
+            }),
+            prisma.redemptionCode.count({ where })
+        ]);
+
+        return { data: codes, meta: { total } };
+    });
+
+    // Generate Codes
+    app.post("/admin/codes/generate", { preHandler: app.requireAdmin }, async (req, reply) => {
+        const schema = z.object({
+            packageId: z.string().uuid(),
+            quantity: z.number().min(1).max(100).default(1),
+            prefix: z.string().max(10).optional(),
+            maxUses: z.number().min(1).default(1),
+            expiresAt: z.string().optional(), // ISO Status
+        });
+
+        const body = schema.parse(req.body);
+
+        const pkg = await prisma.servicePackage.findUnique({ where: { id: body.packageId } });
+        if (!pkg) return reply.status(404).send({ error: "Package not found" });
+
+        const codesData = [];
+        const createdBy = (req.user as any).userId;
+
+        for (let i = 0; i < body.quantity; i++) {
+            const codeStr = (body.prefix || "") + generateCode();
+            // Ensure format like AAAA-BBBB-CCCC for readability if long? 
+            // Let's stick to simple string for now, user can format if needed.
+            // Or hyphenate: XXXX-XXXX-XXXX
+            const formatted = codeStr.match(/.{1,4}/g)?.join("-") || codeStr;
+
+            codesData.push({
+                code: formatted,
+                packageId: pkg.id,
+                maxUses: body.maxUses,
+                expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+                createdBy,
+                status: "ACTIVE" as const
+            });
+        }
+
+        // Use transaction to ensure all or nothing
+        const created = await prisma.$transaction(
+            codesData.map(c => prisma.redemptionCode.create({ data: c }))
+        );
+
+        await recordAudit(createdBy, "GENERATE_CODES", {
+            packageName: pkg.name,
+            quantity: body.quantity,
+            prefix: body.prefix
+        });
+
+        return { count: created.length, codes: created };
+    });
+
+    // Revoke Code
+    app.put("/admin/codes/:id/revoke", { preHandler: app.requireAdmin }, async (req, reply) => {
+        const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+
+        const updated = await prisma.redemptionCode.update({
+            where: { id },
+            data: { status: "REVOKED" }
+        });
+
+        return { code: updated };
+    });
+
+    // ==========================================
+    // User: Redemption
+    // ==========================================
+
+    app.post("/subscription/redeem", { preHandler: app.authenticate }, async (req, reply) => {
+        const schema = z.object({
+            code: z.string().min(4)
+        });
+
+        const { code } = schema.parse(req.body);
+        const userId = (req.user as any).userId;
+
+        // 1. Find code
+        const redemptionCode = await prisma.redemptionCode.findUnique({
+            where: { code },
+            include: { package: true }
+        });
+
+        if (!redemptionCode) {
+            return reply.status(404).send({ error: "Code invalid or not found" });
+        }
+
+        // 2. Validate status
+        if (redemptionCode.status !== "ACTIVE") {
+            return reply.status(400).send({ error: "Code is not active" });
+        }
+
+        if (redemptionCode.expiresAt && new Date() > redemptionCode.expiresAt) {
+            // Auto update status to EXPIRED?
+            return reply.status(400).send({ error: "Code has expired" });
+        }
+
+        if (redemptionCode.usedCount >= redemptionCode.maxUses) {
+            return reply.status(400).send({ error: "Code usage limit reached" });
+        }
+
+        // 3. Check if user already redeemed this specific code (if unique usage is desired per code per user)
+        // Usually, even multi-use codes (like PROMO2024) can only be used ONCE per user.
+        const existingRedemption = await prisma.codeRedemption.findFirst({
+            where: { codeId: redemptionCode.id, userId }
+        });
+
+        if (existingRedemption) {
+            return reply.status(400).send({ error: "You have already redeemed this code" });
+        }
+
+        // 4. Apply Benefits
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) return reply.status(404).send({ error: "User not found" });
+
+        const pkg = redemptionCode.package;
+
+        await prisma.$transaction(async (tx) => {
+            // Update User
+            if (pkg.type === "TIME_BASED") {
+                const now = new Date();
+                const currentEnd = user.subscriptionEndsAt && user.subscriptionEndsAt > now
+                    ? user.subscriptionEndsAt
+                    : now;
+
+                // Add duration
+                const days = pkg.durationDays || 30;
+                const newEnd = new Date(currentEnd);
+                newEnd.setDate(newEnd.getDate() + days);
+
+                await tx.user.update({
+                    where: { id: userId },
+                    data: {
+                        tier: pkg.targetTier || user.tier, // Upgrade tier if specified
+                        subscriptionStatus: "ACTIVE",
+                        subscriptionEndsAt: newEnd
+                    }
+                });
+            } else if (pkg.type === "USAGE_BASED") {
+                const creditsToAdd = pkg.creditAmount || 0;
+                await tx.user.update({
+                    where: { id: userId },
+                    data: {
+                        credits: { increment: creditsToAdd }
+                    }
+                });
+            }
+
+            // Log Redemption
+            await tx.codeRedemption.create({
+                data: {
+                    codeId: redemptionCode.id,
+                    userId
+                }
+            });
+
+            // Update Code Usage
+            const newUsedCount = redemptionCode.usedCount + 1;
+            const newStatus = (newUsedCount >= redemptionCode.maxUses) ? "USED" : "ACTIVE";
+
+            await tx.redemptionCode.update({
+                where: { id: redemptionCode.id },
+                data: {
+                    usedCount: newUsedCount,
+                    status: newStatus
+                }
+            });
+        });
+
+        await recordAudit(userId, "REDEEM_CODE", { code: redemptionCode.code, package: pkg.name });
+
+        return { success: true, message: `Redeemed: ${pkg.name}` };
+    });
+}

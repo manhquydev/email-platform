@@ -61,15 +61,12 @@ export function InboxManager() {
     }, [token, selectedDomain]);
 
     const loadInboxes = useCallback(async () => {
-        if (!token || !selectedDomain) return;
+        if (!token) return;
         setBusy(true);
         try {
-            const domain = domains.find(d => d.id === selectedDomain);
-            if (!domain) return;
             const params = new URLSearchParams({
-                domain: domain.name,
                 limit: "100",
-                personal: "true" // Always fetch my own inboxes in App view
+                personal: "true" // Fetch all personal inboxes across all domains
             });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res.data);
@@ -79,7 +76,7 @@ export function InboxManager() {
         } finally {
             setBusy(false);
         }
-    }, [token, domains, selectedDomain]);
+    }, [token]);
 
     const loadMessages = useCallback(async (inboxId: string) => {
         if (!token) return;
@@ -102,7 +99,7 @@ export function InboxManager() {
 
     // --- Effects ---
     useEffect(() => { loadDomains(); }, [token]);
-    useEffect(() => { if (selectedDomain) loadInboxes(); }, [selectedDomain, loadInboxes]);
+    useEffect(() => { loadInboxes(); }, [loadInboxes]);
     useEffect(() => {
         if (activeInbox) {
             loadMessages(activeInbox.id);

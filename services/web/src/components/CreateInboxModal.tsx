@@ -59,9 +59,9 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
             />
             <motion.div
                 className="create-inbox-modal"
-                initial={{ opacity: 0, y: "100%" }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: "100%" }}
+                initial={{ opacity: 0, x: "-50%", y: "0%" }}
+                animate={{ opacity: 1, x: "-50%", y: "-50%" }}
+                exit={{ opacity: 0, x: "-50%", y: "0%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
             >
                 <div className="create-inbox-header">

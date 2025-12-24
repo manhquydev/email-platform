@@ -8,8 +8,12 @@ import { AdminUsers } from "./admin/AdminUsers";
 import { AdminReports } from "./admin/AdminReports";
 import { AdminLogs } from "./admin/AdminLogs";
 import { AdminEmails } from "./admin/AdminEmails";
+import { AdminSubscriptions } from "./admin/AdminSubscriptions";
+import { AdminSystem } from "./admin/AdminSystem";
+import { AdminDomains } from "./admin/AdminDomains";
+import { AdminDomains } from "./admin/AdminDomains";
 
-type TabType = "dashboard" | "users" | "emails" | "rules" | "domains" | "reports" | "logs" | "settings";
+type TabType = "dashboard" | "users" | "subscriptions" | "emails" | "rules" | "domains" | "reports" | "logs" | "system" | "settings";
 
 interface Tab {
     id: TabType;
@@ -79,6 +83,16 @@ const icons = {
             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
         </svg>
     ),
+    creditCard: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+        </svg>
+    ),
+    server: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3V7.5a3 3 0 013-3h13.5a3 3 0 013 3v3.75a3 3 0 01-3 3m-13.5 0h13.5m-13.5 0a3 3 0 00-3 3v3.75a3 3 0 003 3h13.5a3 3 0 003-3v-3.75a3 3 0 00-3-3m-13.5 0h13.5" />
+        </svg>
+    ),
 };
 
 // Badge Component
@@ -139,11 +153,13 @@ export function AdminPanel({ token }: { token: string }) {
     const tabs: Tab[] = [
         { id: "dashboard", label: "Tổng quan", icon: icons.dashboard },
         { id: "users", label: "Người dùng", icon: icons.users, badge: counts.totalUsers },
+        { id: "subscriptions", label: "Gói cước", icon: icons.creditCard },
         { id: "emails", label: "Email", icon: icons.email },
         { id: "rules", label: "Quy tắc bảo vệ", icon: icons.shield },
         { id: "domains", label: "Tên miền", icon: icons.globe, badge: counts.totalDomains },
         { id: "reports", label: "Báo cáo", icon: icons.flag, badge: counts.openReports },
         { id: "logs", label: "Nhật ký", icon: icons.clock },
+        { id: "system", label: "Hệ thống", icon: icons.server },
         { id: "settings", label: "Cài đặt", icon: icons.cog },
     ];
 
@@ -286,11 +302,13 @@ export function AdminPanel({ token }: { token: string }) {
             <div className="flex-1 overflow-y-auto">
                 {activeTab === "dashboard" && <AdminDashboard token={token} />}
                 {activeTab === "users" && <AdminUsers token={token} />}
+                {activeTab === "subscriptions" && <AdminSubscriptions token={token} />}
                 {activeTab === "emails" && <AdminEmails token={token} />}
                 {activeTab === "rules" && <RulesList token={token} />}
-                {activeTab === "domains" && <DomainsList token={token} />}
+                {activeTab === "domains" && <AdminDomains token={token} />}
                 {activeTab === "reports" && <AdminReports token={token} />}
                 {activeTab === "logs" && <AdminLogs token={token} />}
+                {activeTab === "system" && <AdminSystem token={token} />}
                 {activeTab === "settings" && <SettingsPanel token={token} />}
             </div>
         </div>
@@ -453,322 +471,7 @@ function RulesList({ token }: { token: string }) {
     );
 }
 
-function DomainsList({ token }: { token: string }) {
-    const [domains, setDomains] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [verifyingId, setVerifyingId] = useState<string | null>(null);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
-    const [togglingId, setTogglingId] = useState<string | null>(null);
 
-    // Bulk selection state
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [bulkLoading, setBulkLoading] = useState(false);
-
-    const loadDomains = useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await api<{ data: any[] }>("/domains?limit=100", { token });
-            setDomains(res.data);
-            setSelectedIds(new Set());
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setLoading(false);
-        }
-    }, [token]);
-
-    useEffect(() => {
-        loadDomains();
-    }, [loadDomains]);
-
-    const handleVerify = async (domainId: string, tokenVal: string) => {
-        setVerifyingId(domainId);
-        try {
-            await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: tokenVal } });
-            toast.success("Đã xác thực");
-            await loadDomains();
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setVerifyingId(null);
-        }
-    };
-
-    const handleDelete = async (domainId: string) => {
-        if (!confirm("Xóa tên miền này?")) return;
-        setDeletingId(domainId);
-        try {
-            await api(`/domains/${domainId}`, { method: "DELETE", token });
-            toast.success("Đã xóa");
-            await loadDomains();
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setDeletingId(null);
-        }
-    };
-
-    const copyToken = (val: string) => {
-        navigator.clipboard.writeText(val);
-        toast.success("Đã sao chép");
-    };
-
-    const handleTogglePublic = async (domainId: string, currentPublic: boolean) => {
-        setTogglingId(domainId);
-        try {
-            await api(`/domains/${domainId}`, {
-                method: "PATCH",
-                token,
-                body: { isPublic: !currentPublic }
-            });
-            toast.success(currentPublic ? "Đã chuyển sang riêng tư" : "Đã công khai cho tất cả");
-            await loadDomains();
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setTogglingId(null);
-        }
-    };
-
-    // Bulk selection handlers
-    const handleSelectAll = () => {
-        if (selectedIds.size === domains.length) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(domains.map(d => d.id)));
-        }
-    };
-
-    const handleSelectOne = (id: string) => {
-        const newSet = new Set(selectedIds);
-        if (newSet.has(id)) {
-            newSet.delete(id);
-        } else {
-            newSet.add(id);
-        }
-        setSelectedIds(newSet);
-    };
-
-    const handleBulkAction = async (action: "verify" | "make_public" | "make_private" | "delete") => {
-        if (selectedIds.size === 0) return;
-
-        const actionLabels = {
-            verify: "xác thực",
-            make_public: "công khai",
-            make_private: "chuyển riêng tư",
-            delete: "xóa"
-        };
-
-        if (action === "delete") {
-            if (!confirm(`Bạn có chắc muốn xóa ${selectedIds.size} domain? Hành động này không thể hoàn tác.`)) {
-                return;
-            }
-        }
-
-        setBulkLoading(true);
-        try {
-            const res = await api<{ affected: number }>("/admin/domains/bulk", {
-                method: "POST",
-                token,
-                body: { domainIds: Array.from(selectedIds), action }
-            });
-            toast.success(`Đã ${actionLabels[action]} ${res.affected} domain`);
-            setSelectedIds(new Set());
-            await loadDomains();
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setBulkLoading(false);
-        }
-    };
-
-    const isAllSelected = domains.length > 0 && selectedIds.size === domains.length;
-    const isSomeSelected = selectedIds.size > 0;
-
-    if (loading) {
-        return <div className="flex items-center justify-center h-64"><div className="spinner"></div></div>;
-    }
-
-    return (
-        <div className="p-6 max-w-6xl">
-            <div className="mb-6">
-                <h1 className="text-xl font-semibold">Tên miền</h1>
-                <p className="text-sm text-muted mt-1">Quản lý các tên miền trong hệ thống ({domains.length} tổng)</p>
-            </div>
-
-            {/* Bulk Actions Bar */}
-            {isSomeSelected && (
-                <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between animate-fade-in">
-                    <span className="text-sm font-medium">Đã chọn {selectedIds.size} domain</span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => handleBulkAction("verify")}
-                            disabled={bulkLoading}
-                            className="px-3 py-1.5 text-sm bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100 disabled:opacity-50"
-                        >
-                            Xác thực
-                        </button>
-                        <button
-                            onClick={() => handleBulkAction("make_public")}
-                            disabled={bulkLoading}
-                            className="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50"
-                        >
-                            Công khai
-                        </button>
-                        <button
-                            onClick={() => handleBulkAction("make_private")}
-                            disabled={bulkLoading}
-                            className="px-3 py-1.5 text-sm bg-gray-50 text-gray-700 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-50"
-                        >
-                            Riêng tư
-                        </button>
-                        <button
-                            onClick={() => handleBulkAction("delete")}
-                            disabled={bulkLoading}
-                            className="px-3 py-1.5 text-sm bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100 disabled:opacity-50"
-                        >
-                            Xóa
-                        </button>
-                        <button
-                            onClick={() => setSelectedIds(new Set())}
-                            className="px-2 py-1.5 text-sm text-muted hover:text-text-main"
-                        >
-                            Bỏ chọn
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* DNS Configuration Help */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">📧 Cấu hình DNS để nhận email</h3>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
-                    Để nhận được email, người dùng cần thêm các bản ghi DNS sau vào domain của họ:
-                </p>
-                <div className="bg-white dark:bg-white/5 rounded border border-blue-200 dark:border-blue-800/50 overflow-hidden">
-                    <table className="w-full text-xs">
-                        <thead className="bg-blue-100 dark:bg-blue-900/30">
-                            <tr>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Loại</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Tên</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Giá trị</th>
-                                <th className="px-3 py-2 text-left font-semibold text-blue-800 dark:text-blue-300">Mục đích</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-blue-700 dark:text-blue-400">
-                            <tr className="border-t border-blue-200 dark:border-blue-800/50">
-                                <td className="px-3 py-2 font-mono font-bold text-red-600 dark:text-red-400">MX</td>
-                                <td className="px-3 py-2 font-mono">@</td>
-                                <td className="px-3 py-2 font-mono">mail.[domain] (priority 10)</td>
-                                <td className="px-3 py-2">⚠️ Bắt buộc để nhận email</td>
-                            </tr>
-                            <tr className="border-t border-blue-200 dark:border-blue-800/50">
-                                <td className="px-3 py-2 font-mono font-bold text-blue-600 dark:text-blue-400">A</td>
-                                <td className="px-3 py-2 font-mono">mail</td>
-                                <td className="px-3 py-2 font-mono">IP của mail server</td>
-                                <td className="px-3 py-2">Trỏ mail subdomain về IP</td>
-                            </tr>
-                            <tr className="border-t border-blue-200 dark:border-blue-800/50">
-                                <td className="px-3 py-2 font-mono font-bold text-green-600 dark:text-green-400">TXT</td>
-                                <td className="px-3 py-2 font-mono">@</td>
-                                <td className="px-3 py-2 font-mono">[verification token]</td>
-                                <td className="px-3 py-2">Xác minh sở hữu domain</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div className="bg-surface border border-border rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                    <thead className="bg-bg text-left">
-                        <tr>
-                            <th className="px-4 py-3 font-medium text-muted w-10">
-                                <input
-                                    type="checkbox"
-                                    checked={isAllSelected}
-                                    onChange={handleSelectAll}
-                                    className="w-4 h-4 rounded border-border"
-                                />
-                            </th>
-                            <th className="px-4 py-3 font-medium text-muted">Tên miền</th>
-                            <th className="px-4 py-3 font-medium text-muted">Trạng thái</th>
-                            <th className="px-4 py-3 font-medium text-muted">Công khai</th>
-                            <th className="px-4 py-3 font-medium text-muted">Chủ sở hữu</th>
-                            <th className="px-4 py-3 font-medium text-muted">Ngày tạo</th>
-                            <th className="px-4 py-3 font-medium text-muted w-32"></th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                        {domains.map((d) => (
-                            <tr key={d.id} className={`hover:bg-bg/50 ${selectedIds.has(d.id) ? "bg-primary/5" : ""}`}>
-                                <td className="px-4 py-3">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedIds.has(d.id)}
-                                        onChange={() => handleSelectOne(d.id)}
-                                        className="w-4 h-4 rounded border-border"
-                                    />
-                                </td>
-                                <td className="px-4 py-3 font-medium">{d.name}</td>
-                                <td className="px-4 py-3">
-                                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded ${d.status === "VERIFIED" ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"
-                                        }`}>
-                                        {d.status === "VERIFIED" ? "Đã xác thực" : "Chờ xác thực"}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3">
-                                    <button
-                                        onClick={() => handleTogglePublic(d.id, d.isPublic)}
-                                        disabled={togglingId === d.id}
-                                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded cursor-pointer transition-colors ${d.isPublic
-                                            ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
-                                            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                            }`}
-                                    >
-                                        {togglingId === d.id ? (
-                                            <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></span>
-                                        ) : d.isPublic ? "Public" : "Private"}
-                                    </button>
-                                </td>
-                                <td className="px-4 py-3 text-muted">{d.owner?.email || "—"}</td>
-                                <td className="px-4 py-3 text-muted">{new Date(d.createdAt).toLocaleDateString("vi-VN")}</td>
-                                <td className="px-4 py-3">
-                                    <div className="flex items-center gap-3">
-                                        {d.status !== "VERIFIED" && (
-                                            <>
-                                                <button onClick={() => copyToken(d.verificationToken)} className="text-xs text-muted hover:text-primary">
-                                                    Token
-                                                </button>
-                                                <button
-                                                    onClick={() => handleVerify(d.id, d.verificationToken)}
-                                                    disabled={verifyingId === d.id}
-                                                    className="text-xs text-primary hover:underline"
-                                                >
-                                                    Xác thực
-                                                </button>
-                                            </>
-                                        )}
-                                        <button
-                                            onClick={() => handleDelete(d.id)}
-                                            disabled={deletingId === d.id}
-                                            className="text-xs text-muted hover:text-danger"
-                                        >
-                                            Xóa
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {domains.length === 0 && (
-                    <div className="px-4 py-12 text-center text-muted text-sm">Chưa có tên miền nào</div>
-                )}
-            </div>
-        </div>
-    );
-}
 
 function SettingsPanel({ token }: { token: string }) {
     const [password, setPassword] = useState("");

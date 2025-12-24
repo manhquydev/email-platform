@@ -6,6 +6,8 @@ import { prisma } from "./lib/prisma";
 import { appConfig } from "./config";
 import { hashPassword } from "./utils/password";
 import { runRetentionSweep } from "./retention";
+import cron from "node-cron";
+import { runAutomatedCleanup } from "./utils/cleanup";
 
 const ensureStorageDir = async () => {
   await fs.mkdir(appConfig.storageDir, { recursive: true });
@@ -64,11 +66,17 @@ const main = async () => {
     runRetentionSweep(app.log);
   }, appConfig.retentionSweepMinutes * 60 * 1000);
 
+  // Daily deep cleanup at 3:00 AM
+  const cleanupJob = cron.schedule("0 3 * * *", () => {
+    runAutomatedCleanup().catch(err => app.log.error({ err }, "Daily cleanup failed"));
+  });
+
   const close = async () => {
     app.log.info("shutting down...");
     clearInterval(retentionInterval);
     await app.close();
     smtp.close();
+    cleanupJob.stop();
     await worker.close();
     await prisma.$disconnect();
     process.exit(0);

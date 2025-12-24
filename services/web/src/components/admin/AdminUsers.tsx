@@ -15,6 +15,8 @@ interface User {
     emailVerified: string | null;
     isDisabled?: boolean;
     createdAt: string;
+    tier: "FREE" | "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
+    subscriptionStatus: "ACTIVE" | "PAST_DUE" | "CANCELED" | "TRIALING";
     _count: { domains: number };
 }
 
@@ -187,6 +189,7 @@ export function AdminUsers({ token }: { token: string }) {
                                     />
                                 </TableHeaderCell>
                                 <TableHeaderCell>Email</TableHeaderCell>
+                                <TableHeaderCell>Gói cước</TableHeaderCell>
                                 <TableHeaderCell>Quyền</TableHeaderCell>
                                 <TableHeaderCell>Trạng thái</TableHeaderCell>
                                 <TableHeaderCell>Domains</TableHeaderCell>
@@ -210,6 +213,15 @@ export function AdminUsers({ token }: { token: string }) {
                                             {user.email}
                                         </div>
                                         {user.isDisabled && <StatusBadge status="Đã khóa" variant="danger" />}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1">
+                                            <StatusBadge
+                                                status={user.tier}
+                                                variant={user.tier === "FREE" ? "default" : "success"}
+                                            />
+                                            <div className="text-[10px] text-slate-500">{user.subscriptionStatus}</div>
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <select

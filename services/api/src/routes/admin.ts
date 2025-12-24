@@ -245,6 +245,9 @@ export async function adminRoutes(app: FastifyInstance) {
                 id: true,
                 email: true,
                 role: true,
+                tier: true,
+                subscriptionStatus: true,
+                stripeSubscriptionId: true,
                 emailVerified: true,
                 createdAt: true,
                 isDisabled: true,
@@ -256,6 +259,37 @@ export async function adminRoutes(app: FastifyInstance) {
             "USER_UPDATED",
             { targetUserId: params.data.id, changes: body.data }
         );
+
+        return { user: updated };
+    });
+
+    // Update User Tier (Subscription Manager)
+    app.patch("/admin/users/:id/tier", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+        const body = z.object({
+            tier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]),
+            status: z.enum(["ACTIVE", "PAST_DUE", "CANCELED", "TRIALING"]).optional(),
+        }).safeParse(request.body);
+
+        if (!params.success || !body.success) {
+            return reply.status(400).send({ error: "Invalid payload" });
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: params.data.id } });
+        if (!user) return reply.status(404).send({ error: "User not found" });
+
+        const updated = await prisma.user.update({
+            where: { id: params.data.id },
+            data: {
+                tier: body.data.tier,
+                subscriptionStatus: body.data.status || "ACTIVE",
+            }
+        });
+
+        await recordAudit((request.user as any).userId, "ADMIN_SUBSCRIPTION_UPDATE", {
+            targetUserId: params.data.id,
+            newTier: body.data.tier
+        });
 
         return { user: updated };
     });
@@ -464,6 +498,66 @@ export async function adminRoutes(app: FastifyInstance) {
         return { user: updated };
     });
 
+    // List Domains for Admin (with approval filter)
+    app.get("/admin/domains", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const query = z.object({
+            status: z.enum(["PENDING", "VERIFIED"]).optional(),
+            contributionStatus: z.enum(["NONE", "PENDING_REVIEW", "APPROVED", "REJECTED"]).optional(),
+            limit: z.coerce.number().min(1).max(100).optional(),
+            offset: z.coerce.number().min(0).optional(),
+        }).safeParse(request.query);
+
+        if (!query.success) return reply.status(400).send({ error: "Invalid query" });
+
+        const where: any = {};
+        if (query.data.status) where.status = query.data.status;
+        if (query.data.contributionStatus) where.contributionStatus = query.data.contributionStatus;
+
+        const [domains, total] = await Promise.all([
+            prisma.domain.findMany({
+                where,
+                include: { owner: { select: { email: true } } },
+                orderBy: { createdAt: "desc" },
+                take: query.data.limit ?? 20,
+                skip: query.data.offset ?? 0,
+            }),
+            prisma.domain.count({ where })
+        ]);
+
+        return { data: domains, meta: { total } };
+    });
+
+    // Review contributed domain
+    app.post("/admin/domains/:id/review", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+        const body = z.object({
+            status: z.enum(["APPROVED", "REJECTED"]),
+            note: z.string().max(500).optional(),
+        }).safeParse(request.body);
+
+        if (!params.success || !body.success) return reply.status(400).send({ error: "Invalid payload" });
+
+        const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
+        if (!domain) return reply.status(404).send({ error: "Domain not found" });
+
+        const updated = await prisma.domain.update({
+            where: { id: params.data.id },
+            data: {
+                contributionStatus: body.data.status,
+                isPublic: body.data.status === "APPROVED",
+                sharedAt: body.data.status === "APPROVED" ? new Date() : null,
+            }
+        });
+
+        await recordAudit((request.user as any).userId, "DOMAIN_REVIEWED", {
+            domainId: params.data.id,
+            status: body.data.status,
+            note: body.data.note
+        });
+
+        return { domain: updated };
+    });
+
     // List Audit Logs
     app.get("/admin/audit-logs", { preHandler: app.requireAdmin }, async (request, reply) => {
         const query = z
@@ -591,13 +685,18 @@ export async function adminRoutes(app: FastifyInstance) {
         return { user };
     });
 
-    // System info endpoint
+    // Expanded System info endpoint with real-time resource metrics
     app.get("/admin/system-info", { preHandler: app.requireAdmin }, async () => {
+        const si = await import("systeminformation");
+
         const [
             userCount,
             domainCount,
             messageCount,
-            recentLogins
+            recentLogins,
+            cpu,
+            mem,
+            fs
         ] = await Promise.all([
             prisma.user.count(),
             prisma.domain.count(),
@@ -607,8 +706,13 @@ export async function adminRoutes(app: FastifyInstance) {
                     action: "LOGIN",
                     createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
                 }
-            })
+            }),
+            si.currentLoad(),
+            si.mem(),
+            si.fsSize(),
         ]);
+
+        const mainDisk = fs[0]; // Assumption: first mount point is main
 
         return {
             system: {
@@ -617,8 +721,44 @@ export async function adminRoutes(app: FastifyInstance) {
                 messageCount,
                 recentLogins24h: recentLogins,
                 serverTime: new Date().toISOString(),
+                resources: {
+                    cpuLoad: Math.round(cpu.currentLoad),
+                    memUsed: Math.round(mem.active / 1024 / 1024),
+                    memTotal: Math.round(mem.total / 1024 / 1024),
+                    diskUsed: Math.round(mainDisk?.use ?? 0),
+                    diskAvailable: Math.round((mainDisk?.size ?? 0 - (mainDisk?.used ?? 0)) / 1024 / 1024 / 1024),
+                }
             }
         };
+    });
+
+    // Get System Settings
+    app.get("/admin/system/settings", { preHandler: app.requireAdmin }, async () => {
+        const settings = await prisma.systemSetting.findMany();
+        return { settings };
+    });
+
+    // Update System Setting
+    app.post("/admin/system/settings", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const body = z.object({
+            key: z.string(),
+            value: z.string(),
+        }).safeParse(request.body);
+
+        if (!body.success) return reply.status(400).send({ error: "Invalid payload" });
+
+        const setting = await prisma.systemSetting.upsert({
+            where: { key: body.data.key },
+            update: { value: body.data.value },
+            create: { key: body.data.key, value: body.data.value }
+        });
+
+        await recordAudit((request.user as any).userId, "SYSTEM_SETTING_UPDATED", {
+            key: body.data.key,
+            value: body.data.value
+        });
+
+        return { setting };
     });
 
     // =====================================

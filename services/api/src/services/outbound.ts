@@ -51,7 +51,7 @@ export class OutboundService {
         const mailDomain = process.env.MAIL_DOMAIN || "localhost";
 
         // Allow overriding sender name
-        const mailFromName = options?.senderName || process.env.MAIL_FROM_NAME || "TempMail Pro";
+        const mailFromName = options?.senderName || process.env.MAIL_FROM_NAME || "Ephemera";
 
         // Generate proper message ID
         const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${mailDomain}>`;
@@ -66,7 +66,7 @@ export class OutboundService {
             attachments,
             messageId,
             headers: {
-                'X-Mailer': 'TempMail Pro',
+                'X-Mailer': 'Ephemera',
                 'X-Priority': '3',
                 'List-Unsubscribe': `<mailto:unsubscribe@${mailDomain}>`,
                 ...options?.headers // Merge custom headers

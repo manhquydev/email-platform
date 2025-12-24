@@ -54,7 +54,7 @@ export const appConfig = {
   trustProxy: (process.env.TRUST_PROXY ?? "true").toLowerCase() === "true",
   outboundEnabled: (process.env.OUTBOUND_ENABLED ?? "false").toLowerCase() === "true",
   mailDomain: process.env.MAIL_DOMAIN ?? "localhost",
-  mailFromName: process.env.MAIL_FROM_NAME ?? "TempMail Pro",
+  mailFromName: process.env.MAIL_FROM_NAME ?? "Ephemera",
   mailFromAddress: process.env.MAIL_FROM_ADDRESS ?? "noreply@localhost",
   // TOTP secret encryption key (32 bytes = 64 hex chars for AES-256)
   // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"

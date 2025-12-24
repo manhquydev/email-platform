@@ -46,9 +46,9 @@ export async function sendForwardVerification(
 
         // Send verification email
         await outboundService.sendEmail(
-            process.env.MAIL_DOMAIN ? `noreply@${process.env.MAIL_DOMAIN}` : "noreply@tempmail.pro",
+            process.env.MAIL_DOMAIN ? `noreply@${process.env.MAIL_DOMAIN}` : "noreply@ephemera.click",
             email,
-            "Xác minh địa chỉ email chuyển tiếp - TempMail Pro",
+            "Xác minh địa chỉ email chuyển tiếp - Ephemera",
             `
 Mã xác minh của bạn: ${code}
 
@@ -67,7 +67,7 @@ TempMail Pro
 </head>
 <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
-    <h1 style="color: white; margin: 0;">📧 TempMail Pro</h1>
+    <h1 style="color: white; margin: 0;">📧 Ephemera</h1>
   </div>
   
   <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
@@ -381,12 +381,12 @@ export async function forwardMessageIfMatched(
 
                 // Forward the email using OutboundService
                 await outboundService.sendEmail(
-                    process.env.MAIL_DOMAIN ? `noreply@${process.env.MAIL_DOMAIN}` : "noreply@tempmail.pro",
+                    process.env.MAIL_DOMAIN ? `noreply@${process.env.MAIL_DOMAIN}` : "noreply@ephemera.click",
                     rule.forwardTo,
                     `[FWD] ${message.subject || "(Không có tiêu đề)"}`,
                     `
 ────────────────────────────
-📩 Email được chuyển tiếp từ TempMail Pro
+📩 Email được chuyển tiếp từ Ephemera
 ────────────────────────────
 Từ: ${message.fromAddress || "Unknown"}
 Đến: ${message.toAddress || ""}
@@ -403,7 +403,7 @@ ${message.textBody || "(Không có nội dung)"}
 <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto;">
   <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
     <p style="margin: 0; color: #64748b; font-size: 14px;">
-      📩 Email được chuyển tiếp từ <strong>TempMail Pro</strong>
+      📩 Email được chuyển tiếp từ <strong>Ephemera</strong>
     </p>
     <p style="margin: 5px 0 0; color: #334155;">
       <strong>Từ:</strong> ${message.fromAddress || "Unknown"}<br>
@@ -425,7 +425,7 @@ ${message.textBody || "(Không có nội dung)"}
           `,
                     undefined,
                     {
-                        senderName: "TempMail Forward",
+                        senderName: "Ephemera Forward",
                         replyTo: message.fromAddress || undefined,
                         headers: {
                             "X-Original-From": message.fromAddress || "",

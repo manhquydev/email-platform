@@ -1,16 +1,16 @@
 /**
  * Email Templates Service
- * Professional HTML email templates for TempMail Pro
+ * Professional HTML email templates for Ephemera
  */
 
 import { appConfig } from "../config";
 
 interface TemplateParams {
-    recipientEmail?: string;
-    verificationUrl?: string;
-    platformName?: string;
-    supportEmail?: string;
-    currentYear?: number;
+  recipientEmail?: string;
+  verificationUrl?: string;
+  platformName?: string;
+  supportEmail?: string;
+  currentYear?: number;
 }
 
 const getBaseStyles = () => `
@@ -232,18 +232,18 @@ const getFooter = (params: TemplateParams) => `
  * Generate verification email HTML
  */
 export function verificationEmailTemplate(params: {
-    verificationUrl: string;
-    recipientEmail: string;
+  verificationUrl: string;
+  recipientEmail: string;
 }): { html: string; text: string; subject: string } {
-    const templateParams: TemplateParams = {
-        recipientEmail: params.recipientEmail,
-        verificationUrl: params.verificationUrl,
-        platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
-        supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
-        currentYear: new Date().getFullYear(),
-    };
+  const templateParams: TemplateParams = {
+    recipientEmail: params.recipientEmail,
+    verificationUrl: params.verificationUrl,
+    platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
+    supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
+    currentYear: new Date().getFullYear(),
+  };
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -291,7 +291,7 @@ export function verificationEmailTemplate(params: {
 </html>
 `;
 
-    const text = `
+  const text = `
 Xác thực tài khoản ${templateParams.platformName}
 
 Xin chào!
@@ -310,27 +310,27 @@ Email: ${templateParams.supportEmail}
 Website: ${appConfig.webUrl}
 `;
 
-    return {
-        html,
-        text,
-        subject: `✉️ Xác thực email - ${templateParams.platformName}`,
-    };
+  return {
+    html,
+    text,
+    subject: `✉️ Xác thực email - ${templateParams.platformName}`,
+  };
 }
 
 /**
  * Generate welcome email after verification
  */
 export function welcomeEmailTemplate(params: {
-    recipientEmail: string;
+  recipientEmail: string;
 }): { html: string; text: string; subject: string } {
-    const templateParams: TemplateParams = {
-        recipientEmail: params.recipientEmail,
-        platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
-        supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
-        currentYear: new Date().getFullYear(),
-    };
+  const templateParams: TemplateParams = {
+    recipientEmail: params.recipientEmail,
+    platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
+    supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
+    currentYear: new Date().getFullYear(),
+  };
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -378,7 +378,7 @@ export function welcomeEmailTemplate(params: {
 </html>
 `;
 
-    const text = `
+  const text = `
 Chào mừng đến ${templateParams.platformName}!
 
 Xin chào!
@@ -399,28 +399,28 @@ Email: ${templateParams.supportEmail}
 Website: ${appConfig.webUrl}
 `;
 
-    return {
-        html,
-        text,
-        subject: `🎉 Chào mừng đến ${templateParams.platformName}!`,
-    };
+  return {
+    html,
+    text,
+    subject: `🎉 Chào mừng đến ${templateParams.platformName}!`,
+  };
 }
 
 /**
  * Generate password reset email
  */
 export function passwordResetEmailTemplate(params: {
-    resetUrl: string;
-    recipientEmail: string;
+  resetUrl: string;
+  recipientEmail: string;
 }): { html: string; text: string; subject: string } {
-    const templateParams: TemplateParams = {
-        recipientEmail: params.recipientEmail,
-        platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
-        supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
-        currentYear: new Date().getFullYear(),
-    };
+  const templateParams: TemplateParams = {
+    recipientEmail: params.recipientEmail,
+    platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
+    supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
+    currentYear: new Date().getFullYear(),
+  };
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -468,7 +468,7 @@ export function passwordResetEmailTemplate(params: {
 </html>
 `;
 
-    const text = `
+  const text = `
 Đặt lại mật khẩu ${templateParams.platformName}
 
 Xin chào!
@@ -488,9 +488,9 @@ Email: ${templateParams.supportEmail}
 Website: ${appConfig.webUrl}
 `;
 
-    return {
-        html,
-        text,
-        subject: `🔐 Đặt lại mật khẩu - ${templateParams.platformName}`,
-    };
+  return {
+    html,
+    text,
+    subject: `🔐 Đặt lại mật khẩu - ${templateParams.platformName}`,
+  };
 }

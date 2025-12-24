@@ -238,7 +238,7 @@ export function verificationEmailTemplate(params: {
   const templateParams: TemplateParams = {
     recipientEmail: params.recipientEmail,
     verificationUrl: params.verificationUrl,
-    platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
+    platformName: process.env.MAIL_FROM_NAME || "Ephemera",
     supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
     currentYear: new Date().getFullYear(),
   };
@@ -325,7 +325,7 @@ export function welcomeEmailTemplate(params: {
 }): { html: string; text: string; subject: string } {
   const templateParams: TemplateParams = {
     recipientEmail: params.recipientEmail,
-    platformName: process.env.MAIL_FROM_NAME || "TempMail Pro",
+    platformName: process.env.MAIL_FROM_NAME || "Ephemera",
     supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
     currentYear: new Date().getFullYear(),
   };

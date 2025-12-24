@@ -57,7 +57,7 @@ Mã này có hiệu lực trong 30 phút.
 Nếu bạn không yêu cầu xác minh này, hãy bỏ qua email này.
 
 ---
-TempMail Pro
+Ephemera
       `,
             `
 <!DOCTYPE html>

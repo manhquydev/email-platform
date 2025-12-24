@@ -56,7 +56,7 @@ export function FocusDashboard() {
         try {
             const domain = domains.find(d => d.id === domainId);
             if (!domain) return;
-            const params = new URLSearchParams({ domain: domain.name, limit: "100" });
+            const params = new URLSearchParams({ domain: domain.name, limit: "100", personal: "true" });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res.data);
             // Auto-select first inbox

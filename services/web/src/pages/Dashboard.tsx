@@ -84,7 +84,7 @@ export function Dashboard() {
             // Get ALL inboxes for this domain that I can see
             // Note: API might filter for us. Assuming /inboxes returns my inboxes or all if I am admin?
             // Actually, usually /inboxes list returns inboxes I own or created.
-            const params = new URLSearchParams({ domain: domain.name, limit: "100" });
+            const params = new URLSearchParams({ domain: domain.name, limit: "100", personal: "true" });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res.data);
 

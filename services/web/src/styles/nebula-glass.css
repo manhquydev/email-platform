@@ -564,6 +564,23 @@
     background: var(--nebula-elevated);
     border-radius: var(--nebula-radius-lg);
     margin-bottom: var(--nebula-space-lg);
+
+    /* Mobile scrolling support */
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Hide scrollbar for Chrome/Safari/Opera */
+.tabs-nebula::-webkit-scrollbar {
+    display: none;
+}
+
+.tabs-nebula .tab-nebula {
+    flex: 0 0 auto;
+    /* Prevent tabs from shrinking */
 }
 
 .tab-nebula {

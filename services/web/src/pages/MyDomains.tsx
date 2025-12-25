@@ -12,6 +12,7 @@ export function MyDomains() {
     const [loading, setLoading] = useState(true);
     const [newDomainName, setNewDomainName] = useState("");
     const [showAddForm, setShowAddForm] = useState(false);
+    const [addedDomain, setAddedDomain] = useState<Domain | null>(null);
     const [busy, setBusy] = useState(false);
     const [verifyingId, setVerifyingId] = useState<string | null>(null);
     const [togglingId, setTogglingId] = useState<string | null>(null);
@@ -42,10 +43,11 @@ export function MyDomains() {
         }
         setBusy(true);
         try {
-            await api("/domains", { method: "POST", token, body: { name: newDomainName.trim() } });
+            const res = await api<{ domain: Domain }>("/domains", { method: "POST", token, body: { name: newDomainName.trim() } });
+            // Don't close form immediately, show success state
+            setAddedDomain(res.domain);
             toast.success("Đã thêm tên miền!");
             setNewDomainName("");
-            setShowAddForm(false);
             await loadDomains();
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
@@ -147,31 +149,100 @@ export function MyDomains() {
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-nebula-fade-in">
                             <div className="glass-card-elevated w-full max-w-md animate-nebula-scale-in">
                                 <div className="glass-card-header">
-                                    <h2 className="text-lg font-semibold" style={{ color: 'var(--nebula-text)' }}>Thêm domain mới</h2>
-                                    <button onClick={() => setShowAddForm(false)} className="btn-nebula btn-nebula-ghost btn-nebula-icon">
+                                    <h2 className="text-lg font-semibold" style={{ color: 'var(--nebula-text)' }}>
+                                        {addedDomain ? (
+                                            <span className="flex items-center gap-2 text-[var(--nebula-success)]">
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Đã thêm tên miền!
+                                            </span>
+                                        ) : (
+                                            "Thêm domain mới"
+                                        )}
+                                    </h2>
+                                    <button onClick={() => { setShowAddForm(false); setAddedDomain(null); }} className="btn-nebula btn-nebula-ghost btn-nebula-icon">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
                                 <div className="glass-card-body space-y-4">
-                                    <div>
-                                        <label className="label-nebula">Tên miền</label>
-                                        <input
-                                            type="text"
-                                            value={newDomainName}
-                                            onChange={(e) => setNewDomainName(e.target.value)}
-                                            placeholder="example.com"
-                                            className="input-nebula"
-                                            onKeyDown={(e) => e.key === "Enter" && handleAddDomain()}
-                                        />
-                                    </div>
-                                    <div className="flex justify-end gap-3">
-                                        <button onClick={() => setShowAddForm(false)} className="btn-nebula btn-nebula-secondary">Hủy</button>
-                                        <button onClick={handleAddDomain} disabled={busy} className="btn-nebula btn-nebula-primary">
-                                            {busy ? "Đang thêm..." : "Thêm domain"}
-                                        </button>
-                                    </div>
+                                    {!addedDomain ? (
+                                        <>
+                                            <div>
+                                                <label className="label-nebula">Tên miền</label>
+                                                <input
+                                                    type="text"
+                                                    value={newDomainName}
+                                                    onChange={(e) => setNewDomainName(e.target.value)}
+                                                    placeholder="example.com"
+                                                    className="input-nebula"
+                                                    onKeyDown={(e) => e.key === "Enter" && handleAddDomain()}
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <div className="flex justify-end gap-3">
+                                                <button onClick={() => setShowAddForm(false)} className="btn-nebula btn-nebula-secondary">Hủy</button>
+                                                <button onClick={handleAddDomain} disabled={busy} className="btn-nebula btn-nebula-primary">
+                                                    {busy ? "Đang thêm..." : "Thêm domain"}
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="animate-nebula-fade-in">
+                                            <p className="text-sm mb-4" style={{ color: 'var(--nebula-text-muted)' }}>
+                                                Để hoàn tất, hãy cấu hình DNS cho <strong>{addedDomain.name}</strong>:
+                                            </p>
+
+                                            <div className="rounded-lg overflow-hidden mb-6" style={{ border: '1px solid var(--nebula-border)' }}>
+                                                <table className="w-full text-sm">
+                                                    <thead style={{ background: 'var(--nebula-elevated)' }}>
+                                                        <tr>
+                                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Type</th>
+                                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Value</th>
+                                                            <th className="px-3 py-2 w-10"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {/* MX Record */}
+                                                        <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
+                                                            <td className="px-3 py-2 font-mono font-bold" style={{ color: 'var(--nebula-error)' }}>MX</td>
+                                                            <td className="px-3 py-2 font-mono text-xs break-all" style={{ color: 'var(--nebula-text-secondary)' }}>
+                                                                mail.manhquy.click
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <button onClick={() => copyToClipboard("mail.manhquy.click")} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
+                                                                    <svg className="w-4 h-4 text-[var(--nebula-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        {/* TXT Record */}
+                                                        <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
+                                                            <td className="px-3 py-2 font-mono font-bold" style={{ color: 'var(--nebula-success)' }}>TXT</td>
+                                                            <td className="px-3 py-2 font-mono text-xs break-all" style={{ color: 'var(--nebula-text-secondary)' }}>
+                                                                {addedDomain.verificationToken}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <button onClick={() => copyToClipboard(addedDomain.verificationToken)} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
+                                                                    <svg className="w-4 h-4 text-[var(--nebula-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <button
+                                                    onClick={() => { setShowAddForm(false); setAddedDomain(null); }}
+                                                    className="btn-nebula btn-nebula-primary w-full justify-center"
+                                                >
+                                                    Đã hiểu, đóng lại
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

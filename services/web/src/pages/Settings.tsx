@@ -301,7 +301,7 @@ export function Settings() {
                 </div>
 
                 {/* Content */}
-                <div className="max-w-4xl mx-auto px-6 py-8">
+                <div className="max-w-4xl mx-auto px-4 py-6 md:px-6 md:py-8">
                     {/* Tabs */}
                     <div className="tabs-nebula">
                         {tabs.map(tab => (

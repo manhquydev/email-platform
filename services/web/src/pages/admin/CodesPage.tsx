@@ -49,10 +49,10 @@ export function CodesPage() {
         setLoading(true);
         try {
             const [codesRes, packagesRes] = await Promise.all([
-                api<{ codes: RedemptionCode[] }>("/admin/codes", { token }),
+                api<{ data: RedemptionCode[] }>("/admin/codes", { token }),
                 api<{ packages: ServicePackage[] }>("/admin/packages", { token })
             ]);
-            setCodes(codesRes.codes);
+            setCodes(codesRes.data);
             setPackages(packagesRes.packages);
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));

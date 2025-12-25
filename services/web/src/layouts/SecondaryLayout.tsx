@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconRail } from "../components/IconRail";
-import { MobileNavigation, usePullToRefresh, PullToRefreshIndicator } from "../components/MobileNavigation";
+import { MobileNavigation } from "../components/MobileNavigation";
 
 interface SecondaryLayoutProps {
     children: React.ReactNode;
@@ -58,10 +58,7 @@ export function SecondaryLayout({ children, title }: SecondaryLayoutProps) {
         return () => document.removeEventListener('click', handleClickOutside);
     }, [showUserMenu]);
 
-    // Pull to Refresh logic
-    const { pullDistance, isRefreshing, threshold } = usePullToRefresh(async () => {
-        window.location.reload();
-    });
+
 
     const handleMobileTabChange = (tab: string) => {
         if (tab === 'inbox') navigate('/app');
@@ -74,11 +71,7 @@ export function SecondaryLayout({ children, title }: SecondaryLayoutProps) {
 
     return (
         <div className={`focus-stream-layout ${isNavExpanded ? 'nav-expanded' : ''}`}>
-            <PullToRefreshIndicator
-                pullDistance={pullDistance}
-                threshold={threshold}
-                isRefreshing={isRefreshing}
-            />
+
             <IconRail
                 onSearchClick={() => { }}
                 onQuickActionsClick={() => { }}

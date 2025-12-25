@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IconRail } from "../components/IconRail";
 import { CommandPalette } from "../components/CommandPalette";
 import { SearchBar } from "../components/SearchBar";
-import { MobileNavigation, usePullToRefresh, PullToRefreshIndicator } from "../components/MobileNavigation";
+
 import type { Domain, Inbox } from "../types";
+import { MobileNavigation } from "../components/MobileNavigation";
 
 interface FocusStreamLayoutProps {
     children: React.ReactNode;
@@ -45,16 +46,7 @@ export function FocusStreamLayout({
         }
     };
 
-    // Pull to Refresh logic
-    const { pullDistance, isRefreshing, threshold } = usePullToRefresh(async () => {
-        // Find refresh button or call a generic refresh if available
-        const refreshBtn = document.querySelector('.icon-rail-item[title*="Làm mới"]') as HTMLButtonElement;
-        if (refreshBtn) {
-            refreshBtn.click();
-        } else {
-            window.location.reload();
-        }
-    });
+
 
     const handleMobileTabChange = (tab: string) => {
         if (tab === 'inbox') navigate('/app');
@@ -82,11 +74,7 @@ export function FocusStreamLayout({
 
     return (
         <div className={`focus-stream-layout ${isFocusMode ? 'focus-mode' : ''} ${isNavExpanded ? 'nav-expanded' : ''}`}>
-            <PullToRefreshIndicator
-                pullDistance={pullDistance}
-                threshold={threshold}
-                isRefreshing={isRefreshing}
-            />
+
 
             {/* Mobile Navigation Overlay */}
             {isMobileNavOpen && (

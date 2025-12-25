@@ -6,7 +6,7 @@ import { InboxCard } from "../components/InboxCard";
 import { TabNavigation, InboxTabIcon, MessagesTabIcon } from "../components/TabNavigation";
 import { EmailStream } from "../components/EmailStream";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
-import { usePullToRefresh, PullToRefreshIndicator } from "../components/MobileNavigation";
+
 import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 import { lazy, Suspense } from "react";
@@ -285,14 +285,7 @@ export function InboxManager() {
 
     const unreadCount = messages.filter(m => !m.isRead).length;
 
-    // Pull to Refresh logic
-    const { pullDistance, isRefreshing, threshold } = usePullToRefresh(async () => {
-        if (activeTab === 'inboxes') {
-            await loadInboxes();
-        } else if (activeInbox) {
-            await loadMessages(activeInbox.id);
-        }
-    });
+
 
 
 
@@ -305,11 +298,7 @@ export function InboxManager() {
             onSearch={handleSearch}
             unreadCount={unreadCount}
         >
-            <PullToRefreshIndicator
-                pullDistance={pullDistance}
-                threshold={threshold}
-                isRefreshing={isRefreshing}
-            />
+
             {/* Tab Navigation */}
             <div className="inbox-manager-header">
                 <TabNavigation

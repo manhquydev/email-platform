@@ -1034,4 +1034,36 @@ export async function adminRoutes(app: FastifyInstance) {
         await recordAudit((request.user as any).userId, "ADMIN_PACKAGE_DELETED", { packageId: params.data.id });
         return { success: true };
     });
+    // System Cleanup Trigger
+    app.post("/admin/system/cleanup", { preHandler: app.requireAdmin }, async (req, reply) => {
+        const logger = {
+            info: (obj: any, msg: string) => req.log.info(obj, msg),
+            error: (obj: any, msg: string) => req.log.error(obj, msg),
+            warn: (obj: any, msg: string) => req.log.warn(obj, msg)
+        };
+
+        // Dynamic import to avoid circular dependency issues if any, or just to keep it clean
+        const { runRetentionSweep } = await import("../retention");
+
+        // Run in background intentionally or wait? 
+        // For admin feedback, waiting is better unless it takes too long.
+        // Let's await it.
+        try {
+            await runRetentionSweep(logger);
+            await recordAudit((req.user as any).userId, "SYSTEM_CLEANUP_TRIGGERED", {});
+            return { success: true, message: "Retention sweep completed" };
+        } catch (err: any) {
+            return reply.status(500).send({ error: "Cleanup failed: " + err.message });
+        }
+    });
+
+    // Check DB Connection
+    app.post("/admin/system/check-db", { preHandler: app.requireAdmin }, async (req, reply) => {
+        try {
+            await prisma.$queryRaw`SELECT 1`;
+            return { success: true, message: "Database connection healthy" };
+        } catch (err: any) {
+            return reply.status(500).send({ error: "Database check failed: " + err.message });
+        }
+    });
 }

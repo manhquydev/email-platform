@@ -86,6 +86,19 @@ export function CodesPage() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        setLoading(true);
+        try {
+            await api(`/admin/codes/${id}`, { method: "DELETE", token });
+            toast.success("Đã xóa mã đổi thưởng");
+            await loadData();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast.success("Đã copy mã: " + text);
@@ -170,8 +183,20 @@ export function CodesPage() {
                                             variant={!code.isActive ? "default" : (code.usedCount >= code.maxUses ? "warning" : "success")}
                                         />
                                     </TableCell>
-                                    <TableCell className="text-right">
-                                        <PremiumButton variant="ghost" size="sm" onClick={() => copyToClipboard(code.code)}>Copy</PremiumButton>
+                                    <TableCell>
+                                        <div className="flex gap-2 justify-end">
+                                            <PremiumButton variant="ghost" size="sm" onClick={() => copyToClipboard(code.code)}>Copy</PremiumButton>
+                                            <PremiumButton
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                onClick={() => {
+                                                    if (confirm("Bạn có chắc muốn xóa mã này?")) handleDelete(code.id);
+                                                }}
+                                            >
+                                                Xóa
+                                            </PremiumButton>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

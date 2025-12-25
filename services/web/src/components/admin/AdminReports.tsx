@@ -138,16 +138,18 @@ export function AdminReports({ token }: { token: string }) {
                                     )}
                                 </div>
 
-                                <select
-                                    value={report.status}
-                                    onChange={(e) => handleStatusChange(report.id, e.target.value)}
-                                    disabled={updating === report.id}
-                                    className="text-xs py-2 px-3 w-28 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-50"
-                                >
-                                    <option value="OPEN">Mở</option>
-                                    <option value="REVIEWING">Đang xem</option>
-                                    <option value="CLOSED">Đã đóng</option>
-                                </select>
+                                <div className="w-32">
+                                    <PremiumSelect
+                                        value={report.status}
+                                        onChange={(val) => handleStatusChange(report.id, val)}
+                                        disabled={updating === report.id}
+                                        options={[
+                                            { value: "OPEN", label: "Mở" },
+                                            { value: "REVIEWING", label: "Đang xem" },
+                                            { value: "CLOSED", label: "Đã đóng" },
+                                        ]}
+                                    />
+                                </div>
                             </div>
                         </GlassCard>
                     ))}

@@ -10,10 +10,11 @@ import { AdminLogs } from "./admin/AdminLogs";
 import { AdminEmails } from "./admin/AdminEmails";
 import { AdminSubscriptions } from "./admin/AdminSubscriptions";
 import { AdminSystem } from "./admin/AdminSystem";
-import { AdminDomains } from "./admin/AdminDomains";
 import { AdminInboxes } from "./admin/AdminInboxes";
+import { AdminOrders } from "./admin/AdminOrders";
+import { AdminDomains } from "./admin/AdminDomains";
 
-type TabType = "dashboard" | "users" | "subscriptions" | "inboxes" | "emails" | "rules" | "domains" | "reports" | "logs" | "system" | "settings";
+type TabType = "dashboard" | "users" | "subscriptions" | "orders" | "inboxes" | "emails" | "rules" | "domains" | "reports" | "logs" | "system" | "settings";
 
 interface Tab {
     id: TabType;
@@ -48,7 +49,7 @@ const icons = {
     globe: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10 15.3 15.3 0 0 1 4-10z" />
         </svg>
     ),
     flag: (
@@ -96,6 +97,11 @@ const icons = {
     inbox: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        </svg>
+    ),
+    receipt: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         </svg>
     ),
 };
@@ -159,6 +165,7 @@ export function AdminPanel({ token }: { token: string }) {
         { id: "dashboard", label: "Tổng quan", icon: icons.dashboard },
         { id: "users", label: "Người dùng", icon: icons.users, badge: counts.totalUsers },
         { id: "subscriptions", label: "Gói cước", icon: icons.creditCard },
+        { id: "orders", label: "Đơn hàng", icon: icons.receipt },
         { id: "inboxes", label: "Hộp thư", icon: icons.inbox },
         { id: "emails", label: "Email", icon: icons.email },
         { id: "rules", label: "Quy tắc bảo vệ", icon: icons.shield },
@@ -193,7 +200,7 @@ export function AdminPanel({ token }: { token: string }) {
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--nebula-violet)' }}>
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
@@ -309,6 +316,7 @@ export function AdminPanel({ token }: { token: string }) {
                 {activeTab === "dashboard" && <AdminDashboard token={token} />}
                 {activeTab === "users" && <AdminUsers token={token} />}
                 {activeTab === "subscriptions" && <AdminSubscriptions token={token} />}
+                {activeTab === "orders" && <AdminOrders token={token} />}
                 {activeTab === "inboxes" && <AdminInboxes token={token} />}
                 {activeTab === "emails" && <AdminEmails token={token} />}
                 {activeTab === "rules" && <RulesList token={token} />}
@@ -321,7 +329,6 @@ export function AdminPanel({ token }: { token: string }) {
         </div>
     );
 }
-
 
 function RulesList({ token }: { token: string }) {
     const [rules, setRules] = useState<any[]>([]);
@@ -478,8 +485,6 @@ function RulesList({ token }: { token: string }) {
     );
 }
 
-
-
 function SettingsPanel({ token }: { token: string }) {
     const [password, setPassword] = useState("");
     const [msg, setMsg] = useState("");
@@ -523,7 +528,7 @@ function SettingsPanel({ token }: { token: string }) {
             try {
                 const [profileRes, systemRes] = await Promise.all([
                     api<{ user: typeof profile }>("/admin/profile", { token }),
-                    api<{ system: typeof systemInfo }>("/admin/system-info", { token }),
+                    api<{ system: typeof systemInfo }>("/admin/system-info", { token })
                 ]);
                 setProfile(profileRes.user);
                 setSystemInfo(systemRes.system);
@@ -753,77 +758,50 @@ function SettingsPanel({ token }: { token: string }) {
                                 <input
                                     type="text"
                                     value={verifyCode}
-                                    onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    onChange={(e) => setVerifyCode(e.target.value)}
+                                    className="text-sm w-32 tracking-widest text-center"
                                     placeholder="000000"
-                                    className="text-sm w-32 text-center tracking-widest font-mono"
                                     maxLength={6}
                                 />
-                                <button onClick={enable2FA} disabled={twoFABusy || verifyCode.length !== 6} className="btn-primary h-10 px-6">
-                                    {twoFABusy ? "Đang xác minh..." : "Xác nhận"}
+                                <button onClick={enable2FA} disabled={twoFABusy} className="btn-primary h-10">
+                                    Xác nhận
                                 </button>
-                                <button onClick={() => setTwoFAStep("idle")} className="btn btn-secondary h-10 px-4">Hủy</button>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Step: Show backup codes */}
+                {/* Step: Backup codes (Success) */}
                 {twoFAStep === "backup" && (
                     <div className="space-y-4">
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <h4 className="font-medium text-yellow-800 mb-2">⚠️ Lưu mã khôi phục</h4>
-                            <p className="text-sm text-yellow-700 mb-3">
-                                Lưu các mã này ở nơi an toàn. Bạn sẽ không thể xem lại chúng!
-                            </p>
-                            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded border border-yellow-300">
-                                {backupCodes.map((code, i) => (
-                                    <code key={i} className="text-sm font-mono">{code}</code>
-                                ))}
-                            </div>
+                        <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm border border-green-200">
+                            <strong>Đã kích hoạt thành công!</strong> Đây là các mã dự phòng của bạn. Hãy lưu chúng vào nơi an toàn.
                         </div>
-                        <button onClick={() => setTwoFAStep("idle")} className="btn-primary h-10 px-6">
-                            Tôi đã lưu mã
+                        <div className="grid grid-cols-2 gap-2 bg-bg p-4 rounded-lg border border-border">
+                            {backupCodes.map((code) => (
+                                <div key={code} className="font-mono text-xs text-center">{code}</div>
+                            ))}
+                        </div>
+                        <button onClick={() => setTwoFAStep("idle")} className="btn-secondary h-10 w-full">
+                            Đã lưu mã dự phòng
                         </button>
                     </div>
                 )}
 
                 {/* Status: Enabled */}
-                {profile?.twoFactorEnabled && twoFAStep === "idle" && (
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm">
-                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                            <span className="text-green-600 font-medium">2FA đang được kích hoạt</span>
+                {profile?.twoFactorEnabled && (
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200 text-sm">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Đang bật bảo vệ 2FA
                         </div>
-                        <button onClick={disable2FA} disabled={twoFABusy} className="text-sm px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded hover:bg-red-100">
-                            {twoFABusy ? "Đang tắt..." : "Tắt 2FA"}
+                        <button onClick={disable2FA} disabled={twoFABusy} className="text-sm text-danger hover:underline">
+                            Tắt xác thực hai yếu tố
                         </button>
                     </div>
                 )}
-            </div>
-
-            {/* Danger Zone */}
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg p-5 mt-6">
-                <h3 className="text-sm font-medium mb-2 text-red-800 dark:text-red-300 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                    </svg>
-                    Vùng nguy hiểm
-                </h3>
-                <p className="text-xs text-red-700 dark:text-red-400 mb-3">
-                    Các thao tác này có thể ảnh hưởng đến toàn bộ hệ thống. Hãy cẩn thận!
-                </p>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => {
-                            if (confirm("Bạn có chắc muốn xóa tất cả nhật ký cũ hơn 30 ngày?")) {
-                                toast.success("Tính năng sẽ được thêm sau");
-                            }
-                        }}
-                        className="text-xs px-3 py-1.5 bg-white dark:bg-white/10 border border-red-300 dark:border-red-800/50 text-red-700 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-900/30"
-                    >
-                        Dọn dẹp nhật ký cũ
-                    </button>
-                </div>
             </div>
         </div>
     );

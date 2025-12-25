@@ -95,18 +95,34 @@ export function Plans() {
         }
     };
 
+    // Filter packages based on billing cycle
+    const filteredPackages = packages.filter(pkg => {
+        if (pkg.type !== 'TIME_BASED') return true; // Always show credit packages? Or maybe filter them out if strictly time-based page.
+        // Assuming credit packages are agnostic, but let's stick to subscription logic.
+
+        // Duration check: Monthly (~30 days), Yearly (~365 days)
+        const days = pkg.durationDays || 30;
+        if (billingCycle === 'monthly') {
+            return days <= 45; // Capture 30, 31 days
+        } else {
+            return days > 45; // Capture 90, 180, 365 days
+        }
+    });
+
     // Map backend packages to UI plans
-    const dynamicPlans: Plan[] = packages.map(pkg => ({
+    const dynamicPlans: Plan[] = filteredPackages.map(pkg => ({
         id: pkg.targetTier || "FREE",
-        name: pkg.name,
+        name: pkg.name.replace(" (Test)", "").replace(" (Yearly)", ""), // Clean up names for UI
         description: pkg.description || "",
         price: pkg.price,
         currency: pkg.currency === 'VND' ? 'đ' : pkg.currency,
-        period: pkg.type === 'TIME_BASED' ? '/tháng' : ' lượt',
+        period: pkg.type === 'TIME_BASED' ? (pkg.durationDays > 45 ? '/năm' : '/tháng') : ' lượt',
         features: [
             { text: pkg.type === 'TIME_BASED' ? `${pkg.durationDays} ngày sử dụng` : `+${pkg.creditAmount} Credits`, included: true },
             // Add more default features based on tier
             { text: "Hỗ trợ 24/7", included: true },
+            { text: "Tên miền riêng", included: true },
+            { text: "API Access", included: pkg.targetTier === 'PROFESSIONAL' || pkg.targetTier === 'ENTERPRISE' },
         ],
         recommended: pkg.targetTier === 'PROFESSIONAL',
         buttonText: currentTier === pkg.targetTier ? "Đang sử dụng" : "Mua ngay",

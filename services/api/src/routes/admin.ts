@@ -876,4 +876,34 @@ export async function adminRoutes(app: FastifyInstance) {
 
         return { success: true };
     });
+    // List Orders / Payments
+    app.get("/admin/orders", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const query = z.object({
+            search: z.string().optional(),
+            limit: z.coerce.number().min(1).max(100).optional(),
+            offset: z.coerce.number().min(0).optional(),
+        }).safeParse(request.query);
+
+        if (!query.success) return reply.status(400).send({ error: "Invalid query" });
+
+        const where: any = {};
+        if (query.data.search) {
+            where.user = {
+                email: { contains: query.data.search, mode: "insensitive" }
+            };
+        }
+
+        const [orders, total] = await Promise.all([
+            prisma.payment.findMany({
+                where,
+                include: { user: { select: { email: true } } },
+                orderBy: { createdAt: "desc" },
+                take: query.data.limit ?? 20,
+                skip: query.data.offset ?? 0,
+            }),
+            prisma.payment.count({ where })
+        ]);
+
+        return { data: orders, meta: { total } };
+    });
 }

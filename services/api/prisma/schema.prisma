@@ -39,6 +39,7 @@ model User {
   inboxes                    Inbox[]
   telegramLinkTokens         TelegramLinkToken[]
   redemptions                CodeRedemption[]       @relation("UserRedemptions")
+  payments                   Payment[]
 }
 
 model Domain {
@@ -404,5 +405,18 @@ model SystemSetting {
   value       String
   description String?
   updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  userId          String
+  amount          Decimal
+  currency        String
+  status          String   // SUCCEEDED, FAILED, PENDING
+  stripePaymentId String?  @unique
+  packageId       String?
+  createdAt       DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id])
 }
 

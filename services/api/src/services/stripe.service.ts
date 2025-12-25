@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { appConfig } from "../config";
 import { PrismaClient, PackageType, SubscriptionTier, SubscriptionStatus } from "@prisma/client";
+import Decimal from "decimal.js";
 
 const prisma = new PrismaClient();
 const stripe = new Stripe(appConfig.stripe.apiKey, {
@@ -66,17 +67,20 @@ export class StripeService {
             throw new Error(`Webhook Error: ${err.message}`);
         }
 
+        console.log(`Processing event: ${event.type}`);
+
         switch (event.type) {
             case "checkout.session.completed": {
                 const session = event.data.object as Stripe.Checkout.Session;
                 await this.fulfillOrder(session);
                 break;
             }
-            case "invoice.paid": {
-                const invoice = event.data.object as any;
-                // Handle subscription renewal
-                if (invoice.subscription) {
-                    await this.handleSubscriptionPaid(invoice.subscription as string);
+            case "invoice.payment_succeeded": {
+                const invoice = event.data.object as Stripe.Invoice;
+                const subscriptionId = (invoice as any).subscription as string;
+
+                if (!subscriptionId) {
+                    await this.handleSubscriptionPaid(invoice);
                 }
                 break;
             }
@@ -90,11 +94,56 @@ export class StripeService {
         }
     }
 
+    private static async recordPayment(data: {
+        userId: string;
+        stripePaymentId: string;
+        amount: number;
+        currency: string;
+        status: string;
+        packageId?: string;
+    }) {
+        try {
+            // Check if payment already exists to be safe
+            const existing = await prisma.payment.findUnique({
+                where: { stripePaymentId: data.stripePaymentId }
+            });
+
+            if (existing) return;
+
+            await prisma.payment.create({
+                data: {
+                    userId: data.userId,
+                    stripePaymentId: data.stripePaymentId,
+                    amount: data.amount, // Stored as is (e.g. 199000), frontend should format
+                    currency: data.currency,
+                    status: data.status,
+                    packageId: data.packageId
+                }
+            });
+        } catch (err) {
+            console.error("Failed to record payment:", err);
+        }
+    }
+
     private static async fulfillOrder(session: Stripe.Checkout.Session) {
         const userId = session.metadata?.userId;
         const packageId = session.metadata?.packageId;
 
         if (!userId || !packageId) return;
+
+        // Record payment
+        if (session.payment_status === 'paid') {
+            await this.recordPayment({
+                userId,
+                stripePaymentId: session.payment_intent as string || session.id, // Use session ID if PI is missing (e.g. strict setup)
+                amount: (session.amount_total || 0), // Stripe is usually in cents/smallest unit? VND is 1:1 usually on Stripe?
+                // Stripe VND is zero-decimal? Actually Stripe treats VND as valid integer. 
+                // Let's store what Stripe sends.
+                currency: session.currency || 'vnd',
+                status: 'SUCCEEDED',
+                packageId
+            });
+        }
 
         const pkg = await prisma.servicePackage.findUnique({ where: { id: packageId } });
         if (!pkg) return;
@@ -122,12 +171,32 @@ export class StripeService {
         }
     }
 
-    private static async handleSubscriptionPaid(stripeSubscriptionId: string) {
+    private static async handleSubscriptionPaid(invoice: Stripe.Invoice) {
+        const stripeSubscriptionId = (invoice as any).subscription as string;
+        if (!stripeSubscriptionId) return;
+
         const user = await prisma.user.findFirst({
             where: { stripeSubscriptionId },
         });
 
         if (!user) return;
+
+        // Try to find the package associated with the subscription if possible
+        // This is a simplified approach; a real app might store packageId in subscription metadata
+        const lineItem = invoice.lines.data[0] as any;
+        const pkg = await prisma.servicePackage.findFirst({
+            where: { stripePriceId: lineItem?.price?.id }
+        });
+
+        // Record recurring payment
+        await this.recordPayment({
+            userId: user.id,
+            stripePaymentId: ((invoice as any).payment_intent as string) || invoice.id,
+            amount: new Decimal(invoice.amount_paid).toString(), // Store as string for Decimal compatibility
+            currency: invoice.currency.toUpperCase(),
+            status: 'SUCCEEDED', // Since we only call this on payment_succeeded
+            packageId: pkg?.id,
+        });
 
         // Extend subscription if it's recurring
         // In a real app, you'd check the period in the invoice/subscription
@@ -138,6 +207,17 @@ export class StripeService {
             // Simplified: if it was monthly, add 30 days
             newEndsAt.setDate(newEndsAt.getDate() + 30);
 
+            await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    subscriptionStatus: SubscriptionStatus.ACTIVE,
+                    subscriptionEndsAt: newEndsAt,
+                },
+            });
+        } else {
+            // If manual activate
+            const newEndsAt = new Date();
+            newEndsAt.setDate(newEndsAt.getDate() + 30);
             await prisma.user.update({
                 where: { id: user.id },
                 data: {

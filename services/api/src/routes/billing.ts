@@ -111,16 +111,24 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
     });
 
     // Stripe webhook handler
-    app.post('/billing/webhook', async (req: FastifyRequest, reply: FastifyReply) => {
-        const sig = req.headers['stripe-signature'];
+    app.post('/billing/webhook', { config: { rawBody: true } }, async (req: FastifyRequest, reply: FastifyReply) => {
+        const sig = req.headers['stripe-signature'] as string;
+        const rawBody = (req as any).rawBody;
+
         if (!sig) {
             return reply.status(400).send({ error: 'Missing stripe-signature' });
         }
+        if (!rawBody) {
+            return reply.status(400).send({ error: 'Missing raw body for signature verification' });
+        }
 
         try {
-            // Fastify body might need to be raw for Stripe webhook verification
-            // However, StripeService.handleWebhook expects payload which should be the raw body
-            await StripeService.handleWebhook(req.body, sig as string);
+            // fastify-raw-body adds the raw buffer to req.rawBody
+            if (!rawBody) {
+                return reply.status(400).send({ error: 'Missing raw body for signature verification' });
+            }
+
+            await StripeService.handleWebhook(rawBody, sig as string);
             return { received: true };
         } catch (err: any) {
             console.error('Webhook Error:', err.message);

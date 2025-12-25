@@ -209,6 +209,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  overscroll-behavior-y: none;
 }
 
 /* Layout Containers */

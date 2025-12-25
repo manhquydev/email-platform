@@ -1,85 +1,69 @@
----
-description: Truy cập vào Terminal của server DigitalOcean để kiểm tra và test
----
+# Quy trình Truy cập Terminal Server & Deploy
 
-# Quy trình Truy cập Terminal Server
-
-Dưới đây là thông tin và các lệnh cần thiết để bạn có thể truy cập và quản lý server trực tiếp qua Terminal.
+Dưới đây là thông tin và các lệnh cần thiết để truy cập và deploy server.
 
 ## 1. Thông tin kết nối SSH
 
-Sử dụng lệnh sau trên máy tính của bạn (Windows Terminal, CMD, hoặc PowerShell):
+**QUAN TRỌNG**: Server yêu cầu authentication bằng SSH Key. File key nằm tại `.ssh/id_ed25519` trong thư mục dự án.
+
+Lệnh kết nối chuẩn (từ thư mục gốc dự án):
 
 ```bash
-ssh root@165.22.48.193
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193
 ```
 
-- **Mật khẩu:** `Manhquy203@`
-- **Thư mục project:** `/root/email-platform.`
+- **IP:** `165.22.48.193`
+- **User:** `root`
+- **Project Path:** `/root/email-platform.`
 
 ---
 
-## 2. Các lệnh kiểm tra cơ bản
+## 2. Deploy Nhanh (One-Liner)
 
-Sau khi đã đăng nhập (SSH) thành công, bạn có thể chạy các lệnh sau:
+Để deploy code mới nhất từ nhánh `main` và rebuild lại service:
 
-### Kiểm tra trạng thái các dịch vụ (Docker)
 ```bash
-cd /root/email-platform.
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd /root/email-platform. && git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main && docker compose -f docker-compose.prod.yml up -d --build web api"
+```
+
+---
+
+## 3. Các lệnh kiểm tra & Debug
+
+Sau khi SSH vào server (`cd /root/email-platform.`):
+
+### Kiểm tra trạng thái
+```bash
 docker compose -f docker-compose.prod.yml ps
 ```
 
-### Xem logs thời gian thực (để debug)
+### Xem logs
 ```bash
-# Xem log của toàn bộ hệ thống
-docker compose -f docker-compose.prod.yml logs -f --tail 100
+# API Logs
+docker compose -f docker-compose.prod.yml logs -f --tail 100 api
 
-# Xem log riêng của API
-docker compose -f docker-compose.prod.yml logs -f api
-
-# Xem log riêng của giao diện (Web)
+# Web Logs
 docker compose -f docker-compose.prod.yml logs -f web
 ```
 
-### Kiểm tra Health Check (trên server)
+### Health Check
 ```bash
-# Kiểm tra API sống hay không
-curl http://localhost:3001/health
+# Kiểm tra qua Public Domain (Khuyên dùng)
+curl -I https://api.manhquy.click/health
+
+# Hoặc kiểm tra Logs
+docker compose -f docker-compose.prod.yml logs --tail 20 api
 ```
 
 ---
 
-## 3. Lệnh Deploy thủ công (nếu cần)
-
-Nếu bạn muốn cập nhật code mới nhất từ GitHub và rebuild ngay trên terminal:
+## 4. Truy cập Deep Debug
 
 ```bash
-cd /root/email-platform.
-
-# 1. Pull code mới (Sử dụng PAT Token)
-git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main
-
-# 2. Rebuild container cụ thể (ví dụ web hoặc api)
-docker compose -f docker-compose.prod.yml up -d --build web api
-
-# 3. Restart toàn bộ (nếu cần sạch sẽ)
-docker compose -f docker-compose.prod.yml down
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
----
-
-## 4. Truy cập vào bên trong Container (Debug sâu)
-
-Ví dụ để kiểm tra hệ thống file hoặc chạy lệnh database:
-
-```bash
-# Vào bên trong container API
+# Vào container API
 docker exec -it email-platform-api-1 sh
 
-# Vào bên trong Postgres database
+# Database
 docker exec -it email-platform-postgres-1 psql -U postgres -d email_platform
 ```
 
-> [!IMPORTANT]
-> Hãy cẩn thận khi chạy các lệnh `rm` hoặc thay đổi trực tiếp file trên server. Luôn backup hoặc test kỹ trước.

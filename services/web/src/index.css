@@ -201,7 +201,9 @@
 
 html {
   height: 100%;
+  width: 100%;
   overflow: hidden;
+  /* Prevent document scroll */
   overscroll-behavior: none;
 }
 
@@ -214,6 +216,10 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* NUCLEAR FIX: Fixed position body prevents browser pull-to-refresh completely */
+  position: fixed;
+  width: 100%;
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
@@ -221,16 +227,25 @@ body {
 
 /* Layout Containers */
 #root {
+  /* Must be absolute to sit inside the fixed body correctly */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
   height: 100%;
   width: 100%;
+
+  /* Internal Scrolling */
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+
+  /* Prevent bubble-up to body */
   overscroll-behavior: none;
-  /* FORCE DISABLE RELOAD */
   -webkit-overflow-scrolling: touch;
-  /* Smooth scroll on iOS */
 }
 
 .auth-container {

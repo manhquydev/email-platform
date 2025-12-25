@@ -20,12 +20,28 @@ if (rootEl) {
   rootEl.style.overscrollBehavior = 'none';
 }
 
-// 2. JavaScript Event Interception
-// Using CAPTURE phase to intercept events BEFORE React or other libraries like Framer Motion see them.
+// 2. JavaScript Event Interception & 1px Scroll Buffer Trick
+// This ensures scrollable containers NEVER hit absolute 0 or maxScroll,
+// which prevents the browser from triggering pull-to-refresh or back/forward gestures.
 let touchStartY = 0;
 
-document.addEventListener('touchstart', (e) => {
+document.addEventListener('touchstart', (e: TouchEvent) => {
   touchStartY = e.touches[0].clientY;
+
+  // 1px Scroll Buffer Hack: Detect scrollable target and bump it 1px off the edge
+  let target = e.target as HTMLElement;
+  while (target && target !== document.body) {
+    const style = window.getComputedStyle(target);
+    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+      if (target.scrollTop === 0) {
+        target.scrollTop = 1;
+      } else if (target.scrollTop + target.clientHeight === target.scrollHeight) {
+        target.scrollTop = target.scrollTop - 1;
+      }
+      break;
+    }
+    target = target.parentElement as HTMLElement;
+  }
 }, { passive: false, capture: true });
 
 document.addEventListener('touchmove', (e: TouchEvent) => {
@@ -43,9 +59,6 @@ document.addEventListener('touchmove', (e: TouchEvent) => {
     const style = window.getComputedStyle(target);
     const overflowY = style.overflowY;
     const isScrollContainer = overflowY === 'auto' || overflowY === 'scroll';
-
-    // Check if it's actually scrollable (content > height)
-    // We strictly check this because if content fits, swiping should NOT cause scroll behavior
     const canScroll = target.scrollHeight > target.clientHeight;
 
     if (isScrollContainer && canScroll) {
@@ -56,34 +69,24 @@ document.addEventListener('touchmove', (e: TouchEvent) => {
   }
 
   if (scrollableParent) {
-    // If we are inside a scrollable container, check specific boundaries
     const scrollTop = scrollableParent.scrollTop;
     const maxScroll = scrollableParent.scrollHeight - scrollableParent.clientHeight;
 
-    // BLOCK SWIPE DOWN AT TOP (Prevent Refresh)
-    if (scrollTop <= 1 && touchDiff > 0) { // Using <= 1 to handle potential subpixel weirdness
-      if (e.cancelable) {
-        e.preventDefault();
-        e.stopPropagation(); // Stop bubbling to React/Library handlers
-      }
+    // If at strict boundaries (even with 1px hack as safety), block default
+    if (scrollTop <= 0 && touchDiff > 0) {
+      if (e.cancelable) e.preventDefault();
+    } else if (scrollTop >= maxScroll && touchDiff < 0) {
+      if (e.cancelable) e.preventDefault();
     }
-    // BLOCK SWIPE UP AT BOTTOM (Prevent Overscroll Nav)
-    else if (scrollTop >= maxScroll - 1 && touchDiff < 0) {
-      if (e.cancelable) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }
-    // OTHERWISE: Allow normal scroll within container
+    // Otherwise rely on the 1px buffer from touchstart to keep us away from the browser trigger edge.
   } else {
-    // If NO scrollable ancestor found (e.g., header, static background),
-    // PREVENT ALL Vertical Swipes to stop "rubber-banding" or browser reload.
+    // If NO scrollable ancestor found, PREVENT ALL Vertical Swipes
     if (e.cancelable) {
       e.preventDefault();
       e.stopPropagation();
     }
   }
-}, { passive: false, capture: true }); // Capture phase is critical here
+}, { passive: false, capture: true });
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

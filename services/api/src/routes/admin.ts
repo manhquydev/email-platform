@@ -203,6 +203,11 @@ export async function adminRoutes(app: FastifyInstance) {
                     role: true,
                     emailVerified: true,
                     createdAt: true,
+                    tier: true,
+                    subscriptionStatus: true,
+                    subscriptionEndsAt: true,
+                    stripeSubscriptionId: true,
+                    isDisabled: true,
                     _count: {
                         select: { domains: true }
                     }

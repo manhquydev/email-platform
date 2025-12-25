@@ -108,6 +108,21 @@ export function InboxManager() {
         }
     }, [activeInbox, loadMessages]);
 
+    // Handle payment success/cancellation
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("payment") === "success") {
+            toast.success("Thanh toán thành công! Gói dịch vụ của bạn đã được cập nhật.");
+            // Remove the query parameter from URL
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        } else if (urlParams.get("payment") === "cancelled") {
+            toast.error("Thanh toán đã bị hủy.");
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }, []);
+
     // --- Sorting & Filtering ---
     const getFilteredInboxes = useCallback(() => {
         let filtered = [...inboxes];

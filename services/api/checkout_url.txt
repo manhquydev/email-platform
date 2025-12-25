@@ -1,0 +1,2 @@
+[dotenv@17.2.3] injecting env (37) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+Checkout URL: https://checkout.stripe.com/c/pay/cs_test_b1HVrTkn2DU4d8zBiIQzmqG8BK5Y6zpxiRMVpA2kRMWWXP33gYnGRjJX5V#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdkdWxOYHwnPyd1blpxYHZxWjA0Vmw3bURUY3ZyfXZgZnNmMUwzYGZhNWJvQkxUTDNBaDZUdUB9Zm5nZG4zaW5EYDFURm9HXTx9TjFCQzJ1ZFNQaWdHX1NKNlRmPUxISkRcVENxVUZOMWBcNTVTZzNDNGxRNCcpJ2N3amhWYHdzYHcnP3F3cGApJ2dkZm5id2pwa2FGamlqdyc%2FJyZjY2NjY2MnKSdpZHxqcHFRfHVgJz8naHBpcWxabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl

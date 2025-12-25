@@ -19,6 +19,8 @@ interface ServicePackage {
     targetTier?: string;
     creditAmount?: number;
     isActive: boolean;
+    stripePriceId?: string;
+    stripeProductId?: string;
     createdAt: string;
     _count: { codes: number };
 }
@@ -36,7 +38,9 @@ export function PackagesManager({ token }: { token: string }) {
         type: "TIME_BASED",
         durationDays: 30,
         targetTier: "PROFESSIONAL",
-        creditAmount: 0
+        creditAmount: 0,
+        stripePriceId: "",
+        stripeProductId: "",
     });
 
     const loadPackages = useCallback(async () => {
@@ -230,6 +234,30 @@ export function PackagesManager({ token }: { token: string }) {
                                     />
                                 </div>
                             )}
+
+                            <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium mb-1 flex items-center gap-1">
+                                        Stripe Price ID
+                                        <span className="text-[10px] bg-blue-100 text-blue-600 px-1 rounded">Required for Stripe</span>
+                                    </label>
+                                    <input
+                                        className="input-nebula w-full font-mono text-xs"
+                                        value={formData.stripePriceId}
+                                        onChange={e => setFormData({ ...formData, stripePriceId: e.target.value })}
+                                        placeholder="price_..."
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium mb-1">Stripe Product ID (Optional)</label>
+                                    <input
+                                        className="input-nebula w-full font-mono text-xs"
+                                        value={formData.stripeProductId}
+                                        onChange={e => setFormData({ ...formData, stripeProductId: e.target.value })}
+                                        placeholder="prod_..."
+                                    />
+                                </div>
+                            </div>
                         </div>
                         <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
                             <button onClick={() => setShowModal(false)} className="btn btn-secondary px-4">Hủy</button>

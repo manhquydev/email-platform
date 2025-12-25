@@ -73,4 +73,8 @@ export const appConfig = {
     accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
   },
+  stripe: {
+    apiKey: process.env.STRIPE_API_KEY ?? "",
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  },
 };

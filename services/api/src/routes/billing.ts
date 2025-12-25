@@ -9,7 +9,7 @@ import { prisma } from '../lib/prisma';
 import { appConfig } from '../config';
 
 // Stripe import - will be installed separately
-// import Stripe from 'stripe';
+import { StripeService } from '../services/stripe.service';
 
 // Tier limits configuration
 export const TIER_LIMITS = {
@@ -27,7 +27,7 @@ const STRIPE_PRICES = {
 };
 
 const createCheckoutSchema = z.object({
-    tier: z.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE']),
+    packageId: z.string().uuid(),
     successUrl: z.string().url().optional(),
     cancelUrl: z.string().url().optional(),
 });
@@ -38,122 +38,25 @@ const cancelSubscriptionSchema = z.object({
 
 export const billingRoutes: FastifyPluginAsync = async (app) => {
     // Check if Stripe is configured
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const stripeEnabled = !!stripeSecretKey;
+    const stripeEnabled = !!appConfig.stripe.apiKey;
 
-    // Get current subscription status
-    app.get('/billing', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
-        const user = req.user as { userId: string };
-
-        const userData = await prisma.user.findUnique({
-            where: { id: user.userId },
-            select: {
-                tier: true,
-                subscriptionStatus: true,
-                stripeCustomerId: true,
-                stripeSubscriptionId: true,
-                trialEndsAt: true,
-            },
+    // Get available packages
+    app.get('/billing/packages', async () => {
+        const packages = await prisma.servicePackage.findMany({
+            where: { isActive: true },
         });
-
-        if (!userData) {
-            return reply.status(404).send({ error: 'User not found' });
-        }
-
-        const limits = TIER_LIMITS[userData.tier as keyof typeof TIER_LIMITS] || TIER_LIMITS.FREE;
-
-        // Get current usage
-        const [domainCount, inboxCount] = await Promise.all([
-            prisma.domain.count({ where: { ownerId: user.userId } }),
-            prisma.inbox.count({
-                where: {
-                    domain: { ownerId: user.userId },
-                    deletedAt: null
-                }
-            }),
-        ]);
-
-        return {
-            tier: userData.tier,
-            status: userData.subscriptionStatus,
-            stripeEnabled,
-            limits,
-            usage: {
-                domains: domainCount,
-                inboxes: inboxCount,
-            },
-            trialEndsAt: userData.trialEndsAt,
-            hasSubscription: !!userData.stripeSubscriptionId,
-        };
+        return { packages, stripeEnabled };
     });
 
-    // Get available plans
+    // Get available plans (fallback for backward compatibility)
     app.get('/billing/plans', async () => {
-        return {
-            plans: [
-                {
-                    id: 'FREE',
-                    name: 'Free',
-                    price: 0,
-                    interval: 'month',
-                    ...TIER_LIMITS.FREE,
-                    features: [
-                        '1 custom domain',
-                        '3 email inboxes',
-                        '100MB storage',
-                        'Basic spam filtering',
-                    ],
-                },
-                {
-                    id: 'STARTER',
-                    name: 'Starter',
-                    price: 3,
-                    interval: 'month',
-                    ...TIER_LIMITS.STARTER,
-                    features: [
-                        '3 custom domains',
-                        '20 email inboxes',
-                        '1GB storage',
-                        'Advanced spam filtering',
-                        'API access',
-                    ],
-                },
-                {
-                    id: 'PROFESSIONAL',
-                    name: 'Professional',
-                    price: 8,
-                    interval: 'month',
-                    ...TIER_LIMITS.PROFESSIONAL,
-                    features: [
-                        '10 custom domains',
-                        '100 email inboxes',
-                        '5GB storage',
-                        'Priority spam filtering',
-                        'Full API access',
-                        'Webhook notifications',
-                    ],
-                },
-                {
-                    id: 'ENTERPRISE',
-                    name: 'Enterprise',
-                    price: null, // Custom pricing
-                    interval: 'month',
-                    ...TIER_LIMITS.ENTERPRISE,
-                    features: [
-                        'Unlimited domains',
-                        'Unlimited inboxes',
-                        '50GB storage',
-                        'Dedicated support',
-                        'SLA guarantee',
-                        'Custom integrations',
-                    ],
-                },
-            ],
-            stripeEnabled,
-        };
+        const packages = await prisma.servicePackage.findMany({
+            where: { isActive: true },
+        });
+        return { plans: packages, stripeEnabled };
     });
 
-    // Create checkout session (requires Stripe)
+    // Create checkout session
     app.post('/billing/checkout', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         if (!stripeEnabled) {
             return reply.status(503).send({
@@ -162,58 +65,15 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
             });
         }
 
-        const user = req.user as unknown as { userId: string; email: string };
-        const body = createCheckoutSchema.parse(req.body);
+        const user = req.user as { userId: string };
+        const { packageId } = createCheckoutSchema.parse(req.body);
 
-        const priceId = STRIPE_PRICES[body.tier];
-        if (!priceId) {
-            return reply.status(400).send({ error: `Price not configured for tier: ${body.tier}` });
+        try {
+            const session = await StripeService.createCheckoutSession(user.userId, packageId);
+            return { sessionId: session.id, url: session.url };
+        } catch (error: any) {
+            return reply.status(400).send({ error: error.message });
         }
-
-        // Get or create Stripe customer
-        const userData = await prisma.user.findUnique({
-            where: { id: user.userId },
-            select: { stripeCustomerId: true, email: true },
-        });
-
-        if (!userData) {
-            return reply.status(404).send({ error: 'User not found' });
-        }
-
-        // Note: Actual Stripe integration requires importing Stripe
-        // This is a placeholder that shows the expected behavior
-        /*
-        const stripe = new Stripe(stripeSecretKey);
-        
-        let customerId = userData.stripeCustomerId;
-        if (!customerId) {
-          const customer = await stripe.customers.create({
-            email: userData.email,
-            metadata: { userId: user.userId },
-          });
-          customerId = customer.id;
-          await prisma.user.update({
-            where: { id: user.userId },
-            data: { stripeCustomerId: customerId },
-          });
-        }
-    
-        const session = await stripe.checkout.sessions.create({
-          mode: 'subscription',
-          customer: customerId,
-          line_items: [{ price: priceId, quantity: 1 }],
-          success_url: body.successUrl || `${appConfig.webUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: body.cancelUrl || `${appConfig.webUrl}/billing/cancel`,
-          metadata: { userId: user.userId, tier: body.tier },
-        });
-    
-        return { sessionId: session.id, url: session.url };
-        */
-
-        return reply.status(503).send({
-            error: 'Stripe SDK not installed',
-            message: 'Run: npm install stripe @types/stripe',
-        });
     });
 
     // Cancel subscription
@@ -252,73 +112,20 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
 
     // Stripe webhook handler
     app.post('/billing/webhook', async (req: FastifyRequest, reply: FastifyReply) => {
-        if (!stripeEnabled) {
-            return reply.status(503).send({ error: 'Webhooks not configured' });
-        }
-
         const sig = req.headers['stripe-signature'];
-        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-        if (!sig || !webhookSecret) {
-            return reply.status(400).send({ error: 'Missing webhook signature' });
+        if (!sig) {
+            return reply.status(400).send({ error: 'Missing stripe-signature' });
         }
 
-        // Placeholder for webhook handling
-        /*
-        const stripe = new Stripe(stripeSecretKey);
-        
         try {
-          const event = stripe.webhooks.constructEvent(
-            req.rawBody as string,
-            sig as string,
-            webhookSecret
-          );
-    
-          switch (event.type) {
-            case 'customer.subscription.created':
-            case 'customer.subscription.updated': {
-              const subscription = event.data.object as Stripe.Subscription;
-              const customerId = subscription.customer as string;
-              
-              const tier = subscription.metadata.tier as keyof typeof TIER_LIMITS;
-              const status = subscription.status === 'active' ? 'ACTIVE' 
-                : subscription.status === 'past_due' ? 'PAST_DUE'
-                : subscription.status === 'canceled' ? 'CANCELED'
-                : 'TRIALING';
-    
-              await prisma.user.update({
-                where: { stripeCustomerId: customerId },
-                data: {
-                  tier,
-                  subscriptionStatus: status,
-                  stripeSubscriptionId: subscription.id,
-                },
-              });
-              break;
-            }
-    
-            case 'customer.subscription.deleted': {
-              const subscription = event.data.object as Stripe.Subscription;
-              const customerId = subscription.customer as string;
-              
-              await prisma.user.update({
-                where: { stripeCustomerId: customerId },
-                data: {
-                  tier: 'FREE',
-                  subscriptionStatus: 'CANCELED',
-                  stripeSubscriptionId: null,
-                },
-              });
-              break;
-            }
-          }
-        } catch (err) {
-          console.error('Webhook error:', err);
-          return reply.status(400).send({ error: 'Webhook error' });
+            // Fastify body might need to be raw for Stripe webhook verification
+            // However, StripeService.handleWebhook expects payload which should be the raw body
+            await StripeService.handleWebhook(req.body, sig as string);
+            return { received: true };
+        } catch (err: any) {
+            console.error('Webhook Error:', err.message);
+            return reply.status(400).send({ error: err.message });
         }
-        */
-
-        return { received: true };
     });
 
     // Check tier limits before creating resources

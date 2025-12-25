@@ -19,6 +19,15 @@ export function Dashboard() {
     const { token, user, logout: _logout } = useAuth();
     const [busy, setBusy] = useState(false);
 
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("payment") === "success") {
+            toast.success("Thanh toán thành công! Gói dịch vụ của bạn đã được kích hoạt.", { duration: 6000 });
+            // Clean up URL to avoid showing toast on refresh
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, []);
+
     // Data
     const [domains, setDomains] = useState<Domain[]>([]);
     const [inboxes, setInboxes] = useState<Inbox[]>([]);

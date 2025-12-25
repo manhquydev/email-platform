@@ -7,6 +7,258 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                         String                 @id @default(uuid())
+  email                      String                 @unique
+  passwordHash               String
+  role                       UserRole               @default(USER)
+  createdAt                  DateTime               @default(now())
+  emailVerified              DateTime?
+  verificationToken          String?
+  verificationTokenExpiresAt DateTime?
+  stripeCustomerId           String?                @unique
+  stripeSubscriptionId       String?
+  subscriptionStatus         SubscriptionStatus     @default(ACTIVE)
+  tier                       SubscriptionTier       @default(FREE)
+  credits                    Int                    @default(0)
+  subscriptionEndsAt         DateTime?
+  trialEndsAt                DateTime?
+  telegramChatId             String?                @unique
+  telegramLinkedAt           DateTime?
+  notifyOnEmail              Boolean                @default(true)
+  verifiedForwardEmails      String[]
+  twoFactorEnabled           Boolean                @default(false)
+  twoFactorSecret            String?
+  twoFactorBackupCodes       String[]
+  isDisabled                 Boolean                @default(false)
+  auditLogs                  AuditLog[]
+  authenticatorAccounts      AuthenticatorAccount[]
+  domains                    Domain[]
+  forwardVerifications       ForwardVerification[]
+  forwardingRules            ForwardingRule[]
+  inboxes                    Inbox[]
+  telegramLinkTokens         TelegramLinkToken[]
+}
+
+model Domain {
+  id                 String             @id @default(uuid())
+  name               String             @unique
+  status             DomainStatus       @default(PENDING)
+  verificationToken  String
+  createdAt          DateTime           @default(now())
+  isPublic           Boolean            @default(false)
+  ownerId            String?
+  contributionStatus ContributionStatus @default(NONE)
+  sharedAt           DateTime?
+  shareNote          String?
+  owner              User?              @relation(fields: [ownerId], references: [id])
+  inboxes            Inbox[]
+}
+
+model Inbox {
+  id              String           @id @default(uuid())
+  domainId        String
+  localPart       String
+  createdAt       DateTime         @default(now())
+  expiresAt       DateTime?
+  flags           Json?
+  deletedAt       DateTime?
+  claimedAt       DateTime         @default(now())
+  ownerId         String?
+  emailFilters    EmailFilter[]
+  forwardingRules ForwardingRule[]
+  domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  owner           User?            @relation(fields: [ownerId], references: [id])
+  labels          Label[]
+  messages        Message[]
+
+  @@unique([domainId, localPart])
+  @@index([ownerId])
+}
+
+model Message {
+  id           String         @id @default(uuid())
+  inboxId      String
+  messageId    String?
+  fromAddress  String?
+  toAddress    String?
+  subject      String?
+  receivedAt   DateTime       @default(now())
+  textBody     String?
+  htmlBody     String?
+  headers      Json?
+  spamScore    Float?
+  size         Int?
+  sourceIp     String?
+  deletedAt    DateTime?
+  isRead       Boolean        @default(false)
+  isPinned     Boolean        @default(false)
+  snoozedUntil DateTime?
+  abuseReports AbuseReport[]
+  attachments  Attachment[]
+  inbox        Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  labels       MessageLabel[]
+
+  @@index([inboxId, receivedAt])
+  @@index([sourceIp, receivedAt])
+  @@index([deletedAt])
+  @@index([isPinned])
+}
+
+model Attachment {
+  id         String    @id @default(uuid())
+  messageId  String
+  filename   String
+  mimeType   String?
+  size       Int?
+  storageKey String
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+  message    Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  meta      Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Rule {
+  id        String    @id @default(uuid())
+  type      RuleType
+  scope     RuleScope
+  value     String
+  note      String?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([scope, value])
+}
+
+model AbuseReport {
+  id        String            @id @default(uuid())
+  messageId String?
+  reporter  String?
+  reason    String
+  status    AbuseReportStatus @default(OPEN)
+  createdAt DateTime          @default(now())
+  message   Message?          @relation(fields: [messageId], references: [id])
+
+  @@index([status])
+  @@index([messageId])
+}
+
+model EmailFilter {
+  id          String          @id @default(uuid())
+  inboxId     String
+  name        String
+  description String?
+  matchType   FilterMatchType @default(ALL)
+  conditions  Json
+  actions     Json
+  priority    Int             @default(0)
+  isEnabled   Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  inbox       Inbox           @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+
+  @@index([inboxId, isEnabled])
+}
+
+model Label {
+  id        String         @id @default(uuid())
+  inboxId   String
+  name      String
+  color     String?
+  parentId  String?
+  createdAt DateTime       @default(now())
+  inbox     Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  parent    Label?         @relation("LabelHierarchy", fields: [parentId], references: [id])
+  children  Label[]        @relation("LabelHierarchy")
+  messages  MessageLabel[]
+
+  @@unique([inboxId, name])
+  @@index([inboxId])
+}
+
+model MessageLabel {
+  id        String   @id @default(uuid())
+  messageId String
+  labelId   String
+  createdAt DateTime @default(now())
+  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, labelId])
+  @@index([labelId])
+}
+
+model AuthenticatorAccount {
+  id          String   @id @default(uuid())
+  userId      String
+  serviceName String
+  accountName String?
+  secret      String
+  issuer      String?
+  algorithm   String   @default("SHA1")
+  digits      Int      @default(6)
+  period      Int      @default(30)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model TelegramLinkToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model ForwardingRule {
+  id            String    @id @default(uuid())
+  userId        String
+  inboxId       String?
+  name          String    @default("Unnamed Rule")
+  conditions    Json      @default("{}")
+  forwardTo     String
+  isActive      Boolean   @default(true)
+  forwardCount  Int       @default(0)
+  lastForwardAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  inbox         Inbox?    @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([inboxId])
+}
+
+model ForwardVerification {
+  id         String    @id @default(uuid())
+  userId     String
+  email      String
+  code       String
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@index([email, code])
+}
+
 enum DomainStatus {
   PENDING
   VERIFIED
@@ -57,157 +309,9 @@ enum SubscriptionStatus {
   TRIALING
 }
 
-model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  role         UserRole @default(USER)
-  emailVerified DateTime?
-  verificationToken String?
-  verificationTokenExpiresAt DateTime?
-  isDisabled   Boolean  @default(false)
-  twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String?  // encrypted TOTP secret
-  twoFactorBackupCodes String[] // array of hashed backup codes
-  // Subscription fields
-  tier         SubscriptionTier @default(FREE)
-  stripeCustomerId String? @unique
-  stripeSubscriptionId String?
-  subscriptionStatus SubscriptionStatus @default(ACTIVE)
-  trialEndsAt  DateTime?
-  subscriptionEndsAt DateTime? // Explicit end date for time-based subscriptions
-  credits      Int      @default(0) // Usage-based credits
-  telegramChatId    String?   @unique  // Telegram chat ID for notifications
-  telegramLinkedAt  DateTime?          // When Telegram was linked
-  notifyOnEmail     Boolean   @default(true) // Send notification when email received
-  // Email Forwarding
-  verifiedForwardEmails String[] // List of verified personal emails for forwarding
-  createdAt    DateTime @default(now())
-  auditLogs    AuditLog[]
-  domains      Domain[]
-  inboxes      Inbox[]
-  authenticatorAccounts AuthenticatorAccount[]
-  telegramLinkTokens TelegramLinkToken[]
-  forwardingRules ForwardingRule[]
-  forwardVerifications ForwardVerification[]
-  redemptions  CodeRedemption[]
-}
-
-model Domain {
-  id                 String        @id @default(uuid())
-  name               String        @unique
-  status             DomainStatus  @default(PENDING)
-  verificationToken  String
-  createdAt          DateTime      @default(now())
-  inboxes            Inbox[]
-  owner              User?         @relation(fields: [ownerId], references: [id])
-  ownerId            String?
-  isPublic           Boolean       @default(false)
-  contributionStatus ContributionStatus @default(NONE)
-  sharedAt           DateTime?     // When domain was shared publicly
-  shareNote          String?       // Owner's note for why domain is shared
-}
-
-model Inbox {
-  id             String        @id @default(uuid())
-  domain         Domain        @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  domainId       String
-  owner          User?         @relation(fields: [ownerId], references: [id])
-  ownerId        String?       // Required on creation - tracks email ownership
-  localPart      String
-  createdAt      DateTime      @default(now())
-  claimedAt      DateTime      @default(now()) // When email was claimed/created
-  expiresAt      DateTime?
-  flags          Json?
-  deletedAt      DateTime?
-  messages       Message[]
-  emailFilters   EmailFilter[]
-  labels         Label[]
-  forwardingRules ForwardingRule[]
-
-  @@unique([domainId, localPart])
-  @@index([ownerId])
-}
-
-model Message {
-  id           String         @id @default(uuid())
-  inbox        Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId      String
-  messageId    String?
-  fromAddress  String?
-  toAddress    String?
-  subject      String?
-  receivedAt   DateTime       @default(now())
-  textBody     String?
-  htmlBody     String?
-  sourceIp     String?
-  headers      Json?
-  spamScore    Float?
-  size         Int?
-  deletedAt    DateTime?
-  isRead       Boolean        @default(false)
-  isPinned     Boolean        @default(false)
-  snoozedUntil DateTime?
-  attachments  Attachment[]
-  abuseReports AbuseReport[]
-  labels       MessageLabel[]
-
-  @@index([inboxId, receivedAt])
-  @@index([sourceIp, receivedAt])
-  @@index([deletedAt])
-  @@index([isPinned])
-}
-
-model Attachment {
-  id          String   @id @default(uuid())
-  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  messageId   String
-  filename    String
-  mimeType    String?
-  size        Int?
-  storageKey  String
-  createdAt   DateTime @default(now())
-  deletedAt   DateTime?
-}
-
-model AuditLog {
-  id        String   @id @default(uuid())
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId    String?
-  action    String
-  meta      Json?
-  createdAt DateTime @default(now())
-}
-
-model Rule {
-  id        String    @id @default(uuid())
-  type      RuleType
-  scope     RuleScope
-  value     String
-  note      String?
-  expiresAt DateTime?
-  createdAt DateTime  @default(now())
-
-  @@index([scope, value])
-}
-
-model AbuseReport {
-  id         String            @id @default(uuid())
-  message    Message?          @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  messageId  String?
-  reporter   String?
-  reason     String
-  status     AbuseReportStatus @default(OPEN)
-  createdAt  DateTime          @default(now())
-
-  @@index([status])
-  @@index([messageId])
-}
-
-// Email Filter/Rule for automated message processing
 enum FilterMatchType {
-  ALL     // All conditions must match
-  ANY     // Any condition must match
+  ALL
+  ANY
 }
 
 enum FilterConditionField {
@@ -237,201 +341,46 @@ enum FilterActionType {
   DELETE
   FORWARD
 }
-
-model EmailFilter {
-  id          String          @id @default(uuid())
-  inbox       Inbox           @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId     String
-  name        String
-  description String?
-  matchType   FilterMatchType @default(ALL)
-  conditions  Json            // Array of { field, operator, value }
-  actions     Json            // Array of { type, value? }
-  priority    Int             @default(0)
-  isEnabled   Boolean         @default(true)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-
-  @@index([inboxId, isEnabled])
-}
-
-// Labels for organizing messages
-model Label {
-  id        String         @id @default(uuid())
-  inbox     Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId   String
-  name      String
-  color     String?        // Hex color code
-  parentId  String?        // For nested labels/folders
-  parent    Label?         @relation("LabelHierarchy", fields: [parentId], references: [id])
-  children  Label[]        @relation("LabelHierarchy")
-  messages  MessageLabel[]
-  createdAt DateTime       @default(now())
-
-  @@unique([inboxId, name])
-  @@index([inboxId])
-}
-
-model MessageLabel {
-  id        String   @id @default(uuid())
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  messageId String
-  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
-  labelId   String
-  createdAt DateTime @default(now())
-
-  @@unique([messageId, labelId])
-  @@index([labelId])
-}
-
-model AuthenticatorAccount {
-  id           String   @id @default(uuid())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  serviceName  String   // e.g. "Google", "Facebook"
-  accountName  String?  // e.g. "alice@gmail.com"
-  secret       String   // Encrypted TOTP Secret (AES-256-GCM)
-  issuer       String?  // Metadata from migration
-  algorithm    String   @default("SHA1") // SHA1, SHA256, SHA512
-  digits       Int      @default(6)
-  period       Int      @default(30)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([userId])
-}
-
-// Telegram Link Token - temporary token to link Telegram to user account
-model TelegramLinkToken {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  token     String   @unique  // 6-digit alphanumeric code
-  expiresAt DateTime           // Token expiration (15 minutes)
-  usedAt    DateTime?          // When token was used (null if not used)
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([token])
-}
-
-// Email Forwarding Rule
-model ForwardingRule {
-  id           String   @id @default(uuid())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  inbox        Inbox?   @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  inboxId      String?  // null = all inboxes
-  
-  // Rule name/description
-  name         String   @default("Unnamed Rule")
-  
-  // Conditions (JSON)
-  // { senderDomains?: string[], containsOTP?: boolean, subjectContains?: string }
-  conditions   Json     @default("{}")
-  
-  // Destination - must be verified
-  forwardTo    String   // Verified personal email address
-  
-  // Status
-  isActive     Boolean  @default(true)
-  forwardCount Int      @default(0)
-  lastForwardAt DateTime?
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([userId, isActive])
-  @@index([inboxId])
-}
-
-// Forward Email Verification
-model ForwardVerification {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  email     String   // Email to verify
-  code      String   // 6-digit verification code
-  expiresAt DateTime
-  verifiedAt DateTime?
-  createdAt DateTime @default(now())
-
-  @@unique([userId, email])
-  @@index([email, code])
-}
-
-// Global System Settings (Retention, Maintenance, etc.)
-model SystemSetting {
-  key         String   @id // e.g., "RETENTION_DAYS", "MAINTENANCE_MODE"
-  value       String
-  description String?
-  updatedAt   DateTime @updatedAt
-}
-
-// --- Subscription & Redemption System ---
-
-enum PackageType {
-  TIME_BASED
-  USAGE_BASED
-}
-
-enum CodeStatus {
-  ACTIVE
-  USED    // specific to single-use codes that are exhausted
-  EXPIRED // date passed
-  REVOKED // manually disabled
-}
-
 model ServicePackage {
   id          String   @id @default(uuid())
-  name        String   // e.g. "Premium Monthly", "100 Email Credits"
+  name        String
   description String?
   price       Decimal  @default(0)
   currency    String   @default("VND")
   type        PackageType
   
   // Time based params
-  durationDays Int?    // e.g. 30
-  targetTier   SubscriptionTier? // e.g. PROFESSIONAL
+  durationDays Int?
+  targetTier   SubscriptionTier?
   
   // Usage based params
-  creditAmount Int?    // e.g. 100
+  creditAmount Int?
   
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Stripe integration
+  stripePriceId   String?
+  stripeProductId String?
   
   codes       RedemptionCode[]
 }
 
 model RedemptionCode {
-  id          String         @id @default(uuid())
-  code        String         @unique // The actual string user types
+  id          String   @id @default(uuid())
+  code        String   @unique
   packageId   String
+  isUsed      Boolean  @default(false)
+  usedById    String?
+  usedAt      DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  
   package     ServicePackage @relation(fields: [packageId], references: [id])
-  
-  maxUses     Int            @default(1)
-  usedCount   Int            @default(0)
-  
-  expiresAt   DateTime?      // When the code itself expires (cannot be redeemed after)
-  status      CodeStatus     @default(ACTIVE)
-  
-  createdBy   String?        // Admin ID who created it
-  createdAt   DateTime       @default(now())
-  
-  redemptions CodeRedemption[]
-  
-  @@index([code])
 }
 
-model CodeRedemption {
-  id        String         @id @default(uuid())
-  codeId    String
-  code      RedemptionCode @relation(fields: [codeId], references: [id])
-  userId    String
-  user      User           @relation(fields: [userId], references: [id])
-  redeemedAt DateTime      @default(now())
-  
-  @@index([userId])
-  @@index([codeId])
+enum PackageType {
+  TIME_BASED
+  USAGE_BASED
 }

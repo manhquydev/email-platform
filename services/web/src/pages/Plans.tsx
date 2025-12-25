@@ -27,37 +27,94 @@ export function Plans() {
     const { token } = useAuth();
     const [currentTier, setCurrentTier] = useState<string>("FREE");
 
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("payment") === "cancelled") {
+            toast.error("Thanh toán đã bị hủy.");
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, []);
+
     const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+
+    const [packages, setPackages] = useState<any[]>([]);
 
     useEffect(() => {
         loadUserProfile();
+        loadPackages();
     }, [token]);
 
     const loadUserProfile = async () => {
-        if (!token) {
-            // setLoading(false);
-            return;
-        }
+        if (!token) return;
         try {
             const res = await api<{ user: { tier: string } }>("/auth/me", { token });
             setCurrentTier(res.user.tier);
         } catch (error) {
             console.error("Failed to load user profile", error);
-        } finally {
-            // setLoading(false);
         }
     };
 
-    const handleUpgrade = (tier: string) => {
-        // Mock upgrade flow for now
-        toast.success(`Đang chuyển hướng thanh toán cho gói ${tier}...`);
-        // In real impl, redirect to Stripe checkout or open contact form
-        if (tier === 'ENTERPRISE') {
-            window.location.href = "mailto:support@manhquy.click?subject=Enterprise%20Plan%20Inquiry";
+    const loadPackages = async () => {
+        try {
+            const res = await api<{ packages: any[] }>("/billing/packages");
+            setPackages(res.packages);
+        } catch (error) {
+            console.error("Failed to load packages", error);
         }
     };
 
-    const plans: Plan[] = [
+    const handleUpgrade = async (pkg: any) => {
+        if (!token) {
+            toast.error("Vui lòng đăng nhập để nâng cấp");
+            return;
+        }
+
+        if (pkg.id === "ENTERPRISE" || pkg.price === 0) {
+            // Special cases
+            if (pkg.id === 'ENTERPRISE') {
+                window.location.href = "mailto:support@manhquy.click?subject=Enterprise%20Plan%20Inquiry";
+                return;
+            }
+            return;
+        }
+
+        try {
+            toast.loading("Đang chuẩn bị thanh toán...");
+            const res = await api<{ url: string }>("/billing/checkout", {
+                method: "POST",
+                token,
+                body: { packageId: pkg.id }
+            });
+            toast.dismiss();
+            if (res.url) {
+                window.location.href = res.url;
+            }
+        } catch (error: any) {
+            toast.dismiss();
+            toast.error(error.message || "Không thể khởi tạo thanh toán");
+        }
+    };
+
+    // Map backend packages to UI plans
+    const dynamicPlans: Plan[] = packages.map(pkg => ({
+        id: pkg.targetTier || "FREE",
+        name: pkg.name,
+        description: pkg.description || "",
+        price: pkg.price,
+        currency: pkg.currency === 'VND' ? 'đ' : pkg.currency,
+        period: pkg.type === 'TIME_BASED' ? '/tháng' : ' lượt',
+        features: [
+            { text: pkg.type === 'TIME_BASED' ? `${pkg.durationDays} ngày sử dụng` : `+${pkg.creditAmount} Credits`, included: true },
+            // Add more default features based on tier
+            { text: "Hỗ trợ 24/7", included: true },
+        ],
+        recommended: pkg.targetTier === 'PROFESSIONAL',
+        buttonText: currentTier === pkg.targetTier ? "Đang sử dụng" : "Mua ngay",
+        buttonAction: () => handleUpgrade(pkg)
+    }));
+
+    // If no packages from backend, fallback to hardcoded for UI safety
+    const plans = dynamicPlans.length > 0 ? dynamicPlans : [
         {
             id: "FREE",
             name: "Miễn phí",
@@ -73,63 +130,9 @@ export function Plans() {
                 { text: "Hỗ trợ cộng đồng", included: true },
                 { text: "API Access", included: false },
             ],
-            buttonText: currentTier === "FREE" ? "Đang sử dụng" : "Hạ cấp",
-            buttonAction: () => handleUpgrade("FREE")
-        },
-        {
-            id: "STARTER",
-            name: "Starter",
-            description: "Cho người dùng chuyên nghiệp",
-            price: "69.000",
-            currency: "đ",
-            period: "/tháng",
-            features: [
-                { text: "3 Tên miền riêng", included: true },
-                { text: "20 Hộp thư email", included: true },
-                { text: "1GB Lưu trữ", included: true },
-                { text: "200 Email gửi/ngày", included: true },
-                { text: "Hỗ trợ qua Email", included: true },
-                { text: "API Access cơ bản", included: true },
-            ],
-            recommended: true,
-            buttonText: currentTier === "STARTER" ? "Đang sử dụng" : "Nâng cấp",
-            buttonAction: () => handleUpgrade("STARTER")
-        },
-        {
-            id: "PROFESSIONAL",
-            name: "Pro",
-            description: "Cho doanh nghiệp nhỏ",
-            price: "199.000",
-            currency: "đ",
-            period: "/tháng",
-            features: [
-                { text: "10 Tên miền riêng", included: true },
-                { text: "100 Hộp thư email", included: true },
-                { text: "5GB Lưu trữ", included: true },
-                { text: "1000 Email gửi/ngày", included: true },
-                { text: "Hỗ trợ ưu tiên", included: true },
-                { text: "Full API Access", included: true },
-            ],
-            buttonText: currentTier === "PROFESSIONAL" ? "Đang sử dụng" : "Nâng cấp",
-            buttonAction: () => handleUpgrade("PROFESSIONAL")
-        },
-        {
-            id: "ENTERPRISE",
-            name: "Enterprise",
-            description: "Giải pháp tùy chỉnh",
-            price: "Liên hệ",
-            currency: "",
-            period: "",
-            features: [
-                { text: "Không giới hạn Domains", included: true },
-                { text: "Không giới hạn Hộp thư", included: true },
-                { text: "50GB+ Lưu trữ", included: true },
-                { text: "Gửi email không giới hạn", included: true },
-                { text: "Hỗ trợ 24/7", included: true },
-                { text: "Custom Integration", included: true },
-            ],
-            buttonText: "Liên hệ",
-            buttonAction: () => handleUpgrade("ENTERPRISE")
+            buttonText: currentTier === "FREE" ? "Đang sử dụng" : "Bắt đầu",
+            buttonAction: () => { },
+            recommended: false
         }
     ];
 

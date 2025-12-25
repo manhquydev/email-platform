@@ -16,42 +16,47 @@ const ensureStorageDir = async () => {
 const ensureAdminUser = async (log: any) => {
   const adminEmail = appConfig.defaultAdminEmail;
 
-  // Check if admin user already exists
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: adminEmail }
-  });
+  try {
+    // Check if admin user already exists
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: adminEmail }
+    });
 
-  if (existingAdmin) {
-    // Admin exists - update password if needed (useful when password is reset via env)
+    if (existingAdmin) {
+      // Admin exists - update password if needed (useful when password is reset via env)
+      const passwordHash = await hashPassword(appConfig.defaultAdminPassword);
+      await prisma.user.update({
+        where: { id: existingAdmin.id },
+        data: {
+          passwordHash,
+          role: "ADMIN",
+          emailVerified: existingAdmin.emailVerified ?? new Date(),
+        },
+      });
+      log.info({ email: adminEmail }, "admin user password updated from env");
+      return;
+    }
+
+    // Create new admin user
     const passwordHash = await hashPassword(appConfig.defaultAdminPassword);
-    await prisma.user.update({
-      where: { id: existingAdmin.id },
+    await prisma.user.create({
       data: {
+        email: adminEmail,
         passwordHash,
         role: "ADMIN",
-        emailVerified: existingAdmin.emailVerified ?? new Date(),
+        emailVerified: new Date(), // Admin is auto-verified
       },
     });
-    log.info({ email: adminEmail }, "admin user password updated from env");
-    return;
+    log.info(
+      {
+        email: adminEmail,
+      },
+      "created default admin user",
+    );
+  } catch (err: any) {
+    log.error({ err, adminEmail }, "failed to ensure admin user");
+    throw err;
   }
-
-  // Create new admin user
-  const passwordHash = await hashPassword(appConfig.defaultAdminPassword);
-  await prisma.user.create({
-    data: {
-      email: adminEmail,
-      passwordHash,
-      role: "ADMIN",
-      emailVerified: new Date(), // Admin is auto-verified
-    },
-  });
-  log.info(
-    {
-      email: adminEmail,
-    },
-    "created default admin user",
-  );
 };
 
 const main = async () => {

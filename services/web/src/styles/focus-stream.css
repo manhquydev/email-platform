@@ -2795,3 +2795,11 @@
         padding: 20px 24px;
     }
 }
+
+/* Mobile List Padding Fix */
+@media (max-width: 768px) {
+    /* Ensure content is not hidden behind fixed bottom navigation */
+    .inbox-manager-list {
+        padding-bottom: 80px; 
+    }
+}

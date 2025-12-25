@@ -133,7 +133,6 @@ export async function subscriptionRoutes(app: FastifyInstance) {
                 packageId: pkg.id,
                 maxUses: body.maxUses,
                 expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-                createdBy,
                 status: "ACTIVE" as const
             });
         }

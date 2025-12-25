@@ -8,6 +8,19 @@ import { QuickGenerateCard } from "./QuickGenerateCard";
 import { useAuth } from "../context/AuthContext";
 
 // Professional SVG Icons
+const getTierBadge = (tier?: string) => {
+    switch (tier) {
+        case 'ENTERPRISE':
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">Enterprise</span>;
+        case 'PROFESSIONAL':
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200">Pro</span>;
+        case 'STARTER':
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 border border-green-200">Starter</span>;
+        default:
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">Free</span>;
+    }
+};
+
 const icons = {
     copy: (
         <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -86,7 +99,7 @@ export function Sidebar({
     busy
 }: SidebarProps) {
     const navigate = useNavigate();
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const [isCreatingDomain, setIsCreatingDomain] = useState(false);
     const [newDomainName, setNewDomainName] = useState("");
 
@@ -485,11 +498,14 @@ export function Sidebar({
             <div className="p-3 border-t border-border bg-bg">
                 <div className="flex items-center gap-2 group relative">
                     <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs cursor-default">
-                        A
+                        {user?.email?.charAt(0).toUpperCase() || "U"}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <div className="text-xs font-semibold truncate">Admin User</div>
-                        <div className="text-[10px] text-muted truncate">Quản trị viên</div>
+                        <div className="text-xs font-semibold truncate">{user?.email?.split('@')[0] || "User"}</div>
+                        <div className="flex items-center gap-2">
+                            <div className="text-[10px] text-muted truncate">{isAdmin ? 'Quản trị viên' : 'Thành viên'}</div>
+                            {getTierBadge(user?.tier)}
+                        </div>
                     </div>
                     <div className="flex items-center gap-1">
                         <ThemeToggle />

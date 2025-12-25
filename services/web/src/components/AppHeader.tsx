@@ -8,6 +8,19 @@ interface AppHeaderProps {
     onBack?: () => void;
 }
 
+const getTierBadge = (tier?: string) => {
+    switch (tier) {
+        case 'ENTERPRISE':
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">Enterprise</span>;
+        case 'PROFESSIONAL':
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200">Pro</span>;
+        case 'STARTER':
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 border border-green-200">Starter</span>;
+        default:
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">Free</span>;
+    }
+};
+
 export function AppHeader({ title, showBackButton, onBack }: AppHeaderProps) {
     const { user, logout } = useAuth();
     const isAdmin = user?.role === "ADMIN";
@@ -90,7 +103,10 @@ export function AppHeader({ title, showBackButton, onBack }: AppHeaderProps) {
                                     {user?.email?.charAt(0).toUpperCase() || "U"}
                                 </div>
                                 <div className="app-header-dropdown-info">
-                                    <span className="app-header-dropdown-name">{user?.email?.split("@")[0]}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="app-header-dropdown-name">{user?.email?.split("@")[0]}</span>
+                                        {getTierBadge(user?.tier)}
+                                    </div>
                                     <span className="app-header-dropdown-email">{user?.email}</span>
                                 </div>
                             </div>

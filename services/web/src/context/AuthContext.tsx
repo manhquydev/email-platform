@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         setToken("");
                         setUser(null);
                     } else {
-                        setUser({ id: decoded.id, email: decoded.email, role: decoded.role });
+                        setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
                     }
                 } catch {
                     setToken("");

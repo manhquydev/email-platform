@@ -59,7 +59,7 @@ export async function authRoutes(app: FastifyInstance) {
       }
     }
 
-    const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
+    const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
 
     await recordAudit(user.id, "USER_REGISTERED", { email: user.email });
 
@@ -207,7 +207,7 @@ export async function authRoutes(app: FastifyInstance) {
       return { requires2FA: true, tempToken };
     }
 
-    const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
+    const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
 
     await recordAudit(user.id, "LOGIN", { email: user.email, ip: request.ip });
 
@@ -311,7 +311,7 @@ export async function authRoutes(app: FastifyInstance) {
       });
     }
 
-    const token = app.jwt.sign({ userId: user.id, role: user.role }, { expiresIn: "30d" });
+    const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
 
     await recordAudit(user.id, "LOGIN_2FA", { email: user.email, ip: request.ip });
 

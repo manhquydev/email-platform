@@ -192,7 +192,7 @@ export class StripeService {
         await this.recordPayment({
             userId: user.id,
             stripePaymentId: ((invoice as any).payment_intent as string) || invoice.id,
-            amount: new Decimal(invoice.amount_paid).toString(), // Store as string for Decimal compatibility
+            amount: invoice.amount_paid, // Store as number, matches recordPayment interface
             currency: invoice.currency.toUpperCase(),
             status: 'SUCCEEDED', // Since we only call this on payment_succeeded
             packageId: pkg?.id,

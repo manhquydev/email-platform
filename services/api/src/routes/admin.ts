@@ -266,30 +266,40 @@ export async function adminRoutes(app: FastifyInstance) {
 
     // Update User Tier (Subscription Manager)
     app.patch("/admin/users/:id/tier", { preHandler: app.requireAdmin }, async (request, reply) => {
-        const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+        const params = z.object({ id: z.string().uuid() }).parse(request.params);
         const body = z.object({
             tier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]),
             status: z.enum(["ACTIVE", "PAST_DUE", "CANCELED", "TRIALING"]).optional(),
         }).safeParse(request.body);
 
-        if (!params.success || !body.success) {
-            return reply.status(400).send({ error: "Invalid payload" });
+        if (!body.success) return reply.status(400).send({ error: "Invalid payload" });
+
+        // Calculate subscription end date for paid tiers (default 30 days if making active)
+        let subscriptionEndsAt = undefined; // undefined = do not update
+        if (body.data.tier !== "FREE") {
+            // If we are manually setting a paid tier, assume we want to grant standard 30 days access
+            // unless it's already active and far in future?
+            // For simplicity in this admin tool: Reset to 30 days from now.
+            const now = new Date();
+            now.setDate(now.getDate() + 30);
+            subscriptionEndsAt = now;
+        } else {
+            // If downgrading to FREE, remove expiration
+            subscriptionEndsAt = null;
         }
 
-        const user = await prisma.user.findUnique({ where: { id: params.data.id } });
-        if (!user) return reply.status(404).send({ error: "User not found" });
-
         const updated = await prisma.user.update({
-            where: { id: params.data.id },
+            where: { id: params.id },
             data: {
                 tier: body.data.tier,
                 subscriptionStatus: body.data.status || "ACTIVE",
+                subscriptionEndsAt: subscriptionEndsAt
             }
         });
 
-        await recordAudit((request.user as any).userId, "ADMIN_SUBSCRIPTION_UPDATE", {
-            targetUserId: params.data.id,
-            newTier: body.data.tier
+        await recordAudit((request.user as any).userId, "UPDATE_USER_TIER", {
+            targetUserId: params.id,
+            tier: body.data.tier
         });
 
         return { user: updated };

@@ -62,12 +62,12 @@ export const buildServer = () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const rawBody = require("fastify-raw-body");
   // @ts-ignore: fastify-raw-body types not loaded via require
-  app.register(rawBody, {
-    field: "rawBody", // request.rawBody
-    global: false, // Only for specific routes
-    encoding: "utf8",
-    runFirst: true,
-  });
+  // app.register(rawBody, {
+  //   field: "rawBody", // request.rawBody
+  //   global: false, // Only for specific routes
+  //   encoding: "utf8",
+  //   runFirst: true,
+  // });
 
   app.register(helmet, { global: true });
   app.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit

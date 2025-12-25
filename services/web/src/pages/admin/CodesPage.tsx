@@ -91,7 +91,7 @@ export function CodesPage() {
         toast.success("Đã copy mã: " + text);
     };
 
-    const filteredCodes = codes.filter(c =>
+    const filteredCodes = (codes || []).filter(c =>
         c.code.toLowerCase().includes(filterCode.toLowerCase()) ||
         c.package.name.toLowerCase().includes(filterCode.toLowerCase())
     );

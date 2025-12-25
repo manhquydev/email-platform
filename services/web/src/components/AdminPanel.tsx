@@ -156,19 +156,19 @@ export function AdminPanel({ token }: { token: string }) {
     }, []);
 
     const navItems: NavItem[] = [
-        { id: "dashboard", label: "Tổng quan", path: "./", icon: icons.dashboard, end: true },
-        { id: "users", label: "Người dùng", path: "users", icon: icons.users, badge: counts.totalUsers },
-        { id: "packages", label: "Gói cước", path: "packages", icon: icons.creditCard },
-        { id: "codes", label: "Mã đổi thưởng", path: "codes", icon: icons.ticket },
-        { id: "orders", label: "Đơn hàng", path: "orders", icon: icons.receipt },
-        { id: "inboxes", label: "Hộp thư", path: "inboxes", icon: icons.inbox },
-        { id: "emails", label: "Email", path: "emails", icon: icons.email },
-        { id: "rules", label: "Quy tắc bảo vệ", path: "rules", icon: icons.shield },
-        { id: "domains", label: "Tên miền", path: "domains", icon: icons.globe, badge: counts.totalDomains },
-        { id: "reports", label: "Báo cáo", path: "reports", icon: icons.flag, badge: counts.openReports },
-        { id: "logs", label: "Nhật ký", path: "logs", icon: icons.clock },
-        { id: "system", label: "Hệ thống", path: "system", icon: icons.server },
-        { id: "settings", label: "Cài đặt", path: "settings", icon: icons.cog },
+        { id: "dashboard", label: "Tổng quan", path: "/admin", icon: icons.dashboard, end: true },
+        { id: "users", label: "Người dùng", path: "/admin/users", icon: icons.users, badge: counts.totalUsers },
+        { id: "packages", label: "Gói cước", path: "/admin/packages", icon: icons.creditCard },
+        { id: "codes", label: "Mã đổi thưởng", path: "/admin/codes", icon: icons.ticket },
+        { id: "orders", label: "Đơn hàng", path: "/admin/orders", icon: icons.receipt },
+        { id: "inboxes", label: "Hộp thư", path: "/admin/inboxes", icon: icons.inbox },
+        { id: "emails", label: "Email", path: "/admin/emails", icon: icons.email },
+        { id: "rules", label: "Quy tắc bảo vệ", path: "/admin/rules", icon: icons.shield },
+        { id: "domains", label: "Tên miền", path: "/admin/domains", icon: icons.globe, badge: counts.totalDomains },
+        { id: "reports", label: "Báo cáo", path: "/admin/reports", icon: icons.flag, badge: counts.openReports },
+        { id: "logs", label: "Nhật ký", path: "/admin/logs", icon: icons.clock },
+        { id: "system", label: "Hệ thống", path: "/admin/system", icon: icons.server },
+        { id: "settings", label: "Cài đặt", path: "/admin/settings", icon: icons.cog },
     ];
 
     return (

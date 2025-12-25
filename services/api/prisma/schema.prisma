@@ -398,3 +398,11 @@ enum PackageType {
   TIME_BASED
   USAGE_BASED
 }
+
+model SystemSetting {
+  key         String   @id // e.g., "RETENTION_DAYS", "MAINTENANCE_MODE"
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+

@@ -38,6 +38,7 @@ model User {
   forwardingRules            ForwardingRule[]
   inboxes                    Inbox[]
   telegramLinkTokens         TelegramLinkToken[]
+  redemptions                CodeRedemption[]       @relation("UserRedemptions")
 }
 
 model Domain {
@@ -371,13 +372,26 @@ model RedemptionCode {
   id          String   @id @default(uuid())
   code        String   @unique
   packageId   String
-  isUsed      Boolean  @default(false)
-  usedById    String?
-  usedAt      DateTime?
+  maxUses     Int      @default(1)
+  usedCount   Int      @default(0)
+  status      String   @default("ACTIVE") // ACTIVE, USED, EXPIRED, REVOKED
   expiresAt   DateTime?
   createdAt   DateTime @default(now())
   
   package     ServicePackage @relation(fields: [packageId], references: [id])
+  redemptions CodeRedemption[] @relation("CodeUsage")
+}
+
+model CodeRedemption {
+  id        String   @id @default(uuid())
+  codeId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  code      RedemptionCode @relation("CodeUsage", fields: [codeId], references: [id])
+  user      User           @relation("UserRedemptions", fields: [userId], references: [id])
+
+  @@unique([userId, codeId])
 }
 
 enum PackageType {

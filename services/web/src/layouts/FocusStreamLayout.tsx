@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconRail } from "../components/IconRail";
 import { CommandPalette } from "../components/CommandPalette";
@@ -36,6 +37,20 @@ export function FocusStreamLayout({
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    const { user } = useAuth();
+
+    const getTierBadge = (tier?: string) => {
+        switch (tier) {
+            case 'ENTERPRISE':
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">Enterprise</span>;
+            case 'PROFESSIONAL':
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200">Pro</span>;
+            case 'STARTER':
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 border border-green-200">Starter</span>;
+            default:
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">Free</span>;
+        }
+    };
 
     const handleFocusModeToggle = () => setIsFocusMode(prev => !prev);
     const handleNavToggle = () => setIsNavExpanded(prev => !prev);
@@ -102,6 +117,13 @@ export function FocusStreamLayout({
             {showUserMenu && (
                 <div className="user-menu-container">
                     <div className="user-menu">
+                        <div className="px-3 py-2 border-b border-border/10 mb-1">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-sm font-medium text-text-main truncate max-w-[150px]">{user?.email}</span>
+                                {getTierBadge(user?.tier)}
+                            </div>
+                            <div className="text-[10px] text-muted uppercase tracking-wider font-semibold">{user?.role === 'ADMIN' ? 'Administrator' : 'User'}</div>
+                        </div>
                         <button
                             className="user-menu-item"
                             onClick={() => {

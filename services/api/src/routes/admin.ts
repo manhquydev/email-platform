@@ -982,4 +982,56 @@ export async function adminRoutes(app: FastifyInstance) {
             return reply.status(500).send({ error: err.message });
         }
     });
+    // Update Service Package
+    app.patch("/admin/packages/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string() }).safeParse(request.params);
+        const body = z.object({
+            name: z.string().optional(),
+            description: z.string().optional(),
+            price: z.number().optional(),
+            type: z.enum(["TIME_BASED", "USAGE_BASED"]).optional(),
+            durationDays: z.number().optional(),
+            creditAmount: z.number().optional(),
+            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
+            stripePriceId: z.string().optional(),
+            stripeProductId: z.string().optional(),
+            isActive: z.boolean().optional(),
+        }).safeParse(request.body);
+
+        if (!params.success || !body.success) return reply.status(400).send({ error: "Invalid payload" });
+
+        const pkg = await prisma.servicePackage.update({
+            where: { id: params.data.id },
+            data: body.data
+        });
+
+        await recordAudit((request.user as any).userId, "ADMIN_PACKAGE_UPDATED", {
+            packageId: pkg.id,
+            changes: body.data
+        });
+
+        return { package: pkg };
+    });
+
+    // Delete Service Package
+    app.delete("/admin/packages/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string() }).safeParse(request.params);
+        if (!params.success) return reply.status(400).send({ error: "Invalid package ID" });
+
+        // Check if used in active subscriptions or codes
+        const usageCount = await prisma.redemptionCode.count({ where: { packageId: params.data.id } });
+        if (usageCount > 0) {
+            // Soft delete by setting isActive = false if it has history
+            await prisma.servicePackage.update({
+                where: { id: params.data.id },
+                data: { isActive: false }
+            });
+            return { success: true, message: "Package deactivated (has usage history)" };
+        }
+
+        await prisma.servicePackage.delete({ where: { id: params.data.id } });
+
+        await recordAudit((request.user as any).userId, "ADMIN_PACKAGE_DELETED", { packageId: params.data.id });
+        return { success: true };
+    });
 }

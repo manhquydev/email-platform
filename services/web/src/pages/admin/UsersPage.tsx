@@ -62,9 +62,9 @@ export function UsersPage() {
     const handleRoleChange = async (userId: string, newRole: "ADMIN" | "USER") => {
         setUpdating(userId);
         try {
-            await api(`/admin/users/${userId}`, { method: "PATCH", token, body: { role: newRole } });
+            const res = await api<{ user: User }>(`/admin/users/${userId}`, { method: "PATCH", token, body: { role: newRole } });
             toast.success("Đã cập nhật quyền");
-            await loadUsers();
+            setUsers(users.map(u => u.id === userId ? { ...u, ...res.user } : u));
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
@@ -75,13 +75,13 @@ export function UsersPage() {
     const handleTierChange = async (userId: string, tier: string) => {
         setUpdating(userId);
         try {
-            await api(`/admin/users/${userId}/tier`, {
+            const res = await api<{ user: User }>(`/admin/users/${userId}/tier`, {
                 method: "PATCH",
                 token,
                 body: { tier }
             });
             toast.success("Đã cập nhật gói cước và gia hạn");
-            await loadUsers();
+            setUsers(users.map(u => u.id === userId ? { ...u, ...res.user } : u));
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
@@ -95,6 +95,9 @@ export function UsersPage() {
         try {
             await api(`/admin/users/${userId}/subscription/cancel`, { method: "POST", token });
             toast.success("Đã hủy gói cước");
+            // Reload is safer for cancellation as it might involve complex backend logic, but we can also partial update if we knew the result structure. 
+            // The API returns success: true, so we can't easily merge user. 
+            // We manually set status to CANCELED for immediate feedback if we want, but loadUsers is safer here.
             await loadUsers();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -106,9 +109,9 @@ export function UsersPage() {
     const handleToggleDisable = async (user: User) => {
         setUpdating(user.id);
         try {
-            await api(`/admin/users/${user.id}`, { method: "PATCH", token, body: { isDisabled: !user.isDisabled } });
+            const res = await api<{ user: User }>(`/admin/users/${user.id}`, { method: "PATCH", token, body: { isDisabled: !user.isDisabled } });
             toast.success(user.isDisabled ? "Đã kích hoạt tài khoản" : "Đã vô hiệu hóa tài khoản");
-            await loadUsers();
+            setUsers(users.map(u => u.id === user.id ? { ...u, ...res.user } : u));
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {

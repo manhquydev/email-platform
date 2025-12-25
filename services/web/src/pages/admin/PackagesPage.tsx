@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import {
     GlassCard, PremiumTable, TableHeader, TableHeaderCell,
-    TableBody, TableRow, TableCell, StatusBadge, SectionHeader
+    TableBody, TableRow, TableCell, StatusBadge, SectionHeader, PremiumButton
 } from "../../components/admin/AdminUIComponents";
 
 interface ServicePackage {
@@ -30,6 +30,7 @@ export function PackagesPage() {
     const [packages, setPackages] = useState<ServicePackage[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     // Form states
     const [formData, setFormData] = useState({
@@ -62,22 +63,78 @@ export function PackagesPage() {
         if (!formData.name) return toast.error("Vui lòng nhập tên gói");
 
         try {
-            await api("/admin/packages", {
-                method: "POST",
-                token,
-                body: {
-                    ...formData,
-                    durationDays: Number(formData.durationDays),
-                    price: Number(formData.price),
-                    creditAmount: Number(formData.creditAmount)
-                }
-            });
-            toast.success("Đã tạo gói dịch vụ");
+            const payload = {
+                ...formData,
+                durationDays: Number(formData.durationDays),
+                price: Number(formData.price),
+                creditAmount: Number(formData.creditAmount)
+            };
+
+            if (editingId) {
+                await api(`/admin/packages/${editingId}`, {
+                    method: "PATCH",
+                    token,
+                    body: payload
+                });
+                toast.success("Đã cập nhật gói dịch vụ");
+            } else {
+                await api("/admin/packages", {
+                    method: "POST",
+                    token,
+                    body: payload
+                });
+                toast.success("Đã tạo gói dịch vụ");
+            }
+
             setShowModal(false);
+            resetForm();
             loadPackages();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
+    };
+
+    const handleEdit = (pkg: ServicePackage) => {
+        setEditingId(pkg.id);
+        setFormData({
+            name: pkg.name,
+            description: pkg.description || "",
+            price: pkg.price,
+            type: pkg.type,
+            durationDays: pkg.durationDays || 30,
+            targetTier: pkg.targetTier || "PROFESSIONAL",
+            creditAmount: pkg.creditAmount || 0,
+            stripePriceId: pkg.stripePriceId || "",
+            stripeProductId: pkg.stripeProductId || "",
+        });
+        setShowModal(true);
+    };
+
+    const handleDelete = async (pkg: ServicePackage) => {
+        if (!window.confirm(`Bạn có chắc muốn xóa gói "${pkg.name}"?`)) return;
+
+        try {
+            await api(`/admin/packages/${pkg.id}`, { method: "DELETE", token });
+            toast.success("Đã xóa gói dịch vụ");
+            loadPackages();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        }
+    };
+
+    const resetForm = () => {
+        setEditingId(null);
+        setFormData({
+            name: "",
+            description: "",
+            price: 0,
+            type: "TIME_BASED",
+            durationDays: 30,
+            targetTier: "PROFESSIONAL",
+            creditAmount: 0,
+            stripePriceId: "",
+            stripeProductId: "",
+        });
     };
 
     return (
@@ -87,7 +144,7 @@ export function PackagesPage() {
                 subtitle="Định nghĩa các gói cước và giá bán"
                 action={
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => { resetForm(); setShowModal(true); }}
                         className="btn-primary px-4 py-2 text-sm"
                     >
                         + Tạo gói mới
@@ -108,12 +165,13 @@ export function PackagesPage() {
                                 <TableHeaderCell>Giá</TableHeaderCell>
                                 <TableHeaderCell>SL Mã</TableHeaderCell>
                                 <TableHeaderCell>Trạng thái</TableHeaderCell>
+                                <TableHeaderCell className="text-right">Hành động</TableHeaderCell>
                             </tr>
                         </TableHeader>
                         <TableBody>
                             {packages.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="text-center py-8 text-muted">Chưa có gói dịch vụ nào</td>
+                                    <td colSpan={7} className="text-center py-8 text-muted">Chưa có gói dịch vụ nào</td>
                                 </tr>
                             ) : packages.map(pkg => (
                                 <TableRow key={pkg.id}>
@@ -142,6 +200,16 @@ export function PackagesPage() {
                                     <TableCell>
                                         <StatusBadge status={pkg.isActive ? "ACTIVE" : "INACTIVE"} variant={pkg.isActive ? "success" : "default"} />
                                     </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <PremiumButton variant="ghost" size="sm" onClick={() => handleEdit(pkg)} className="text-blue-500">
+                                                Edit
+                                            </PremiumButton>
+                                            <PremiumButton variant="ghost" size="sm" onClick={() => handleDelete(pkg)} className="text-red-500">
+                                                Delete
+                                            </PremiumButton>
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -149,12 +217,12 @@ export function PackagesPage() {
                 </GlassCard>
             )}
 
-            {/* Create Modal */}
+            {/* Create/Edit Modal */}
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-800">
                         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                            <h3 className="font-semibold">Tạo gói dịch vụ mới</h3>
+                            <h3 className="font-semibold">{editingId ? "Cập nhật gói dịch vụ" : "Tạo gói dịch vụ mới"}</h3>
                             <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
@@ -265,7 +333,7 @@ export function PackagesPage() {
                         </div>
                         <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
                             <button onClick={() => setShowModal(false)} className="btn btn-secondary px-4">Hủy</button>
-                            <button onClick={handleSubmit} className="btn btn-primary px-4">Tạo gói</button>
+                            <button onClick={handleSubmit} className="btn btn-primary px-4">{editingId ? "Cập nhật" : "Tạo gói"}</button>
                         </div>
                     </div>
                 </div>

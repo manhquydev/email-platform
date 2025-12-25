@@ -126,6 +126,9 @@
     flex-direction: column;
     gap: 4px;
     overflow-y: auto;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+
 }
 
 .icon-rail-bottom {
@@ -514,6 +517,9 @@
 .command-palette-results {
     max-height: 400px;
     overflow-y: auto;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+
     padding: 8px;
 }
 
@@ -1044,6 +1050,9 @@
     flex: 1;
     padding: 24px;
     overflow-y: auto;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+
     font-size: 14px;
     line-height: 1.7;
     color: var(--color-text-main);
@@ -1818,6 +1827,9 @@
 .inbox-toolbar-dropdown-list {
     max-height: 280px;
     overflow-y: auto;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+
     padding: 8px;
 }
 
@@ -2184,6 +2196,9 @@
 .inbox-manager-content {
     flex: 1;
     overflow-y: auto;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+
 }
 
 .inbox-manager-list-container {
@@ -2320,6 +2335,9 @@
     flex: 1;
     padding: 16px;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+
     display: flex;
     flex-direction: column;
     gap: 8px;

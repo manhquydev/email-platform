@@ -26,6 +26,19 @@ export function IconRail({
     const { user } = useAuth();
     const isAdmin = user?.role === "ADMIN";
 
+    const getTierBadge = (tier?: string) => {
+        switch (tier) {
+            case 'ENTERPRISE':
+                return <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200 ml-1">Enterprise</span>;
+            case 'PROFESSIONAL':
+                return <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200 ml-1">Pro</span>;
+            case 'STARTER':
+                return <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-green-100 text-green-700 border border-green-200 ml-1">Starter</span>;
+            default:
+                return <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 ml-1">Free</span>;
+        }
+    };
+
     return (
         <nav className={`icon-rail ${isExpanded ? 'expanded' : ''} hidden md:flex`}>
             {/* Header: Logo + Expand Toggle */}
@@ -205,7 +218,10 @@ export function IconRail({
                     {isExpanded && (
                         <span className="icon-rail-user-info">
                             <span className="icon-rail-user-name">{user?.email?.split('@')[0] || 'Guest'}</span>
-                            <span className="icon-rail-user-role">{user?.role === 'ADMIN' ? 'Admin' : 'User'}</span>
+                            <span className="icon-rail-user-role">
+                                {user?.role === 'ADMIN' ? 'Admin' : 'User'}
+                                {getTierBadge(user?.tier)}
+                            </span>
                         </span>
                     )}
                 </button>

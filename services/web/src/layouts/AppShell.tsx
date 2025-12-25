@@ -16,6 +16,19 @@ export function AppShell({ children }: AppShellProps) {
     const [scrolled, setScrolled] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
 
+    const getTierBadge = (tier?: string) => {
+        switch (tier) {
+            case 'ENTERPRISE':
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">Enterprise</span>;
+            case 'PROFESSIONAL':
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200">Pro</span>;
+            case 'STARTER':
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 border border-green-200">Starter</span>;
+            default:
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">Free</span>;
+        }
+    };
+
     const toggleTheme = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
     };
@@ -147,7 +160,10 @@ export function AppShell({ children }: AppShellProps) {
                                     <div className="fixed inset-0 z-30" onClick={() => setShowUserMenu(false)} />
                                     <div className="absolute right-0 mt-2 w-56 glass-card-elevated rounded-xl shadow-xl z-40 border border-border animate-scale-in origin-top-right overflow-hidden">
                                         <div className="px-4 py-3 bg-surface border-b border-border">
-                                            <p className="text-sm font-medium text-text-main">{user?.email}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-medium text-text-main">{user?.email}</p>
+                                                {getTierBadge(user?.tier)}
+                                            </div>
                                             <p className="text-xs text-muted truncate">ID: {user?.id.slice(0, 8)}...</p>
                                         </div>
                                         <div className="py-1">

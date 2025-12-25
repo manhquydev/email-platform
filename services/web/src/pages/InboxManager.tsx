@@ -278,8 +278,8 @@ export function InboxManager() {
         }
     };
 
-    const handleSearch = (query: string) => {
-        console.log("Search:", query);
+    const handleSearch = (_query: string) => {
+
         // TODO: Implement search
     };
 

@@ -30,6 +30,19 @@ services:
       - web
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ===================
   # DATABASE
@@ -46,6 +59,19 @@ services:
       - ./backups:/backups # Thư mục backup
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     # Không expose port ra ngoài trong production
 
     # ===================
@@ -58,6 +84,19 @@ services:
       - redis_data:/data
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     # Không expose port ra ngoài trong production
 
     # ===================
@@ -103,6 +142,19 @@ services:
       - "2525:2525" # SMTP Inbound (không qua Caddy)
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ===================
   # OUTBOUND SMTP (Postfix + OpenDKIM)
@@ -124,6 +176,19 @@ services:
       - postfix_dkim:/etc/opendkim/keys
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 128M
+        reservations:
+          cpus: '0.10'
+          memory: 32M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     # Port 25 có thể expose nếu cần nhận mail từ ngoài
     # ports:
     #   - "25:25"
@@ -149,6 +214,19 @@ services:
       - postgres
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 128M
+        reservations:
+          cpus: '0.10'
+          memory: 32M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "doveadm", "service", "status" ]
       interval: 30s
@@ -169,6 +247,19 @@ services:
       OUTBOUND_ENABLED: ${OUTBOUND_ENABLED:-false}
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     # Port 80 nội bộ, Caddy reverse proxy
 
     # ===================
@@ -184,6 +275,19 @@ services:
     restart: unless-stopped
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   grafana:
     image: grafana/grafana:10.0.3
@@ -199,6 +303,19 @@ services:
     restart: unless-stopped
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   # ===================
   # ANTI-ABUSE
   # ===================
@@ -210,6 +327,19 @@ services:
       - clamav_data:/var/lib/clamav
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1.5G
+        reservations:
+          cpus: '0.50'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "clamdscan", "--version" ]
       interval: 60s
@@ -226,6 +356,19 @@ services:
       - ./services/rspamd/local.d:/etc/rspamd/local.d:ro
     networks:
       - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD", "rspamadm", "control", "stat" ]
       interval: 30s

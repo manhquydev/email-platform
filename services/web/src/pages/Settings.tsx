@@ -274,7 +274,7 @@ export function Settings() {
 
     const tabs = [
         { id: 'account' as const, label: 'Tài khoản', icon: UserIcon },
-        { id: 'subscription' as const, label: 'Gói cước', icon: CreditCardIcon },
+        { id: 'subscription' as const, label: 'Gói & Tín dụng', icon: CreditCardIcon },
         { id: 'security' as const, label: 'Bảo mật', icon: ShieldIcon },
         { id: 'notifications' as const, label: 'Thông báo', icon: BellIcon },
     ];

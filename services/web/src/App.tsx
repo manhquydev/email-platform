@@ -24,6 +24,7 @@ const Authenticator = lazy(() => import("./pages/Authenticator").then(m => ({ de
 const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.Settings })));
 const MyDomains = lazy(() => import("./pages/MyDomains").then(m => ({ default: m.MyDomains })));
 const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default: m.Forwarding })));
+const Plans = lazy(() => import("./pages/Plans").then(m => ({ default: m.Plans })));
 
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -67,6 +68,7 @@ function App() {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/my-domains" element={<MyDomains />} />
                   <Route path="/forwarding" element={<Forwarding />} />
+                  <Route path="/plans" element={<Plans />} />
                 </Route>
 
                 {/* Fallback */}

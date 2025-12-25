@@ -168,7 +168,16 @@ export async function subscriptionRoutes(app: FastifyInstance) {
     // User: Redemption
     // ==========================================
 
-    app.post("/subscription/redeem", { preHandler: app.authenticate }, async (req, reply) => {
+    app.post("/subscription/redeem", {
+        preHandler: app.authenticate,
+        config: {
+            rateLimit: {
+                max: 5,
+                timeWindow: "1 hour",
+                keyGenerator: (req) => (req.user as any)?.userId || req.ip // Limit per user or IP
+            }
+        }
+    }, async (req, reply) => {
         const schema = z.object({
             code: z.string().min(4)
         });
@@ -217,11 +226,53 @@ export async function subscriptionRoutes(app: FastifyInstance) {
         const pkg = redemptionCode.package;
 
         await prisma.$transaction(async (tx) => {
+            // 1. Atomic Check & Increment
+            // We increment first, then check if we exceeded the limit.
+            // This relies on the atomicity of the UPDATE operation in the DB.
+            const updatedCode = await tx.redemptionCode.update({
+                where: { id: redemptionCode.id },
+                data: {
+                    usedCount: { increment: 1 }
+                }
+            });
+
+            if (updatedCode.usedCount > updatedCode.maxUses) {
+                // We exceeded the limit, so this redemption is invalid.
+                // Throwing an error will automaticall rollback the transaction (decrementing the count back).
+                throw new Error("Code usage limit reached");
+            }
+
+            // 2. If we just hit the limit, close the code
+            if (updatedCode.usedCount === updatedCode.maxUses) {
+                await tx.redemptionCode.update({
+                    where: { id: redemptionCode.id },
+                    data: { status: "USED" }
+                });
+            }
+
+            // 3. Create Log (Double check unique redemption inside tx for strictness)
+            // Even though we checked before, a race condition could have happened there too.
+            // A unique constraint on the DB table (userId_codeId) would be the ultimate fix for single-user-double-claim.
+            // Assuming schema has unique constraint, this will throw if duplicate.
+            await tx.codeRedemption.create({
+                data: {
+                    codeId: redemptionCode.id,
+                    userId
+                }
+            });
+
+            // 4. Update User Benefits
             // Update User
             if (pkg.type === "TIME_BASED") {
                 const now = new Date();
-                const currentEnd = user.subscriptionEndsAt && user.subscriptionEndsAt > now
-                    ? user.subscriptionEndsAt
+                // Re-fetch user inside TX to get lock/latest data if needed, 
+                // but strictly for expiration date calculation, using the previously fetched user is 'okay' 
+                // as long as we don't overwrite concurrent unrelated updates.
+                // However, let's just use the current user state for safety.
+                const userInTx = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+
+                const currentEnd = userInTx.subscriptionEndsAt && userInTx.subscriptionEndsAt > now
+                    ? userInTx.subscriptionEndsAt
                     : now;
 
                 // Add duration
@@ -232,7 +283,7 @@ export async function subscriptionRoutes(app: FastifyInstance) {
                 await tx.user.update({
                     where: { id: userId },
                     data: {
-                        tier: pkg.targetTier || user.tier, // Upgrade tier if specified
+                        tier: pkg.targetTier || userInTx.tier, // Upgrade tier if specified
                         subscriptionStatus: "ACTIVE",
                         subscriptionEndsAt: newEnd
                     }
@@ -246,26 +297,6 @@ export async function subscriptionRoutes(app: FastifyInstance) {
                     }
                 });
             }
-
-            // Log Redemption
-            await tx.codeRedemption.create({
-                data: {
-                    codeId: redemptionCode.id,
-                    userId
-                }
-            });
-
-            // Update Code Usage
-            const newUsedCount = redemptionCode.usedCount + 1;
-            const newStatus = (newUsedCount >= redemptionCode.maxUses) ? "USED" : "ACTIVE";
-
-            await tx.redemptionCode.update({
-                where: { id: redemptionCode.id },
-                data: {
-                    usedCount: newUsedCount,
-                    status: newStatus
-                }
-            });
         });
 
         await recordAudit(userId, "REDEEM_CODE", { code: redemptionCode.code, package: pkg.name });

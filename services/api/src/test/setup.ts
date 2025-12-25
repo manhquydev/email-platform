@@ -4,7 +4,7 @@ import { buildServer } from "../server";
 import { FastifyInstance } from "fastify";
 
 // Use port 5433 as defined in docker-compose.test.yml
-const TEST_DB_URL = "postgresql://postgres:postgres@localhost:5433/email_service_test";
+const TEST_DB_URL = "postgresql://postgres:postgres@localhost:5434/email_service_test";
 
 export const prisma = new PrismaClient({
     datasources: { db: { url: TEST_DB_URL } },

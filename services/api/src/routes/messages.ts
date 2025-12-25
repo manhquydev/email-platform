@@ -223,6 +223,11 @@ export const messageRoutes = async (app: FastifyInstance) => {
       return reply.status(404).send({ error: "Message not found" });
     }
 
+    const userId = (request.user as any).userId;
+    if (message.inbox.ownerId !== userId) {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
     return { message };
   });
 
@@ -232,15 +237,22 @@ export const messageRoutes = async (app: FastifyInstance) => {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const existing = await prisma.message.findUnique({ where: { id: params.data.id, deletedAt: null } });
+    const existing = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true }
+    });
     if (!existing) {
       return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const userId = (request.user as any).userId;
+    if (existing.inbox.ownerId !== userId) {
+      return reply.status(403).send({ error: "Unauthorized" });
     }
 
     const now = new Date();
     await prisma.attachment.updateMany({ where: { messageId: existing.id }, data: { deletedAt: now } });
     await prisma.message.update({ where: { id: existing.id }, data: { deletedAt: now } });
-    const userId = (request.user as any)?.userId ?? null;
     await recordAudit(userId, "MESSAGE_DELETED", { messageId: existing.id });
     return { ok: true };
   });
@@ -253,9 +265,17 @@ export const messageRoutes = async (app: FastifyInstance) => {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const existing = await prisma.message.findUnique({ where: { id: params.data.id, deletedAt: null } });
+    const existing = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true }
+    });
     if (!existing) {
       return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const userId = (request.user as any).userId;
+    if (existing.inbox.ownerId !== userId) {
+      return reply.status(403).send({ error: "Unauthorized" });
     }
 
     const updated = await prisma.message.update({
@@ -276,9 +296,17 @@ export const messageRoutes = async (app: FastifyInstance) => {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const existing = await prisma.message.findUnique({ where: { id: params.data.id, deletedAt: null } });
+    const existing = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true }
+    });
     if (!existing) {
       return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const userId = (request.user as any).userId;
+    if (existing.inbox.ownerId !== userId) {
+      return reply.status(403).send({ error: "Unauthorized" });
     }
 
     const updated = await prisma.message.update({
@@ -301,9 +329,17 @@ export const messageRoutes = async (app: FastifyInstance) => {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const existing = await prisma.message.findUnique({ where: { id: params.data.id, deletedAt: null } });
+    const existing = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true }
+    });
     if (!existing) {
       return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const userId = (request.user as any).userId;
+    if (existing.inbox.ownerId !== userId) {
+      return reply.status(403).send({ error: "Unauthorized" });
     }
 
     const updated = await prisma.message.update({
@@ -354,6 +390,11 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
     if (!message) {
       return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const userId = (request.user as any).userId;
+    if (message.inbox.ownerId !== userId) {
+      return reply.status(403).send({ error: "Unauthorized" });
     }
 
     // Build RFC 5322 email using mailbuild

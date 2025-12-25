@@ -61,6 +61,7 @@ export const buildServer = () => {
   // Raw body needed for Stripe webhooks
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const rawBody = require("fastify-raw-body");
+  // @ts-ignore: fastify-raw-body types not loaded via require
   app.register(rawBody, {
     field: "rawBody", // request.rawBody
     global: false, // Only for specific routes

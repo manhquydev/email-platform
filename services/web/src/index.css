@@ -221,6 +221,10 @@ body {
   position: fixed;
   width: 100%;
   height: 100%;
+
+  /* Disable all default touch actions on body (pinch, pan, etc) */
+  touch-action: none;
+
   overflow: hidden;
   overscroll-behavior: none;
 }

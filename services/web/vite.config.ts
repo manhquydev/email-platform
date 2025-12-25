@@ -15,7 +15,7 @@ export default defineConfig({
         description: 'Nền tảng email tạm thời cao cấp với thiết kế Nebula Glass',
         theme_color: '#0f172a',
         background_color: '#0f172a',
-        display: 'standalone',
+        display: 'standalone', // Forces app-like behavior (no browser UI)
         orientation: 'portrait',
         icons: [
           {
@@ -25,6 +25,9 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
       }
     })
   ],

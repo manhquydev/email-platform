@@ -169,6 +169,9 @@ export function Login() {
                             <p>
                                 Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
                             </p>
+                            <p className="text-xs text-muted mt-2 opacity-50">
+                                v6.0 (Fixed Body Layout)
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,6 @@ import rateLimit from "@fastify/rate-limit";
 import { register as promRegister, collectDefaultMetrics, Histogram } from "prom-client";
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
-import rawBody from "fastify-raw-body";
 import { appConfig } from "./config";
 import { errorHandler } from "./utils/errorHandler";
 import { authRoutes } from "./routes/auth";
@@ -60,6 +59,8 @@ export const buildServer = () => {
   app.setErrorHandler(errorHandler);
 
   // Raw body needed for Stripe webhooks
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const rawBody = require("fastify-raw-body");
   app.register(rawBody, {
     field: "rawBody", // request.rawBody
     global: false, // Only for specific routes

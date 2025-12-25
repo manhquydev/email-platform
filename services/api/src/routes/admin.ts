@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 import { UserRole } from "@prisma/client";
+import { StripeService } from "../services/stripe.service";
 
 export async function adminRoutes(app: FastifyInstance) {
     // Dashboard Statistics
@@ -905,5 +906,70 @@ export async function adminRoutes(app: FastifyInstance) {
         ]);
 
         return { data: orders, meta: { total } };
+    });
+
+    // Get Revenue Stats
+    app.get("/admin/stats/revenue", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const [totalRevenue, activeUsers] = await Promise.all([
+            prisma.payment.aggregate({
+                _sum: { amount: true },
+                where: { status: 'SUCCEEDED' }
+            }),
+            prisma.user.count({ where: { subscriptionStatus: 'ACTIVE' } })
+        ]);
+
+        // Calculate estimated MRR (Simplified: Avg price * active users or sum of active subs)
+        // For accurate MRR, we'd need to know the price of each active subscription.
+        // Let's approximate by looking at the packages of active users if possible, or just returned simplified data for now.
+        // Better approach: Sum of servicePackage.price for all active users.
+        const activeSubs = await prisma.user.findMany({
+            where: { subscriptionStatus: 'ACTIVE', stripeSubscriptionId: { not: null } },
+            select: { tier: true } // In real world we need package link.
+        });
+
+        // Hardcoded estimation based on tier (since we don't have direct package link on user easily accessible for all legacy data)
+        // Free: 0, Starter: 99000, Pro: 199000, Ent: 499000
+        const tierPrice: Record<string, number> = {
+            'FREE': 0,
+            'STARTER': 99000,
+            'PROFESSIONAL': 199000,
+            'ENTERPRISE': 499000
+        };
+
+        const mrr = activeSubs.reduce((acc, user) => acc + (tierPrice[user.tier] || 0), 0);
+
+        return {
+            totalRevenue: Number(totalRevenue._sum.amount || 0),
+            mrr,
+            activeSubscribers: activeUsers
+        };
+    });
+
+    // Refund Payment
+    app.post("/admin/payments/:id/refund", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string() }).safeParse(request.params);
+        if (!params.success) return reply.status(400).send({ error: "Invalid payment ID" });
+
+        try {
+            await StripeService.refundPayment(params.data.id);
+            await recordAudit((request.user as any).userId, "ADMIN_PAYMENT_REFUNDED", { paymentId: params.data.id });
+            return { success: true };
+        } catch (err: any) {
+            return reply.status(500).send({ error: err.message });
+        }
+    });
+
+    // Cancel Subscription
+    app.post("/admin/users/:id/subscription/cancel", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const params = z.object({ id: z.string() }).safeParse(request.params);
+        if (!params.success) return reply.status(400).send({ error: "Invalid user ID" });
+
+        try {
+            await StripeService.cancelSubscription(params.data.id);
+            await recordAudit((request.user as any).userId, "ADMIN_SUBSCRIPTION_CANCELLED", { targetUserId: params.data.id });
+            return { success: true };
+        } catch (err: any) {
+            return reply.status(500).send({ error: err.message });
+        }
     });
 }

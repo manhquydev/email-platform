@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, StatusBadge, PremiumInput,
-    EmptyState, LoadingSpinner, Pagination
+    EmptyState, LoadingSpinner, Pagination, PremiumButton
 } from "./AdminUIComponents";
 
 interface Payment {
@@ -58,6 +58,22 @@ export function AdminOrders({ token }: { token: string }) {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: currency.toUpperCase() }).format(Number(amount));
     };
 
+    const handleRefund = async (paymentId: string) => {
+        if (!window.confirm("Bạn có chắc chắn muốn hoàn tiền giao dịch này không? Hành động này không thể hoàn tác.")) return;
+
+        const toastId = toast.loading("Đang xử lý hoàn tiền...");
+        try {
+            await api(`/admin/payments/${paymentId}/refund`, {
+                method: "POST",
+                token
+            });
+            toast.success("Hoàn tiền thành công", { id: toastId });
+            loadData();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message), { id: toastId });
+        }
+    };
+
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <SectionHeader
@@ -86,6 +102,7 @@ export function AdminOrders({ token }: { token: string }) {
                                 <TableHeaderCell>Số tiền</TableHeaderCell>
                                 <TableHeaderCell>Trạng thái</TableHeaderCell>
                                 <TableHeaderCell>Thời gian</TableHeaderCell>
+                                <TableHeaderCell>Thao tác</TableHeaderCell>
                             </tr>
                         </TableHeader>
                         <TableBody>
@@ -113,6 +130,19 @@ export function AdminOrders({ token }: { token: string }) {
                                     </TableCell>
                                     <TableCell>
                                         {new Date(order.createdAt).toLocaleString("vi-VN")}
+                                    </TableCell>
+                                    <TableCell>
+                                        {order.status === "SUCCEEDED" && (
+                                            <PremiumButton
+                                                variant="danger"
+                                                size="sm"
+                                                onClick={() => handleRefund(order.id)}
+                                                title="Hoàn tiền giao dịch này"
+                                                className="!px-2 !py-1 text-xs"
+                                            >
+                                                Hoàn tiền
+                                            </PremiumButton>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

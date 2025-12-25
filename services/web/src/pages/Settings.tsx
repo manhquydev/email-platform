@@ -75,6 +75,22 @@ export function Settings() {
         }
     };
 
+    const handlePortal = async () => {
+        try {
+            toast.loading("Đang chuyển hướng đến cổng thanh toán...");
+            const res = await api<{ url: string }>("/billing/portal", { method: "POST", token });
+            if (res.url) {
+                window.location.href = res.url;
+            } else {
+                toast.dismiss();
+                toast.error("Không tìm thấy đường dẫn cổng thanh toán");
+            }
+        } catch (error) {
+            toast.dismiss();
+            toast.error(getFriendlyErrorMessage((error as Error).message));
+        }
+    };
+
     const loadProfile = useCallback(async () => {
         if (!token) return;
         setLoading(true);
@@ -460,6 +476,18 @@ export function Settings() {
                                                     Gói cước sẽ hết hạn vào: <span className="font-semibold">{new Date(profile.subscriptionEndsAt).toLocaleDateString("vi-VN")}</span>
                                                 </p>
                                             </div>
+                                        )}
+
+                                        {(profile?.tier !== 'FREE' || profile?.subscriptionEndsAt) && (
+                                            <button
+                                                onClick={handlePortal}
+                                                className="btn-nebula btn-nebula-secondary w-full mb-6 flex items-center justify-center gap-2"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                                                </svg>
+                                                Quản lý thanh toán & Hóa đơn
+                                            </button>
                                         )}
 
                                         <div className="border-t pt-6" style={{ borderColor: 'var(--nebula-border)' }}>

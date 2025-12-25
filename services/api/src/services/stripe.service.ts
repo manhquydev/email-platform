@@ -237,4 +237,73 @@ export class StripeService {
             },
         });
     }
+
+    /**
+     * Refund a payment
+     */
+    static async refundPayment(paymentId: string) {
+        const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
+        if (!payment || !payment.stripePaymentId) throw new Error("Payment not found or not linked to Stripe");
+
+        // Create refund in Stripe
+        let refund;
+        try {
+            refund = await stripe.refunds.create({
+                payment_intent: payment.stripePaymentId,
+            });
+        } catch (err: any) {
+            // Handle cases like "Charge already refunded" gracefully if needed
+            // For now rethrow
+            throw new Error(err.message);
+        }
+
+        if (refund.status === 'succeeded' || refund.status === 'pending') {
+            await prisma.payment.update({
+                where: { id: paymentId },
+                data: { status: 'REFUNDED' }
+            });
+        }
+
+        return refund;
+    }
+
+    /**
+     * Cancel a subscription
+     */
+    static async cancelSubscription(userId: string) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.stripeSubscriptionId) throw new Error("No active subscription to cancel");
+
+        try {
+            const deleted = await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+
+            // Webhook will handle the DB update, but we can do it optimistically here too
+            if (deleted.status === 'canceled') {
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        subscriptionStatus: SubscriptionStatus.CANCELED,
+                        tier: SubscriptionTier.FREE
+                    }
+                });
+            }
+            return deleted;
+        } catch (err: any) {
+            throw new Error(err.message);
+        }
+    }
+    /**
+     * Create a Stripe Customer Portal session
+     */
+    static async createPortalSession(userId: string) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.stripeCustomerId) throw new Error("User not found or not linked to Stripe");
+
+        const session = await stripe.billingPortal.sessions.create({
+            customer: user.stripeCustomerId,
+            return_url: `${appConfig.webUrl}/settings`,
+        });
+
+        return session;
+    }
 }

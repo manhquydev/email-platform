@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, StatusBadge, PremiumInput,
-    EmptyState, LoadingSpinner, Pagination
+    EmptyState, LoadingSpinner, Pagination, PremiumButton
 } from "./AdminUIComponents";
 import { PackagesManager } from "./subscription/PackagesManager";
 import { CodesManager } from "./subscription/CodesManager";
@@ -103,6 +103,23 @@ function UsersManager({ token }: { token: string }) {
         }
     };
 
+    const handleCancel = async (userId: string) => {
+        if (!window.confirm("Bạn có chắc chắn muốn hủy gói cước của người dùng này?")) return;
+        setUpdating(userId);
+        try {
+            await api(`/admin/users/${userId}/subscription/cancel`, {
+                method: "POST",
+                token
+            });
+            toast.success("Đã hủy gói cước");
+            await loadData();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setUpdating(null);
+        }
+    };
+
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
     return (
@@ -130,6 +147,7 @@ function UsersManager({ token }: { token: string }) {
                                 <TableHeaderCell>Stripe ID</TableHeaderCell>
                                 <TableHeaderCell>Ngày bắt đầu</TableHeaderCell>
                                 <TableHeaderCell className="text-right">Thay đổi gói</TableHeaderCell>
+                                <TableHeaderCell className="text-right">Thao tác</TableHeaderCell>
                             </tr>
                         </TableHeader>
                         <TableBody>
@@ -169,6 +187,20 @@ function UsersManager({ token }: { token: string }) {
                                             <option value="PROFESSIONAL">PROFESSIONAL</option>
                                             <option value="ENTERPRISE">ENTERPRISE</option>
                                         </select>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {user.stripeSubscriptionId && user.subscriptionStatus === "ACTIVE" && (
+                                            <PremiumButton
+                                                variant="danger"
+                                                size="sm"
+                                                onClick={() => handleCancel(user.id)}
+                                                disabled={updating === user.id}
+                                                className="!px-2 !py-1 text-xs"
+                                                title="Hủy đăng ký ngay lập tức"
+                                            >
+                                                Hủy
+                                            </PremiumButton>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

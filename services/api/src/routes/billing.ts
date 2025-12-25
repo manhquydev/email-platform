@@ -76,6 +76,22 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
         }
     });
 
+    // Create Customer Portal session
+    app.post('/billing/portal', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
+        if (!stripeEnabled) {
+            return reply.status(503).send({ error: 'Payment processing not configured' });
+        }
+
+        const user = req.user as { userId: string };
+
+        try {
+            const session = await StripeService.createPortalSession(user.userId);
+            return { url: session.url };
+        } catch (error: any) {
+            return reply.status(400).send({ error: error.message });
+        }
+    });
+
     // Cancel subscription
     app.post('/billing/cancel', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         if (!stripeEnabled) {

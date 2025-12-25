@@ -230,8 +230,15 @@ function ActivityFeedItem({ item, index }: { item: ActivityItem; index: number }
     );
 }
 
+interface RevenueStats {
+    totalRevenue: number;
+    mrr: number;
+    activeSubscribers: number;
+}
+
 export function AdminDashboard({ token }: { token: string }) {
     const [stats, setStats] = useState<Stats | null>(null);
+    const [revenueStats, setRevenueStats] = useState<RevenueStats | null>(null);
     const [trends, setTrends] = useState<Trends | null>(null);
     const [timeseries, setTimeseries] = useState<TimeSeriesData[]>([]);
     const [activity, setActivity] = useState<ActivityItem[]>([]);
@@ -241,16 +248,19 @@ export function AdminDashboard({ token }: { token: string }) {
 
     const loadStats = useCallback(async (showToast = false) => {
         try {
-            const [statsRes, timeseriesRes, trendsRes, activityRes] = await Promise.all([
+            const [statsRes, timeseriesRes, trendsRes, activityRes, revenueRes] = await Promise.all([
                 api<{ stats: Stats }>("/admin/stats", { token }),
                 api<{ data: TimeSeriesData[] }>("/admin/stats/timeseries", { token }),
                 api<{ trends: Trends }>("/admin/stats/trends", { token }),
                 api<{ activity: ActivityItem[] }>("/admin/activity?limit=5", { token }),
+                api<RevenueStats>("/admin/stats/revenue", { token }).catch(() => null), // Fail gracefully if endpoint not ready
             ]);
             setStats(statsRes.stats);
             setTimeseries(timeseriesRes.data);
             setTrends(trendsRes.trends);
             setActivity(activityRes.activity);
+            if (revenueRes) setRevenueStats(revenueRes);
+
             setLastUpdated(new Date());
             if (showToast) toast.success("Đã cập nhật thống kê");
         } catch (err) {
@@ -326,6 +336,47 @@ export function AdminDashboard({ token }: { token: string }) {
                     </button>
                 </div>
             </div>
+
+            {/* Revenue Overview */}
+            {revenueStats && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <GlassCard className="p-5">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </div>
+                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Tổng doanh thu</h3>
+                        </div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(revenueStats.totalRevenue)}
+                        </div>
+                    </GlassCard>
+
+                    <GlassCard className="p-5">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                            </div>
+                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Doanh thu định kỳ (MRR)</h3>
+                        </div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(revenueStats.mrr)} <span className="text-xs text-slate-400 font-normal">/tháng (ước tính)</span>
+                        </div>
+                    </GlassCard>
+
+                    <GlassCard className="p-5">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                            </div>
+                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Thuê bao kích hoạt</h3>
+                        </div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {revenueStats.activeSubscribers} <span className="text-xs text-slate-400 font-normal">users</span>
+                        </div>
+                    </GlassCard>
+                </div>
+            )}
 
             {/* Bento Grid Layout */}
             <div className="grid grid-cols-12 gap-4">

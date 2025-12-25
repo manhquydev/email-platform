@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import {
     GlassCard, PremiumTable, TableHeader, TableHeaderCell,
-    TableBody, TableRow, TableCell, StatusBadge, SectionHeader, PremiumButton
+    TableBody, TableRow, TableCell, SectionHeader, PremiumButton, PremiumToggle
 } from "../../components/admin/AdminUIComponents";
 
 interface ServicePackage {
@@ -43,6 +43,7 @@ export function PackagesPage() {
         creditAmount: 0,
         stripePriceId: "",
         stripeProductId: "",
+        isActive: true
     });
 
     const loadPackages = useCallback(async () => {
@@ -106,6 +107,7 @@ export function PackagesPage() {
             creditAmount: pkg.creditAmount || 0,
             stripePriceId: pkg.stripePriceId || "",
             stripeProductId: pkg.stripeProductId || "",
+            isActive: pkg.isActive
         });
         setShowModal(true);
     };
@@ -117,6 +119,20 @@ export function PackagesPage() {
             await api(`/admin/packages/${pkg.id}`, { method: "DELETE", token });
             toast.success("Đã xóa gói dịch vụ");
             loadPackages();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        }
+    };
+
+    const handleToggleStatus = async (pkg: ServicePackage, newStatus: boolean) => {
+        try {
+            await api(`/admin/packages/${pkg.id}`, {
+                method: "PATCH",
+                token,
+                body: { isActive: newStatus }
+            });
+            setPackages(packages.map(p => p.id === pkg.id ? { ...p, isActive: newStatus } : p));
+            toast.success(newStatus ? "Đã kích hoạt gói" : "Đã vô hiệu hóa gói");
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
@@ -134,6 +150,7 @@ export function PackagesPage() {
             creditAmount: 0,
             stripePriceId: "",
             stripeProductId: "",
+            isActive: true
         });
     };
 
@@ -198,7 +215,10 @@ export function PackagesPage() {
                                     </TableCell>
                                     <TableCell>{pkg._count.codes}</TableCell>
                                     <TableCell>
-                                        <StatusBadge status={pkg.isActive ? "ACTIVE" : "INACTIVE"} variant={pkg.isActive ? "success" : "default"} />
+                                        <PremiumToggle
+                                            checked={pkg.isActive}
+                                            onChange={(checked) => handleToggleStatus(pkg, checked)}
+                                        />
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
@@ -228,15 +248,25 @@ export function PackagesPage() {
                             </button>
                         </div>
                         <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Tên gói</label>
-                                <input
-                                    className="input-nebula w-full"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="Ví dụ: Gói Premium 1 Tháng"
-                                />
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="flex-1">
+                                    <label className="block text-sm font-medium mb-1">Tên gói</label>
+                                    <input
+                                        className="input-nebula w-full"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="Ví dụ: Gói Premium 1 Tháng"
+                                    />
+                                </div>
+                                <div className="mt-6">
+                                    <PremiumToggle
+                                        label="Kích hoạt"
+                                        checked={formData.isActive}
+                                        onChange={checked => setFormData({ ...formData, isActive: checked })}
+                                    />
+                                </div>
                             </div>
+
                             <div>
                                 <label className="block text-sm font-medium mb-1">Mô tả</label>
                                 <textarea

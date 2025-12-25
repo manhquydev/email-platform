@@ -22,7 +22,12 @@ export function MobileNavigation({
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
             if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                setIsVisible(false);
+                // Determine if we are at the bottom of the page
+                const windowHeight = window.innerHeight;
+                const documentHeight = document.documentElement.scrollHeight;
+                if (windowHeight + currentScrollY < documentHeight - 100) {
+                    setIsVisible(false);
+                }
             } else {
                 setIsVisible(true);
             }
@@ -45,11 +50,12 @@ export function MobileNavigation({
             badge: unreadCount,
         },
         {
-            id: "search" as const,
-            label: "Tìm kiếm",
+            id: "domains" as const,
+            label: "Domains",
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                    <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             ),
         },
@@ -62,16 +68,6 @@ export function MobileNavigation({
                 </svg>
             ),
             primary: true,
-        },
-        {
-            id: "domains" as const,
-            label: "Domains",
-            icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            ),
         },
         {
             id: "settings" as const,
@@ -93,9 +89,9 @@ export function MobileNavigation({
                 opacity: isVisible ? 1 : 0
             }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur-lg border-t border-border safe-area-bottom"
+            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--nebula-surface-elevated)] backdrop-blur-lg border-t border-[var(--nebula-border)] safe-area-bottom pb-[env(safe-area-inset-bottom)]"
         >
-            <div className="mobile-nav-container">
+            <div className="flex justify-around items-center h-16 px-2">
                 {tabs.map(tab => {
                     const isActive = activeTab === tab.id;
 
@@ -106,12 +102,12 @@ export function MobileNavigation({
                                 whileTap={{ scale: 0.9 }}
                                 whileHover={{ scale: 1.1 }}
                                 onClick={() => onCompose?.()}
-                                className="mobile-nav-compose"
+                                className="relative -top-5 bg-gradient-to-tr from-[var(--nebula-primary)] to-[var(--nebula-violet)] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-[var(--nebula-primary)]/40 border-4 border-[var(--nebula-bg)]"
                                 aria-label={tab.label}
                             >
                                 {tab.icon}
                                 <motion.div
-                                    className="absolute inset-0 rounded-full bg-primary/20 -z-10"
+                                    className="absolute inset-0 rounded-full bg-white/20 -z-10"
                                     animate={{ scale: [1, 1.2, 1] }}
                                     transition={{ duration: 2, repeat: Infinity }}
                                 />
@@ -124,10 +120,10 @@ export function MobileNavigation({
                             key={tab.id}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => onTabChange(tab.id as any)}
-                            className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+                            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-[var(--nebula-primary)]' : 'text-[var(--nebula-text-muted)]'}`}
                             aria-label={tab.label}
                         >
-                            <div className="mobile-nav-icon">
+                            <div className="relative">
                                 {tab.icon}
                                 <AnimatePresence>
                                     {tab.badge && tab.badge > 0 && (
@@ -135,7 +131,7 @@ export function MobileNavigation({
                                             initial={{ scale: 0, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
                                             exit={{ scale: 0, opacity: 0 }}
-                                            className="mobile-nav-badge"
+                                            className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center bg-[var(--nebula-error)] text-white text-[10px] font-bold rounded-full border-2 border-[var(--nebula-bg)] px-1"
                                         >
                                             {tab.badge > 9 ? '9+' : tab.badge}
                                         </motion.span>
@@ -144,12 +140,12 @@ export function MobileNavigation({
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeTab"
-                                        className="absolute -inset-1 bg-primary/10 rounded-xl -z-10"
+                                        className="absolute -inset-2 bg-[var(--nebula-primary)]/10 rounded-full -z-10"
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
                             </div>
-                            <span className="mobile-nav-label">{tab.label}</span>
+                            <span className="text-[10px] font-medium">{tab.label}</span>
                         </motion.button>
                     );
                 })}

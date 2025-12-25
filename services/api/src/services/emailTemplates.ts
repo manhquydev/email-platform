@@ -494,3 +494,100 @@ Website: ${appConfig.webUrl}
     subject: `🔐 Đặt lại mật khẩu - ${templateParams.platformName}`,
   };
 }
+
+/**
+ * Generate account locked email
+ */
+export function accountLockedEmailTemplate(params: {
+  recipientEmail: string;
+}): { html: string; text: string; subject: string } {
+  const templateParams: TemplateParams = {
+    recipientEmail: params.recipientEmail,
+    platformName: process.env.MAIL_FROM_NAME || "Ephemera",
+    supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
+    currentYear: new Date().getFullYear(),
+  };
+
+  const html = `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Thông báo khóa tài khoản - ${templateParams.platformName}</title>
+  ${getBaseStyles()}
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="email-container">
+      ${getHeader(templateParams.platformName!)}
+      
+      <div class="email-body">
+        <h1 class="greeting">Thông báo tài khoản ⚠️</h1>
+        
+        <p class="message">
+          Xin chào <strong>${params.recipientEmail}</strong>,
+        </p>
+        
+        <p class="message">
+          Tài khoản của bạn tại <strong>${templateParams.platformName}</strong> đã bị tạm khóa bởi quản trị viên.
+        </p>
+
+        <div class="info-box" style="background-color: #fee2e2; border-left-color: #ef4444; color: #991b1b;">
+          <strong>Lý do:</strong> Vi phạm chính sách sử dụng hoặc yêu cầu bảo mật.
+        </div>
+        
+        <p class="message" style="margin-top: 24px;">
+          Trong thời gian bị khóa, bạn sẽ không thể:
+        </p>
+        
+        <ul style="color: #4a4a4a; margin-bottom: 24px; padding-left: 20px;">
+          <li style="margin-bottom: 8px;">❌ Đăng nhập vào hệ thống</li>
+          <li style="margin-bottom: 8px;">❌ Sử dụng các dịch vụ email</li>
+          <li style="margin-bottom: 8px;">❌ Truy cập vào dữ liệu đã lưu</li>
+        </ul>
+        
+        <p class="message">
+          Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ với bộ phận hỗ trợ để được giải quyết.
+        </p>
+
+        <div class="cta-container">
+          <a href="mailto:${templateParams.supportEmail}" class="cta-button">
+            📧 Liên hệ hỗ trợ
+          </a>
+        </div>
+      </div>
+      
+      ${getFooter(templateParams)}
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+  const text = `
+Thông báo khóa tài khoản - ${templateParams.platformName}
+
+Xin chào ${params.recipientEmail},
+
+Tài khoản của bạn tại ${templateParams.platformName} đã bị tạm khóa bởi quản trị viên.
+
+Lý do: Vi phạm chính sách sử dụng hoặc yêu cầu bảo mật.
+
+Trong thời gian bị khóa, bạn sẽ không thể đăng nhập hoặc sử dụng dịch vụ.
+
+Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ với bộ phận hỗ trợ tại: ${templateParams.supportEmail}
+
+---
+${templateParams.platformName}
+Email: ${templateParams.supportEmail}
+Website: ${appConfig.webUrl}
+`;
+
+  return {
+    html,
+    text,
+    subject: `⚠️ Thông báo khóa tài khoản - ${templateParams.platformName}`,
+  };
+}

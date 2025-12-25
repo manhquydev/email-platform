@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 import { UserRole } from "@prisma/client";
 import { StripeService } from "../services/stripe.service";
+import { outboundService } from "../services/outbound";
 
 export async function adminRoutes(app: FastifyInstance) {
     // Dashboard Statistics
@@ -265,6 +266,16 @@ export async function adminRoutes(app: FastifyInstance) {
             "USER_UPDATED",
             { targetUserId: params.data.id, changes: body.data }
         );
+
+        // Send email notification if user is disabled
+        if (body.data.isDisabled === true && !user.isDisabled) {
+            try {
+                await outboundService.sendAccountLockedEmail(user.email);
+                request.log.info({ email: user.email }, "Account locked email sent");
+            } catch (err) {
+                request.log.error({ err, email: user.email }, "Failed to send account locked email");
+            }
+        }
 
         return { user: updated };
     });

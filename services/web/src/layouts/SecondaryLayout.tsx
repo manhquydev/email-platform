@@ -114,7 +114,7 @@ export function SecondaryLayout({ children, title }: SecondaryLayoutProps) {
             <AnimatePresence mode="wait">
                 <motion.main
                     key={location.pathname}
-                    className="focus-stream-main"
+                    className="focus-stream-main pb-20 md:pb-0"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}

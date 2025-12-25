@@ -16,8 +16,11 @@ export function Login() {
         if (token) navigate("/app");
     }, [token, navigate]);
 
+    const [error, setError] = useState<string | null>(null);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         try {
             const res = await login(email, password);
             if (res.requires2FA && res.tempToken) {
@@ -25,7 +28,12 @@ export function Login() {
                 setTempToken(res.tempToken);
                 toast.success("Vui lòng nhập mã xác thực 2 lớp");
             }
-        } catch { /* Error handled in AuthContext */ }
+        } catch (err) {
+            const msg = (err as Error).toString().replace("Error: ", "");
+            if (msg.includes("disabled") || msg.includes("khóa") || msg.includes("locked")) {
+                setError("Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.");
+            }
+        }
     };
 
     const handleVerify2FA = async (e: React.FormEvent) => {
@@ -62,6 +70,16 @@ export function Login() {
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="auth-form">
+                                    {error && (
+                                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4 flex items-start gap-3">
+                                            <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            <div className="text-sm text-red-500">
+                                                {error}
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="auth-field">
                                         <label>Email</label>
                                         <div className="auth-input-group">

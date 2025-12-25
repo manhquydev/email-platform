@@ -222,6 +222,24 @@ export class OutboundService {
     }
 
     /**
+     * Send account locked email
+     */
+    async sendAccountLockedEmail(to: string) {
+        const { accountLockedEmailTemplate } = await import("./emailTemplates");
+        const template = accountLockedEmailTemplate({
+            recipientEmail: to,
+        });
+
+        return this.sendEmail(
+            appConfig.defaultAdminEmail,
+            to,
+            template.subject,
+            template.text,
+            template.html
+        );
+    }
+
+    /**
      * Verify SMTP connection is working
      */
     async verifyConnection(): Promise<boolean> {

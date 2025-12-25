@@ -125,7 +125,7 @@ export function Sidebar({
     const sharedDomains = currentUserId ? domains.filter(d => d.ownerId !== currentUserId) : domains;
 
     return (
-        <div className="flex flex-col h-full glass-card-elevated rounded-2xl overflow-hidden shadow-xl border border-[var(--nebula-border)]">
+        <div className="hidden md:flex flex-col h-full glass-card-elevated rounded-2xl overflow-hidden shadow-xl border border-[var(--nebula-border)]">
             {/* 1. Domain Switcher Header */}
             <div className="p-4 border-b border-[var(--nebula-border)] bg-[var(--nebula-surface-elevated)]/50">
                 <label className="text-xs font-semibold text-[var(--nebula-text-muted)] uppercase tracking-wider mb-2 block flex items-center gap-2">

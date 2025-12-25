@@ -9,29 +9,33 @@ import App from './App.tsx'
 registerSW({ immediate: true })
 
 // --------------------------------------------------------------------------
-// Mobile "Pull-to-Refresh" & Overscroll Prevention (Robust Fix v4)
+// Mobile "Pull-to-Refresh" & Overscroll Prevention (Robust Fix v5 - Capture Phase)
 // --------------------------------------------------------------------------
 
-// 1. Force CSS-level blocking on root elements
+// 1. Force CSS-level blocking on all potential scroll roots
 document.documentElement.style.overscrollBehavior = 'none';
 document.body.style.overscrollBehavior = 'none';
+const rootEl = document.getElementById('root');
+if (rootEl) {
+  rootEl.style.overscrollBehavior = 'none';
+}
 
 // 2. JavaScript Event Interception
+// Using CAPTURE phase to intercept events BEFORE React or other libraries like Framer Motion see them.
 let touchStartY = 0;
 
 document.addEventListener('touchstart', (e) => {
   touchStartY = e.touches[0].clientY;
-}, { passive: false });
+}, { passive: false, capture: true });
 
 document.addEventListener('touchmove', (e: TouchEvent) => {
-  // If multiple touches (zoom/pinch), normally we'd ignore, but to be safe for "reload":
-  // allow default behavior for multi-touch gestures usually, but here we focus on single touch swipe.
+  // Allow multi-touch via default behavior (zoom/pinch)
   if (e.touches.length > 1) return;
 
   const touchY = e.touches[0].clientY;
   const touchDiff = touchY - touchStartY; // > 0 = Swipe Down, < 0 = Swipe Up
 
-  // Find the closest scrollable ancestor
+  // Find scrollable target
   let target = e.target as HTMLElement;
   let scrollableParent: HTMLElement | null = null;
 
@@ -41,40 +45,45 @@ document.addEventListener('touchmove', (e: TouchEvent) => {
     const isScrollContainer = overflowY === 'auto' || overflowY === 'scroll';
 
     // Check if it's actually scrollable (content > height)
+    // We strictly check this because if content fits, swiping should NOT cause scroll behavior
     const canScroll = target.scrollHeight > target.clientHeight;
 
-    if (isScrollContainer) {
-      // Even if currently not scrollable (content fits), checking 'isScrollContainer' 
-      // is important because it MIGHT become scrollable or is intended to be the scroll target.
-      // But typically we only care if it *can* scroll.
-      if (canScroll) {
-        scrollableParent = target;
-        break;
-      }
+    if (isScrollContainer && canScroll) {
+      scrollableParent = target;
+      break;
     }
     target = target.parentElement as HTMLElement;
   }
 
   if (scrollableParent) {
-    // If we are inside a scrollable container, check boundaries
+    // If we are inside a scrollable container, check specific boundaries
     const scrollTop = scrollableParent.scrollTop;
     const maxScroll = scrollableParent.scrollHeight - scrollableParent.clientHeight;
 
-    // AT TOP: If pulling DOWN (diff > 0), prevent refresh
-    if (scrollTop <= 0 && touchDiff > 0) {
-      if (e.cancelable) e.preventDefault();
+    // BLOCK SWIPE DOWN AT TOP (Prevent Refresh)
+    if (scrollTop <= 1 && touchDiff > 0) { // Using <= 1 to handle potential subpixel weirdness
+      if (e.cancelable) {
+        e.preventDefault();
+        e.stopPropagation(); // Stop bubbling to React/Library handlers
+      }
     }
-    // AT BOTTOM: If pulling UP (diff < 0), prevent overscroll navigation
-    else if (scrollTop >= maxScroll && touchDiff < 0) {
-      if (e.cancelable) e.preventDefault();
+    // BLOCK SWIPE UP AT BOTTOM (Prevent Overscroll Nav)
+    else if (scrollTop >= maxScroll - 1 && touchDiff < 0) {
+      if (e.cancelable) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     }
-    // OTHERWISE: Allow normal scroll
+    // OTHERWISE: Allow normal scroll within container
   } else {
     // If NO scrollable ancestor found (e.g., header, static background),
     // PREVENT ALL Vertical Swipes to stop "rubber-banding" or browser reload.
-    if (e.cancelable) e.preventDefault();
+    if (e.cancelable) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }
-}, { passive: false });
+}, { passive: false, capture: true }); // Capture phase is critical here
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

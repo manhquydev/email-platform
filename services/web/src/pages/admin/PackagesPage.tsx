@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { api } from "../../../utils/api";
-import { getFriendlyErrorMessage } from "../../../utils/errorMapping";
+import { api } from "../../utils/api";
+import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 import {
     GlassCard, PremiumTable, TableHeader, TableHeaderCell,
-    TableBody, TableRow, TableCell, StatusBadge
-}
-    from "../AdminUIComponents";
+    TableBody, TableRow, TableCell, StatusBadge, SectionHeader
+} from "../../components/admin/AdminUIComponents";
 
 interface ServicePackage {
     id: string;
@@ -25,7 +25,8 @@ interface ServicePackage {
     _count: { codes: number };
 }
 
-export function PackagesManager({ token }: { token: string }) {
+export function PackagesPage() {
+    const { token } = useAuth();
     const [packages, setPackages] = useState<ServicePackage[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -80,16 +81,19 @@ export function PackagesManager({ token }: { token: string }) {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Danh sách gói dịch vụ</h3>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="btn-primary px-4 py-2 text-sm"
-                >
-                    + Tạo gói mới
-                </button>
-            </div>
+        <div className="p-6 max-w-full space-y-6">
+            <SectionHeader
+                title="Quản lý Gói Dịch Vụ"
+                subtitle="Định nghĩa các gói cước và giá bán"
+                action={
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="btn-primary px-4 py-2 text-sm"
+                    >
+                        + Tạo gói mới
+                    </button>
+                }
+            />
 
             {loading ? (
                 <div className="text-center py-8">Đang tải...</div>

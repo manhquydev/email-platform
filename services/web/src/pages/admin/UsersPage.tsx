@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { api } from "../../utils/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, StatusBadge, PremiumButton, PremiumInput,
     EmptyState, LoadingSpinner, Pagination, BulkActionsBar
-} from "./AdminUIComponents";
+} from "../../components/admin/AdminUIComponents";
 
 interface User {
     id: string;
@@ -17,12 +18,15 @@ interface User {
     createdAt: string;
     tier: "FREE" | "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
     subscriptionStatus: "ACTIVE" | "PAST_DUE" | "CANCELED" | "TRIALING";
+    subscriptionEndsAt?: string | null;
+    stripeSubscriptionId?: string;
     _count: { domains: number };
 }
 
 const PAGE_SIZE = 20;
 
-export function AdminUsers({ token }: { token: string }) {
+export function UsersPage() {
+    const { token } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -68,11 +72,15 @@ export function AdminUsers({ token }: { token: string }) {
         }
     };
 
-    const handleToggleDisable = async (user: User) => {
-        setUpdating(user.id);
+    const handleTierChange = async (userId: string, tier: string) => {
+        setUpdating(userId);
         try {
-            await api(`/admin/users/${user.id}`, { method: "PATCH", token, body: { isDisabled: !user.isDisabled } });
-            toast.success(user.isDisabled ? "Đã kích hoạt tài khoản" : "Đã vô hiệu hóa tài khoản");
+            await api(`/admin/users/${userId}/tier`, {
+                method: "PATCH",
+                token,
+                body: { tier }
+            });
+            toast.success("Đã cập nhật gói cước và gia hạn");
             await loadUsers();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -81,11 +89,25 @@ export function AdminUsers({ token }: { token: string }) {
         }
     };
 
-    const handleForceVerify = async (userId: string) => {
+    const handleCancelSubscription = async (userId: string) => {
+        if (!window.confirm("Hủy gói cước ngay lập tức?")) return;
         setUpdating(userId);
         try {
-            await api(`/admin/users/${userId}/verify`, { method: "POST", token });
-            toast.success("Đã xác thực email");
+            await api(`/admin/users/${userId}/subscription/cancel`, { method: "POST", token });
+            toast.success("Đã hủy gói cước");
+            await loadUsers();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setUpdating(null);
+        }
+    };
+
+    const handleToggleDisable = async (user: User) => {
+        setUpdating(user.id);
+        try {
+            await api(`/admin/users/${user.id}`, { method: "PATCH", token, body: { isDisabled: !user.isDisabled } });
+            toast.success(user.isDisabled ? "Đã kích hoạt tài khoản" : "Đã vô hiệu hóa tài khoản");
             await loadUsers();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -100,6 +122,19 @@ export function AdminUsers({ token }: { token: string }) {
             await api(`/admin/users/${user.id}`, { method: "DELETE", token });
             toast.success(`Đã xóa ${user.email}`);
             setConfirmDelete(null);
+            await loadUsers();
+        } catch (err) {
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setUpdating(null);
+        }
+    };
+
+    const handleForceVerify = async (userId: string) => {
+        setUpdating(userId);
+        try {
+            await api(`/admin/users/${userId}/verify`, { method: "POST", token });
+            toast.success("Đã xác thực email");
             await loadUsers();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -142,15 +177,15 @@ export function AdminUsers({ token }: { token: string }) {
     const isAllSelected = users.length > 0 && selectedIds.size === users.length;
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 max-w-full">
             <SectionHeader
-                title="Người dùng"
-                subtitle={`Quản lý tài khoản trong hệ thống${total > 0 ? ` (${total} tổng)` : ""}`}
+                title="Quản lý Người dùng"
+                subtitle={`Tổng số: ${total} người dùng`}
                 action={
                     <PremiumInput
                         value={search}
                         onChange={setSearch}
-                        placeholder="Tìm kiếm..."
+                        placeholder="Tìm kiếm email..."
                         className="w-64"
                         icon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -190,7 +225,7 @@ export function AdminUsers({ token }: { token: string }) {
                                 </TableHeaderCell>
                                 <TableHeaderCell>Email</TableHeaderCell>
                                 <TableHeaderCell>Gói cước</TableHeaderCell>
-                                <TableHeaderCell>Quyền</TableHeaderCell>
+                                <TableHeaderCell>Hết hạn</TableHeaderCell>
                                 <TableHeaderCell>Trạng thái</TableHeaderCell>
                                 <TableHeaderCell>Domains</TableHeaderCell>
                                 <TableHeaderCell>Ngày tạo</TableHeaderCell>
@@ -213,37 +248,46 @@ export function AdminUsers({ token }: { token: string }) {
                                             {user.email}
                                         </div>
                                         {user.isDisabled && <StatusBadge status="Đã khóa" variant="danger" />}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col gap-1">
-                                            <StatusBadge
-                                                status={user.tier}
-                                                variant={user.tier === "FREE" ? "default" : "success"}
-                                            />
-                                            <div className="text-[10px] text-slate-500">{user.subscriptionStatus}</div>
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 ${user.role === "ADMIN" ? "bg-purple-50 text-purple-600" : "text-slate-500"}`}>
+                                                {user.role}
+                                            </span>
+                                            {!user.emailVerified && (
+                                                <button onClick={() => handleForceVerify(user.id)} className="text-[10px] text-amber-500 hover:underline">
+                                                    Chưa xác thực
+                                                </button>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <select
-                                            value={user.role}
-                                            onChange={(e) => handleRoleChange(user.id, e.target.value as "ADMIN" | "USER")}
+                                            value={user.tier}
+                                            onChange={(e) => handleTierChange(user.id, e.target.value)}
                                             disabled={updating === user.id}
-                                            className="text-xs py-1.5 px-2 w-20 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                            className="text-xs py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 cursor-pointer hover:border-blue-500 transition-colors w-28"
                                         >
-                                            <option value="USER">USER</option>
-                                            <option value="ADMIN">ADMIN</option>
+                                            <option value="FREE">FREE</option>
+                                            <option value="STARTER">STARTER</option>
+                                            <option value="PROFESSIONAL">PROFESSIONAL</option>
+                                            <option value="ENTERPRISE">ENTERPRISE</option>
                                         </select>
                                     </TableCell>
                                     <TableCell>
-                                        {user.emailVerified ? (
-                                            <StatusBadge status="✓ Đã xác thực" variant="success" />
-                                        ) : (
+                                        <div className="text-xs font-mono text-slate-500 max-w-[100px] truncate" title={user.subscriptionEndsAt ? new Date(user.subscriptionEndsAt).toLocaleString() : ""}>
+                                            {user.subscriptionEndsAt ? new Date(user.subscriptionEndsAt).toLocaleDateString("vi-VN") : "—"}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <StatusBadge
+                                            status={user.subscriptionStatus}
+                                            variant={user.subscriptionStatus === "ACTIVE" ? "success" : "default"}
+                                        />
+                                        {user.stripeSubscriptionId && user.subscriptionStatus === "ACTIVE" && (
                                             <button
-                                                onClick={() => handleForceVerify(user.id)}
-                                                disabled={updating === user.id}
-                                                className="text-xs text-amber-600 dark:text-amber-400 hover:underline disabled:opacity-50"
+                                                onClick={() => handleCancelSubscription(user.id)}
+                                                className="block mt-1 text-[10px] text-red-500 hover:underline"
                                             >
-                                                Xác thực →
+                                                Hủy đăng ký
                                             </button>
                                         )}
                                     </TableCell>
@@ -251,22 +295,35 @@ export function AdminUsers({ token }: { token: string }) {
                                     <TableCell>{new Date(user.createdAt).toLocaleDateString("vi-VN")}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            <select
+                                                value={user.role}
+                                                onChange={(e) => handleRoleChange(user.id, e.target.value as "ADMIN" | "USER")}
+                                                disabled={updating === user.id}
+                                                className="text-[10px] py-1 px-1 rounded border border-slate-200 dark:border-slate-600 bg-transparent"
+                                                title="Change Role"
+                                            >
+                                                <option value="USER">User</option>
+                                                <option value="ADMIN">Admin</option>
+                                            </select>
                                             <PremiumButton
                                                 variant={user.isDisabled ? "secondary" : "ghost"}
                                                 size="sm"
                                                 onClick={() => handleToggleDisable(user)}
                                                 disabled={updating === user.id}
+                                                className="!px-2 !py-1"
+                                                title={user.isDisabled ? "Mở khóa" : "Khóa"}
                                             >
-                                                {user.isDisabled ? "Mở khóa" : "Khóa"}
+                                                {user.isDisabled ? "Unlock" : "Lock"}
                                             </PremiumButton>
                                             <PremiumButton
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => setConfirmDelete(user)}
                                                 disabled={updating === user.id}
-                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 !px-2 !py-1"
+                                                title="Xóa người dùng"
                                             >
-                                                Xóa
+                                                X
                                             </PremiumButton>
                                         </div>
                                     </TableCell>
@@ -292,7 +349,6 @@ export function AdminUsers({ token }: { token: string }) {
                 />
             )}
 
-            {/* Delete Confirmation Modal */}
             {confirmDelete && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
                     <GlassCard className="max-w-md mx-4" hover={false}>

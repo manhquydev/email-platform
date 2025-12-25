@@ -63,7 +63,7 @@ function App() {
                 {/* Protected app routes */}
                 <Route element={<MainLayout />}>
                   <Route path="/app/classic" element={<Dashboard />} />
-                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/*" element={<Admin />} />
                   <Route path="/authenticator" element={<Authenticator />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/my-domains" element={<MyDomains />} />

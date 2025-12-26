@@ -190,9 +190,9 @@ services:
         max-size: "10m"
         max-file: "3"
     # Port 25 có thể expose nếu cần nhận mail từ ngoài
-    # ports:
-    #   - "25:25"
-
+    ports:
+      - "25:25"
+      - "587:587"
     # ===================
     # IMAP SERVER (Dovecot)
     # ===================

@@ -57,7 +57,8 @@ export const PasskeyManager: React.FC = () => {
             // 2. Create credential
             let attResp;
             try {
-                attResp = await startRegistration(options);
+                // Fix: Pass as named object { optionsJSON } for v13+
+                attResp = await startRegistration({ optionsJSON: options });
                 console.log("PasskeyManager: Attestation Response", attResp);
             } catch (error) {
                 if ((error as any).name === 'NotAllowedError') {

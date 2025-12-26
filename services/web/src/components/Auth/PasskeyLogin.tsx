@@ -19,7 +19,8 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
             // 2. Pass options to browser authenticator
             let asseResp;
             try {
-                asseResp = await startAuthentication(options);
+                // Fix: Pass as named object { optionsJSON } for v13+
+                asseResp = await startAuthentication({ optionsJSON: options });
             } catch (error) {
                 console.error("User cancelled or failed passkey interaction", error);
                 toast.error("Passkey cancelled or not available.");
@@ -32,7 +33,7 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
                 method: 'POST',
                 body: {
                     ...asseResp,
-                    challengeId: options.challenge // Hack/Workaround: Return the challenge ID we received
+                    challengeId: options.challenge // Required by backend workaround
                 }
             });
 

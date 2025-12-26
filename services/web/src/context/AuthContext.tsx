@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                         // Fetch fresh user data (for credits, etc.)
                         try {
-                            const res = await api<{ user: User }>("/auth/me");
+                            const res = await api<{ user: User }>("/auth/me", { token });
                             setUser(res.user);
                         } catch (err) {
                             console.error("Failed to refresh user profile", err);

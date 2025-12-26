@@ -39,6 +39,7 @@ services:
     depends_on:
       - postgres
       - mailpit
+      - redis
     volumes:
       - ./services/api/storage:/app/storage
     ports:

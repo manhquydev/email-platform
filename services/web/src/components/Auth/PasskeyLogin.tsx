@@ -29,12 +29,15 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
             }
 
             // 3. Send response to server to verify
+            const responsePayload = {
+                ...asseResp,
+                challengeId: options.challenge
+            };
+            console.log("PasskeyLogin: Sending verify payload", JSON.stringify(responsePayload, null, 2));
+
             const verifyResp = await api<any>('/auth/webauthn/login/verify', {
                 method: 'POST',
-                body: {
-                    ...asseResp,
-                    challengeId: options.challenge // Required by backend workaround
-                }
+                body: responsePayload
             });
 
             const { token, user } = verifyResp;

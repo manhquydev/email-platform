@@ -40,13 +40,16 @@ export const PasskeyManager: React.FC = () => {
         e.preventDefault();
         e.stopPropagation();
         console.log("handleDeletePasskey called for id:", id);
-        if (!window.confirm("Are you sure you want to remove this passkey?")) return;
+        // Temporarily remove confirm for debugging
+        toast("Attempting to remove passkey...");
         try {
-            await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
+            console.log("Delete: About to call api DELETE");
+            const result = await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
+            console.log("Delete: API Result", result);
             toast.success("Passkey removed");
             loadPasskeys();
         } catch (error) {
-            console.error("Delete failed", error);
+            console.error("Delete: API call failed", error);
             toast.error(getFriendlyErrorMessage((error as Error).message));
         }
     };

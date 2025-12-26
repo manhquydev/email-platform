@@ -220,11 +220,17 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 incomingOrigin: request.headers.origin,
                 allowedOrigins,
                 expectedRPID: rpID,
-                bodyId: body.id,
+                bodyKeys: Object.keys(body),
+                responseKeys: body.response ? Object.keys(body.response) : 'N/A',
                 challengeId: expectedChallenge,
-                authenticatorProvided: !!authenticatorData,
-                authenticatorPublicKeyLen: authenticatorData?.credentialPublicKey?.length
-            }, "WebAuthn Login Debug: Final check before library call");
+                authenticator: {
+                    credentialIDLen: authenticatorData?.credentialID?.length,
+                    publicKeyLen: authenticatorData?.credentialPublicKey?.length,
+                    counterValue: authenticatorData?.counter,
+                    counterType: typeof authenticatorData?.counter,
+                    transports: authenticatorData?.transports
+                }
+            }, "WebAuthn Login Debug: Deep inspection before verify");
 
             verification = await verifyAuthenticationResponse({
                 response: body,
@@ -235,17 +241,18 @@ export async function webauthnRoutes(app: FastifyInstance) {
             } as any);
 
             if (!verification) {
-                throw new Error("verifyAuthenticationResponse returned undefined");
+                throw new Error("verifyAuthenticationResponse returned null/undefined");
             }
         } catch (error) {
             const err = error as Error;
             request.log.error({
                 msg: "WebAuthn Login: Verification Logic Failed",
+                errorName: err.name,
                 errMsg: err.message,
                 errStack: err.stack,
                 incomingOrigin: request.headers.origin
             });
-            return reply.status(400).send({ error: "Verification failed: " + err.message });
+            return reply.status(400).send({ error: "Verification failed details: [" + err.name + "] " + err.message });
         }
 
         const { verified, authenticationInfo } = verification;

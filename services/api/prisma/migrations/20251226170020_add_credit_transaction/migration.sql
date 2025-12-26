@@ -37,32 +37,4 @@ END $$;
 -- AlterTable User (Add credits)
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "credits" INTEGER NOT NULL DEFAULT 0;
 
--- COMMENTED OUT EXISTING SCHEMA ITEMS TO PREVENT CONFLICTS
-/*
--- CreateEnum
-CREATE TYPE "FilterMatchType" AS ENUM ('ALL', 'ANY');
--- CreateEnum
-CREATE TYPE "FilterConditionField" AS ENUM ('FROM', 'TO', 'SUBJECT', 'BODY', 'HAS_ATTACHMENT');
--- CreateEnum
-CREATE TYPE "FilterConditionOperator" AS ENUM ('CONTAINS', 'NOT_CONTAINS', 'EQUALS', 'NOT_EQUALS', 'STARTS_WITH', 'ENDS_WITH', 'REGEX');
--- CreateEnum
-CREATE TYPE "FilterActionType" AS ENUM ('MOVE_TO_FOLDER', 'ADD_LABEL', 'REMOVE_LABEL', 'MARK_READ', 'MARK_SPAM', 'DELETE', 'FORWARD');
--- DropIndex
-DROP INDEX "idx_message_subject_trgm";
--- DropIndex
-DROP INDEX "idx_message_textbody_trgm";
--- AlterTable
-ALTER TABLE "Inbox" ALTER COLUMN "claimedAt" SET NOT NULL;
--- AlterTable
-ALTER TABLE "Message" ADD COLUMN     "isPinned" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "snoozedUntil" TIMESTAMP(3);
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "isDisabled" BOOLEAN NOT NULL DEFAULT false,
-ALTER COLUMN "verifiedForwardEmails" DROP DEFAULT,
-ALTER COLUMN "twoFactorBackupCodes" DROP DEFAULT;
--- CreateTable EmailFilter ...
--- CreateTable Label ...
--- CreateTable MessageLabel ...
--- CreateIndex ...
--- AddForeignKey ...
-*/
+

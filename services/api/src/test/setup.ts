@@ -41,6 +41,9 @@ beforeEach(async () => {
         prisma.domain.deleteMany(),
         prisma.rule.deleteMany(),
         prisma.telegramLinkToken.deleteMany(),
+        prisma.codeRedemption.deleteMany(),
+        prisma.redemptionCode.deleteMany(),
+        prisma.servicePackage.deleteMany(),
         prisma.user.deleteMany(),
     ]);
 });

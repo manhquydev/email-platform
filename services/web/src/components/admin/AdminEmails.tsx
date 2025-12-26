@@ -7,7 +7,7 @@ import { vi } from "date-fns/locale";
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, PremiumButton, PremiumInput,
-    EmptyState, LoadingSpinner, Pagination
+    EmptyState, LoadingSpinner, Pagination, ConfirmModal
 } from "./AdminUIComponents";
 
 interface Email {
@@ -40,6 +40,8 @@ export function AdminEmails({ token }: { token: string }) {
     const [total, setTotal] = useState(0);
     const [selectedEmail, setSelectedEmail] = useState<EmailDetail | null>(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const loadEmails = useCallback(async () => {
         setLoading(true);
@@ -76,14 +78,21 @@ export function AdminEmails({ token }: { token: string }) {
     };
 
     const handleDeleteEmail = async (emailId: string) => {
-        if (!confirm("Bạn có chắc muốn xóa email này?")) return;
+        setDeleteTarget(emailId);
+    };
+
+    const confirmDeleteEmail = async (emailId: string) => {
+        setIsDeleting(true);
         try {
             await api(`/admin/emails/${emailId}`, { method: "DELETE", token });
             toast.success("Đã xóa email");
+            setDeleteTarget(null);
             setSelectedEmail(null);
             loadEmails();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -173,7 +182,7 @@ export function AdminEmails({ token }: { token: string }) {
                                         <PremiumButton
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => { handleDeleteEmail(email.id); }}
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteEmail(email.id); }}
                                             className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -191,6 +200,16 @@ export function AdminEmails({ token }: { token: string }) {
             {totalPages > 1 && (
                 <Pagination currentPage={page + 1} totalPages={totalPages} onPageChange={(p) => setPage(p - 1)} />
             )}
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && confirmDeleteEmail(deleteTarget)}
+                title="Xóa email"
+                message="Bạn có chắc muốn xóa email này khỏi hệ thống? Hành động này không thể hoàn tác."
+                variant="danger"
+                isLoading={isDeleting}
+            />
 
             {/* Email Detail Modal */}
             {selectedEmail && (

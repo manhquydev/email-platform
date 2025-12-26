@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import {
     GlassCard, PremiumTable, TableHeader, TableHeaderCell,
-    TableBody, TableRow, TableCell, StatusBadge, SectionHeader, PremiumButton, PremiumInput
+    TableBody, TableRow, TableCell, StatusBadge, SectionHeader, PremiumButton, PremiumInput,
+    ConfirmModal
 } from "../../components/admin/AdminUIComponents";
 
 interface RedemptionCode {
@@ -91,6 +92,7 @@ export function CodesPage() {
         try {
             await api(`/admin/codes/${id}`, { method: "DELETE", token });
             toast.success("Đã xóa mã đổi thưởng");
+            setDeleteTarget(null);
             await loadData();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -108,6 +110,8 @@ export function CodesPage() {
         c.code.toLowerCase().includes(filterCode.toLowerCase()) ||
         c.package.name.toLowerCase().includes(filterCode.toLowerCase())
     );
+
+    const [deleteTarget, setDeleteTarget] = useState<RedemptionCode | null>(null);
 
     return (
         <div className="p-6 max-w-full space-y-6">
@@ -132,7 +136,7 @@ export function CodesPage() {
                 }
             />
 
-            {loading ? (
+            {loading && !codes.length ? (
                 <div className="text-center py-8">Đang tải...</div>
             ) : (
                 <GlassCard padding="p-0">
@@ -190,9 +194,7 @@ export function CodesPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => {
-                                                    if (confirm("Bạn có chắc muốn xóa mã này?")) handleDelete(code.id);
-                                                }}
+                                                onClick={() => setDeleteTarget(code)}
                                             >
                                                 Xóa
                                             </PremiumButton>
@@ -204,6 +206,16 @@ export function CodesPage() {
                     </PremiumTable>
                 </GlassCard>
             )}
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                title="Xóa mã đổi thưởng"
+                message={`Bạn có chắc muốn xóa mã "${deleteTarget?.code}"?`}
+                variant="danger"
+                isLoading={loading && !!deleteTarget}
+            />
 
             {/* Create Modal */}
             {showModal && (

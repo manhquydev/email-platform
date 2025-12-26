@@ -6,6 +6,7 @@ import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
 import { SecondaryLayout } from "../layouts/SecondaryLayout";
 import { PasskeyManager } from "../components/Auth/PasskeyManager";
+import { ConfirmationModal } from "../components/ConfirmationModal";
 
 interface UserProfile {
     id: string;
@@ -56,6 +57,12 @@ export function Settings() {
     // Subscription states
     const [redeemCode, setRedeemCode] = useState("");
     const [redeemBusy, setRedeemBusy] = useState(false);
+
+    // Confirmation Modal states
+    const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
+    const [showDisable2FAConfirm, setShowDisable2FAConfirm] = useState(false);
+    const [twoFAPassword, setTwoFAPassword] = useState("");
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleRedeem = async () => {
         if (!redeemCode.trim()) return;
@@ -151,17 +158,23 @@ export function Settings() {
         }
     };
 
-    const unlinkTelegram = async () => {
-        if (!confirm("Bạn có chắc muốn hủy liên kết Telegram?")) return;
+    const unlinkTelegram = () => {
+        setShowUnlinkConfirm(true);
+    };
+
+    const confirmUnlinkTelegram = async () => {
+        setIsProcessing(true);
         setTelegramBusy(true);
         try {
             await api("/telegram/unlink", { method: "DELETE", token });
             setTelegramStatus({ linked: false, notifyOnEmail: true });
             toast.success("Đã hủy liên kết Telegram");
+            setShowUnlinkConfirm(false);
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTelegramBusy(false);
+            setIsProcessing(false);
         }
     };
 
@@ -243,21 +256,32 @@ export function Settings() {
         }
     };
 
-    const disable2FA = async () => {
-        const pwd = prompt("Nhập mật khẩu để tắt 2FA:");
-        if (!pwd) return;
+    const disable2FA = () => {
+        setTwoFAPassword("");
+        setShowDisable2FAConfirm(true);
+    };
 
+    const confirmDisable2FA = async () => {
+        if (!twoFAPassword) {
+            setTwoFAError("Vui lòng nhập mật khẩu");
+            return;
+        }
+
+        setIsProcessing(true);
         setTwoFABusy(true);
         setTwoFAError("");
         try {
-            await api("/auth/2fa/disable", { method: "POST", token, body: { password: pwd } });
+            await api("/auth/2fa/disable", { method: "POST", token, body: { password: twoFAPassword } });
             toast.success("2FA đã được tắt");
             setTwoFAStep("idle");
+            setShowDisable2FAConfirm(false);
+            setTwoFAPassword("");
             loadProfile();
         } catch (error) {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
+            setIsProcessing(false);
         }
     };
 
@@ -833,6 +857,50 @@ export function Settings() {
                         )}
                     </div>
                 </div>
+
+                <ConfirmationModal
+                    isOpen={showUnlinkConfirm}
+                    title="Hủy liên kết Telegram"
+                    message="Bạn có chắc muốn hủy liên kết Telegram? Bạn sẽ không nhận được thông báo qua Telegram nữa."
+                    confirmLabel="Hủy liên kết"
+                    isDestructive
+                    isLoading={isProcessing}
+                    onConfirm={confirmUnlinkTelegram}
+                    onCancel={() => setShowUnlinkConfirm(false)}
+                />
+
+                <ConfirmationModal
+                    isOpen={showDisable2FAConfirm}
+                    title="Tắt xác thực 2FA"
+                    message="Vui lòng nhập mật khẩu để xác nhận tắt tính năng xác thực hai yếu tố."
+                    confirmLabel="Xác nhận tắt"
+                    isDestructive
+                    isLoading={isProcessing}
+                    onConfirm={confirmDisable2FA}
+                    onCancel={() => {
+                        setShowDisable2FAConfirm(false);
+                        setTwoFAPassword("");
+                        setTwoFAError("");
+                    }}
+                >
+                    <div className="space-y-2">
+                        <label className="text-sm text-gray-400">Mật khẩu của bạn</label>
+                        <input
+                            type="password"
+                            value={twoFAPassword}
+                            onChange={(e) => setTwoFAPassword(e.target.value)}
+                            placeholder="Nhập mật khẩu"
+                            className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                            autoFocus
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && twoFAPassword) {
+                                    confirmDisable2FA();
+                                }
+                            }}
+                        />
+                        {twoFAError && <p className="text-xs text-red-500">{twoFAError}</p>}
+                    </div>
+                </ConfirmationModal>
             </div>
         </SecondaryLayout>
     );

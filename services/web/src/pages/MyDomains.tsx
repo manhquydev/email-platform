@@ -5,6 +5,7 @@ import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
 import type { Domain } from "../types";
 import { SecondaryLayout } from "../layouts/SecondaryLayout";
+import { ConfirmationModal } from "../components/ConfirmationModal";
 
 export function MyDomains() {
     const { token, user } = useAuth();
@@ -17,6 +18,7 @@ export function MyDomains() {
     const [verifyingId, setVerifyingId] = useState<string | null>(null);
     const [togglingId, setTogglingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Domain | null>(null);
 
     const loadDomains = useCallback(async () => {
         if (!token) return;
@@ -86,12 +88,17 @@ export function MyDomains() {
         }
     };
 
-    const handleDelete = async (domainId: string, domainName: string) => {
-        if (!confirm(`Xóa tên miền "${domainName}"? Tất cả inbox trên domain này cũng sẽ bị xóa.`)) return;
-        setDeletingId(domainId);
+    const handleDelete = (domain: Domain) => {
+        setDeleteTarget(domain);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
+        setDeletingId(deleteTarget.id);
         try {
-            await api(`/domains/${domainId}`, { method: "DELETE", token });
+            await api(`/domains/${deleteTarget.id}`, { method: "DELETE", token });
             toast.success("Đã xóa tên miền");
+            setDeleteTarget(null);
             await loadDomains();
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
@@ -371,7 +378,7 @@ export function MyDomains() {
                                                 )}
 
                                                 <button
-                                                    onClick={() => handleDelete(domain.id, domain.name)}
+                                                    onClick={() => handleDelete(domain)}
                                                     disabled={deletingId === domain.id}
                                                     className="btn-nebula btn-nebula-ghost text-sm"
                                                     style={{ color: 'var(--nebula-error)' }}
@@ -416,6 +423,17 @@ export function MyDomains() {
                     )}
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={!!deleteTarget}
+                title="Xác nhận xóa tên miền"
+                message={`Xóa tên miền "${deleteTarget?.name}"? Tất cả inbox trên domain này cũng sẽ bị xóa vĩnh viễn.`}
+                confirmLabel="Xóa"
+                isDestructive
+                isLoading={!!deletingId}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteTarget(null)}
+            />
         </SecondaryLayout>
     );
 }

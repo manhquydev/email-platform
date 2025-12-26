@@ -4,6 +4,7 @@ import { authenticator } from "otplib";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE } from "../utils/api";
 import { SecondaryLayout } from "../layouts/SecondaryLayout";
+import { ConfirmationModal } from "../components/ConfirmationModal";
 
 interface AuthenticatorAccount {
     id: string;
@@ -47,6 +48,9 @@ export function Authenticator() {
     const [newService, setNewService] = useState("");
     const [newAccount, setNewAccount] = useState("");
     const [newSecret, setNewSecret] = useState("");
+
+    const [accountToDelete, setAccountToDelete] = useState<AuthenticatorAccount | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const fetchAccounts = async () => {
         try {
@@ -141,21 +145,29 @@ export function Authenticator() {
         }
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Xóa ${name}?`)) return;
+    const handleDelete = (account: AuthenticatorAccount) => {
+        setAccountToDelete(account);
+    };
+
+    const confirmDelete = async () => {
+        if (!accountToDelete) return;
+        setIsDeleting(true);
         try {
-            const res = await fetch(`${API_BASE}/auth/authenticator/accounts/${id}`, {
+            const res = await fetch(`${API_BASE}/auth/authenticator/accounts/${accountToDelete.id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.ok) {
                 toast.success("Đã xóa");
-                setAccounts(prev => prev.filter(a => a.id !== id));
+                setAccounts(prev => prev.filter(a => a.id !== accountToDelete.id));
+                setAccountToDelete(null);
             } else {
                 toast.error("Không thể xóa");
             }
         } catch (err) {
             toast.error("Lỗi khi xóa");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -304,7 +316,7 @@ export function Authenticator() {
                                                 Sao chép
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(acc.id, acc.serviceName)}
+                                                onClick={() => handleDelete(acc)}
                                                 className="btn-nebula btn-nebula-ghost text-xs text-[var(--nebula-error)] hover:bg-red-500/10"
                                             >
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -387,6 +399,17 @@ export function Authenticator() {
                         </div>
                     </div>
                 )}
+
+                <ConfirmationModal
+                    isOpen={!!accountToDelete}
+                    title="Xác nhận xóa tài khoản"
+                    message={`Bạn có chắc chắn muốn xóa tài khoản "${accountToDelete?.serviceName}"? Hành động này không thể hoàn tác.`}
+                    confirmLabel="Xóa"
+                    isDestructive
+                    isLoading={isDeleting}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setAccountToDelete(null)}
+                />
             </div>
         </SecondaryLayout>
     );

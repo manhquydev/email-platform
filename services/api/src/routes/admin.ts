@@ -1034,21 +1034,31 @@ export async function adminRoutes(app: FastifyInstance) {
         const params = z.object({ id: z.string() }).safeParse(request.params);
         if (!params.success) return reply.status(400).send({ error: "Invalid package ID" });
 
-        // Check if used in active subscriptions or codes
-        const usageCount = await prisma.redemptionCode.count({ where: { packageId: params.data.id } });
-        if (usageCount > 0) {
+        const packageId = params.data.id;
+
+        // Check if used in codes or payments
+        const [codeCount, paymentCount] = await Promise.all([
+            prisma.redemptionCode.count({ where: { packageId } }),
+            prisma.payment.count({ where: { packageId } })
+        ]);
+
+        if (codeCount > 0 || paymentCount > 0) {
             // Soft delete by setting isActive = false if it has history
             await prisma.servicePackage.update({
-                where: { id: params.data.id },
+                where: { id: packageId },
                 data: { isActive: false }
             });
-            return { success: true, message: "Package deactivated (has usage history)" };
+            return {
+                success: true,
+                deactivated: true,
+                message: "Gói đã được chuyển sang trạng thái vô hiệu hóa do có lịch sử sử dụng (mã code hoặc thanh toán). Không thể xóa hoàn toàn để đảm bảo tính toàn vẹn dữ liệu."
+            };
         }
 
-        await prisma.servicePackage.delete({ where: { id: params.data.id } });
+        await prisma.servicePackage.delete({ where: { id: packageId } });
 
-        await recordAudit((request.user as any).userId, "ADMIN_PACKAGE_DELETED", { packageId: params.data.id });
-        return { success: true };
+        await recordAudit((request.user as any).userId, "ADMIN_PACKAGE_DELETED", { packageId });
+        return { success: true, message: "Đã xóa gói dịch vụ thành công." };
     });
     // System Cleanup Trigger
     app.post("/admin/system/cleanup", { preHandler: app.requireAdmin }, async (req, reply) => {

@@ -12,6 +12,7 @@ import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 import { lazy, Suspense } from "react";
 
 const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").then(m => ({ default: m.CreateInboxModal })));
+import { ConfirmationModal } from "../components/ConfirmationModal";
 
 type SortOption = 'created' | 'name' | 'ttl' | 'messages';
 type FilterOption = 'all' | 'active' | 'expired' | 'expiring';
@@ -38,6 +39,10 @@ export function InboxManager() {
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
     const [showDetail, setShowDetail] = useState(false);
     const [focusedIndex, setFocusedIndex] = useState(0);
+
+    const [inboxToDelete, setInboxToDelete] = useState<Inbox | null>(null);
+    const [isBatchDeleting, setIsBatchDeleting] = useState(false);
+    const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
 
     // Tabs config
     const tabs = [
@@ -186,26 +191,36 @@ export function InboxManager() {
         }
     };
 
-    const handleDeleteInbox = async (inbox: Inbox) => {
-        if (!confirm(`Xóa hộp thư ${inbox.localPart}@${inbox.domain?.name}?`)) return;
+    const handleDeleteInbox = (inbox: Inbox) => {
+        setInboxToDelete(inbox);
+    };
+
+    const confirmDeleteInbox = async () => {
+        if (!inboxToDelete) return;
+        setBusy(true);
         try {
-            await api(`/inboxes/${inbox.id}`, { method: "DELETE", token });
-            setInboxes(prev => prev.filter(i => i.id !== inbox.id));
-            if (activeInbox?.id === inbox.id) {
+            await api(`/inboxes/${inboxToDelete.id}`, { method: "DELETE", token });
+            setInboxes(prev => prev.filter(i => i.id !== inboxToDelete.id));
+            if (activeInbox?.id === inboxToDelete.id) {
                 setActiveInbox(null);
                 setMessages([]);
             }
             toast.success("Đã xóa hộp thư");
+            setInboxToDelete(null);
         } catch (e) {
             toast.error("Không thể xóa hộp thư");
+        } finally {
+            setBusy(false);
         }
     };
 
-    const handleBatchDelete = async () => {
+    const handleBatchDelete = () => {
         if (selectedInboxIds.size === 0) return;
-        if (!confirm(`Xóa ${selectedInboxIds.size} hộp thư đã chọn?`)) return;
+        setShowBatchDeleteConfirm(true);
+    };
 
-        setBusy(true);
+    const confirmBatchDelete = async () => {
+        setIsBatchDeleting(true);
         let deleted = 0;
         for (const id of selectedInboxIds) {
             try {
@@ -221,7 +236,8 @@ export function InboxManager() {
             setActiveInbox(null);
             setMessages([]);
         }
-        setBusy(false);
+        setIsBatchDeleting(false);
+        setShowBatchDeleteConfirm(false);
         toast.success(`Đã xóa ${deleted} hộp thư`);
     };
 
@@ -520,6 +536,28 @@ export function InboxManager() {
                     />
                 )}
             </Suspense>
-        </FocusStreamLayout>
+
+            <ConfirmationModal
+                isOpen={!!inboxToDelete}
+                title="Xác nhận xóa hộp thư"
+                message={`Bạn có chắc chắn muốn xóa hộp thư ${inboxToDelete?.localPart}@${inboxToDelete?.domain?.name}? Hành động này không thể hoàn tác.`}
+                confirmLabel="Xóa"
+                isDestructive
+                isLoading={busy}
+                onConfirm={confirmDeleteInbox}
+                onCancel={() => setInboxToDelete(null)}
+            />
+
+            <ConfirmationModal
+                isOpen={showBatchDeleteConfirm}
+                title="Xác nhận xóa hàng loạt"
+                message={`Bạn có chắc chắn muốn xóa ${selectedInboxIds.size} hộp thư đã chọn? Hành động này không thể hoàn tác.`}
+                confirmLabel="Xóa tất cả"
+                isDestructive
+                isLoading={isBatchDeleting}
+                onConfirm={confirmBatchDelete}
+                onCancel={() => setShowBatchDeleteConfirm(false)}
+            />
+        </FocusStreamLayout >
     );
 }

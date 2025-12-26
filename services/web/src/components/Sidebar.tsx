@@ -72,8 +72,8 @@ interface SidebarProps {
     onCreateDomain: (name: string) => Promise<void>;
     onCreateInbox: (domainId: string, localPart: string, expiresAt?: number) => Promise<void>;
     onVerifyDomain: (domainId: string, token: string) => Promise<void>;
-    onDeleteDomain: (domainId: string) => Promise<void>;
-    onDeleteInbox: (inboxId: string) => Promise<void>;
+    onDeleteDomain: (domain: Domain) => void;
+    onDeleteInbox: (inbox: Inbox) => void;
     onExtendInbox: (inboxId: string) => Promise<void>;
     onLogout: () => void;
     isAdmin: boolean;
@@ -191,7 +191,7 @@ export function Sidebar({
                             </span>
                             {isOwnerOrAdmin && (
                                 <button
-                                    onClick={() => onDeleteDomain(activeDomain.id)}
+                                    onClick={() => onDeleteDomain(activeDomain)}
                                     className="text-[10px] text-red-500 hover:underline disabled:opacity-50"
                                     disabled={busy}
                                     title="Xóa domain"
@@ -448,9 +448,7 @@ export function Sidebar({
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            if (confirm(`Xóa hộp thư ${fullEmail}?`)) {
-                                                onDeleteInbox(inbox.id);
-                                            }
+                                            onDeleteInbox(inbox);
                                         }}
                                         disabled={busy}
                                         className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded text-muted hover:text-red-500 transition-all flex-shrink-0"

@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
     cancelLabel?: string;
     isDestructive?: boolean;
     isLoading?: boolean;
+    children?: React.ReactNode;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -20,6 +21,7 @@ export function ConfirmationModal({
     cancelLabel = "Hủy",
     isDestructive = false,
     isLoading = false,
+    children,
     onConfirm,
     onCancel
 }: ConfirmationModalProps) {
@@ -52,7 +54,13 @@ export function ConfirmationModal({
                 </div>
 
                 <div className="p-6">
-                    <p className="text-gray-300 mb-6">{message}</p>
+                    <p className="text-gray-300 mb-4">{message}</p>
+
+                    {children && (
+                        <div className="mb-6">
+                            {children}
+                        </div>
+                    )}
 
                     <div className="flex justify-end gap-3">
                         <button
@@ -66,8 +74,8 @@ export function ConfirmationModal({
                             onClick={onConfirm}
                             disabled={isLoading}
                             className={`px-4 py-2 rounded-lg font-medium text-white transition-colors flex items-center gap-2 ${isDestructive
-                                    ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-800'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800'
+                                ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-800'
+                                : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800'
                                 }`}
                         >
                             {isLoading && (

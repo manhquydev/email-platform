@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import {
     GlassCard, PremiumTable, TableHeader, TableHeaderCell,
-    TableBody, TableRow, TableCell, SectionHeader, PremiumButton, PremiumToggle
+    TableBody, TableRow, TableCell, SectionHeader, PremiumButton, PremiumToggle,
+    ConfirmModal
 } from "../../components/admin/AdminUIComponents";
 
 interface ServicePackage {
@@ -113,11 +114,15 @@ export function PackagesPage() {
     };
 
     const handleDelete = async (pkg: ServicePackage) => {
-        if (!window.confirm(`Bạn có chắc muốn xóa gói "${pkg.name}"?`)) return;
-
         try {
-            await api(`/admin/packages/${pkg.id}`, { method: "DELETE", token });
-            toast.success("Đã xóa gói dịch vụ");
+            const res = await api<{ success: boolean, deactivated?: boolean, message?: string }>(`/admin/packages/${pkg.id}`, { method: "DELETE", token });
+
+            if (res.deactivated) {
+                toast(res.message || "Gói đã được vô hiệu hóa", { icon: 'ℹ️', duration: 4000 });
+            } else {
+                toast.success(res.message || "Đã xóa gói dịch vụ");
+            }
+
             loadPackages();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -153,6 +158,8 @@ export function PackagesPage() {
             isActive: true
         });
     };
+
+    const [deleteTarget, setDeleteTarget] = useState<ServicePackage | null>(null);
 
     return (
         <div className="p-6 max-w-full space-y-6">
@@ -191,10 +198,17 @@ export function PackagesPage() {
                                     <td colSpan={7} className="text-center py-8 text-muted">Chưa có gói dịch vụ nào</td>
                                 </tr>
                             ) : packages.map(pkg => (
-                                <TableRow key={pkg.id}>
+                                <TableRow key={pkg.id} className={!pkg.isActive ? "opacity-60 grayscale-[0.5]" : ""}>
                                     <TableCell>
-                                        <div className="font-medium">{pkg.name}</div>
-                                        <div className="text-xs text-muted truncate max-w-[200px]">{pkg.description}</div>
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`font-medium ${!pkg.isActive ? "text-slate-500 line-through decoration-1" : ""}`}>{pkg.name}</span>
+                                                {!pkg.isActive && (
+                                                    <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Lưu trữ</span>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-muted truncate max-w-[200px]">{pkg.description}</div>
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <span className={`text-xs px-2 py-1 rounded font-medium ${pkg.type === 'TIME_BASED' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'}`}>
@@ -225,7 +239,7 @@ export function PackagesPage() {
                                             <PremiumButton variant="ghost" size="sm" onClick={() => handleEdit(pkg)} className="text-blue-500">
                                                 Edit
                                             </PremiumButton>
-                                            <PremiumButton variant="ghost" size="sm" onClick={() => handleDelete(pkg)} className="text-red-500">
+                                            <PremiumButton variant="ghost" size="sm" onClick={() => setDeleteTarget(pkg)} className="text-red-500">
                                                 Delete
                                             </PremiumButton>
                                         </div>
@@ -236,6 +250,16 @@ export function PackagesPage() {
                     </PremiumTable>
                 </GlassCard>
             )}
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
+                title="Xóa gói dịch vụ"
+                message={`Bạn có chắc chắn muốn xóa gói "${deleteTarget?.name}"? Hành động này không thể hoàn tác.`}
+                confirmText="Xác nhận xóa"
+                variant="danger"
+            />
 
             {/* Create/Edit Modal */}
             {showModal && (

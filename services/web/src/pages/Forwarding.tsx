@@ -4,6 +4,7 @@ import { api } from "../utils/api";
 import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
 import { SecondaryLayout } from "../layouts/SecondaryLayout";
+import { ConfirmationModal } from "../components/ConfirmationModal";
 
 interface ForwardingRule {
     id: string;
@@ -47,6 +48,10 @@ export function Forwarding() {
         subjectContains: "",
     });
     const [ruleBusy, setRuleBusy] = useState(false);
+
+    const [emailToDelete, setEmailToDelete] = useState<string | null>(null);
+    const [ruleToDelete, setRuleToDelete] = useState<ForwardingRule | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const loadData = useCallback(async () => {
         if (!token) return;
@@ -109,17 +114,25 @@ export function Forwarding() {
         }
     };
 
-    const removeEmail = async (email: string) => {
-        if (!confirm(`Xóa ${email} khỏi danh sách đích chuyển tiếp?`)) return;
+    const removeEmail = (email: string) => {
+        setEmailToDelete(email);
+    };
+
+    const confirmRemoveEmail = async () => {
+        if (!emailToDelete) return;
+        setIsDeleting(true);
         try {
-            await api(`/forwarding/emails/${encodeURIComponent(email)}`, {
+            await api(`/forwarding/emails/${encodeURIComponent(emailToDelete)}`, {
                 method: "DELETE",
                 token
             });
             toast.success("Đã xóa email");
+            setEmailToDelete(null);
             loadData();
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -199,14 +212,22 @@ export function Forwarding() {
         }
     };
 
-    const deleteRule = async (rule: ForwardingRule) => {
-        if (!confirm(`Xóa quy tắc "${rule.name}"?`)) return;
+    const deleteRule = (rule: ForwardingRule) => {
+        setRuleToDelete(rule);
+    };
+
+    const confirmDeleteRule = async () => {
+        if (!ruleToDelete) return;
+        setIsDeleting(true);
         try {
-            await api(`/forwarding/rules/${rule.id}`, { method: "DELETE", token });
+            await api(`/forwarding/rules/${ruleToDelete.id}`, { method: "DELETE", token });
             toast.success("Đã xóa quy tắc");
+            setRuleToDelete(null);
             loadData();
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -591,6 +612,28 @@ export function Forwarding() {
                         </div>
                     </div>
                 )}
+
+                <ConfirmationModal
+                    isOpen={!!emailToDelete}
+                    title="Xác nhận xóa email"
+                    message={`Xóa ${emailToDelete} khỏi danh sách đích chuyển tiếp?`}
+                    confirmLabel="Xóa"
+                    isDestructive
+                    isLoading={isDeleting}
+                    onConfirm={confirmRemoveEmail}
+                    onCancel={() => setEmailToDelete(null)}
+                />
+
+                <ConfirmationModal
+                    isOpen={!!ruleToDelete}
+                    title="Xác nhận xóa quy tắc"
+                    message={`Bạn có chắc chắn muốn xóa quy tắc "${ruleToDelete?.name}"?`}
+                    confirmLabel="Xóa"
+                    isDestructive
+                    isLoading={isDeleting}
+                    onConfirm={confirmDeleteRule}
+                    onCancel={() => setRuleToDelete(null)}
+                />
             </div>
         </SecondaryLayout>
     );

@@ -121,7 +121,7 @@ export function StatusBadge({ status, variant = "default" }: {
 }
 
 // Premium Button Component
-export function PremiumButton({ children, onClick, variant = "primary", size = "md", disabled = false, className = "", title }: {
+export function PremiumButton({ children, onClick, variant = "primary", size = "md", disabled = false, className = "", title, isLoading }: {
     children: React.ReactNode;
     onClick?: () => void;
     variant?: "primary" | "secondary" | "danger" | "ghost";
@@ -129,6 +129,7 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
     disabled?: boolean;
     className?: string;
     title?: string;
+    isLoading?: boolean;
 }) {
     const variants = {
         primary: "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/25",
@@ -146,7 +147,7 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
     return (
         <button
             onClick={onClick}
-            disabled={disabled}
+            disabled={disabled || isLoading}
             title={title}
             className={`
     inline-flex items-center justify-center gap-2 font-medium rounded-xl
@@ -157,6 +158,12 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
                 ${className}
     `}
         >
+            {isLoading && (
+                <svg className="animate-spin h-4 w-4 mr-1" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+            )}
             {children}
         </button>
     );
@@ -339,5 +346,53 @@ export function PremiumToggle({ checked, onChange, disabled = false, label }: {
             </div>
             {label && <span className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none">{label}</span>}
         </label>
+    );
+}
+
+// Premium Confirm Modal Component
+export function ConfirmModal({
+    isOpen,
+    onClose,
+    onConfirm,
+    title,
+    message,
+    confirmText = "Xác nhận",
+    cancelText = "Hủy",
+    variant = "primary",
+    isLoading = false
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: "primary" | "danger";
+    isLoading?: boolean;
+}) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <GlassCard className="w-full max-w-sm overflow-hidden border border-white/20 shadow-2xl animate-in zoom-in-95 duration-200" padding="p-0">
+                <div className="p-6">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</p>
+                </div>
+                <div className="p-4 bg-gray-50/50 dark:bg-white/5 flex gap-3 justify-end items-center">
+                    <PremiumButton variant="ghost" onClick={onClose} disabled={isLoading}>
+                        {cancelText}
+                    </PremiumButton>
+                    <PremiumButton
+                        variant={variant === "danger" ? "danger" : "primary"}
+                        isLoading={isLoading}
+                        onClick={onConfirm}
+                    >
+                        {confirmText}
+                    </PremiumButton>
+                </div>
+            </GlassCard>
+        </div>
     );
 }

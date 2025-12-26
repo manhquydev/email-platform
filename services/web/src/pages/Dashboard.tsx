@@ -9,6 +9,7 @@ import { AppShell } from "../layouts/AppShell";
 import { extractOTP } from "../utils/otpExtractor";
 import { Sidebar } from "../components/Sidebar";
 import { QuickGenerateCard } from "../components/QuickGenerateCard";
+import { ConfirmationModal } from "../components/ConfirmationModal";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 // Lazy load heavy modal components
@@ -58,6 +59,10 @@ export function Dashboard() {
 
     // Bulk selection state
     const [_selectedIds, _setSelectedIds] = useState<Set<string>>(new Set());
+
+    const [domainToDelete, setDomainToDelete] = useState<Domain | null>(null);
+    const [inboxToDelete, setInboxToDelete] = useState<Inbox | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const isAdmin = user?.role === "ADMIN";
     const outboundEnabled = String(window.env?.OUTBOUND_ENABLED ?? import.meta.env.VITE_OUTBOUND_ENABLED ?? "false").toLowerCase() === "true";
@@ -203,18 +208,23 @@ export function Dashboard() {
         }
     };
 
-    const deleteDomain = async (domainId: string) => {
-        if (!confirm("Bạn có chắc chắn muốn xóa domain này? Tất cả các hộp thư sẽ bị xóa.")) return;
-        setBusy(true);
+    const deleteDomain = async (domain: Domain) => {
+        setDomainToDelete(domain);
+    };
+
+    const confirmDeleteDomain = async () => {
+        if (!domainToDelete) return;
+        setIsDeleting(true);
         try {
-            await api(`/domains/${domainId}`, { method: "DELETE", token });
+            await api(`/domains/${domainToDelete.id}`, { method: "DELETE", token });
             toast.success("Đã xóa tên miền");
-            if (selectedDomain === domainId) setSelectedDomain("");
+            if (selectedDomain === domainToDelete.id) setSelectedDomain("");
+            setDomainToDelete(null);
             await loadDomains();
         } catch (error) {
             toast.error("Lỗi xóa domain: " + (error as Error).message);
         } finally {
-            setBusy(false);
+            setIsDeleting(false);
         }
     };
 
@@ -237,21 +247,27 @@ export function Dashboard() {
         }
     };
 
-    const deleteInbox = async (inboxId: string) => {
-        setBusy(true);
+    const deleteInbox = async (inbox: Inbox) => {
+        setInboxToDelete(inbox);
+    };
+
+    const confirmDeleteInbox = async () => {
+        if (!inboxToDelete) return;
+        setIsDeleting(true);
         try {
-            await api(`/inboxes/${inboxId}`, { method: "DELETE", token });
+            await api(`/inboxes/${inboxToDelete.id}`, { method: "DELETE", token });
             toast.success("Đã xóa hộp thư");
-            setInboxes(prev => prev.filter(i => i.id !== inboxId));
-            if (selectedInbox === inboxId) {
+            setInboxes(prev => prev.filter(i => i.id !== inboxToDelete.id));
+            if (selectedInbox === inboxToDelete.id) {
                 setSelectedInbox("");
                 setMessages([]);
                 setSelectedMessage(null);
             }
+            setInboxToDelete(null);
         } catch (e) {
             toast.error("Lỗi xóa hộp thư: " + (e as Error).message);
         } finally {
-            setBusy(false);
+            setIsDeleting(false);
         }
     };
 
@@ -696,6 +712,28 @@ export function Dashboard() {
                 )}
 
                 {busy && !messages.length && <Loading fullScreen />}
+
+                <ConfirmationModal
+                    isOpen={!!domainToDelete}
+                    title="Xác nhận xóa tên miền"
+                    message={`Bạn có chắc chắn muốn xóa tên miền "${domainToDelete?.name}"? Tất cả các hộp thư thuộc tên miền này cũng sẽ bị xóa vĩnh viễn.`}
+                    confirmLabel="Xóa tên miền"
+                    isDestructive
+                    isLoading={isDeleting}
+                    onConfirm={confirmDeleteDomain}
+                    onCancel={() => setDomainToDelete(null)}
+                />
+
+                <ConfirmationModal
+                    isOpen={!!inboxToDelete}
+                    title="Xác nhận xóa hộp thư"
+                    message={`Bạn có chắc chắn muốn xóa hộp thư ${inboxToDelete?.localPart}@${selectedDomainObj?.name}? Hành động này không thể hoàn tác.`}
+                    confirmLabel="Xóa hộp thư"
+                    isDestructive
+                    isLoading={isDeleting}
+                    onConfirm={confirmDeleteInbox}
+                    onCancel={() => setInboxToDelete(null)}
+                />
             </div>
         </AppShell>
     );

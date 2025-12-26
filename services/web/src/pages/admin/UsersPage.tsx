@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, StatusBadge, PremiumButton, PremiumInput,
-    EmptyState, LoadingSpinner, Pagination, BulkActionsBar
+    EmptyState, LoadingSpinner, Pagination, BulkActionsBar, ConfirmModal
 } from "../../components/admin/AdminUIComponents";
 
 interface User {
@@ -34,6 +34,8 @@ export function UsersPage() {
     const [page, setPage] = useState(0);
     const [total, setTotal] = useState(0);
     const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
+    const [confirmCancelSub, setConfirmCancelSub] = useState<User | null>(null);
+    const [confirmBulk, setConfirmBulk] = useState<"enable" | "disable" | "delete" | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [bulkLoading, setBulkLoading] = useState(false);
 
@@ -90,14 +92,16 @@ export function UsersPage() {
     };
 
     const handleCancelSubscription = async (userId: string) => {
-        if (!window.confirm("Hủy gói cước ngay lập tức?")) return;
+        const user = users.find(u => u.id === userId);
+        if (user) setConfirmCancelSub(user);
+    };
+
+    const confirmCancelSubscription = async (userId: string) => {
         setUpdating(userId);
         try {
             await api(`/admin/users/${userId}/subscription/cancel`, { method: "POST", token });
             toast.success("Đã hủy gói cước");
-            // Reload is safer for cancellation as it might involve complex backend logic, but we can also partial update if we knew the result structure. 
-            // The API returns success: true, so we can't easily merge user. 
-            // We manually set status to CANCELED for immediate feedback if we want, but loadUsers is safer here.
+            setConfirmCancelSub(null);
             await loadUsers();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -158,9 +162,11 @@ export function UsersPage() {
 
     const handleBulkAction = async (action: "enable" | "disable" | "delete") => {
         if (selectedIds.size === 0) return;
-        const labels = { enable: "kích hoạt", disable: "vô hiệu hóa", delete: "xóa" };
-        if (action === "delete" && !confirm(`Bạn có chắc muốn ${labels[action]} ${selectedIds.size} người dùng?`)) return;
+        setConfirmBulk(action);
+    };
 
+    const confirmBulkAction = async (action: "enable" | "disable" | "delete") => {
+        const labels = { enable: "kích hoạt", disable: "vô hiệu hóa", delete: "xóa" };
         setBulkLoading(true);
         try {
             const res = await api<{ affected: number }>("/admin/users/bulk", {
@@ -168,6 +174,7 @@ export function UsersPage() {
             });
             toast.success(`Đã ${labels[action]} ${res.affected} người dùng`);
             setSelectedIds(new Set());
+            setConfirmBulk(null);
             await loadUsers();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
@@ -352,29 +359,35 @@ export function UsersPage() {
                 />
             )}
 
-            {confirmDelete && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-                    <GlassCard className="max-w-md mx-4" hover={false}>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Xác nhận xóa</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-                            Bạn có chắc muốn xóa người dùng <strong className="text-slate-900 dark:text-white">{confirmDelete.email}</strong>?
-                            Tất cả domain, inbox và email của họ sẽ bị xóa vĩnh viễn.
-                        </p>
-                        <div className="flex justify-end gap-3">
-                            <PremiumButton variant="secondary" onClick={() => setConfirmDelete(null)}>
-                                Hủy
-                            </PremiumButton>
-                            <PremiumButton
-                                variant="danger"
-                                onClick={() => handleDelete(confirmDelete)}
-                                disabled={updating === confirmDelete.id}
-                            >
-                                {updating === confirmDelete.id ? "Đang xóa..." : "Xóa"}
-                            </PremiumButton>
-                        </div>
-                    </GlassCard>
-                </div>
-            )}
+            <ConfirmModal
+                isOpen={!!confirmDelete}
+                onClose={() => setConfirmDelete(null)}
+                onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
+                title="Xóa người dùng"
+                message={`Bạn có chắc muốn xóa người dùng "${confirmDelete?.email}"? Tất cả domain, inbox và email của họ sẽ bị xóa vĩnh viễn.`}
+                variant="danger"
+                isLoading={updating === confirmDelete?.id}
+            />
+
+            <ConfirmModal
+                isOpen={!!confirmCancelSub}
+                onClose={() => setConfirmCancelSub(null)}
+                onConfirm={() => confirmCancelSub && confirmCancelSubscription(confirmCancelSub.id)}
+                title="Hủy gói cước"
+                message={`Bạn có chắc muốn hủy gói cước của "${confirmCancelSub?.email}" ngay lập tức?`}
+                variant="danger"
+                isLoading={updating === confirmCancelSub?.id}
+            />
+
+            <ConfirmModal
+                isOpen={!!confirmBulk}
+                onClose={() => setConfirmBulk(null)}
+                onConfirm={() => confirmBulk && confirmBulkAction(confirmBulk)}
+                title="Hành động hàng loạt"
+                message={`Bạn có chắc muốn ${confirmBulk === "delete" ? "xóa" : confirmBulk === "enable" ? "kích hoạt" : "vô hiệu hóa"} ${selectedIds.size} người dùng đã chọn?`}
+                variant={confirmBulk === "delete" ? "danger" : "primary"}
+                isLoading={bulkLoading}
+            />
         </div>
     );
 }

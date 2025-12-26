@@ -3,6 +3,10 @@ import { api } from "../../utils/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
+import {
+    GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
+    TableBody, TableRow, TableCell, PremiumButton, ConfirmModal
+} from "../../components/admin/AdminUIComponents";
 
 export function AdminRulesPage() {
     const { token } = useAuth();
@@ -49,13 +53,15 @@ export function AdminRulesPage() {
         }
     };
 
-    const deleteRule = async (id: string) => {
-        if (!confirm("Xóa quy tắc này?")) return;
+    const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
+    const handleDelete = async (ruleId: string) => {
         setLoading(true);
         try {
-            await api(`/abuse/rules/${id}`, { method: "DELETE", token });
-            toast.success("Đã xóa");
-            await loadRules();
+            await api(`/abuse/rules/${ruleId}`, { method: "DELETE", token });
+            toast.success("Đã xóa quy tắc");
+            setDeleteTarget(null);
+            loadRules();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
@@ -72,90 +78,101 @@ export function AdminRulesPage() {
     };
 
     return (
-        <div className="p-6 max-w-5xl">
-            <div className="mb-6">
-                <h1 className="text-xl font-semibold">Quy tắc bảo vệ</h1>
-                <p className="text-sm text-muted mt-1">Quản lý các quy tắc chặn hoặc cho phép email</p>
-            </div>
+        <div className="p-6 max-w-5xl space-y-6">
+            <SectionHeader
+                title="Quy tắc bảo vệ"
+                subtitle="Quản lý các quy tắc chặn hoặc cho phép email"
+            />
 
             {/* Add Rule Form */}
-            <div className="bg-surface border border-border rounded-lg p-5 mb-6">
-                <h3 className="text-sm font-medium mb-4">Thêm quy tắc mới</h3>
+            <GlassCard className="p-5">
+                <h3 className="text-sm font-medium mb-4 text-slate-900 dark:text-white">Thêm quy tắc mới</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div>
-                        <label className="block text-xs text-muted mb-1.5">Loại</label>
-                        <select value={newType} onChange={(e) => setNewType(e.target.value)} className="text-sm input-nebula w-full">
+                        <label className="block text-xs text-slate-500 mb-1.5">Loại</label>
+                        <select value={newType} onChange={(e) => setNewType(e.target.value)} className="w-full text-sm py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                             <option value="BLOCK">Chặn</option>
                             <option value="ALLOW">Cho phép</option>
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs text-muted mb-1.5">Phạm vi</label>
-                        <select value={newScope} onChange={(e) => setNewScope(e.target.value)} className="text-sm input-nebula w-full">
+                        <label className="block text-xs text-slate-500 mb-1.5">Phạm vi</label>
+                        <select value={newScope} onChange={(e) => setNewScope(e.target.value)} className="w-full text-sm py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                             <option value="SENDER_DOMAIN">Tên miền gửi</option>
                             <option value="SENDER_EMAIL">Email gửi</option>
                             <option value="RECIPIENT_DOMAIN">Tên miền nhận</option>
                             <option value="SOURCE_IP">Địa chỉ IP</option>
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-xs text-muted mb-1.5">Giá trị</label>
+                    <div className="md:col-span-1">
+                        <label className="block text-xs text-slate-500 mb-1.5">Giá trị</label>
                         <input
-                            className="text-sm input-nebula w-full"
+                            className="w-full text-sm py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 outline-none"
                             placeholder="example.com"
                             value={newValue}
                             onChange={(e) => setNewValue(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && addRule()}
                         />
                     </div>
-                    <button onClick={addRule} disabled={loading || !newValue} className="btn-primary h-10 w-full">
+                    <PremiumButton onClick={addRule} disabled={loading || !newValue} className="h-10 w-full">
                         Thêm
-                    </button>
+                    </PremiumButton>
                 </div>
-                {error && <div className="mt-3 text-sm text-danger">{error}</div>}
-            </div>
+                {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
+            </GlassCard>
 
             {/* Rules Table */}
-            <div className="bg-surface border border-border rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                    <thead className="bg-bg text-left">
+            <GlassCard padding="p-0">
+                <PremiumTable>
+                    <TableHeader>
                         <tr>
-                            <th className="px-4 py-3 font-medium text-muted">Loại</th>
-                            <th className="px-4 py-3 font-medium text-muted">Phạm vi</th>
-                            <th className="px-4 py-3 font-medium text-muted">Giá trị</th>
-                            <th className="px-4 py-3 font-medium text-muted w-20"></th>
+                            <TableHeaderCell>Loại</TableHeaderCell>
+                            <TableHeaderCell>Phạm vi</TableHeaderCell>
+                            <TableHeaderCell>Giá trị</TableHeaderCell>
+                            <TableHeaderCell className="text-right">Hành động</TableHeaderCell>
                         </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                        {rules.map((r) => (
-                            <tr key={r.id} className="hover:bg-bg/50">
-                                <td className="px-4 py-3">
-                                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded ${r.type === "BLOCK" ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
+                    </TableHeader>
+                    <TableBody>
+                        {rules.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">Chưa có quy tắc nào</td>
+                            </tr>
+                        ) : rules.map((r) => (
+                            <TableRow key={r.id}>
+                                <TableCell>
+                                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${r.type === "BLOCK" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                                         }`}>
                                         {r.type === "BLOCK" ? "Chặn" : "Cho phép"}
                                     </span>
-                                </td>
-                                <td className="px-4 py-3 text-muted">{scopeLabels[r.scope] || r.scope}</td>
-                                <td className="px-4 py-3 font-mono text-xs">{r.value}</td>
-                                <td className="px-4 py-3">
-                                    <button
-                                        onClick={() => deleteRule(r.id)}
+                                </TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-400">{scopeLabels[r.scope] || r.scope}</TableCell>
+                                <TableCell className="font-mono text-xs text-slate-700 dark:text-slate-300">{r.value}</TableCell>
+                                <TableCell className="text-right">
+                                    <PremiumButton
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        onClick={() => setDeleteTarget(r)}
                                         disabled={loading}
-                                        className="text-xs text-muted hover:text-danger transition-colors"
                                     >
                                         Xóa
-                                    </button>
-                                </td>
-                            </tr>
+                                    </PremiumButton>
+                                </TableCell>
+                            </TableRow>
                         ))}
-                    </tbody>
-                </table>
-                {rules.length === 0 && (
-                    <div className="px-4 py-12 text-center text-muted text-sm">
-                        Chưa có quy tắc nào
-                    </div>
-                )}
-            </div>
+                    </TableBody>
+                </PremiumTable>
+            </GlassCard>
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                title="Xóa quy tắc"
+                message={`Bạn có chắc muốn xóa quy tắc cho "${deleteTarget?.value}"?`}
+                variant="danger"
+                isLoading={loading && !!deleteTarget}
+            />
         </div>
     );
 }

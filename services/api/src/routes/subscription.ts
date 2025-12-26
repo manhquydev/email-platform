@@ -167,7 +167,10 @@ export async function subscriptionRoutes(app: FastifyInstance) {
     app.delete("/admin/codes/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
         const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
 
-        await prisma.redemptionCode.delete({ where: { id } });
+        await prisma.$transaction([
+            prisma.codeRedemption.deleteMany({ where: { codeId: id } }),
+            prisma.redemptionCode.delete({ where: { id } })
+        ]);
 
         await recordAudit((req.user as any).userId, "DELETE_CODE", { codeId: id });
 

@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, StatusBadge, PremiumButton, PremiumInput,
-    EmptyState, LoadingSpinner, Pagination
+    EmptyState, LoadingSpinner, Pagination, ConfirmModal
 } from "./AdminUIComponents";
 
 interface Inbox {
@@ -29,6 +29,9 @@ export function AdminInboxes({ token }: { token: string }) {
     const [page, setPage] = useState(0);
     const [total, setTotal] = useState(0);
     const [updating, setUpdating] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Inbox | null>(null);
+    const [transferTarget, setTransferTarget] = useState<Inbox | null>(null);
+    const [loadingAction, setLoadingAction] = useState(false);
     const { user } = useAuth();
 
     const loadInboxes = useCallback(async () => {
@@ -53,32 +56,45 @@ export function AdminInboxes({ token }: { token: string }) {
     useEffect(() => { setPage(0); }, [search]);
 
     const handleDelete = async (id: string, email: string) => {
-        if (!confirm(`Bạn có chắc muốn xóa hộp thư ${email}?`)) return;
-        setUpdating(id);
+        const inbox = inboxes.find(i => i.id === id);
+        if (inbox) setDeleteTarget(inbox);
+    };
+
+    const confirmDelete = async (inbox: Inbox) => {
+        const email = `${inbox.localPart}@${inbox.domain.name}`;
+        setLoadingAction(true);
+        setUpdating(inbox.id);
         try {
-            await api(`/inboxes/${id}`, { method: "DELETE", token });
+            await api(`/inboxes/${inbox.id}`, { method: "DELETE", token });
             toast.success(`Đã xóa ${email}`);
+            setDeleteTarget(null);
             await loadInboxes();
         } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
+            setLoadingAction(false);
             setUpdating(null);
         }
     };
 
     const handleTransfer = async (inbox: Inbox) => {
-        if (!confirm(`Chuyển quyền sở hữu hộp thư ${inbox.localPart}@${inbox.domain.name}?`)) return;
+        setTransferTarget(inbox);
+    };
 
+    const confirmTransfer = async (inbox: Inbox) => {
         const defaultEmail = user?.email || "admin@example.com";
-        const email = prompt("Nhập email chủ sở hữu mới (để trống để lấy về Admin):", defaultEmail);
-        if (email === null) return; // Cancelled
+        const email = prompt(`Chuyển quyền sở hữu hộp thư ${inbox.localPart}@${inbox.domain.name}?\nNhập email chủ sở hữu mới:`, defaultEmail);
+        if (email === null) return;
 
+        setLoadingAction(true);
         setUpdating(inbox.id);
         try {
             const payload: any = {};
             if (email) payload.ownerEmail = email;
             else {
                 toast.error("Vui lòng nhập email");
+                setLoadingAction(false);
+                setUpdating(null);
                 return;
             }
 
@@ -89,11 +105,13 @@ export function AdminInboxes({ token }: { token: string }) {
             });
 
             toast.success(`Đã chuyển sang cho ${payload.ownerEmail}`);
+            setTransferTarget(null);
             await loadInboxes();
         } catch (e) {
             toast.error(getFriendlyErrorMessage((e as Error).message));
         } finally {
             setUpdating(null);
+            setLoadingAction(false);
         }
     };
 
@@ -212,6 +230,26 @@ export function AdminInboxes({ token }: { token: string }) {
                     onPageChange={(p) => setPage(p - 1)}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && confirmDelete(deleteTarget)}
+                title="Xóa hộp thư"
+                message={`Bạn có chắc muốn xóa hộp thư ${deleteTarget?.localPart}@${deleteTarget?.domain.name}? Hành động này không thể hoàn tác.`}
+                variant="danger"
+                isLoading={loadingAction && !!deleteTarget}
+            />
+
+            <ConfirmModal
+                isOpen={!!transferTarget}
+                onClose={() => setTransferTarget(null)}
+                onConfirm={() => transferTarget && confirmTransfer(transferTarget)}
+                title="Chuyển quyền sở hữu"
+                message={`Bạn có chắc muốn chuyển quyền sở hữu hộp thư ${transferTarget?.localPart}@${transferTarget?.domain.name}?`}
+                confirmText="Tiếp tục"
+                isLoading={loadingAction && !!transferTarget}
+            />
         </div>
     );
 }

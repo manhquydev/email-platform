@@ -5,13 +5,13 @@ import toast from "react-hot-toast";
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, StatusBadge, PremiumInput,
-    EmptyState, LoadingSpinner, Pagination, PremiumButton
+    EmptyState, LoadingSpinner, Pagination, PremiumButton, ConfirmModal
 } from "./AdminUIComponents";
 
 interface Payment {
     id: string;
     userId: string;
-    amount: string; // Decimal comes as string often, or number
+    amount: string;
     currency: string;
     status: string;
     stripePaymentId: string;
@@ -30,6 +30,8 @@ export function AdminOrders({ token }: { token: string }) {
     const [page, setPage] = useState(0);
     const [total, setTotal] = useState(0);
     const [search, setSearch] = useState("");
+    const [refundTarget, setRefundTarget] = useState<Payment | null>(null);
+    const [refunding, setRefunding] = useState(false);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -39,7 +41,6 @@ export function AdminOrders({ token }: { token: string }) {
             params.set("limit", String(PAGE_SIZE));
             params.set("offset", String(page * PAGE_SIZE));
 
-            // Note: Ensure /admin/orders is implemented in backend
             const res = await api<{ data: Payment[]; meta: { total: number } }>(`/admin/orders?${params}`, { token });
             setOrders(res.data);
             setTotal(res.meta.total);
@@ -59,18 +60,24 @@ export function AdminOrders({ token }: { token: string }) {
     };
 
     const handleRefund = async (paymentId: string) => {
-        if (!window.confirm("Bạn có chắc chắn muốn hoàn tiền giao dịch này không? Hành động này không thể hoàn tác.")) return;
+        const order = orders.find(o => o.id === paymentId);
+        if (order) setRefundTarget(order);
+    };
 
-        const toastId = toast.loading("Đang xử lý hoàn tiền...");
+    const confirmRefund = async (paymentId: string) => {
+        setRefunding(true);
         try {
             await api(`/admin/payments/${paymentId}/refund`, {
                 method: "POST",
                 token
             });
-            toast.success("Hoàn tiền thành công", { id: toastId });
+            toast.success("Hoàn tiền thành công");
+            setRefundTarget(null);
             loadData();
         } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message), { id: toastId });
+            toast.error(getFriendlyErrorMessage((err as Error).message));
+        } finally {
+            setRefunding(false);
         }
     };
 
@@ -102,7 +109,7 @@ export function AdminOrders({ token }: { token: string }) {
                                 <TableHeaderCell>Số tiền</TableHeaderCell>
                                 <TableHeaderCell>Trạng thái</TableHeaderCell>
                                 <TableHeaderCell>Thời gian</TableHeaderCell>
-                                <TableHeaderCell>Thao tác</TableHeaderCell>
+                                <TableHeaderCell className="text-right">Thao tác</TableHeaderCell>
                             </tr>
                         </TableHeader>
                         <TableBody>
@@ -131,7 +138,7 @@ export function AdminOrders({ token }: { token: string }) {
                                     <TableCell>
                                         {new Date(order.createdAt).toLocaleString("vi-VN")}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-right">
                                         {order.status === "SUCCEEDED" && (
                                             <PremiumButton
                                                 variant="danger"
@@ -162,6 +169,16 @@ export function AdminOrders({ token }: { token: string }) {
                     onPageChange={(p) => setPage(p - 1)}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={!!refundTarget}
+                onClose={() => setRefundTarget(null)}
+                onConfirm={() => refundTarget && confirmRefund(refundTarget.id)}
+                title="Xác nhận hoàn tiền"
+                message={`Bạn có chắc chắn muốn hoàn tiền cho giao dịch "${refundTarget?.stripePaymentId || refundTarget?.id}"? Hành động này không thể hoàn tác.`}
+                variant="danger"
+                isLoading={refunding}
+            />
         </div>
     );
 }

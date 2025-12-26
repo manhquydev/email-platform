@@ -4,6 +4,7 @@ import { api } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { getFriendlyErrorMessage } from '../../utils/errorMapping';
 import { useAuth } from '../../context/AuthContext';
+import { ConfirmationModal } from '../ConfirmationModal';
 
 interface Passkey {
     id: string;
@@ -18,6 +19,7 @@ export const PasskeyManager: React.FC = () => {
     const [passkeys, setPasskeys] = useState<Passkey[]>([]);
     const [loading, setLoading] = useState(false);
     const [registering, setRegistering] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     // Load passkeys on mount
     useEffect(() => {
@@ -36,40 +38,35 @@ export const PasskeyManager: React.FC = () => {
         }
     };
 
-    const handleDeletePasskey = async (e: React.MouseEvent, id: string) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("PasskeyManager: handleDeletePasskey called with id:", id);
-        if (!window.confirm("Bạn có chắc chắn muốn xóa passkey này không?")) return;
+    const confirmDeletePasskey = (id: string) => {
+        setDeleteId(id);
+    };
+
+    const handleDeletePasskey = async () => {
+        if (!deleteId) return;
         try {
-            const res = await api<any>(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
-            console.log("PasskeyManager: Delete response:", res);
+            await api(`/auth/webauthn/credentials/${deleteId}`, { method: 'DELETE', token });
             toast.success("Passkey removed");
             loadPasskeys();
         } catch (error) {
-            console.error("PasskeyManager: Delete failed:", error);
             toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setDeleteId(null);
         }
     };
 
     const handleRegisterPasskey = async () => {
         setRegistering(true);
-        console.log("PasskeyManager: handleRegisterPasskey starting...");
         try {
             // 1. Get options
-            console.log("PasskeyManager: Fetching registration options...");
             const options = await api<any>('/auth/webauthn/register/options', { method: 'POST', body: {}, token });
-            console.log("PasskeyManager: Received Registration Options:", options);
 
             // 2. Create credential
             let attResp;
             try {
-                console.log("PasskeyManager: Starting browser registration...");
                 // Fix: Pass as named object { optionsJSON } for v13+
                 attResp = await startRegistration({ optionsJSON: options });
-                console.log("PasskeyManager: Received Attestation Response:", attResp);
             } catch (error) {
-                console.error("PasskeyManager: Browser registration error:", error);
                 if ((error as any).name === 'NotAllowedError') {
                     toast.error("User cancelled or timed out.");
                 } else {
@@ -80,18 +77,15 @@ export const PasskeyManager: React.FC = () => {
             }
 
             // 3. Verify
-            console.log("PasskeyManager: Verifying registration on server...");
             await api<any>('/auth/webauthn/register/verify', {
                 method: 'POST',
                 body: attResp,
                 token
             });
 
-            console.log("PasskeyManager: Registration verified successfully.");
             toast.success("Passkey added successfully!");
             loadPasskeys();
         } catch (error) {
-            console.error("PasskeyManager: Registration workflow failed:", error);
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setRegistering(false);
@@ -123,16 +117,21 @@ export const PasskeyManager: React.FC = () => {
                                 <div key={pk.id} className="flex items-center justify-between p-3 rounded-lg border border-[var(--nebula-border)] bg-[var(--nebula-bg-secondary)]">
                                     <div className="flex flex-col">
                                         <span className="font-medium text-sm" style={{ color: 'var(--nebula-text)' }}>Passkey added on {new Date(pk.createdAt).toLocaleDateString()}</span>
-                                        <span className="text-xs opacity-60" style={{ color: 'var(--nebula-text-muted)' }}>Last used: {pk.lastUsedAt ? new Date(pk.lastUsedAt).toLocaleDateString() : 'Never'}</span>
+                                        <div className="text-sm text-gray-500">
+                                            Tạo lúc: {new Date(pk.createdAt).toLocaleDateString('vi-VN')}
+                                        </div>
                                     </div>
                                     <button
-                                        onClick={(e) => handleDeletePasskey(e, pk.id)}
-                                        className="p-2 hover:bg-[var(--nebula-bg-hover)] rounded-full text-[var(--nebula-error)] transition-colors relative z-10"
-                                        title="Remove Passkey"
-                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            confirmDeletePasskey(pk.id);
+                                        }}
+                                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                        title="Xóa Passkey"
                                     >
-                                        <svg className="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                     </button>
                                 </div>
@@ -160,6 +159,18 @@ export const PasskeyManager: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={!!deleteId}
+                title="Xóa Passkey"
+                message="Bạn có chắc chắn muốn xóa passkey này không? Hành động này không thể hoàn tác."
+                confirmLabel="Xóa"
+                cancelLabel="Hủy"
+                isDestructive={true}
+                isLoading={false}
+                onConfirm={handleDeletePasskey}
+                onCancel={() => setDeleteId(null)}
+            />
         </div>
     );
 };

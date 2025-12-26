@@ -272,19 +272,11 @@ export async function webauthnRoutes(app: FastifyInstance) {
     app.delete("/auth/webauthn/credentials/:id", { preHandler: app.authenticate }, async (request, reply) => {
         const userId = (request.user as any).userId;
         const { id } = request.params as { id: string };
-        request.log.info({ userId, credentialId: id }, "WebAuthn Delete request received");
-
         const credential = await prisma.passkeyCredential.findUnique({
             where: { id },
         });
 
-        if (!credential) {
-            request.log.warn({ credentialId: id }, "WebAuthn Delete: Credential not found in DB");
-            return reply.status(404).send({ error: "Credential not found" });
-        }
-
-        if (credential.userId !== userId) {
-            request.log.warn({ userId, credentialOwnerId: credential.userId }, "WebAuthn Delete: Ownership mismatch");
+        if (!credential || credential.userId !== userId) {
             return reply.status(404).send({ error: "Credential not found" });
         }
 
@@ -292,9 +284,8 @@ export async function webauthnRoutes(app: FastifyInstance) {
             await prisma.passkeyCredential.delete({
                 where: { id },
             });
-            request.log.info({ credentialId: id }, "WebAuthn Delete: Successful");
         } catch (error) {
-            request.log.error(error, "WebAuthn Delete: Failed to delete from DB");
+            request.log.error(error, "WebAuthn Delete: Failed to delete credential");
             return reply.status(500).send({ error: "Failed to delete passkey" });
         }
 

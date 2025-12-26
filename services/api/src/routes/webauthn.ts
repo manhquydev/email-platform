@@ -15,7 +15,8 @@ const challenges: Record<string, string> = {};
 
 export async function webauthnRoutes(app: FastifyInstance) {
     const rpName = "Email Platform";
-    const rpID = new URL(appConfig.webUrl).hostname;
+    // Fix: Use the root domain (mailDomain) as RP ID to allow subdomains/root access
+    const rpID = appConfig.mailDomain;
     const origin = appConfig.webUrl;
 
     // 1. Register: Generate Options
@@ -293,9 +294,14 @@ export async function webauthnRoutes(app: FastifyInstance) {
             return reply.status(404).send({ error: "Credential not found" });
         }
 
-        await prisma.passkeyCredential.delete({
-            where: { id },
-        });
+        try {
+            await prisma.passkeyCredential.delete({
+                where: { id },
+            });
+        } catch (error) {
+            request.log.error(error, "WebAuthn Delete: Failed to delete credential");
+            return reply.status(500).send({ error: "Failed to delete passkey" });
+        }
 
         await recordAudit(userId, "PASSKEY_DELETED", { credentialId: id });
 

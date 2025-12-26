@@ -4,12 +4,7 @@
   - It only applies Credit System changes.
 */
 
--- CreateEnum Safe
-DO $$ BEGIN
-    CREATE TYPE "CreditTransactionType" AS ENUM ('DEPOSIT', 'WITHDRAWAL', 'USAGE', 'REFUND', 'ADJUSTMENT');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+
 
 -- CreateTable CreditTransaction (if not exists handled by clean apply, but here we assume it doesnt exist as per checks)
 CREATE TABLE IF NOT EXISTS "CreditTransaction" (

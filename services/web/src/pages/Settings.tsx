@@ -5,6 +5,7 @@ import { api } from "../utils/api";
 import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
 import { SecondaryLayout } from "../layouts/SecondaryLayout";
+import { PasskeyManager } from "../components/Auth/PasskeyManager";
 
 interface UserProfile {
     id: string;
@@ -662,6 +663,7 @@ export function Settings() {
                                         )}
                                     </div>
                                 </div>
+                                <PasskeyManager />
                             </>
                         )}
 

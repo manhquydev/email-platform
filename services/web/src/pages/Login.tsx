@@ -3,6 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
+import { MagicLinkRequestForm } from "../components/Auth/MagicLinkRequestForm";
+import { PasskeyLogin } from "../components/Auth/PasskeyLogin";
+
 export function Login() {
     const { login, verify2FA, token, busy } = useAuth();
     const navigate = useNavigate();
@@ -17,6 +20,14 @@ export function Login() {
     }, [token, navigate]);
 
     const [error, setError] = useState<string | null>(null);
+    const [loginMethod, setLoginMethod] = useState<'password' | 'magic-link'>('password');
+
+    const handleLoginSuccess = (token: string, user: any) => {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        // Force reload to update context or dispatch event if AuthContext listens to it
+        window.location.href = user.role === 'ADMIN' ? '/admin' : '/app';
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,68 +80,111 @@ export function Login() {
                                     <p>Đăng nhập để tiếp tục quản lý email của bạn</p>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="auth-form">
-                                    {error && (
-                                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4 flex items-start gap-3">
-                                            <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                            </svg>
-                                            <div className="text-sm text-red-500">
-                                                {error}
+                                <div className="flex justify-center mb-6 gap-4 border-b border-gray-700/50 pb-4">
+                                    <button
+                                        onClick={() => setLoginMethod('password')}
+                                        className={`text-sm font-medium pb-1 relative ${loginMethod === 'password' ? 'text-white' : 'text-gray-500 hover:text-gray-400'}`}
+                                    >
+                                        Mật khẩu
+                                        {loginMethod === 'password' && <div className="absolute bottom-[-17px] left-0 right-0 h-0.5 bg-indigo-500"></div>}
+                                    </button>
+                                    <button
+                                        onClick={() => setLoginMethod('magic-link')}
+                                        className={`text-sm font-medium pb-1 relative ${loginMethod === 'magic-link' ? 'text-white' : 'text-gray-500 hover:text-gray-400'}`}
+                                    >
+                                        Magic Link
+                                        {loginMethod === 'magic-link' && <div className="absolute bottom-[-17px] left-0 right-0 h-0.5 bg-indigo-500"></div>}
+                                    </button>
+                                </div>
+
+                                {loginMethod === 'password' ? (
+                                    <>
+                                        <form onSubmit={handleSubmit} className="auth-form">
+                                            {error && (
+                                                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4 flex items-start gap-3">
+                                                    <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                    <div className="text-sm text-red-500">
+                                                        {error}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="auth-field">
+                                                <label>Email</label>
+                                                <div className="auth-input-group">
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                                    </svg>
+                                                    <input
+                                                        type="email"
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        placeholder="name@example.com"
+                                                        disabled={busy}
+                                                        required
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="auth-field">
+                                                <label>Mật khẩu</label>
+                                                <div className="auth-input-group">
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
+                                                    <input
+                                                        type="password"
+                                                        value={password}
+                                                        onChange={(e) => setPassword(e.target.value)}
+                                                        placeholder="••••••••"
+                                                        disabled={busy}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <button type="submit" className="auth-submit" disabled={busy}>
+                                                {busy ? (
+                                                    <>
+                                                        <span className="auth-spinner" />
+                                                        Đang đăng nhập...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Đăng nhập
+                                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                        </svg>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </form>
+
+                                        <div className="mt-6">
+                                            <div className="relative">
+                                                <div className="absolute inset-0 flex items-center">
+                                                    <div className="w-full border-t border-gray-700" />
+                                                </div>
+                                                <div className="relative flex justify-center text-sm">
+                                                    <span className="px-2 bg-[#1e1e2d] text-gray-500">
+                                                        Hoặc tiếp tục với
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-6">
+                                                <PasskeyLogin onSuccess={handleLoginSuccess} />
                                             </div>
                                         </div>
-                                    )}
-                                    <div className="auth-field">
-                                        <label>Email</label>
-                                        <div className="auth-input-group">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                            </svg>
-                                            <input
-                                                type="email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="name@example.com"
-                                                disabled={busy}
-                                                required
-                                                autoFocus
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="auth-field">
-                                        <label>Mật khẩu</label>
-                                        <div className="auth-input-group">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
-                                            <input
-                                                type="password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                placeholder="••••••••"
-                                                disabled={busy}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <button type="submit" className="auth-submit" disabled={busy}>
-                                        {busy ? (
-                                            <>
-                                                <span className="auth-spinner" />
-                                                Đang đăng nhập...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Đăng nhập
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                </svg>
-                                            </>
-                                        )}
-                                    </button>
-                                </form>
+                                    </>
+                                ) : (
+                                    <MagicLinkRequestForm
+                                        onSuccess={() => { }}
+                                        onCancel={() => setLoginMethod('password')}
+                                    />
+                                )}
                             </>
                         ) : (
                             <>

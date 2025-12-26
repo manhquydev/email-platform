@@ -23,7 +23,7 @@ ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193
 Để deploy code mới nhất từ nhánh `main` và rebuild lại service:
 
 ```bash
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd /root/email-platform. && git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main && docker compose -f docker-compose.prod.yml up -d --build web api"
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd /root/email-platform. && git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main && docker compose -f docker-compose.prod.yml up -d --build web api && docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy && docker compose -f docker-compose.prod.yml restart api"
 ```
 
 ---

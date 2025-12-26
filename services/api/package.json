@@ -27,6 +27,8 @@
     "@fastify/multipart": "^9.3.0",
     "@fastify/rate-limit": "^10.3.0",
     "@prisma/client": "^5.18.0",
+    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/server": "^13.2.2",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^7.0.4",
     "@types/qrcode": "^1.5.6",

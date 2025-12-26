@@ -23,6 +23,8 @@ import { telegramRoutes } from "./routes/telegram";
 import { forwardingRoutes } from "./routes/forwarding";
 import { subscriptionRoutes } from "./routes/subscription";
 import { setupBotCommands } from "./services/telegramBot";
+import { webauthnRoutes } from "./routes/webauthn";
+import { magicLinkRoutes } from "./routes/magic-link";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -90,14 +92,25 @@ export const buildServer = () => {
     timeWindow: appConfig.rateLimitTimeWindow,
     allowList: ["127.0.0.1", "::1"],
   });
-  collectDefaultMetrics();
+  // Check if metrics are already registered to avoid errors in tests
+  try {
+    collectDefaultMetrics();
+  } catch (e) {
+    // Ignore double registration
+  }
 
-  const httpRequestDuration = new Histogram({
-    name: "http_request_duration_seconds",
-    help: "Duration of HTTP requests in seconds",
-    labelNames: ["method", "route", "status"],
-    buckets: [0.1, 0.3, 0.5, 1, 1.5, 2, 5],
-  });
+  let httpRequestDuration: Histogram<string>;
+  try {
+    httpRequestDuration = new Histogram({
+      name: "http_request_duration_seconds",
+      help: "Duration of HTTP requests in seconds",
+      labelNames: ["method", "route", "status"],
+      buckets: [0.1, 0.3, 0.5, 1, 1.5, 2, 5],
+    });
+  } catch (e) {
+    // Get existing metric if already registered
+    httpRequestDuration = promRegister.getSingleMetric("http_request_duration_seconds") as Histogram<string>;
+  }
 
   app.addHook("onResponse", (request, reply, done) => {
     const route = request.routeOptions.url || request.url;
@@ -150,9 +163,13 @@ export const buildServer = () => {
     return reply.send(metrics);
   });
 
+  // ... existing imports
+
   app.register(healthRoutes);
   app.register(publicRoutes);
   app.register(authRoutes);
+  app.register(webauthnRoutes);
+  app.register(magicLinkRoutes);
   app.register(domainRoutes);
   app.register(inboxRoutes);
   app.register(messageRoutes);

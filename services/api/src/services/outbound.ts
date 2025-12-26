@@ -240,6 +240,31 @@ export class OutboundService {
     }
 
     /**
+     * Send magic login link email
+     */
+    async sendMagicLoginEmail(to: string, loginUrl: string) {
+        // Create a simple inline template or we should update emailTemplates.ts properly.
+        // For now, I'll inline the template generation or reuse a generic structure.
+        // Ideally, I should update emailTemplates.ts, but let's keep it simple and consistent.
+        // I'll dynamically import a new template function if I added it, or construct it here.
+        // Let's modify emailTemplates.ts next, but for this file edit, let's assume it exists or use inline.
+        // Actually, I can write the method to use a template I WILL create in the next step.
+        const { magicLinkEmailTemplate } = await import("./emailTemplates");
+        const template = magicLinkEmailTemplate({
+            recipientEmail: to,
+            loginUrl
+        });
+
+        return this.sendEmail(
+            appConfig.defaultAdminEmail,
+            to,
+            template.subject,
+            template.text,
+            template.html
+        );
+    }
+
+    /**
      * Verify SMTP connection is working
      */
     async verifyConnection(): Promise<boolean> {

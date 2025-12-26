@@ -5,6 +5,8 @@ import { FastifyInstance } from "fastify";
 
 // Use port 5433 as defined in docker-compose.test.yml
 const TEST_DB_URL = "postgresql://postgres:postgres@localhost:5434/email_service_test";
+process.env.DATABASE_URL = TEST_DB_URL;
+process.env.JWT_SECRET = "test-secret";
 
 export const prisma = new PrismaClient({
     datasources: { db: { url: TEST_DB_URL } },
@@ -31,6 +33,8 @@ beforeEach(async () => {
     // We use $transaction to ensure order if foreign keys exist, or just delete from tables
     // Order matters: delete child "Message" before "Inbox", "Inbox" before "Domain"
     await prisma.$transaction([
+        prisma.passkeyCredential.deleteMany(),
+        prisma.magicLinkToken.deleteMany(),
         prisma.abuseReport.deleteMany(),
         prisma.message.deleteMany(),
         prisma.inbox.deleteMany(),

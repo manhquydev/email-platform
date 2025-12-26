@@ -591,3 +591,96 @@ Website: ${appConfig.webUrl}
     subject: `⚠️ Thông báo khóa tài khoản - ${templateParams.platformName}`,
   };
 }
+
+/**
+ * Generate magic link login email
+ */
+export function magicLinkEmailTemplate(params: {
+  loginUrl: string;
+  recipientEmail: string;
+}): { html: string; text: string; subject: string } {
+  const templateParams: TemplateParams = {
+    recipientEmail: params.recipientEmail,
+    platformName: process.env.MAIL_FROM_NAME || "Ephemera",
+    supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
+    currentYear: new Date().getFullYear(),
+  };
+
+  const html = `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Đăng nhập Magic Link - ${templateParams.platformName}</title>
+  ${getBaseStyles()}
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="email-container">
+      ${getHeader(templateParams.platformName!)}
+      
+      <div class="email-body">
+        <h1 class="greeting">Link đăng nhập của bạn ✨</h1>
+        
+        <p class="message">
+          Xin chào <strong>${params.recipientEmail}</strong>,
+        </p>
+        
+        <p class="message">
+          Chúng tôi nhận được yêu cầu đăng nhập bằng Magic Link vào tài khoản ${templateParams.platformName} của bạn.
+        </p>
+        
+        <div class="cta-container">
+          <a href="${params.loginUrl}" class="cta-button">
+            ✨ Đăng nhập ngay
+          </a>
+        </div>
+        
+        <div class="alternative-link">
+          <strong>Nút không hoạt động?</strong>
+          Sao chép và dán liên kết sau vào trình duyệt:<br>
+          <a href="${params.loginUrl}" style="color: #6366f1;">${params.loginUrl}</a>
+        </div>
+        
+        <div class="info-box">
+          <strong>⏰ Lưu ý:</strong> Link đăng nhập này chỉ có hiệu lực trong vòng <strong>15 phút</strong> và chỉ sử dụng được một lần.
+        </div>
+
+        <p class="message" style="margin-top: 24px; font-size: 14px; color: #6b7280;">
+          Nếu bạn không yêu cầu link đăng nhập này, bạn có thể an toàn bỏ qua email này.
+        </p>
+      </div>
+      
+      ${getFooter(templateParams)}
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+  const text = `
+Đăng nhập vào ${templateParams.platformName}
+
+Xin chào ${params.recipientEmail},
+
+Đây là link đăng nhập của bạn:
+${params.loginUrl}
+
+Link này chỉ có hiệu lực trong vòng 15 phút.
+
+Nếu bạn không yêu cầu đăng nhập, vui lòng bỏ qua email này.
+
+---
+${templateParams.platformName}
+Email: ${templateParams.supportEmail}
+Website: ${appConfig.webUrl}
+`;
+
+  return {
+    html,
+    text,
+    subject: `✨ Link đăng nhập của bạn - ${templateParams.platformName}`,
+  };
+}

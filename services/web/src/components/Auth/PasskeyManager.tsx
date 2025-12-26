@@ -52,11 +52,13 @@ export const PasskeyManager: React.FC = () => {
         try {
             // 1. Get options
             const options = await api<any>('/auth/webauthn/register/options', { method: 'POST', body: {}, token });
+            console.log("PasskeyManager: Register Options", options);
 
             // 2. Create credential
             let attResp;
             try {
                 attResp = await startRegistration(options);
+                console.log("PasskeyManager: Attestation Response", attResp);
             } catch (error) {
                 if ((error as any).name === 'NotAllowedError') {
                     toast.error("User cancelled or timed out.");

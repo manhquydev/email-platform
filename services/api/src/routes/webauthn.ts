@@ -78,14 +78,30 @@ export async function webauthnRoutes(app: FastifyInstance) {
         const { verified, registrationInfo } = verification;
 
         if (verified && registrationInfo) {
+            request.log.warn({ registrationInfo }, "WebAuthn: Registration Info Debug");
+
             // Fix: Cast directly to avoid strict type issues with missing props
             const { credentialID, credentialPublicKey, counter } = registrationInfo as any;
+
+            if (!credentialID || !credentialPublicKey) {
+                request.log.error({ registrationInfo }, "WebAuthn: Missing credentialID or credentialPublicKey");
+                return reply.status(500).send({ error: "Server Error: Registration info incomplete" });
+            }
+
+            // Safe Buffer conversion
+            let publicKeyBase64;
+            try {
+                publicKeyBase64 = Buffer.from(credentialPublicKey).toString("base64url");
+            } catch (e) {
+                request.log.error(e, "WebAuthn: Failed to buffer credentialPublicKey");
+                return reply.status(500).send({ error: "Server Error: Public Key processing failed" });
+            }
 
             await prisma.passkeyCredential.create({
                 data: {
                     userId,
                     credentialID,
-                    publicKey: Buffer.from(credentialPublicKey).toString("base64url"),
+                    publicKey: publicKeyBase64,
                     counter: BigInt(counter),
                     transports: (body.response.transports as string[]) || [],
                 },

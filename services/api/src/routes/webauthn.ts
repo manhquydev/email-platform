@@ -177,11 +177,10 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 expectedRPID: rpID,
                 authenticator: {
                     credentialID: credential.credentialID,
-                    // Fix: Ensure Uint8Array and use as any for safety
-                    credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')) as any,
+                    credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
                     counter: BigInt(credential.counter),
                     transports: credential.transports as any[],
-                },
+                } as any, // Cast entire object to match required interface regardless of strictness
             });
         } catch (error) {
             console.error(error);

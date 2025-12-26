@@ -183,7 +183,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 expectedOrigin: origin,
                 expectedRPID: rpID,
                 authenticator: authenticatorData,
-            });
+            } as any);
         } catch (error) {
             console.error(error);
             return reply.status(400).send({ error: "Verification failed" });

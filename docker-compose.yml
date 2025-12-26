@@ -11,6 +11,31 @@ services:
     ports:
       - "5432:5432"
 
+  # ===================
+  # REVERSE PROXY - SSL
+  # ===================
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-manhquy.click}
+      - ACME_EMAIL=${ACME_EMAIL:-manhquydev@gmail.com}
+    depends_on:
+      - api
+      - web
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   api:
     build:
       context: ./services/api
@@ -97,4 +122,8 @@ volumes:
   postgres-data:
     driver: local
   redis_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
     driver: local

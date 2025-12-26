@@ -220,8 +220,11 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 incomingOrigin: request.headers.origin,
                 allowedOrigins,
                 expectedRPID: rpID,
-                authenticatorPublicKeyLen: authenticatorData.credentialPublicKey.length
-            }, "WebAuthn Login Debug: Origin Check");
+                bodyId: body.id,
+                challengeId: expectedChallenge,
+                authenticatorProvided: !!authenticatorData,
+                authenticatorPublicKeyLen: authenticatorData?.credentialPublicKey?.length
+            }, "WebAuthn Login Debug: Final check before library call");
 
             verification = await verifyAuthenticationResponse({
                 response: body,
@@ -230,6 +233,10 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 expectedRPID: rpID,
                 authenticator: authenticatorData,
             } as any);
+
+            if (!verification) {
+                throw new Error("verifyAuthenticationResponse returned undefined");
+            }
         } catch (error) {
             const err = error as Error;
             request.log.error({
@@ -292,12 +299,14 @@ export async function webauthnRoutes(app: FastifyInstance) {
     app.delete("/auth/webauthn/credentials/:id", { preHandler: app.authenticate }, async (request, reply) => {
         const userId = (request.user as any).userId;
         const { id } = request.params as { id: string };
-
         const credential = await prisma.passkeyCredential.findUnique({
             where: { id },
         });
 
+        request.log.info({ userId, passkeyId: id, credentialFound: !!credential }, "WebAuthn Delete: Request received");
+
         if (!credential || credential.userId !== userId) {
+            request.log.warn({ userId, passkeyId: id }, "WebAuthn Delete: Not found or unauthorized");
             return reply.status(404).send({ error: "Credential not found" });
         }
 
@@ -305,6 +314,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
             await prisma.passkeyCredential.delete({
                 where: { id },
             });
+            request.log.info({ passkeyId: id }, "WebAuthn Delete: Success");
         } catch (error) {
             request.log.error(error, "WebAuthn Delete: Failed to delete credential");
             return reply.status(500).send({ error: "Failed to delete passkey" });

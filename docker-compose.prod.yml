@@ -172,6 +172,7 @@ services:
       RELAY_PORT: ${RELAY_PORT:-2525}
       RELAY_USER: ${RELAY_USER}
       RELAY_PASS: ${RELAY_PASS}
+      EXTRA_DOMAINS: manhquy.online
     volumes:
       - postfix_dkim:/etc/opendkim/keys
     networks:

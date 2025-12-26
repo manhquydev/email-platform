@@ -13,6 +13,28 @@ postconf -e "myhostname = ${HOSTNAME}"
 postconf -e "mydomain = ${DOMAIN}"
 postconf -e "myorigin = \$mydomain"
 
+# Generate Relay Domains and Transport Maps
+RELAY_DOMAINS_FILE="/etc/postfix/relay_domains"
+TRANSPORT_FILE="/etc/postfix/transport"
+echo "Configuring Relay Domains and Transport..."
+
+# Start with primary domain
+echo "${DOMAIN}" > "${RELAY_DOMAINS_FILE}"
+echo "${DOMAIN} smtp:[api]:2525" > "${TRANSPORT_FILE}"
+
+# Add extra domains if provided (comma separated)
+if [ -n "${EXTRA_DOMAINS}" ]; then
+    IFS=',' read -ra ADDR <<< "${EXTRA_DOMAINS}"
+    for i in "${ADDR[@]}"; do
+        echo "$i" >> "${RELAY_DOMAINS_FILE}"
+        echo "$i smtp:[api]:2525" >> "${TRANSPORT_FILE}"
+    done
+fi
+
+# Hash the maps
+postmap "${RELAY_DOMAINS_FILE}"
+postmap "${TRANSPORT_FILE}"
+
 # Generate DKIM key if not exists
 DKIM_SELECTOR="${DKIM_SELECTOR:-mail}"
 DKIM_KEY_DIR="/etc/opendkim/keys/${DOMAIN}"

@@ -11,8 +11,15 @@ inet_interfaces = all
 inet_protocols = ipv4
 
 # Accept mail for local delivery and relay
-mydestination = $myhostname, localhost.$mydomain, localhost
+# Accept mail for local delivery (only localhost)
+mydestination = localhost.$mydomain, localhost
 mynetworks = 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+
+# Relay Domains (Authorized domains to forward to API)
+relay_domains = hash:/etc/postfix/relay_domains
+
+# Transport Maps (Route to API)
+transport_maps = hash:/etc/postfix/transport
 
 # Relay settings - only accept from internal network
 smtpd_relay_restrictions = 

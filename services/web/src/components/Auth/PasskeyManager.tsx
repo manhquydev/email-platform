@@ -39,17 +39,12 @@ export const PasskeyManager: React.FC = () => {
     const handleDeletePasskey = async (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("handleDeletePasskey called for id:", id);
         if (!window.confirm("Bạn có chắc chắn muốn xóa passkey này không?")) return;
-        toast("Đang xóa passkey...");
         try {
-            console.log("Delete: About to call api DELETE");
-            const result = await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
-            console.log("Delete: API Result", result);
+            await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
             toast.success("Passkey removed");
             loadPasskeys();
         } catch (error) {
-            console.error("Delete: API call failed", error);
             toast.error(getFriendlyErrorMessage((error as Error).message));
         }
     };
@@ -79,20 +74,11 @@ export const PasskeyManager: React.FC = () => {
             }
 
             // 3. Verify
-            console.log("PasskeyManager: Sending register verify payload", JSON.stringify({
-                ...attResp,
-                challengeId: options.challenge
-            }, null, 2));
-
-            const verifyResult = await api<any>('/auth/webauthn/register/verify', {
+            await api<any>('/auth/webauthn/register/verify', {
                 method: 'POST',
-                body: {
-                    ...attResp,
-                    challengeId: options.challenge // Hack/Workaround
-                },
+                body: attResp,
                 token
             });
-            console.log("PasskeyManager: Register Verify Result", verifyResult);
 
             toast.success("Passkey added successfully!");
             loadPasskeys();

@@ -64,14 +64,9 @@ export async function webauthnRoutes(app: FastifyInstance) {
         }
 
         let verification;
-        try {
-            // Support both app URL and root domain
-            const allowedOrigins = [origin];
-            const rpOrigin = `https://${rpID}`;
-            if (origin !== rpOrigin) {
-                allowedOrigins.push(rpOrigin);
-            }
+        const allowedOrigins = [origin, `https://${rpID}`].filter(Boolean);
 
+        try {
             verification = await verifyRegistrationResponse({
                 response: body,
                 expectedChallenge: challenge,
@@ -174,14 +169,9 @@ export async function webauthnRoutes(app: FastifyInstance) {
     // 4. Login: Verify
     app.post("/auth/webauthn/login/verify", async (request, reply) => {
         const body = request.body as any;
-        const challenge = challenges[body.challenge]; // NOTE: body.challenge is from browser response, might be encoded. We use challengeId.
-
-        // Workaround: Frontend MUST send the `challenge` string it received in `generateAuthenticationOptions`
-        // alongside the `AuthenticationResponseJSON`.
         const expectedChallenge = body.challengeId;
 
         if (!expectedChallenge || !challenges[expectedChallenge]) {
-            request.log.warn({ expectedChallenge, availableChallenges: Object.keys(challenges).length }, "WebAuthn Login: Challenge not found");
             return reply.status(400).send({ error: "Challenge expired or invalid" });
         }
 
@@ -216,51 +206,19 @@ export async function webauthnRoutes(app: FastifyInstance) {
         };
 
         let verification;
+        const allowedOrigins = [origin, `https://${rpID}`].filter(Boolean);
+
         try {
-            // Allow both the configured Web URL and the RP ID origin (root domain)
-            const allowedOrigins = [origin];
-            const rpOrigin = `https://${rpID}`;
-            if (origin !== rpOrigin) {
-                allowedOrigins.push(rpOrigin);
-            }
-
-            request.log.info({
-                incomingOrigin: request.headers.origin,
-                allowedOrigins,
-                expectedRPID: rpID,
-                bodyKeys: Object.keys(body),
-                responseKeys: body.response ? Object.keys(body.response) : 'N/A',
-                challengeId: expectedChallenge,
-                credentialData: {
-                    idLen: credentialData?.id?.length,
-                    publicKeyLen: credentialData?.publicKey?.length,
-                    counterValue: credentialData?.counter,
-                    counterType: typeof credentialData?.counter,
-                    transports: credentialData?.transports
-                }
-            }, "WebAuthn Login Debug: Deep inspection before verify");
-
             verification = await verifyAuthenticationResponse({
                 response: body,
                 expectedChallenge,
                 expectedOrigin: allowedOrigins,
                 expectedRPID: rpID,
-                credential: credentialData, // Changed from authenticator
+                credential: credentialData,
             } as any);
-
-            if (!verification) {
-                throw new Error("verifyAuthenticationResponse returned null/undefined");
-            }
         } catch (error) {
-            const err = error as Error;
-            request.log.error({
-                msg: "WebAuthn Login: Verification Logic Failed",
-                errorName: err.name,
-                errMsg: err.message,
-                errStack: err.stack,
-                incomingOrigin: request.headers.origin
-            });
-            return reply.status(400).send({ error: "Verification failed details: [" + err.name + "] " + err.message });
+            request.log.error(error, "WebAuthn Login Verification failed");
+            return reply.status(400).send({ error: "Verification failed" });
         }
 
         const { verified, authenticationInfo } = verification;
@@ -318,10 +276,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
             where: { id },
         });
 
-        request.log.info({ userId, passkeyId: id, credentialFound: !!credential }, "WebAuthn Delete: Request received");
-
         if (!credential || credential.userId !== userId) {
-            request.log.warn({ userId, passkeyId: id }, "WebAuthn Delete: Not found or unauthorized");
             return reply.status(404).send({ error: "Credential not found" });
         }
 
@@ -329,7 +284,6 @@ export async function webauthnRoutes(app: FastifyInstance) {
             await prisma.passkeyCredential.delete({
                 where: { id },
             });
-            request.log.info({ passkeyId: id }, "WebAuthn Delete: Success");
         } catch (error) {
             request.log.error(error, "WebAuthn Delete: Failed to delete credential");
             return reply.status(500).send({ error: "Failed to delete passkey" });

@@ -367,7 +367,7 @@ export function FocusDashboard() {
                                 <iframe
                                     srcDoc={selectedMessage.htmlBody}
                                     title="Email content"
-                                    sandbox="allow-same-origin"
+                                    sandbox="allow-same-origin allow-scripts"
                                     style={{ width: '100%', height: '400px', border: 'none' }}
                                 />
                             ) : (

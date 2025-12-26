@@ -20,15 +20,22 @@ def run_ssh_commands():
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     
     try:
-        client.connect(HOST, username=USERNAME, password=PASSWORD, timeout=30)
+        client.connect(HOST, username=USERNAME, password=PASSWORD, timeout=30, look_for_keys=False, allow_agent=False)
         print("✅ Connected successfully!")
         
         # Commands to run
         commands = [
-            # Get Telegram config
-            "cd /root/email-platform. && cat services/api/.env | grep TELEGRAM || echo 'No TELEGRAM config found'",
             # Pull latest code
-            "cd /root/email-platform. && git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main 2>&1 | tail -5",
+            "cd /root/email-platform* && git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main",
+            
+            # Backend: Install, Generate Usage, Migrate, Build
+            "cd /root/email-platform*/services/api && npm install && npx prisma generate && npx prisma migrate deploy && npm run build",
+            
+            # Frontend: Install, Build (assuming served statically or via separate server needing build)
+            "cd /root/email-platform*/services/web && npm install && npm run build",
+            
+            # Restart Application
+            "pm2 restart all"
         ]
         
         bot_token = None

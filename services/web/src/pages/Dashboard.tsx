@@ -629,7 +629,7 @@ export function Dashboard() {
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe
                                                 srcDoc={selectedMessage.htmlBody}
-                                                sandbox="allow-same-origin"
+                                                sandbox="allow-same-origin allow-scripts"
                                                 title="Email content"
                                                 className="w-full min-h-[400px] border-none bg-white rounded-lg"
                                             />

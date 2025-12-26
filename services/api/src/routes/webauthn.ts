@@ -166,13 +166,14 @@ export async function webauthnRoutes(app: FastifyInstance) {
     // 4. Login: Verify
     app.post("/auth/webauthn/login/verify", async (request, reply) => {
         const body = request.body as any;
-        const challenge = challenges[body.challenge];
+        const challenge = challenges[body.challenge]; // NOTE: body.challenge is from browser response, might be encoded. We use challengeId.
 
         // Workaround: Frontend MUST send the `challenge` string it received in `generateAuthenticationOptions`
         // alongside the `AuthenticationResponseJSON`.
         const expectedChallenge = body.challengeId;
 
         if (!expectedChallenge || !challenges[expectedChallenge]) {
+            request.log.warn({ expectedChallenge, availableChallenges: Object.keys(challenges).length }, "WebAuthn Login: Challenge not found");
             return reply.status(400).send({ error: "Challenge expired or invalid" });
         }
 
@@ -187,11 +188,13 @@ export async function webauthnRoutes(app: FastifyInstance) {
         });
 
         if (!credential) {
+            request.log.warn({ credentialID }, "WebAuthn Login: Credential not found");
             return reply.status(400).send({ error: "Credential not found" });
         }
 
         // If we knew the user via email step, verify it matches
         if (targetUserId !== "unknown" && targetUserId !== credential.userId) {
+            request.log.warn({ targetUserId, credentialUserId: credential.userId }, "WebAuthn Login: User mismatch");
             return reply.status(400).send({ error: "User mismatch" });
         }
 
@@ -212,7 +215,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 authenticator: authenticatorData,
             } as any);
         } catch (error) {
-            console.error(error);
+            request.log.error(error, "WebAuthn Login: Verification Logic Failed");
             return reply.status(400).send({ error: "Verification failed" });
         }
 
@@ -242,6 +245,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
             return { token, user: { id: user.id, email: user.email, role: user.role } };
         }
 
+        request.log.warn("WebAuthn Login: Verified false");
         return reply.status(400).send({ error: "Verification failed" });
     });
 

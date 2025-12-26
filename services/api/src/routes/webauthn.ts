@@ -168,6 +168,13 @@ export async function webauthnRoutes(app: FastifyInstance) {
             return reply.status(400).send({ error: "User mismatch" });
         }
 
+        // Fix: Use explicit any variable to bypass literal strictness
+        const authenticatorData: any = {
+            credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
+            counter: BigInt(credential.counter),
+            transports: credential.transports as any[],
+        };
+
         let verification;
         try {
             verification = await verifyAuthenticationResponse({
@@ -175,12 +182,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 expectedChallenge,
                 expectedOrigin: origin,
                 expectedRPID: rpID,
-                authenticator: {
-                    // Removed credentialID to silence build error (optional anyway)
-                    credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
-                    counter: BigInt(credential.counter),
-                    transports: credential.transports as any[],
-                } as any, // Cast entire object to match required interface regardless of strictness
+                authenticator: authenticatorData,
             });
         } catch (error) {
             console.error(error);

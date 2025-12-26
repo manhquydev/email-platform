@@ -52,7 +52,7 @@ export const PasskeyManager: React.FC = () => {
         try {
             // 1. Get options
             const options = await api<any>('/auth/webauthn/register/options', { method: 'POST', body: {}, token });
-            console.log("PasskeyManager: Register Options", options);
+            console.log("PasskeyManager: Register Options", JSON.stringify(options, null, 2));
 
             // 2. Create credential
             let attResp;

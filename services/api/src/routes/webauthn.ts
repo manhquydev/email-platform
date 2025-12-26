@@ -78,14 +78,22 @@ export async function webauthnRoutes(app: FastifyInstance) {
         const { verified, registrationInfo } = verification;
 
         if (verified && registrationInfo) {
-            request.log.warn({ registrationInfo }, "WebAuthn: Registration Info Debug");
+            request.log.warn({ keys: Object.keys(registrationInfo) }, "WebAuthn: Registration Info Keys");
 
             // Fix: Cast directly to avoid strict type issues with missing props
-            const { credentialID, credentialPublicKey, counter } = registrationInfo as any;
+            const info = registrationInfo as any;
+            const credentialID = info.credentialID || info.credentialId;
+            const credentialPublicKey = info.credentialPublicKey || info.publicKey || info.credentialPublicKeyBytes;
+            const counter = info.counter;
 
             if (!credentialID || !credentialPublicKey) {
-                request.log.error({ registrationInfo }, "WebAuthn: Missing credentialID or credentialPublicKey");
-                return reply.status(500).send({ error: "Server Error: Registration info incomplete" });
+                request.log.error({
+                    missingID: !credentialID,
+                    missingKey: !credentialPublicKey,
+                    infoKeys: Object.keys(info)
+                }, "WebAuthn: Registration info incomplete - detailed check");
+                // Return exact error to help debugging, but don't show internal details to user
+                return reply.status(500).send({ error: "Server Error: Registration info incomplete (check server logs)" });
             }
 
             // Safe Buffer conversion

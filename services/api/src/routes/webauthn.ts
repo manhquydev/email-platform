@@ -208,19 +208,19 @@ export async function webauthnRoutes(app: FastifyInstance) {
 
         let verification;
         try {
-            request.log.info({
-                expectedChallenge,
-                expectedOrigin: origin,
-                expectedRPID: rpID,
-                authenticatorPublicKeyLen: authenticatorData.credentialPublicKey.length
-            }, "WebAuthn Login Debug: Pre-verify parameters");
-
             // Allow both the configured Web URL and the RP ID origin (root domain)
             const allowedOrigins = [origin];
             const rpOrigin = `https://${rpID}`;
             if (origin !== rpOrigin) {
                 allowedOrigins.push(rpOrigin);
             }
+
+            request.log.info({
+                incomingOrigin: request.headers.origin,
+                allowedOrigins,
+                expectedRPID: rpID,
+                authenticatorPublicKeyLen: authenticatorData.credentialPublicKey.length
+            }, "WebAuthn Login Debug: Origin Check");
 
             verification = await verifyAuthenticationResponse({
                 response: body,
@@ -230,8 +230,14 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 authenticator: authenticatorData,
             } as any);
         } catch (error) {
-            request.log.error(error, "WebAuthn Login: Verification Logic Failed");
-            return reply.status(400).send({ error: "Verification failed" });
+            const err = error as Error;
+            request.log.error({
+                msg: "WebAuthn Login: Verification Logic Failed",
+                errMsg: err.message,
+                errStack: err.stack,
+                incomingOrigin: request.headers.origin
+            });
+            return reply.status(400).send({ error: "Verification failed: " + err.message });
         }
 
         const { verified, authenticationInfo } = verification;

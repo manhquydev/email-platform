@@ -55,7 +55,7 @@ export function AdminInboxes({ token }: { token: string }) {
     useEffect(() => { loadInboxes(); }, [loadInboxes]);
     useEffect(() => { setPage(0); }, [search]);
 
-    const handleDelete = async (id: string, email: string) => {
+    const handleDelete = async (id: string) => {
         const inbox = inboxes.find(i => i.id === id);
         if (inbox) setDeleteTarget(inbox);
     };
@@ -198,7 +198,7 @@ export function AdminInboxes({ token }: { token: string }) {
                                             <PremiumButton
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => handleDelete(inbox.id, `${inbox.localPart}@${inbox.domain.name}`)}
+                                                onClick={() => handleDelete(inbox.id)}
                                                 disabled={updating === inbox.id}
                                                 className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                 title="Xóa hộp thư"

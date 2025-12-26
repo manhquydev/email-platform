@@ -80,7 +80,7 @@ export function TableBody({ children }: { children: React.ReactNode }) {
 export function TableRow({ children, className = "", onClick }: {
     children: React.ReactNode;
     className?: string;
-    onClick?: () => void;
+    onClick?: (e: React.MouseEvent) => void;
 }) {
     return (
         <tr
@@ -123,7 +123,7 @@ export function StatusBadge({ status, variant = "default" }: {
 // Premium Button Component
 export function PremiumButton({ children, onClick, variant = "primary", size = "md", disabled = false, className = "", title, isLoading }: {
     children: React.ReactNode;
-    onClick?: () => void;
+    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     variant?: "primary" | "secondary" | "danger" | "ghost";
     size?: "sm" | "md" | "lg";
     disabled?: boolean;

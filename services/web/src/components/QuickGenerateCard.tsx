@@ -63,7 +63,6 @@ export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGener
                 onInboxCreated(response.id, email);
             }
         } catch (error) {
-            console.error('Failed to create inbox:', error);
             toast.error('Không thể tạo email: ' + (error as Error).message);
         } finally {
             setLoading(false);

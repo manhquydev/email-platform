@@ -22,7 +22,6 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
                 // Fix: Pass as named object { optionsJSON } for v13+
                 asseResp = await startAuthentication({ optionsJSON: options });
             } catch (error) {
-                console.error("User cancelled or failed passkey interaction", error);
                 toast.error("Passkey cancelled or not available.");
                 setLoading(false);
                 return;
@@ -41,7 +40,6 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
             toast.success("Logged in with Passkey!");
             onSuccess(token, user);
         } catch (error) {
-            console.error(error);
             toast.error("Passkey login failed. Please try again or use password.");
         } finally {
             setLoading(false);

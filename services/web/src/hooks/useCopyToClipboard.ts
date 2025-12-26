@@ -55,7 +55,6 @@ export function useCopyToClipboard(options: UseCopyToClipboardOptions = {}) {
 
             return true;
         } catch (error) {
-            console.error('Failed to copy:', error);
             toast.error(errorMessage);
             setState({ copied: false, value: null });
             return false;

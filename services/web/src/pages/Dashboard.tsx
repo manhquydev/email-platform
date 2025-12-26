@@ -79,7 +79,6 @@ export function Dashboard() {
                 }
             }
         } catch (e) {
-            console.error(e);
             toast.error("Lỗi tải danh sách domain");
         }
     }, [token, selectedDomain, user?.id]);
@@ -104,7 +103,6 @@ export function Dashboard() {
                 setSelectedInbox("");
             }
         } catch (e) {
-            console.error("Load Inboxes Error:", e);
             toast.error("Lỗi tải danh sách inbox");
         } finally {
             setBusy(false);
@@ -143,7 +141,6 @@ export function Dashboard() {
                 if (params.offset !== undefined) setMessageOffset(params.offset);
             }
         } catch (e) {
-            console.error(e);
             if (!params.background) toast.error("Lỗi tải email");
         } finally {
             if (!params.background) setBusy(false);
@@ -270,7 +267,6 @@ export function Dashboard() {
             toast.success("Đã gia hạn thêm 10 phút!");
             if (selectedDomain) loadInboxes(selectedDomain);
         } catch (e) {
-            console.error(e);
             toast.error("Lỗi gia hạn inbox");
         } finally {
             setBusy(false);
@@ -284,7 +280,7 @@ export function Dashboard() {
         if (!msg.isRead) {
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
             try { await api(`/messages/${msg.id}/read`, { method: "PATCH", token, body: { isRead: true } }); }
-            catch (e) { console.error(e); }
+            catch (e) { /* Error marked locally but background sync will retry or it's non-critical */ }
         }
     };
 
@@ -295,7 +291,6 @@ export function Dashboard() {
             await api(`/messages/${msgId}/read`, { method: "PATCH", token, body: { isRead: false } });
             toast.success("Đã đánh dấu chưa đọc");
         } catch (e) {
-            console.error(e);
             setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRead: true } : m));
             toast.error("Không thể cập nhật trạng thái");
         }
@@ -309,7 +304,6 @@ export function Dashboard() {
             setShowDetail(false);
             toast.success("Đã xóa email");
         } catch (e) {
-            console.error(e);
             toast.error("Không thể xóa email");
         } finally {
             setBusy(false);
@@ -323,7 +317,6 @@ export function Dashboard() {
             await api(`/messages/${msgId}/pin`, { method: "PATCH", token, body: { isPinned } });
             toast.success(isPinned ? "Đã ghim email" : "Đã bỏ ghim");
         } catch (e) {
-            console.error(e);
             setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned: !isPinned } : m));
             toast.error("Không thể cập nhật");
         }

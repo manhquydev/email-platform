@@ -45,7 +45,6 @@ export function FocusDashboard() {
                 setSelectedDomain(res.data[0].id);
             }
         } catch (e) {
-            console.error(e);
             toast.error("Lỗi tải danh sách domain");
         }
     }, [token, selectedDomain]);
@@ -64,7 +63,6 @@ export function FocusDashboard() {
                 setSelectedInbox(res.data[0].id);
             }
         } catch (e) {
-            console.error("Load Inboxes Error:", e);
             toast.error("Lỗi tải danh sách inbox");
         } finally {
             setBusy(false);
@@ -88,7 +86,6 @@ export function FocusDashboard() {
             const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
             setMessages(res.data);
         } catch (e) {
-            console.error(e);
             if (!background) toast.error("Lỗi tải email");
         } finally {
             if (!background) setBusy(false);
@@ -148,7 +145,7 @@ export function FocusDashboard() {
                     body: { isRead: true }
                 });
             } catch (e) {
-                console.error("Failed to mark as read", e);
+                // background update failed
             }
         }
     };
@@ -163,7 +160,6 @@ export function FocusDashboard() {
             setShowDetail(false);
             toast.success("Đã xóa email");
         } catch (e) {
-            console.error(e);
             toast.error("Không thể xóa email");
         } finally {
             setBusy(false);
@@ -179,7 +175,6 @@ export function FocusDashboard() {
             await api(`/messages/${selectedMessage.id}/pin`, { method: "PATCH", token, body: { isPinned: newPinned } });
             toast.success(newPinned ? "Đã ghim email" : "Đã bỏ ghim");
         } catch (e) {
-            console.error(e);
             setMessages(prev => prev.map(m => m.id === selectedMessage.id ? { ...m, isPinned: !newPinned } : m));
             toast.error("Không thể cập nhật");
         }
@@ -193,7 +188,6 @@ export function FocusDashboard() {
             await api(`/messages/${selectedMessage.id}/read`, { method: "PATCH", token, body: { isRead: false } });
             toast.success("Đã đánh dấu chưa đọc");
         } catch (e) {
-            console.error(e);
             toast.error("Không thể cập nhật trạng thái");
         }
     };
@@ -222,7 +216,6 @@ export function FocusDashboard() {
             }
             toast.success("Đã xóa hộp thư");
         } catch (e) {
-            console.error(e);
             toast.error("Không thể xóa hộp thư");
         } finally {
             setBusy(false);

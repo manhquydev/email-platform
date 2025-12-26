@@ -22,7 +22,6 @@ export const MagicLinkRequestForm: React.FC<MagicLinkRequestFormProps> = ({ onSu
             toast.success('Login link sent! Please check your email.');
             if (onSuccess) onSuccess();
         } catch (err) {
-            console.error(err);
             toast.error('Failed to send login link.');
         } finally {
             setLoading(false);

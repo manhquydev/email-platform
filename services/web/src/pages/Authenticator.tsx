@@ -60,7 +60,6 @@ export function Authenticator() {
                 toast.error("Không thể tải tài khoản");
             }
         } catch (err) {
-            console.error(err);
             toast.error("Lỗi khi tải tài khoản");
         } finally {
             setLoading(false);
@@ -86,7 +85,7 @@ export function Authenticator() {
                             newCodes[acc.id] = authenticator.generate(acc.secret);
                         }
                     } catch (e) {
-                        console.error("Error generating code for", acc.serviceName, e);
+                        // Silently fail for individual accounts to not break the loop
                     }
                 });
                 setCodes(newCodes);

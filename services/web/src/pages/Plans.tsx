@@ -50,7 +50,7 @@ export function Plans() {
             const res = await api<{ user: { tier: string } }>("/auth/me", { token });
             setCurrentTier(res.user.tier);
         } catch (error) {
-            console.error("Failed to load user profile", error);
+            // Profile load is background/secondary for tiers, ignore log
         }
     };
 
@@ -59,7 +59,7 @@ export function Plans() {
             const res = await api<{ packages: any[] }>("/billing/packages");
             setPackages(res.packages);
         } catch (error) {
-            console.error("Failed to load packages", error);
+            toast.error("Không thể tải danh sách gói dịch vụ");
         }
     };
 

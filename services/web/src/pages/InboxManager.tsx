@@ -55,7 +55,6 @@ export function InboxManager() {
                 setSelectedDomain(res.data[0].id);
             }
         } catch (e) {
-            console.error(e);
             toast.error("Lỗi tải danh sách domain");
         }
     }, [token, selectedDomain]);
@@ -71,7 +70,6 @@ export function InboxManager() {
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res.data);
         } catch (e) {
-            console.error("Load Inboxes Error:", e);
             toast.error("Lỗi tải danh sách inbox");
         } finally {
             setBusy(false);
@@ -90,7 +88,6 @@ export function InboxManager() {
             const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
             setMessages(res.data);
         } catch (e) {
-            console.error(e);
             toast.error("Lỗi tải email");
         } finally {
             setBusy(false);
@@ -200,7 +197,6 @@ export function InboxManager() {
             }
             toast.success("Đã xóa hộp thư");
         } catch (e) {
-            console.error(e);
             toast.error("Không thể xóa hộp thư");
         }
     };
@@ -216,7 +212,7 @@ export function InboxManager() {
                 await api(`/inboxes/${id}`, { method: "DELETE", token });
                 deleted++;
             } catch (e) {
-                console.error(`Failed to delete inbox ${id}`, e);
+                // Ignore individual deletion error
             }
         }
         setInboxes(prev => prev.filter(i => !selectedInboxIds.has(i.id)));
@@ -289,7 +285,7 @@ export function InboxManager() {
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
             try {
                 await api(`/messages/${msg.id}/read`, { method: "PATCH", token, body: { isRead: true } });
-            } catch (e) { console.error(e); }
+            } catch (e) { /* ignore read status update error */ }
         }
     };
 

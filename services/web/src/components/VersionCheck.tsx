@@ -51,7 +51,7 @@ export const VersionCheck = () => {
                 );
             }
         } catch (error) {
-            console.error('Failed to check version:', error);
+            // Silently fail for version check
         }
     }, []);
 

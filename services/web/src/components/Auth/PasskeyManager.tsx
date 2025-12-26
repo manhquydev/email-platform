@@ -30,7 +30,7 @@ export const PasskeyManager: React.FC = () => {
             const data = await api<Passkey[]>('/auth/webauthn/credentials', { token });
             setPasskeys(data);
         } catch (error) {
-            console.error("Failed to load passkeys", error);
+            // Error silently handled as loading state is reset, but we could toast if critical
         } finally {
             setLoading(false);
         }
@@ -39,34 +39,40 @@ export const PasskeyManager: React.FC = () => {
     const handleDeletePasskey = async (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
+        console.log("PasskeyManager: handleDeletePasskey called with id:", id);
         if (!window.confirm("Bạn có chắc chắn muốn xóa passkey này không?")) return;
         try {
-            await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
+            const res = await api<any>(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
+            console.log("PasskeyManager: Delete response:", res);
             toast.success("Passkey removed");
             loadPasskeys();
         } catch (error) {
+            console.error("PasskeyManager: Delete failed:", error);
             toast.error(getFriendlyErrorMessage((error as Error).message));
         }
     };
 
     const handleRegisterPasskey = async () => {
         setRegistering(true);
+        console.log("PasskeyManager: handleRegisterPasskey starting...");
         try {
             // 1. Get options
+            console.log("PasskeyManager: Fetching registration options...");
             const options = await api<any>('/auth/webauthn/register/options', { method: 'POST', body: {}, token });
-            console.log("PasskeyManager: Register Options", JSON.stringify(options, null, 2));
+            console.log("PasskeyManager: Received Registration Options:", options);
 
             // 2. Create credential
             let attResp;
             try {
+                console.log("PasskeyManager: Starting browser registration...");
                 // Fix: Pass as named object { optionsJSON } for v13+
                 attResp = await startRegistration({ optionsJSON: options });
-                console.log("PasskeyManager: Attestation Response", attResp);
+                console.log("PasskeyManager: Received Attestation Response:", attResp);
             } catch (error) {
+                console.error("PasskeyManager: Browser registration error:", error);
                 if ((error as any).name === 'NotAllowedError') {
                     toast.error("User cancelled or timed out.");
                 } else {
-                    console.error(error);
                     toast.error("Failed to prompt for passkey.");
                 }
                 setRegistering(false);
@@ -74,16 +80,18 @@ export const PasskeyManager: React.FC = () => {
             }
 
             // 3. Verify
+            console.log("PasskeyManager: Verifying registration on server...");
             await api<any>('/auth/webauthn/register/verify', {
                 method: 'POST',
                 body: attResp,
                 token
             });
 
+            console.log("PasskeyManager: Registration verified successfully.");
             toast.success("Passkey added successfully!");
             loadPasskeys();
         } catch (error) {
-            console.error(error);
+            console.error("PasskeyManager: Registration workflow failed:", error);
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setRegistering(false);

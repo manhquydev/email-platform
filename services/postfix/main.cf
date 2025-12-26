@@ -17,6 +17,7 @@ mynetworks = 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 
 # Relay Domains (Authorized domains to forward to API)
 relay_domains = lmdb:/etc/postfix/relay_domains
+relay_recipient_maps =
 
 # Transport Maps (Route to API)
 transport_maps = lmdb:/etc/postfix/transport
@@ -24,6 +25,12 @@ transport_maps = lmdb:/etc/postfix/transport
 # Relay settings - only accept from internal network
 smtpd_relay_restrictions = 
     permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_unauth_destination
+
+smtpd_recipient_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
     reject_unauth_destination
 
 # Client restrictions

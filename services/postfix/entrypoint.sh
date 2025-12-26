@@ -19,14 +19,14 @@ TRANSPORT_FILE="/etc/postfix/transport"
 echo "Configuring Relay Domains and Transport..."
 
 # Start with primary domain
-echo "${DOMAIN}" > "${RELAY_DOMAINS_FILE}"
+echo "${DOMAIN} OK" > "${RELAY_DOMAINS_FILE}"
 echo "${DOMAIN} smtp:[api]:2525" > "${TRANSPORT_FILE}"
 
 # Add extra domains if provided (comma separated)
 if [ -n "${EXTRA_DOMAINS}" ]; then
     IFS=',' read -ra ADDR <<< "${EXTRA_DOMAINS}"
     for i in "${ADDR[@]}"; do
-        echo "$i" >> "${RELAY_DOMAINS_FILE}"
+        echo "$i OK" >> "${RELAY_DOMAINS_FILE}"
         echo "$i smtp:[api]:2525" >> "${TRANSPORT_FILE}"
     done
 fi

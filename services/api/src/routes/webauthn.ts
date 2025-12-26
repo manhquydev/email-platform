@@ -78,6 +78,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
         const { verified, registrationInfo } = verification;
 
         if (verified && registrationInfo) {
+            // Fix: remove unused destructuring
             const { credentialID, credentialPublicKey, counter } = registrationInfo;
 
             await prisma.passkeyCredential.create({
@@ -95,84 +96,162 @@ export async function webauthnRoutes(app: FastifyInstance) {
 
             return { ok: true, verified };
         }
-        // ...
-        authenticator: {
-            credentialID: credential.credentialID,
-                credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
-                    counter: BigInt(credential.counter),
-                        transports: credential.transports as any[], // Fix type
-                },
+
+        return reply.status(400).send({ error: "Verification failed" });
     });
-} catch (error) {
-    console.error(error);
-    return reply.status(400).send({ error: "Verification failed" });
-}
 
-const { verified, authenticationInfo } = verification;
+    // 3. Login: Generate Options
+    app.post("/auth/webauthn/login/options", async (request, reply) => {
+        const bodySchema = z.object({
+            email: z.string().email().optional(),
+        });
+        const parsed = bodySchema.safeParse(request.body);
+        const email = parsed.success ? parsed.data.email : undefined;
 
-if (verified) {
-    // Update counter
-    await prisma.passkeyCredential.update({
-        where: { id: credential.id },
-        data: {
-            counter: BigInt(authenticationInfo.newCounter),
-            lastUsedAt: new Date(),
+        let userCredentials: { id: string; transports: any[] }[] = [];
+        let userIdForChallenge = "unknown";
+
+        if (email) {
+            const user = await prisma.user.findUnique({
+                where: { email },
+                include: { passkeyCredentials: true }
+            });
+            if (user) {
+                userCredentials = user.passkeyCredentials.map(cred => ({
+                    id: cred.credentialID,
+                    transports: cred.transports as any[] // Fix simplewebauthn type
+                }));
+                userIdForChallenge = user.id;
+            }
         }
+
+        const options = await generateAuthenticationOptions({
+            rpID,
+            allowCredentials: userCredentials.length > 0 ? userCredentials : undefined,
+            userVerification: "preferred",
+        });
+
+        challenges[options.challenge] = userIdForChallenge;
+
+        return options;
     });
 
-    delete challenges[expectedChallenge];
+    // 4. Login: Verify
+    app.post("/auth/webauthn/login/verify", async (request, reply) => {
+        const body = request.body as any;
+        const challenge = challenges[body.challenge];
 
-    // Login success: Issue JWT
-    const user = credential.user;
-    if (user.isDisabled) {
-        return reply.status(403).send({ error: "Account is disabled" });
-    }
+        // Workaround: Frontend MUST send the `challenge` string it received in `generateAuthenticationOptions`
+        // alongside the `AuthenticationResponseJSON`.
+        const expectedChallenge = body.challengeId;
 
-    const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
-    await recordAudit(user.id, "LOGIN_PASSKEY", { ip: request.ip });
+        if (!expectedChallenge || !challenges[expectedChallenge]) {
+            return reply.status(400).send({ error: "Challenge expired or invalid" });
+        }
 
-    return { token, user: { id: user.id, email: user.email, role: user.role } };
-}
+        const targetUserId = challenges[expectedChallenge];
 
-return reply.status(400).send({ error: "Verification failed" });
+        // We need the credential to get the public key.
+        const credentialID = body.id;
+        const credential = await prisma.passkeyCredential.findUnique({
+            where: { credentialID },
+            include: { user: true }
+        });
+
+        if (!credential) {
+            return reply.status(400).send({ error: "Credential not found" });
+        }
+
+        // If we knew the user via email step, verify it matches
+        if (targetUserId !== "unknown" && targetUserId !== credential.userId) {
+            return reply.status(400).send({ error: "User mismatch" });
+        }
+
+        let verification;
+        try {
+            verification = await verifyAuthenticationResponse({
+                response: body,
+                expectedChallenge,
+                expectedOrigin: origin,
+                expectedRPID: rpID,
+                authenticator: {
+                    credentialID: credential.credentialID,
+                    // Fix: Ensure Uint8Array
+                    credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
+                    counter: BigInt(credential.counter),
+                    transports: credential.transports as any[], // Fix type
+                },
+            });
+        } catch (error) {
+            console.error(error);
+            return reply.status(400).send({ error: "Verification failed" });
+        }
+
+        const { verified, authenticationInfo } = verification;
+
+        if (verified) {
+            // Update counter
+            await prisma.passkeyCredential.update({
+                where: { id: credential.id },
+                data: {
+                    counter: BigInt(authenticationInfo.newCounter),
+                    lastUsedAt: new Date(),
+                }
+            });
+
+            delete challenges[expectedChallenge];
+
+            // Login success: Issue JWT
+            const user = credential.user;
+            if (user.isDisabled) {
+                return reply.status(403).send({ error: "Account is disabled" });
+            }
+
+            const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
+            await recordAudit(user.id, "LOGIN_PASSKEY", { ip: request.ip });
+
+            return { token, user: { id: user.id, email: user.email, role: user.role } };
+        }
+
+        return reply.status(400).send({ error: "Verification failed" });
     });
 
-// 5. List Credentials
-app.get("/auth/webauthn/credentials", { preHandler: app.authenticate }, async (request, reply) => {
-    const userId = (request.user as any).userId;
-    const credentials = await prisma.passkeyCredential.findMany({
-        where: { userId },
-        select: {
-            id: true,
-            credentialID: true,
-            createdAt: true,
-            lastUsedAt: true,
-            transports: true,
-        },
-        orderBy: { createdAt: 'desc' }
-    });
-    return credentials;
-});
-
-// 6. Delete Credential
-app.delete("/auth/webauthn/credentials/:id", { preHandler: app.authenticate }, async (request, reply) => {
-    const userId = (request.user as any).userId;
-    const { id } = request.params as { id: string };
-
-    const credential = await prisma.passkeyCredential.findUnique({
-        where: { id },
+    // 5. List Credentials
+    app.get("/auth/webauthn/credentials", { preHandler: app.authenticate }, async (request, reply) => {
+        const userId = (request.user as any).userId;
+        const credentials = await prisma.passkeyCredential.findMany({
+            where: { userId },
+            select: {
+                id: true,
+                credentialID: true,
+                createdAt: true,
+                lastUsedAt: true,
+                transports: true,
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        return credentials;
     });
 
-    if (!credential || credential.userId !== userId) {
-        return reply.status(404).send({ error: "Credential not found" });
-    }
+    // 6. Delete Credential
+    app.delete("/auth/webauthn/credentials/:id", { preHandler: app.authenticate }, async (request, reply) => {
+        const userId = (request.user as any).userId;
+        const { id } = request.params as { id: string };
 
-    await prisma.passkeyCredential.delete({
-        where: { id },
+        const credential = await prisma.passkeyCredential.findUnique({
+            where: { id },
+        });
+
+        if (!credential || credential.userId !== userId) {
+            return reply.status(404).send({ error: "Credential not found" });
+        }
+
+        await prisma.passkeyCredential.delete({
+            where: { id },
+        });
+
+        await recordAudit(userId, "PASSKEY_DELETED", { credentialId: id });
+
+        return { success: true };
     });
-
-    await recordAudit(userId, "PASSKEY_DELETED", { credentialId: id });
-
-    return { success: true };
-});
 }

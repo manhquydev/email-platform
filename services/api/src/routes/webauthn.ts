@@ -33,7 +33,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
         const options = await generateRegistrationOptions({
             rpName,
             rpID,
-            userID: user.id,
+            userID: new Uint8Array(Buffer.from(user.id)),
             userName: user.email,
             attestationType: "none",
             excludeCredentials: user.passkeyCredentials.map((cred) => ({

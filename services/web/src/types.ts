@@ -3,6 +3,7 @@ export type User = {
     email: string;
     role: string;
     tier?: string;
+    credits?: number;
 };
 
 export type Domain = {

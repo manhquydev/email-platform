@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Inbox } from "../types";
 import { api } from "../utils/api";
 import { Editor } from "./Editor";
+import { useAuth } from "../context/AuthContext";
 
 type Props = {
     token: string;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function ComposeModal({ token, inboxes, onClose, initialSubject = "", initialBody = "", initialTo = "", initialFrom = "" }: Props) {
+    const { user } = useAuth();
     const [composeFrom, setComposeFrom] = useState(initialFrom);
     const [composeTo, setComposeTo] = useState(initialTo);
     const [composeCc, setComposeCc] = useState("");
@@ -256,6 +258,14 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                     </button>
 
                     <div className="flex items-center gap-3">
+                        {/* Insufficient Credits Warning */}
+                        {user?.credits !== undefined && user.credits < 1 && (
+                            <div className="text-xs text-red-500 font-medium px-3 py-1 bg-red-500/10 rounded-lg flex items-center gap-2">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                Hết tín dụng
+                            </div>
+                        )}
+
                         <button
                             disabled={busy}
                             className="px-4 py-2.5 text-xs font-bold text-[var(--nebula-primary)] hover:bg-[var(--nebula-primary)]/10 rounded-xl transition-all border border-transparent hover:border-[var(--nebula-primary)]/20"
@@ -265,10 +275,10 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
 
                         <button
                             onClick={handleCompose}
-                            disabled={busy || !composeFrom || !composeTo || !composeSubject}
-                            className={`group h-11 px-8 rounded-xl flex items-center gap-3 transition-all duration-300 shadow-lg ${busy || !composeFrom || !composeTo || !composeSubject
-                                    ? 'bg-[var(--nebula-surface-elevated)] text-[var(--nebula-text-muted)] cursor-not-allowed opacity-50'
-                                    : 'bg-[var(--nebula-primary)] text-white hover:scale-[1.02] active:scale-[0.98] shadow-[var(--nebula-glow)]'
+                            disabled={busy || !composeFrom || !composeTo || !composeSubject || (user?.credits !== undefined && user.credits < 1)}
+                            className={`group h-11 px-8 rounded-xl flex items-center gap-3 transition-all duration-300 shadow-lg ${busy || !composeFrom || !composeTo || !composeSubject || (user?.credits !== undefined && user.credits < 1)
+                                ? 'bg-[var(--nebula-surface-elevated)] text-[var(--nebula-text-muted)] cursor-not-allowed opacity-50'
+                                : 'bg-[var(--nebula-primary)] text-white hover:scale-[1.02] active:scale-[0.98] shadow-[var(--nebula-glow)]'
                                 }`}
                         >
                             {busy ? (
@@ -281,7 +291,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                                 </>
                             ) : (
                                 <>
-                                    <span className="font-bold text-sm">Gửi Email</span>
+                                    <span className="font-bold text-sm">Gửi Email (1 Credit)</span>
                                     <svg className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                 </>
                             )}

@@ -80,7 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         setToken("");
                         setUser(null);
                     } else {
+                        // Initially set from token to avoid flicker
                         setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+
+                        // Fetch fresh user data (for credits, etc.)
+                        try {
+                            const res = await api<{ user: User }>("/auth/me");
+                            setUser(res.user);
+                        } catch (err) {
+                            console.error("Failed to refresh user profile", err);
+                        }
                     }
                 } catch {
                     setToken("");

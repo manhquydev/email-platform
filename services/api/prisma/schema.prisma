@@ -42,6 +42,29 @@ model User {
   payments                   Payment[]
   passkeyCredentials         PasskeyCredential[]
   magicLinkTokens            MagicLinkToken[]
+  creditTransactions         CreditTransaction[]
+}
+
+model CreditTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Int      // Positive for credit, Negative for debit
+  description String
+  type        CreditTransactionType
+  createdAt   DateTime @default(now())
+  metadata    Json?    // Extra info (e.g., related paymentId, messageId)
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum CreditTransactionType {
+  DEPOSIT       // From Payment/Redemption
+  WITHDRAWAL    // Manual Admin Removal
+  USAGE         // Consumed for services (e.g. sending email)
+  REFUND        // Returned credits
+  ADJUSTMENT    // Admin correction
 }
 
 model PasskeyCredential {

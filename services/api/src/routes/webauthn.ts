@@ -207,10 +207,24 @@ export async function webauthnRoutes(app: FastifyInstance) {
 
         let verification;
         try {
+            request.log.info({
+                expectedChallenge,
+                expectedOrigin,
+                expectedRPID: rpID,
+                authenticatorPublicKeyLen: authenticatorData.credentialPublicKey.length
+            }, "WebAuthn Login Debug: Pre-verify parameters");
+
+            // Allow both the configured Web URL and the RP ID origin (root domain)
+            const allowedOrigins = [origin];
+            const rpOrigin = `https://${rpID}`;
+            if (origin !== rpOrigin) {
+                allowedOrigins.push(rpOrigin);
+            }
+
             verification = await verifyAuthenticationResponse({
                 response: body,
                 expectedChallenge,
-                expectedOrigin: origin,
+                expectedOrigin: allowedOrigins,
                 expectedRPID: rpID,
                 authenticator: authenticatorData,
             } as any);

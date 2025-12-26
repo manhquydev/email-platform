@@ -65,12 +65,19 @@ export async function webauthnRoutes(app: FastifyInstance) {
 
         let verification;
         try {
+            // Support both app URL and root domain
+            const allowedOrigins = [origin];
+            const rpOrigin = `https://${rpID}`;
+            if (origin !== rpOrigin) {
+                allowedOrigins.push(rpOrigin);
+            }
+
             verification = await verifyRegistrationResponse({
                 response: body,
                 expectedChallenge: challenge,
-                expectedOrigin: origin,
+                expectedOrigin: allowedOrigins,
                 expectedRPID: rpID,
-            });
+            } as any);
         } catch (error) {
             request.log.error(error, "WebAuthn Registration Verification failed");
             return reply.status(400).send({ error: "Verification failed" });
@@ -199,10 +206,11 @@ export async function webauthnRoutes(app: FastifyInstance) {
             return reply.status(400).send({ error: "User mismatch" });
         }
 
-        // Fix: Use explicit any variable to bypass literal strictness
-        const authenticatorData: any = {
-            credentialID: new Uint8Array(Buffer.from(credential.credentialID, 'base64url')),
-            credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
+        // Fix: simplewebauthn v11+ renamed 'authenticator' to 'credential' 
+        // and uses 'id' instead of 'credentialID', 'publicKey' instead of 'credentialPublicKey'
+        const credentialData: any = {
+            id: new Uint8Array(Buffer.from(credential.credentialID, 'base64url')),
+            publicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
             counter: Number(credential.counter),
             transports: credential.transports as any[],
         };
@@ -223,12 +231,12 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 bodyKeys: Object.keys(body),
                 responseKeys: body.response ? Object.keys(body.response) : 'N/A',
                 challengeId: expectedChallenge,
-                authenticator: {
-                    credentialIDLen: authenticatorData?.credentialID?.length,
-                    publicKeyLen: authenticatorData?.credentialPublicKey?.length,
-                    counterValue: authenticatorData?.counter,
-                    counterType: typeof authenticatorData?.counter,
-                    transports: authenticatorData?.transports
+                credentialData: {
+                    idLen: credentialData?.id?.length,
+                    publicKeyLen: credentialData?.publicKey?.length,
+                    counterValue: credentialData?.counter,
+                    counterType: typeof credentialData?.counter,
+                    transports: credentialData?.transports
                 }
             }, "WebAuthn Login Debug: Deep inspection before verify");
 
@@ -237,7 +245,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
                 expectedChallenge,
                 expectedOrigin: allowedOrigins,
                 expectedRPID: rpID,
-                authenticator: authenticatorData,
+                credential: credentialData, // Changed from authenticator
             } as any);
 
             if (!verification) {

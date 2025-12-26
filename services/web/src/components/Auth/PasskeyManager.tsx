@@ -40,8 +40,8 @@ export const PasskeyManager: React.FC = () => {
         e.preventDefault();
         e.stopPropagation();
         console.log("handleDeletePasskey called for id:", id);
-        // Temporarily remove confirm for debugging
-        toast("Attempting to remove passkey...");
+        if (!window.confirm("Bạn có chắc chắn muốn xóa passkey này không?")) return;
+        toast("Đang xóa passkey...");
         try {
             console.log("Delete: About to call api DELETE");
             const result = await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
@@ -79,7 +79,12 @@ export const PasskeyManager: React.FC = () => {
             }
 
             // 3. Verify
-            await api('/auth/webauthn/register/verify', {
+            console.log("PasskeyManager: Sending register verify payload", JSON.stringify({
+                ...attResp,
+                challengeId: options.challenge
+            }, null, 2));
+
+            const verifyResult = await api<any>('/auth/webauthn/register/verify', {
                 method: 'POST',
                 body: {
                     ...attResp,
@@ -87,6 +92,7 @@ export const PasskeyManager: React.FC = () => {
                 },
                 token
             });
+            console.log("PasskeyManager: Register Verify Result", verifyResult);
 
             toast.success("Passkey added successfully!");
             loadPasskeys();

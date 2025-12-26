@@ -3,6 +3,7 @@ import { startRegistration } from '@simplewebauthn/browser';
 import { api } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { getFriendlyErrorMessage } from '../../utils/errorMapping';
+import { useAuth } from '../../context/AuthContext';
 
 interface Passkey {
     id: string;
@@ -13,6 +14,7 @@ interface Passkey {
 }
 
 export const PasskeyManager: React.FC = () => {
+    const { token } = useAuth();
     const [passkeys, setPasskeys] = useState<Passkey[]>([]);
     const [loading, setLoading] = useState(false);
     const [registering, setRegistering] = useState(false);
@@ -25,7 +27,7 @@ export const PasskeyManager: React.FC = () => {
     const loadPasskeys = async () => {
         setLoading(true);
         try {
-            const data = await api<Passkey[]>('/auth/webauthn/credentials');
+            const data = await api<Passkey[]>('/auth/webauthn/credentials', { token });
             setPasskeys(data);
         } catch (error) {
             console.error("Failed to load passkeys", error);
@@ -37,7 +39,7 @@ export const PasskeyManager: React.FC = () => {
     const handleDeletePasskey = async (id: string) => {
         if (!confirm("Are you sure you want to remove this passkey?")) return;
         try {
-            await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE' });
+            await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
             toast.success("Passkey removed");
             loadPasskeys();
         } catch (error) {
@@ -49,7 +51,7 @@ export const PasskeyManager: React.FC = () => {
         setRegistering(true);
         try {
             // 1. Get options
-            const options = await api<any>('/auth/webauthn/register/options', { method: 'POST', body: {} });
+            const options = await api<any>('/auth/webauthn/register/options', { method: 'POST', body: {}, token });
 
             // 2. Create credential
             let attResp;
@@ -72,7 +74,8 @@ export const PasskeyManager: React.FC = () => {
                 body: {
                     ...attResp,
                     challengeId: options.challenge // Hack/Workaround
-                }
+                },
+                token
             });
 
             toast.success("Passkey added successfully!");

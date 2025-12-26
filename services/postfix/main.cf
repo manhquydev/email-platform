@@ -16,10 +16,10 @@ mydestination = localhost.$mydomain, localhost
 mynetworks = 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 
 # Relay Domains (Authorized domains to forward to API)
-relay_domains = hash:/etc/postfix/relay_domains
+relay_domains = lmdb:/etc/postfix/relay_domains
 
 # Transport Maps (Route to API)
-transport_maps = hash:/etc/postfix/transport
+transport_maps = lmdb:/etc/postfix/transport
 
 # Relay settings - only accept from internal network
 smtpd_relay_restrictions = 
@@ -69,7 +69,7 @@ local_transport = error:local mail delivery is disabled
 
 # SASL Authentication for Outbound Relay
 smtp_sasl_auth_enable = yes
-smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_password_maps = lmdb:/etc/postfix/sasl_passwd
 smtp_sasl_security_options = noanonymous
 smtp_sasl_tls_security_options = noanonymous
 

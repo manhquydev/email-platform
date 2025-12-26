@@ -36,13 +36,17 @@ export const PasskeyManager: React.FC = () => {
         }
     };
 
-    const handleDeletePasskey = async (id: string) => {
-        if (!confirm("Are you sure you want to remove this passkey?")) return;
+    const handleDeletePasskey = async (e: React.MouseEvent, id: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("handleDeletePasskey called for id:", id);
+        if (!window.confirm("Are you sure you want to remove this passkey?")) return;
         try {
             await api(`/auth/webauthn/credentials/${id}`, { method: 'DELETE', token });
             toast.success("Passkey removed");
             loadPasskeys();
         } catch (error) {
+            console.error("Delete failed", error);
             toast.error(getFriendlyErrorMessage((error as Error).message));
         }
     };
@@ -119,11 +123,12 @@ export const PasskeyManager: React.FC = () => {
                                         <span className="text-xs opacity-60" style={{ color: 'var(--nebula-text-muted)' }}>Last used: {pk.lastUsedAt ? new Date(pk.lastUsedAt).toLocaleDateString() : 'Never'}</span>
                                     </div>
                                     <button
-                                        onClick={() => handleDeletePasskey(pk.id)}
-                                        className="p-2 hover:bg-[var(--nebula-bg-hover)] rounded-full text-[var(--nebula-error)] transition-colors"
+                                        onClick={(e) => handleDeletePasskey(e, pk.id)}
+                                        className="p-2 hover:bg-[var(--nebula-bg-hover)] rounded-full text-[var(--nebula-error)] transition-colors relative z-10"
                                         title="Remove Passkey"
+                                        type="button"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                     </button>

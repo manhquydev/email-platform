@@ -201,8 +201,9 @@ export async function webauthnRoutes(app: FastifyInstance) {
 
         // Fix: Use explicit any variable to bypass literal strictness
         const authenticatorData: any = {
+            credentialID: new Uint8Array(Buffer.from(credential.credentialID, 'base64url')),
             credentialPublicKey: new Uint8Array(Buffer.from(credential.publicKey, 'base64url')),
-            counter: BigInt(credential.counter),
+            counter: Number(credential.counter),
             transports: credential.transports as any[],
         };
 

@@ -78,21 +78,24 @@ export async function webauthnRoutes(app: FastifyInstance) {
         const { verified, registrationInfo } = verification;
 
         if (verified && registrationInfo) {
-            request.log.warn({ keys: Object.keys(registrationInfo) }, "WebAuthn: Registration Info Keys");
-
-            // Fix: Cast directly to avoid strict type issues with missing props
             const info = registrationInfo as any;
-            const credentialID = info.credentialID || info.credentialId;
-            const credentialPublicKey = info.credentialPublicKey || info.publicKey || info.credentialPublicKeyBytes;
-            const counter = info.counter;
+            let credentialID = info.credentialID || info.credentialId;
+            let credentialPublicKey = info.credentialPublicKey || info.publicKey || info.credentialPublicKeyBytes;
+            let counter = info.counter;
+
+            // SimpleWebAuthn v13+ Nested Structure Support
+            if (info.credential) {
+                credentialID = info.credential.id;
+                credentialPublicKey = info.credential.publicKey;
+                counter = info.credential.counter;
+            }
 
             if (!credentialID || !credentialPublicKey) {
                 request.log.error({
+                    infoString: JSON.stringify(info, (key, value) => (key === 'credentialPublicKey' || key === 'publicKey' ? '[Bytes]' : value)),
                     missingID: !credentialID,
-                    missingKey: !credentialPublicKey,
-                    infoKeys: Object.keys(info)
+                    missingKey: !credentialPublicKey
                 }, "WebAuthn: Registration info incomplete - detailed check");
-                // Return exact error to help debugging, but don't show internal details to user
                 return reply.status(500).send({ error: "Server Error: Registration info incomplete (check server logs)" });
             }
 

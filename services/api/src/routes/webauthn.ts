@@ -209,7 +209,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
         try {
             request.log.info({
                 expectedChallenge,
-                expectedOrigin,
+                expectedOrigin: origin,
                 expectedRPID: rpID,
                 authenticatorPublicKeyLen: authenticatorData.credentialPublicKey.length
             }, "WebAuthn Login Debug: Pre-verify parameters");

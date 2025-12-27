@@ -81,7 +81,10 @@ export const buildServer = () => {
   //   runFirst: true,
   // });
 
-  app.register(helmet, { global: true });
+  app.register(helmet, {
+    global: true,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  });
   app.register(multipart, { attachFieldsToBody: false, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
   app.register(fastifyStatic, {

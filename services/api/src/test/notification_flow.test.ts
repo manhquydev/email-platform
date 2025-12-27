@@ -174,4 +174,58 @@ describe("Notification System Integration (Mocked)", () => {
 
         expect(response.statusCode).toBe(403);
     });
+    it("should pass imageUrl to telegram service when provided", async () => {
+        const spy = vi.spyOn(telegramBot, 'sendNotificationToUser');
+
+        prismaMock.notification.create.mockResolvedValue({ id: "notif-img", userId, title: "T", message: "M", type: "INFO" });
+
+        const response = await app.inject({
+            method: "POST",
+            url: "/notifications/admin/send",
+            headers: { Authorization: `Bearer ${adminToken}` },
+            payload: {
+                title: "Image Notif",
+                message: "Look at this",
+                type: "INFO",
+                targetUserId: userId,
+                imageUrl: "http://example.com/image.png"
+            }
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(telegramBot.sendNotificationToUser).toHaveBeenCalledWith(
+            userId,
+            "Image Notif",
+            "Look at this",
+            "INFO",
+            "http://example.com/image.png"
+        );
+    });
+
+    it("should send to all users when sendToAll is true", async () => {
+        const users = [
+            { id: "u1", telegramChatId: "t1" },
+            { id: "u2", telegramChatId: "t2" }
+        ];
+        prismaMock.user.findMany.mockResolvedValue(users);
+        prismaMock.notification.create.mockResolvedValue({ id: "n", userId: "u", title: "T", message: "M", type: "INFO" });
+
+        const response = await app.inject({
+            method: "POST",
+            url: "/notifications/admin/send",
+            headers: { Authorization: `Bearer ${adminToken}` },
+            payload: {
+                title: "Broadcast",
+                message: "Everyone",
+                type: "INFO",
+                sendToAll: true
+            }
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ success: true, count: 2 });
+        // Called for each user
+        expect(prismaMock.notification.create).toHaveBeenCalledTimes(2);
+        expect(telegramBot.sendNotificationToUser).toHaveBeenCalledTimes(2);
+    });
 });

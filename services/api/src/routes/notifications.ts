@@ -115,9 +115,38 @@ export async function notificationRoutes(app: FastifyInstance) {
         // Send to all users
         if (sendToAll) {
             // Get all users
+            // Get all users
             const users = await prisma.user.findMany({
                 select: { id: true, telegramChatId: true }
             });
+
+            const { sendNotificationToUser } = await import("../services/telegramBot");
+
+            // Process in chunks to avoid overwhelming DB/Telegram
+            const chunkSize = 50;
+            for (let i = 0; i < users.length; i += chunkSize) {
+                const chunk = users.slice(i, i + chunkSize);
+                await Promise.all(chunk.map(async (u) => {
+                    // Create DB notification
+                    await prisma.notification.create({
+                        data: {
+                            userId: u.id,
+                            title,
+                            message,
+                            type
+                        }
+                    });
+
+                    // Send Telegram if linked
+                    if (u.telegramChatId) {
+                        try {
+                            await sendNotificationToUser(u.id, title, message, type, imageUrl);
+                        } catch (e) {
+                            console.error(`Failed to send telegram to ${u.id}`, e);
+                        }
+                    }
+                }));
+            }
 
             return { success: true, count: users.length };
         }

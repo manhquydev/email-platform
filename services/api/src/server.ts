@@ -26,6 +26,13 @@ import { setupBotCommands } from "./services/telegramBot";
 import { webauthnRoutes } from "./routes/webauthn";
 import { magicLinkRoutes } from "./routes/magic-link";
 import { notificationRoutes } from "./routes/notifications";
+import { uploadRoutes } from "./routes/upload";
+
+// ... existing imports ...
+
+// Register routes
+// ... existing registrations ...
+// Register routes inside buildServer
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -183,6 +190,7 @@ export const buildServer = () => {
   app.register(forwardingRoutes);
   app.register(subscriptionRoutes);
   app.register(notificationRoutes, { prefix: "/notifications" });
+  app.register(uploadRoutes, { prefix: "/uploads" });
 
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);

@@ -5,6 +5,7 @@ import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { GlassCard, SectionHeader, PremiumInput, PremiumButton } from "../../components/admin/AdminUIComponents";
+import { UserSelect } from "../../components/admin/UserSelect";
 
 export function AdminNotificationPage() {
     const { token } = useAuth();
@@ -135,25 +136,66 @@ export function AdminNotificationPage() {
 
                             {targetMode === "specific" && (
                                 <div className="animate-fade-in-up">
-                                    <PremiumInput
-                                        label="User ID"
+                                    <UserSelect
+                                        label="Người nhận"
                                         value={targetUserId}
                                         onChange={setTargetUserId}
-                                        placeholder="Nhập UUID của người dùng..."
-                                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}
+                                        placeholder="Tìm kiếm người dùng qua email..."
                                     />
                                 </div>
                             )}
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Hình ảnh (URL - Tùy chọn)</label>
-                                <input
-                                    type="url"
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm"
-                                    placeholder="https://example.com/image.jpg"
-                                />
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Hình ảnh (Upload hoặc URL)</label>
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <input
+                                            type="url"
+                                            value={imageUrl}
+                                            onChange={(e) => setImageUrl(e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm"
+                                            placeholder="https://example.com/image.jpg"
+                                        />
+                                    </div>
+                                    <label className="cursor-pointer bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl border border-transparent transition-all flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                        <span className="text-sm font-medium">Tải lên</span>
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const formData = new FormData();
+                                                formData.append("file", file);
+
+                                                const toastId = toast.loading("Đang tải ảnh lên...");
+                                                try {
+                                                    // Assuming we have a way to make multipart request via api util or fetch
+                                                    // api util likely uses JSON. We might need standard fetch here or update api util.
+                                                    // Utilizing explicit fetch for multipart:
+                                                    const res = await fetch(`${import.meta.env.VITE_API_BASE}/uploads/upload`, {
+                                                        method: "POST",
+                                                        headers: {
+                                                            "Authorization": `Bearer ${token}`
+                                                        },
+                                                        body: formData
+                                                    });
+
+                                                    if (!res.ok) throw new Error("Upload failed");
+                                                    const data = await res.json();
+                                                    setImageUrl(data.url);
+                                                    toast.success("Tải ảnh thành công", { id: toastId });
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    toast.error("Tải ảnh thất bại", { id: toastId });
+                                                }
+                                            }}
+                                        />
+                                    </label>
+                                </div>
                                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                                     Hình ảnh sẽ được hiển thị trong tin nhắn Telegram.
                                 </p>

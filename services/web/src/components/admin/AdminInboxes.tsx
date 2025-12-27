@@ -162,8 +162,8 @@ export function AdminInboxes({ token }: { token: string }) {
                                         <div className="text-[10px] text-slate-500 font-mono">{inbox.id}</div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="text-xs">{inbox.owner.email}</div>
-                                        <div className="text-[10px] text-slate-500 font-mono">{inbox.ownerId}</div>
+                                        <div className="text-xs">{inbox.owner?.email || "Unknown"}</div>
+                                        <div className="text-[10px] text-slate-500 font-mono">{inbox.ownerId || "—"}</div>
                                     </TableCell>
                                     <TableCell>
                                         <StatusBadge

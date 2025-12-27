@@ -255,7 +255,7 @@ export function UsersPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className={`font-medium ${user.isDisabled ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
-                                            {user.email}
+                                            {user?.email || "Unknown"}
                                         </div>
                                         {user.isDisabled && <StatusBadge status="Đã khóa" variant="danger" />}
                                         <div className="flex items-center gap-1 mt-1">

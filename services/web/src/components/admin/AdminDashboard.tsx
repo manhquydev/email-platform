@@ -398,7 +398,7 @@ export function AdminDashboard({ token }: { token: string }) {
                                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500" /> Inboxes</span>
                             </div>
                         </div>
-                        <div className="h-72">
+                        <div className="h-72 min-h-[300px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={timeseries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                     <defs>

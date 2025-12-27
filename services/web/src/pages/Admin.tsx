@@ -8,6 +8,7 @@ import { PackagesPage } from "./admin/PackagesPage";
 import { CodesPage } from "./admin/CodesPage";
 import { AdminRulesPage } from "./admin/AdminRulesPage";
 import { AdminSettingsPage } from "./admin/AdminSettingsPage";
+import { AdminNotificationPage } from "./admin/AdminNotificationPage";
 
 // Legacy Components
 import { AdminDashboard } from "../components/admin/AdminDashboard";
@@ -48,6 +49,7 @@ export function Admin() {
                         <Route path="reports" element={<AdminReports token={token} />} />
                         <Route path="logs" element={<AdminLogs token={token} />} />
                         <Route path="system" element={<AdminSystem token={token} />} />
+                        <Route path="notifications" element={<AdminNotificationPage />} />
                         <Route path="settings" element={<AdminSettingsPage />} />
                     </Route>
                 </Routes>

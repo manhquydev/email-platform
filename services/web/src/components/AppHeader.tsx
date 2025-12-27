@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { NotificationCenter } from "./NotificationCenter";
 
 interface AppHeaderProps {
     title?: string;
@@ -70,6 +71,8 @@ export function AppHeader({ title, showBackButton, onBack }: AppHeaderProps) {
             </div>
 
             <div className="app-header-right">
+                <NotificationCenter />
+
                 {/* Admin Link */}
                 {isAdmin && (
                     <Link to="/admin" className="app-header-admin-link" title="Admin Panel">

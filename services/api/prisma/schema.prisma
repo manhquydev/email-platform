@@ -43,6 +43,7 @@ model User {
   passkeyCredentials         PasskeyCredential[]
   magicLinkTokens            MagicLinkToken[]
   creditTransactions         CreditTransaction[]
+  notifications              Notification[]
 }
 
 model CreditTransaction {
@@ -469,5 +470,27 @@ model Payment {
   createdAt       DateTime @default(now())
   
   user            User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String?          // Null if system-wide/all users (logic handled in app) or specific user
+  type      NotificationType @default(INFO)
+  title     String
+  message   String           @db.Text
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  
+  user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ERROR
+  PROMOTION
 }
 

@@ -774,3 +774,37 @@ interface TelegramUpdate {
 }
 
 export type { TelegramUpdate };
+
+/**
+ * Send a notification to a user via Telegram
+ */
+export async function sendNotificationToUser(
+    userId: string,
+    title: string,
+    message: string,
+    type: string
+): Promise<boolean> {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { telegramChatId: true }
+    });
+
+    if (!user?.telegramChatId) {
+        return false;
+    }
+
+    let emoji = '📢';
+    switch (type) {
+        case 'INFO': emoji = 'ℹ️'; break;
+        case 'WARNING': emoji = '⚠️'; break;
+        case 'SUCCESS': emoji = '✅'; break;
+        case 'ERROR': emoji = '❌'; break;
+        case 'PROMOTION': emoji = '🎉'; break;
+    }
+
+    const text = `${emoji} *${title}*\n\n${message}`;
+
+    return sendTelegramMessage(user.telegramChatId, text, {
+        parseMode: 'Markdown'
+    });
+}

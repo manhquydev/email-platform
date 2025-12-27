@@ -105,6 +105,9 @@ export async function notificationRoutes(app: FastifyInstance) {
             }
 
             return { success: true, count: 1 };
+        }
+
+        if (body.sendToAll) {
             // Send to all users
             const users = await prisma.user.findMany({ select: { id: true } });
 

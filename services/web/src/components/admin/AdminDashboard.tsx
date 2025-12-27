@@ -398,7 +398,7 @@ export function AdminDashboard({ token }: { token: string }) {
                                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500" /> Inboxes</span>
                             </div>
                         </div>
-                        <div className="h-72 min-h-[300px] w-full block">
+                        <div className="h-72 min-h-[300px] w-full block" style={{ minHeight: '300px' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={timeseries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                     <defs>
@@ -438,7 +438,7 @@ export function AdminDashboard({ token }: { token: string }) {
                 <div className="col-span-12 lg:col-span-4">
                     <GlassCard className="p-6 h-full" hover={false}>
                         <h3 className="text-base font-semibold text-slate-800 dark:text-white mb-4">Phân tích đa chiều</h3>
-                        <div className="h-64">
+                        <div className="h-64" style={{ minHeight: '250px' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart data={radarData}>
                                     <PolarGrid stroke="var(--color-border)" />

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { MobileNavigation } from "../components/MobileNavigation";
+import { NotificationCenter } from "../components/NotificationCenter";
 
 interface AppShellProps {
     children: React.ReactNode;
@@ -133,6 +134,8 @@ export function AppShell({ children }: AppShellProps) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
+                        <NotificationCenter />
+
                         <button
                             onClick={toggleTheme}
                             className="p-2 rounded-lg text-muted hover:text-text-main hover:bg-surface-elevated transition-colors"

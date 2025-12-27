@@ -101,3 +101,20 @@ docker exec -it email-platform-postgres-1 psql -U postgres -d email_service
 - **Triệu chứng**: Đã git pull nhưng code cũ vẫn chạy.
 - **Khắc phục**: Dùng `--no-cache` và `restart` (đã tích hợp trong `/deploy-prod`).
 
+### 4. Lỗi 502 Bad Gateway / CORS (API Crash)
+- **Triệu chứng**: Web báo lỗi CORS hoặc 502, API không phản hồi `/health`.
+- **Nguyên nhân**: API container bị crash vòng lặp (restart loop), thường do thiếu bảng trong DB hoặc lỗi code runtime.
+- **Khắc phục**:
+  1. Kiểm tra logs: `docker compose logs --tail 50 api`
+  2. Nếu lỗi "P2021: The table does not exist", chạy lại migration:
+     ```bash
+     docker exec email-platform-api-1 npx prisma migrate deploy
+     ```
+
+### 5. Database Migration Failed (Lock)
+- **Triệu chứng**: Deploy thất bại với lỗi "Migration ... failed ... has been applied but failed".
+- **Khắc phục**:
+  Đánh dấu migration bị lỗi là đã rollback để thử lại:
+  ```bash
+  docker compose run --rm api npx prisma migrate resolve --rolled-back <NAME_OF_FAILED_MIGRATION>
+  ```

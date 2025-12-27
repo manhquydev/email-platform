@@ -105,11 +105,10 @@ export async function notificationRoutes(app: FastifyInstance) {
             }
 
             return { success: true, count: 1 };
-        } else if (body.sendToAll) {
-            // Send to all users - might be heavy, but strictly for basic implementation
-            const users = await prisma.user.findMany({ select: { id: true, telegramChatId: true } });
+            // Send to all users
+            const users = await prisma.user.findMany({ select: { id: true } });
 
-            // Create notifications in batch? Prisma createMany
+            // Create database notifications
             const notificationsData = users.map(u => ({
                 userId: u.id,
                 title: body.title,
@@ -121,10 +120,19 @@ export async function notificationRoutes(app: FastifyInstance) {
                 data: notificationsData
             });
 
-            // We won't await telegram for all to avoid timeout, or use a queue.
-            // For strict implementation, let's just create DB records now 
-            // and maybe background process telegram? 
-            // To keep it simple as requested: just DB for "All" users for now to avoid hanging.
+            // Send Telegram to users who have it linked
+            const telegramUsers = await prisma.user.findMany({
+                where: { telegramChatId: { not: null } },
+                select: { id: true, telegramChatId: true }
+            });
+
+            if (telegramUsers.length > 0) {
+                const { sendNotificationToUser } = await import("../services/telegramBot");
+                // Send in parallel but catch errors so one failure doesn't stop others
+                Promise.allSettled(telegramUsers.map(user =>
+                    sendNotificationToUser(user.id, body.title, body.message, body.type)
+                )).catch(console.error);
+            }
 
             return { success: true, count: users.length };
         }

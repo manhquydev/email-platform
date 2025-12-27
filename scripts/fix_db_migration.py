@@ -14,9 +14,9 @@ def fix_db():
         client.connect(HOST, username=USERNAME, password=PASSWORD, timeout=30)
         print("✅ Connected!\n")
         
-        # Resolve the failed migration as rolled back
-        print("🔧 Resolving failed migration as rolled-back...")
-        cmd = "cd /root/email-platform. && docker compose -f docker-compose.prod.yml run --rm api npx prisma migrate resolve --rolled-back 20251227095500_add_message_pinned_snooze"
+        # Resolve the failed migration as APPLIED (skip re-execution)
+        print("🔧 Resolving failed migration as APPLIED...")
+        cmd = "cd /root/email-platform. && docker compose -f docker-compose.prod.yml run --rm api npx prisma migrate resolve --applied 20251227095500_add_message_pinned_snooze"
         
         stdin, stdout, stderr = client.exec_command(cmd)
         out = stdout.read().decode()

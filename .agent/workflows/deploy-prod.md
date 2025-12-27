@@ -28,3 +28,10 @@ This workflow pulls the latest code from `main`, rebuilds the API and Web servic
     ```bash
     ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "docker inspect --format='API: {{.Created}}' email-platform-api-1 && docker inspect --format='Web: {{.Created}}' email-platform-web-1"
     ```
+
+## 5. Troubleshooting
+- **502 Bad Gateway**: API is down/crashing. Check logs: `docker compose logs api`.
+- **Database Lock**: If deployment fails at migration step, unlock it:
+    ```bash
+    docker compose run --rm api npx prisma migrate resolve --rolled-back <MIGRATION_NAME>
+    ```

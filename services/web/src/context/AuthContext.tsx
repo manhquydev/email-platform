@@ -89,6 +89,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             setUser(res.user);
                         } catch (err) {
                             console.error("Failed to refresh user profile", err);
+                            // If user not found (404) or unauthorized (401), clear invalid token
+                            const msg = (err as Error).toString();
+                            if (msg.includes("404") || msg.includes("401") || msg.includes("User not found")) {
+                                setToken("");
+                                setUser(null);
+                                toast.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại");
+                            }
                         }
                     }
                 } catch {

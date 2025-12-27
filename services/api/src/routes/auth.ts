@@ -459,7 +459,7 @@ export async function authRoutes(app: FastifyInstance) {
     });
 
     if (!user) {
-      return reply.status(404).send({ error: "User not found" });
+      return reply.status(401).send({ error: "User not found" });
     }
 
     return { user };

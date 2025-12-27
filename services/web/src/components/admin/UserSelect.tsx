@@ -14,9 +14,10 @@ interface UserSelectProps {
     onChange: (userId: string) => void;
     label?: string;
     placeholder?: string;
+    token: string;
 }
 
-export function UserSelect({ value, onChange, label, placeholder = "Search user by email..." }: UserSelectProps) {
+export function UserSelect({ value, onChange, label, placeholder = "Search user by email...", token }: UserSelectProps) {
     const [query, setQuery] = useState("");
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +32,7 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
 
             setIsLoading(true);
             try {
-                const res = await api<{ data: User[] }>(`/admin/users?search=${encodeURIComponent(query)}&limit=5`);
+                const res = await api<{ data: User[] }>(`/admin/users?search=${encodeURIComponent(query)}&limit=5`, { token });
                 setUsers(res.data);
             } catch (error) {
                 console.error("Failed to search users", error);

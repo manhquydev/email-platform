@@ -141,6 +141,7 @@ export function AdminNotificationPage() {
                                         value={targetUserId}
                                         onChange={setTargetUserId}
                                         placeholder="Tìm kiếm người dùng qua email..."
+                                        token={token}
                                     />
                                 </div>
                             )}

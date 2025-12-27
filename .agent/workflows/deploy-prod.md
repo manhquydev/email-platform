@@ -20,7 +20,9 @@ This workflow pulls the latest code from `main`, rebuilds the API and Web servic
 // turbo
 3.  **Execute Deployment**
     ```bash
-    ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose build --no-cache web api && docker compose up -d --force-recreate web api && docker compose exec api npx prisma migrate deploy && docker compose restart web api"
+    ```bash
+    ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans web api && docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy && docker compose -f docker-compose.prod.yml restart web api"
+    ```
     ```
 
 4.  **Verify Deployment**

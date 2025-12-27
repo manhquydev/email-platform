@@ -1,6 +1,6 @@
 
 import { useState, type FormEvent } from "react";
-import { api } from "../../utils/api";
+import { api, API_BASE } from "../../utils/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
@@ -177,7 +177,7 @@ export function AdminNotificationPage() {
                                                     // Assuming we have a way to make multipart request via api util or fetch
                                                     // api util likely uses JSON. We might need standard fetch here or update api util.
                                                     // Utilizing explicit fetch for multipart:
-                                                    const res = await fetch(`${import.meta.env.VITE_API_BASE}/uploads/upload`, {
+                                                    const res = await fetch(`${API_BASE}/uploads/upload`, {
                                                         method: "POST",
                                                         headers: {
                                                             "Authorization": `Bearer ${token}`

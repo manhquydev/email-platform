@@ -8,8 +8,14 @@ This workflow pulls the latest code from `main`, rebuilds the API and Web servic
 1.  **Pull Latest Code**
     Connect via SSH and pull the `main` branch.
 
-2.  **Rebuild Scritply (--no-cache)**
-    This step is CRITICAL. We use `--no-cache` and `--force-recreate` to avoid the "stale code" issue where Docker reuses old layers even after git pull.
+2.  **Rebuild Scriptly (--no-cache)**
+    This step is CRITICAL. It includes:
+    *   `--no-cache`: Forces Docker to rebuild layers (fixing stale code).
+    *   `--force-recreate`: Ensures containers are replaced.
+    *   `prisma migrate deploy`: **REQUIRED** to apply database schema changes (fixes 500 errors).
+    *   `restart`: Ensures the new binary is loaded relative to the environment.
+    
+    *Self-Correction Check*: Ensure `docker-compose.yml` maps `"25:2525"` for email ingestion.
 
 // turbo
 3.  **Execute Deployment**

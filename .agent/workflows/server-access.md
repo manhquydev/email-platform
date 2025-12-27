@@ -75,3 +75,29 @@ docker exec -it email-platform-api-1 sh
 docker exec -it email-platform-postgres-1 psql -U postgres -d email_service
 ```
 
+## 5. Các Lỗi Phổ Biến & Cách Fix (Deployment Checklist)
+
+### 1. Lỗi 500 khi gọi API (Thiếu Migration)
+- **Triệu chứng**: Logs báo lỗi `column "..." does not exist`.
+- **Nguyên nhân**: Prisma schema thay đổi nhưng chưa chạy migration trên production.
+- **Khắc phục**:
+  ```bash
+  docker exec email-platform-api-1 npx prisma migrate deploy
+  ```
+
+### 2. Không nhận được Email (Port 25 Closed)
+- **Triệu chứng**: Gửi email từ bên ngoài không vào được, `netstat -tulpn | grep :25` trả về rỗng.
+- **Nguyên nhân**: `docker-compose.yml` thiếu mapping cho port 25.
+- **Khắc phục**:
+  Sửa `docker-compose.yml`:
+  ```yaml
+  ports:
+    - "3001:3001"
+    - "25:2525" # Host Port 25 -> Container Port 2525
+  ```
+  Sau đó recreate container: `docker compose up -d --force-recreate api`
+
+### 3. Code mới không chạy (Cache Issue)
+- **Triệu chứng**: Đã git pull nhưng code cũ vẫn chạy.
+- **Khắc phục**: Dùng `--no-cache` và `restart` (đã tích hợp trong `/deploy-prod`).
+

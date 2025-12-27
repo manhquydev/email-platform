@@ -401,11 +401,11 @@ export function FocusDashboard() {
                         domains={domains}
                         token={token}
                         onClose={() => setShowCreateInbox(false)}
-                        onInboxCreated={(id, email) => {
+                        onInboxCreated={(inbox) => {
                             if (selectedDomain) loadInboxes(selectedDomain);
-                            setSelectedInbox(id);
+                            setSelectedInbox(inbox.id);
                             setShowCreateInbox(false);
-                            toast.success(`Đã tạo: ${email}`);
+                            toast.success(`Đã tạo: ${inbox.localPart}@${inbox.domain?.name}`);
                         }}
                     />
                 )}

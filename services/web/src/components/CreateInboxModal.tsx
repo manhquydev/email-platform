@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import type { Domain } from '../types';
+import type { Domain, Inbox } from '../types';
 import { api } from '../utils/api';
 
 interface CreateInboxModalProps {
     domains: Domain[];
     token: string | null;
     onClose: () => void;
-    onInboxCreated?: (inboxId: string, email: string, domainId: string) => void;
+    onInboxCreated?: (inbox: Inbox) => void;
 }
 
 const generateRandomName = () => {
@@ -33,13 +33,17 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
         if (!activeDomain || !localPart.trim() || !token) return;
         setLoading(true);
         try {
-            const res = await api<{ id: string }>('/inboxes', {
+            const res = await api<{ inbox: Inbox }>('/inboxes', {
                 method: 'POST',
                 token,
                 body: { domainId: activeDomain.id, localPart: localPart.trim() }
             });
+
+            // Manually attach domain since API might not return included relation
+            const newInbox = { ...res.inbox, domain: activeDomain };
+
             toast.success('Đã tạo hộp thư mới!');
-            onInboxCreated?.(res.id, previewEmail, activeDomain.id);
+            onInboxCreated?.(newInbox);
             onClose();
         } catch (e) {
             toast.error('Lỗi: ' + (e as Error).message);

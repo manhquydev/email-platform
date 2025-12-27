@@ -524,14 +524,20 @@ export function InboxManager() {
                         domains={domains}
                         token={token}
                         onClose={() => setShowCreateModal(false)}
-                        onInboxCreated={(_id, email, domainId) => {
-                            if (domainId && domainId !== selectedDomain) {
-                                setSelectedDomain(domainId);
-                            } else {
-                                loadInboxes();
-                            }
+                        onInboxCreated={(newInbox) => {
+                            setInboxes(prev => {
+                                // Add to top of list
+                                return [newInbox, ...prev];
+                            });
+
+                            // If we created an inbox on a different domain, switch to it? 
+                            // Or just rely on the 'personal=true' filter which shows all my inboxes anyway.
+                            // The current implementation loads ALL personal inboxes so domain filter isn't strictly necessary for visibility.
+                            // But if we want to filter by domain in UI, we might want to switch.
+                            // However, since we show ALL, just prepending is enough.
+
                             setShowCreateModal(false);
-                            toast.success(`Đã tạo: ${email}`);
+                            // Toast is already handled in modal, but we can keep or remove. Modal has one.
                         }}
                     />
                 )}

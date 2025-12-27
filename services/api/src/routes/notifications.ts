@@ -80,62 +80,44 @@ export async function notificationRoutes(app: FastifyInstance) {
             type: z.enum(["INFO", "WARNING", "SUCCESS", "ERROR", "PROMOTION"]),
             targetUserId: z.string().optional(), // If null, send to all? Or just specific for now? 
             // For now let supports specific user or we can implement 'all' loop
-            sendToAll: z.boolean().optional()
+            sendToAll: z.boolean().optional(),
+            imageUrl: z.string().optional()
         });
 
         const body = schema.parse(request.body);
 
-        if (body.targetUserId) {
-            // Send to specific user
-            const notification = await prisma.notification.create({
+        const { targetUserId, title, message, type, sendToAll, imageUrl } = body;
+
+        // Validation
+        if (!title || !message || !type) {
+            return reply.status(400).send({ error: "Missing required fields" });
+        }
+
+        // Send to specific user
+        if (targetUserId) {
+            // Create in database
+            await prisma.notification.create({
                 data: {
-                    userId: body.targetUserId,
-                    title: body.title,
-                    message: body.message,
-                    type: body.type
-                }
+                    userId: targetUserId,
+                    title,
+                    message,
+                    type,
+                },
             });
 
-            // Sync with Telegram
-            const targetUser = await prisma.user.findUnique({ where: { id: body.targetUserId } });
-            if (targetUser?.telegramChatId) {
-                // Send notification via Telegram
-                const { sendNotificationToUser } = await import("../services/telegramBot");
-                await sendNotificationToUser(body.targetUserId, body.title, body.message, body.type);
-            }
+            // Send via Telegram
+            const { sendNotificationToUser } = await import("../services/telegramBot");
+            await sendNotificationToUser(targetUserId, title, message, type, imageUrl);
 
             return { success: true, count: 1 };
         }
 
-        if (body.sendToAll) {
-            // Send to all users
-            const users = await prisma.user.findMany({ select: { id: true } });
-
-            // Create database notifications
-            const notificationsData = users.map(u => ({
-                userId: u.id,
-                title: body.title,
-                message: body.message,
-                type: body.type
-            }));
-
-            await prisma.notification.createMany({
-                data: notificationsData
-            });
-
-            // Send Telegram to users who have it linked
-            const telegramUsers = await prisma.user.findMany({
-                where: { telegramChatId: { not: null } },
+        // Send to all users
+        if (sendToAll) {
+            // Get all users
+            const users = await prisma.user.findMany({
                 select: { id: true, telegramChatId: true }
             });
-
-            if (telegramUsers.length > 0) {
-                const { sendNotificationToUser } = await import("../services/telegramBot");
-                // Send in parallel but catch errors so one failure doesn't stop others
-                Promise.allSettled(telegramUsers.map(user =>
-                    sendNotificationToUser(user.id, body.title, body.message, body.type)
-                )).catch(console.error);
-            }
 
             return { success: true, count: users.length };
         }

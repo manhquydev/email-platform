@@ -13,6 +13,7 @@ export function AdminNotificationPage() {
     const [type, setType] = useState("INFO");
     const [targetMode, setTargetMode] = useState<"specific" | "all">("specific");
     const [targetUserId, setTargetUserId] = useState("");
+    const [imageUrl, setImageUrl] = useState("");
     const [busy, setBusy] = useState(false);
 
     const submit = async (e: FormEvent) => {
@@ -35,7 +36,8 @@ export function AdminNotificationPage() {
             const payload: any = {
                 title,
                 message,
-                type
+                type,
+                imageUrl
             };
 
             if (targetMode === "specific") {
@@ -57,6 +59,7 @@ export function AdminNotificationPage() {
             setMessage("");
             setType("INFO");
             setTargetUserId("");
+            setImageUrl("");
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message), { id: toastId });
         } finally {
@@ -142,6 +145,20 @@ export function AdminNotificationPage() {
                                 </div>
                             )}
 
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Hình ảnh (URL - Tùy chọn)</label>
+                                <input
+                                    type="url"
+                                    value={imageUrl}
+                                    onChange={(e) => setImageUrl(e.target.value)}
+                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm"
+                                    placeholder="https://example.com/image.jpg"
+                                />
+                                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                    Hình ảnh sẽ được hiển thị trong tin nhắn Telegram.
+                                </p>
+                            </div>
+
                             <PremiumInput
                                 label="Tiêu đề"
                                 value={title}
@@ -201,6 +218,6 @@ export function AdminNotificationPage() {
                     </GlassCard>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

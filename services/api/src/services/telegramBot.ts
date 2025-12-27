@@ -776,13 +776,62 @@ interface TelegramUpdate {
 export type { TelegramUpdate };
 
 /**
+ * Send a photo via Telegram Bot API
+ */
+export async function sendTelegramPhoto(
+    chatId: string,
+    photo: string,
+    caption?: string,
+    options?: {
+        parseMode?: 'Markdown' | 'HTML';
+        replyMarkup?: object;
+    }
+): Promise<boolean> {
+    const token = getBotToken();
+    if (!token) {
+        console.error('[Telegram] Bot token not configured');
+        return false;
+    }
+
+    try {
+        const response = await fetch(`${TELEGRAM_API_BASE}${token}/sendPhoto`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                photo: photo,
+                caption: caption,
+                parse_mode: options?.parseMode || 'Markdown',
+                reply_markup: options?.replyMarkup,
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('[Telegram] Send photo failed:', error);
+            // Fallback to text message if photo fails
+            if (caption) {
+                return sendTelegramMessage(chatId, caption, options);
+            }
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('[Telegram] Send photo error:', error);
+        return false;
+    }
+}
+
+/**
  * Send a notification to a user via Telegram
  */
 export async function sendNotificationToUser(
     userId: string,
     title: string,
     message: string,
-    type: string
+    type: string,
+    imageUrl?: string
 ): Promise<boolean> {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -804,7 +853,14 @@ export async function sendNotificationToUser(
 
     const text = `${emoji} *${title}*\n\n${message}`;
 
+    if (imageUrl) {
+        return sendTelegramPhoto(user.telegramChatId, imageUrl, text, {
+            parseMode: 'Markdown'
+        });
+    }
+
     return sendTelegramMessage(user.telegramChatId, text, {
         parseMode: 'Markdown'
     });
 }
+

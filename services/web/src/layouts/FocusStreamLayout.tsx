@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IconRail } from "../components/IconRail";
 import { CommandPalette } from "../components/CommandPalette";
 import { SearchBar } from "../components/SearchBar";
+import { NotificationCenter } from "../components/NotificationCenter";
 
 import type { Domain, Inbox } from "../types";
 import { MobileNavigation } from "../components/MobileNavigation";
@@ -90,6 +91,10 @@ export function FocusStreamLayout({
     return (
         <div className={`focus-stream-layout ${isFocusMode ? 'focus-mode' : ''} ${isNavExpanded ? 'nav-expanded' : ''}`}>
 
+            {/* Notification Center - Absolute Top Right */}
+            <div className="absolute top-4 right-4 z-[60]">
+                <NotificationCenter />
+            </div>
 
             {/* Mobile Navigation Overlay */}
             {isMobileNavOpen && (

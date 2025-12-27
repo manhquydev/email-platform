@@ -478,6 +478,7 @@ model Notification {
   type      NotificationType @default(INFO)
   title     String
   message   String           @db.Text
+  imageUrl  String?
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
   

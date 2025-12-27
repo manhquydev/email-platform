@@ -102,6 +102,7 @@ export async function notificationRoutes(app: FastifyInstance) {
                     title,
                     message,
                     type,
+                    imageUrl,
                 },
             });
 
@@ -133,7 +134,8 @@ export async function notificationRoutes(app: FastifyInstance) {
                             userId: u.id,
                             title,
                             message,
-                            type
+                            type,
+                            imageUrl,
                         }
                     });
 

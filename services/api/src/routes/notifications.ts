@@ -9,7 +9,7 @@ export async function notificationRoutes(app: FastifyInstance) {
     app.get("/", {
         preHandler: [app.authenticate]
     }, async (request, reply) => {
-        const userId = request.user.id;
+        const userId = request.user.userId;
         const { limit = 20, offset = 0 } = request.query as { limit?: number, offset?: number };
 
         const notifications = await prisma.notification.findMany({
@@ -33,7 +33,7 @@ export async function notificationRoutes(app: FastifyInstance) {
         preHandler: [app.authenticate]
     }, async (request, reply) => {
         const { id } = request.params as { id: string };
-        const userId = request.user.id;
+        const userId = request.user.userId;
 
         const notification = await prisma.notification.findFirst({
             where: { id, userId }
@@ -55,7 +55,7 @@ export async function notificationRoutes(app: FastifyInstance) {
     app.patch("/read-all", {
         preHandler: [app.authenticate]
     }, async (request, reply) => {
-        const userId = request.user.id;
+        const userId = request.user.userId;
 
         await prisma.notification.updateMany({
             where: { userId, isRead: false },
@@ -69,7 +69,7 @@ export async function notificationRoutes(app: FastifyInstance) {
     app.post("/admin/send", {
         preHandler: [app.authenticate] // Should also check for ADMIN role, assuming middleware or check
     }, async (request, reply) => {
-        const user = await prisma.user.findUnique({ where: { id: request.user.id } });
+        const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
         if (user?.role !== 'ADMIN') {
             return reply.status(403).send({ error: "Unauthorized" });
         }

@@ -69,7 +69,7 @@ services:
       - ./services/api/storage:/app/storage
     ports:
       - "3001:3001"
-      - "2525:2525"
+      - "25:2525"
 
   mailpit:
     image: axllent/mailpit

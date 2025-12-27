@@ -383,6 +383,9 @@ export async function notifyNewEmail(
         `📤 Từ: \`${message.fromAddress || 'Unknown'}\``,
         `📥 Đến: \`${message.toAddress || ''}\``,
         `📋 Tiêu đề: ${message.subject || '(Không có tiêu đề)'}`,
+        '',
+        '📝 *Nội dung:*',
+        content.length > 3500 ? content.substring(0, 3500) + '...\n(Nội dung quá dài, vui lòng xem chi tiết trên web)' : content,
     ];
 
     if (otp) {

@@ -99,10 +99,9 @@ export async function notificationRoutes(app: FastifyInstance) {
             // Sync with Telegram
             const targetUser = await prisma.user.findUnique({ where: { id: body.targetUserId } });
             if (targetUser?.telegramChatId) {
-                const telegramMsg = `📢 *${body.title}*\n\n${body.message}`;
-                // Using the function I will expose shortly
-                // For now, assume I can import it or use the service directly
-                // I will fix imports later if needed
+                // Send notification via Telegram
+                const { sendNotificationToUser } = await import("../services/telegramBot");
+                await sendNotificationToUser(body.targetUserId, body.title, body.message, body.type);
             }
 
             return { success: true, count: 1 };

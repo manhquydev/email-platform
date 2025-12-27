@@ -121,7 +121,7 @@ export function StatusBadge({ status, variant = "default" }: {
 }
 
 // Premium Button Component
-export function PremiumButton({ children, onClick, variant = "primary", size = "md", disabled = false, className = "", title, isLoading }: {
+export function PremiumButton({ children, onClick, variant = "primary", size = "md", disabled = false, className = "", title, isLoading, type = "button", icon }: {
     children: React.ReactNode;
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     variant?: "primary" | "secondary" | "danger" | "ghost";
@@ -130,6 +130,8 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
     className?: string;
     title?: string;
     isLoading?: boolean;
+    type?: "button" | "submit" | "reset";
+    icon?: React.ReactNode;
 }) {
     const variants = {
         primary: "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/25",
@@ -146,6 +148,7 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
 
     return (
         <button
+            type={type}
             onClick={onClick}
             disabled={disabled || isLoading}
             title={title}
@@ -158,19 +161,21 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
                 ${className}
     `}
         >
-            {isLoading && (
+            {isLoading ? (
                 <svg className="animate-spin h-4 w-4 mr-1" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-            )}
+            ) : icon ? (
+                <span className="mr-1">{icon}</span>
+            ) : null}
             {children}
         </button>
     );
 }
 
 // Premium Input Component
-export function PremiumInput({ value, onChange, placeholder, type = "text", className = "", icon, id, disabled }: {
+export function PremiumInput({ value, onChange, placeholder, type = "text", className = "", icon, id, disabled, label, required }: {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
@@ -179,32 +184,38 @@ export function PremiumInput({ value, onChange, placeholder, type = "text", clas
     icon?: React.ReactNode;
     id?: string;
     disabled?: boolean;
+    label?: string;
+    required?: boolean;
 }) {
     return (
-        <div className={`relative ${className} `}>
-            {icon && (
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-                    {icon}
-                </span>
-            )}
-            <input
-                id={id}
-                type={type}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={placeholder}
-                disabled={disabled}
-                className={`
-    w-full rounded-xl border border-gray-200 dark:border-white/10
-    bg-white dark:bg-white/5
-    text-gray-900 dark:text-white
-    placeholder:text-gray-400 dark:placeholder:text-gray-500
-    focus:border-primary focus:ring-2 focus:ring-primary/20
-    transition-all duration-200
-    disabled:opacity-50 disabled:cursor-not-allowed
-                    ${icon ? "pl-10 pr-4 py-2.5" : "px-4 py-2.5"}
-    `}
-            />
+        <div className={className}>
+            {label && <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>}
+            <div className="relative">
+                {icon && (
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                        {icon}
+                    </span>
+                )}
+                <input
+                    id={id}
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    required={required}
+                    className={`
+        w-full rounded-xl border border-gray-200 dark:border-white/10
+        bg-white dark:bg-white/5
+        text-gray-900 dark:text-white
+        placeholder:text-gray-400 dark:placeholder:text-gray-500
+        focus:border-primary focus:ring-2 focus:ring-primary/20
+        transition-all duration-200
+        disabled:opacity-50 disabled:cursor-not-allowed
+                        ${icon ? "pl-10 pr-4 py-2.5" : "px-4 py-2.5"}
+        `}
+                />
+            </div>
         </div>
     );
 }

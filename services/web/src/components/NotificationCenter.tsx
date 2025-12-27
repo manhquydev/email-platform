@@ -12,6 +12,7 @@ interface Notification {
     type: "INFO" | "WARNING" | "SUCCESS" | "ERROR" | "PROMOTION";
     isRead: boolean;
     createdAt: string;
+    imageUrl?: string;
 }
 
 export function NotificationCenter() {
@@ -139,6 +140,16 @@ export function NotificationCenter() {
                                                 <p className="text-xs text-muted leading-relaxed line-clamp-3">
                                                     {notification.message}
                                                 </p>
+                                                {notification.imageUrl && (
+                                                    <div className="mt-2 rounded-md overflow-hidden border border-border">
+                                                        <img
+                                                            src={notification.imageUrl}
+                                                            alt="Attachment"
+                                                            className="w-full h-auto object-cover max-h-32"
+                                                            loading="lazy"
+                                                        />
+                                                    </div>
+                                                )}
                                                 {!notification.isRead && (
                                                     <span className="inline-block w-2 h-2 rounded-full bg-primary mt-1"></span>
                                                 )}

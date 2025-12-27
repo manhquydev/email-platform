@@ -5,6 +5,8 @@ import rateLimit from "@fastify/rate-limit";
 import { register as promRegister, collectDefaultMetrics, Histogram } from "prom-client";
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
+import path from "path";
 import { appConfig } from "./config";
 import { errorHandler } from "./utils/errorHandler";
 import { authRoutes } from "./routes/auth";
@@ -81,6 +83,13 @@ export const buildServer = () => {
 
   app.register(helmet, { global: true });
   app.register(multipart, { attachFieldsToBody: false, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
+
+  app.register(fastifyStatic, {
+    root: path.join(appConfig.storageDir, "uploads"),
+    prefix: "/public/uploads/",
+    decorateReply: false
+  });
+
   app.register(cors, {
     origin: (origin, cb) => {
       // Allow requests with no origin (like mobile apps or curl requests)

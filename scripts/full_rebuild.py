@@ -32,8 +32,8 @@ def full_rebuild_and_test():
         # Rebuild API container
         print("\n🐳 2. Rebuilding API container...")
         stdin, stdout, stderr = client.exec_command(
-            "cd /root/email-platform. && docker compose -f docker-compose.prod.yml up -d --build api 2>&1 | tail -20",
-            timeout=300
+            "cd /root/email-platform. && docker compose -f docker-compose.prod.yml up -d --build api web 2>&1 | tail -20",
+            timeout=600
         )
         print(stdout.read().decode())
         

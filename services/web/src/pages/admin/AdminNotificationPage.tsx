@@ -4,7 +4,7 @@ import { api } from "../../utils/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
-import { GlassCard, SectionHeader, PremiumInput, PremiumButton } from "./AdminUIComponents";
+import { GlassCard, SectionHeader, PremiumInput, PremiumButton } from "../../components/admin/AdminUIComponents";
 
 export function AdminNotificationPage() {
     const { token } = useAuth();
@@ -110,8 +110,8 @@ export function AdminNotificationPage() {
                                             type="button"
                                             onClick={() => setTargetMode("specific")}
                                             className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${targetMode === "specific"
-                                                    ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm"
-                                                    : "text-slate-500 hover:text-slate-700"
+                                                ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm"
+                                                : "text-slate-500 hover:text-slate-700"
                                                 }`}
                                         >
                                             Người dùng cụ thể
@@ -120,8 +120,8 @@ export function AdminNotificationPage() {
                                             type="button"
                                             onClick={() => setTargetMode("all")}
                                             className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${targetMode === "all"
-                                                    ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm"
-                                                    : "text-slate-500 hover:text-slate-700"
+                                                ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm"
+                                                : "text-slate-500 hover:text-slate-700"
                                                 }`}
                                         >
                                             Tất cả mọi người

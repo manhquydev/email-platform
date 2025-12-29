@@ -20,6 +20,7 @@ vi.mock("../lib/prisma", () => ({
         },
         user: {
             findUnique: vi.fn(),
+            findUniqueOrThrow: vi.fn(),
             update: vi.fn(),
         },
         servicePackage: {
@@ -88,8 +89,12 @@ describe("Subscription Routes Integration", () => {
 
             // Setup Mocks
             (prisma.redemptionCode.findUnique as any).mockResolvedValue(mockCode);
+            (prisma.redemptionCode.update as any).mockResolvedValue({ ...mockCode, usedCount: 1 });
             (prisma.codeRedemption.findFirst as any).mockResolvedValue(null); // Not redeemed yet
+            (prisma.codeRedemption.create as any).mockResolvedValue({});
             (prisma.user.findUnique as any).mockResolvedValue(mockUser);
+            (prisma.user.findUniqueOrThrow as any).mockResolvedValue(mockUser);
+            (prisma.user.update as any).mockResolvedValue({});
 
             // Execute
             const response = await app.inject({
@@ -128,8 +133,11 @@ describe("Subscription Routes Integration", () => {
             };
 
             (prisma.redemptionCode.findUnique as any).mockResolvedValue(mockCode);
+            (prisma.redemptionCode.update as any).mockResolvedValue({ ...mockCode, usedCount: 1 });
             (prisma.codeRedemption.findFirst as any).mockResolvedValue(null);
+            (prisma.codeRedemption.create as any).mockResolvedValue({});
             (prisma.user.findUnique as any).mockResolvedValue({ id: "user-123", credits: 0 });
+            (prisma.user.update as any).mockResolvedValue({});
 
             const response = await app.inject({
                 method: "POST",

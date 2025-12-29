@@ -51,7 +51,7 @@ export function MobileNavigation({
         },
         {
             id: "domains" as const,
-            label: "Domains",
+            label: "Tên miền",
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />

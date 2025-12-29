@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconRail } from "../components/IconRail";
+import { NavigationSidebar } from "../components/NavigationSidebar";
 import { CommandPalette } from "../components/CommandPalette";
 import { SearchBar } from "../components/SearchBar";
 import { NotificationCenter } from "../components/NotificationCenter";
@@ -33,27 +33,27 @@ export function FocusStreamLayout({
     const location = useLocation();
     const [showCommandPalette, setShowCommandPalette] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(false);
-    const [isFocusMode, setIsFocusMode] = useState(false);
     const [isNavExpanded, setIsNavExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const { user } = useAuth();
 
+    // ... existing logic ...
+
     const getTierBadge = (tier?: string) => {
         switch (tier) {
             case 'ENTERPRISE':
-                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">Enterprise</span>;
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]">Enterprise</span>;
             case 'PROFESSIONAL':
-                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200">Pro</span>;
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]">Pro</span>;
             case 'STARTER':
-                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 border border-green-200">Starter</span>;
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]">Starter</span>;
             default:
-                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">Free</span>;
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">Free</span>;
         }
     };
 
-    const handleFocusModeToggle = () => setIsFocusMode(prev => !prev);
     const handleNavToggle = () => setIsNavExpanded(prev => !prev);
     const handleSearch = (q: string) => {
         onSearch?.(q);
@@ -61,8 +61,6 @@ export function FocusStreamLayout({
             setRecentSearches(prev => [q, ...prev.slice(0, 4)]);
         }
     };
-
-
 
     const handleMobileTabChange = (tab: string) => {
         if (tab === 'inbox') navigate('/app');
@@ -89,7 +87,15 @@ export function FocusStreamLayout({
     }, [handleKeyDown]);
 
     return (
-        <div className={`focus-stream-layout ${isFocusMode ? 'focus-mode' : ''} ${isNavExpanded ? 'nav-expanded' : ''}`}>
+        <div className={`min-h-screen w-full relative overflow-hidden bg-bg-primary text-text-main font-sans selection:bg-primary/30 ${isNavExpanded ? 'nav-expanded' : ''}`}>
+
+            {/* Background Effects */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-br from-bg-primary via-[#0f1016] to-[#0a0b0e]" />
+                <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[100px]" />
+                <div className="absolute bottom-[10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-blue-600/10 blur-[80px]" />
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
+            </div>
 
             {/* Notification Center - Absolute Top Right */}
             <div className="absolute top-4 right-4 z-[60]">
@@ -98,31 +104,22 @@ export function FocusStreamLayout({
 
             {/* Mobile Navigation Overlay */}
             {isMobileNavOpen && (
-                <div className="mobile-nav-overlay" onClick={() => setIsMobileNavOpen(false)} />
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsMobileNavOpen(false)} />
             )}
 
-            <IconRail
-                onSearchClick={() => {
-                    setShowCommandPalette(false);
-                    setShowSearchBar(true);
-                }}
-                onQuickActionsClick={() => {
-                    setShowSearchBar(false);
-                    setShowCommandPalette(true);
-                }}
-                onFocusModeClick={handleFocusModeToggle}
-                onNavToggle={handleNavToggle}
-                onUserClick={() => setShowUserMenu(prev => !prev)}
-                isFocusMode={isFocusMode}
-                isExpanded={isNavExpanded}
-                unreadCount={unreadCount}
-            />
+            {/* Replaced IconRail with NavigationSidebar */}
+            <div className="fixed left-0 top-0 bottom-0 z-30 flex">
+                <NavigationSidebar
+                    isExpanded={isNavExpanded}
+                    onNavToggle={handleNavToggle}
+                />
+            </div>
 
             {/* User Menu Dropdown */}
             {showUserMenu && (
-                <div className="user-menu-container">
-                    <div className="user-menu">
-                        <div className="px-3 py-2 border-b border-border/10 mb-1">
+                <div className="fixed bottom-20 left-4 md:left-20 z-50 min-w-[200px] animate-fade-in-up">
+                    <div className="bg-surface/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden p-1">
+                        <div className="px-3 py-2 border-b border-white/5 mb-1">
                             <div className="flex items-center gap-2 mb-0.5">
                                 <span className="text-sm font-medium text-text-main truncate max-w-[150px]">{user?.email}</span>
                                 {getTierBadge(user?.tier)}
@@ -130,7 +127,7 @@ export function FocusStreamLayout({
                             <div className="text-[10px] text-muted uppercase tracking-wider font-semibold">{user?.role === 'ADMIN' ? 'Administrator' : 'User'}</div>
                         </div>
                         <button
-                            className="user-menu-item"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                             onClick={() => {
                                 setShowUserMenu(false);
                                 navigate('/settings');
@@ -142,9 +139,9 @@ export function FocusStreamLayout({
                             </svg>
                             <span>Cài đặt</span>
                         </button>
-                        <div className="user-menu-divider" />
+                        <div className="h-px bg-white/5 my-1" />
                         <button
-                            className="user-menu-item user-menu-item--danger"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                             onClick={() => {
                                 setShowUserMenu(false);
                                 localStorage.removeItem('token');
@@ -163,7 +160,7 @@ export function FocusStreamLayout({
             <AnimatePresence mode="wait">
                 <motion.main
                     key={location.pathname}
-                    className="focus-stream-main pb-20 md:pb-0"
+                    className="relative z-10 w-full md:pl-20 min-h-screen pb-20 md:pb-0"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
@@ -175,11 +172,10 @@ export function FocusStreamLayout({
 
             {/* Mobile Nav Toggle Button */}
             <button
-                className="mobile-nav-toggle"
+                className="fixed bottom-4 right-4 z-50 md:hidden p-3 bg-primary text-white rounded-full shadow-lg"
                 onClick={() => setIsMobileNavOpen(prev => !prev)}
-                style={{ display: 'none' }}
             >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
                     {isMobileNavOpen ? (
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     ) : (

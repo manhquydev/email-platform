@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ephemera - Admin Packages</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2525f4",
+              "background-light": "#f5f5f8",
+              "background-dark": "#050510",
+              "glass": "rgba(255, 255, 255, 0.03)",
+              "glass-border": "rgba(255, 255, 255, 0.08)",
+              "glass-hover": "rgba(255, 255, 255, 0.08)",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"],
+            },
+            borderRadius: {
+              "DEFAULT": "0.5rem",
+              "lg": "1rem",
+              "xl": "1.5rem",
+              "full": "9999px"
+            },
+            backgroundImage: {
+              'nebula-gradient': 'radial-gradient(circle at 15% 50%, rgba(37, 37, 244, 0.15), transparent 25%), radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: "Space Grotesk", "Noto Sans", sans-serif;
+        }
+        .glass-panel {
+            background: rgba(16, 16, 35, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white overflow-x-hidden min-h-screen">
+<div class="flex min-h-screen w-full bg-nebula-gradient bg-fixed bg-cover">
+<!-- Side Navigation -->
+<aside class="hidden lg:flex flex-col w-72 fixed h-full glass-panel border-r border-glass-border z-20">
+<div class="flex flex-col h-full justify-between p-6">
+<div class="flex flex-col gap-8">
+<!-- Profile/Brand -->
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg shadow-primary/20 ring-2 ring-primary/20" data-alt="Abstract blue nebula cloud logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA4kjULtzO-gyK9VC5IklU8tvM62ivGUg9wP3DVDnzdIMl9CL4QrC8j_bAbqqrUrkyLQ6VtbW6xzOI2hwuP-k5K24oHVpGa6qHRE-z4uHjzKUviHFxDclGpv4z5ieue-wBM3QohnVT9nMsEVnNJl1yMyaBoBe_6DNgT9bhgFQkFYQYpM2EQeM8_xIEuqVPdlwcA7M0At5dWkdbzaOAK_KEevCYOh9dc_DBxEXvl3PubDObsVDL0SZsLNAqVh1grJeiQI0cjSTdMucya");'></div>
+<div class="flex flex-col">
+<h1 class="text-white text-lg font-bold tracking-tight">Ephemera</h1>
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Admin Console</p>
+</div>
+</div>
+<!-- Menu Items -->
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">group</span>
+<span class="font-medium text-sm">Users</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-white border border-primary/20 shadow-[0_0_15px_rgba(37,37,244,0.15)]" href="#">
+<span class="material-symbols-outlined text-[24px] text-primary" data-weight="fill">local_offer</span>
+<span class="font-medium text-sm">Packages</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">shield</span>
+<span class="font-medium text-sm">Security</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+</nav>
+</div>
+<!-- Footer/Logout -->
+<div class="px-2">
+<button class="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-medium text-sm">Sign Out</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-72 flex flex-col min-h-screen relative z-10">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-6 md:px-12 py-8 flex flex-1 justify-center">
+<div class="layout-content-container flex flex-col max-w-[1200px] flex-1 gap-8">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-glass-border">
+<div class="flex flex-col gap-2">
+<h1 class="text-white text-4xl md:text-5xl font-black leading-tight tracking-tight drop-shadow-sm">
+                                    Subscription Packages
+                                </h1>
+<p class="text-slate-400 text-lg font-light max-w-xl">
+                                    Manage platform pricing tiers, feature sets, and billing cycles for the Ephemera ecosystem.
+                                </p>
+</div>
+<button class="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-blue-600 text-white font-bold h-12 px-6 shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95 group">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Create New Package</span>
+</button>
+</header>
+<!-- Quick Stats Section -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Stat Card 1 -->
+<div class="glass-card flex flex-col gap-1 p-5 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<p class="text-slate-400 text-sm font-medium uppercase tracking-wide">Total Active Subs</p>
+<span class="material-symbols-outlined text-primary/60 text-[20px]">group</span>
+</div>
+<p class="text-white text-3xl font-bold tracking-tight">12,450</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[#0bda68] text-[16px]">trending_up</span>
+<p class="text-[#0bda68] text-xs font-bold">+12% <span class="text-slate-500 font-normal">vs last month</span></p>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="glass-card flex flex-col gap-1 p-5 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<p class="text-slate-400 text-sm font-medium uppercase tracking-wide">Visitor (Free)</p>
+<span class="material-symbols-outlined text-slate-500 text-[20px]">person_outline</span>
+</div>
+<p class="text-white text-3xl font-bold tracking-tight">8,200</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[#0bda68] text-[16px]">trending_up</span>
+<p class="text-[#0bda68] text-xs font-bold">+5% <span class="text-slate-500 font-normal">uptake</span></p>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="glass-card flex flex-col gap-1 p-5 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<p class="text-slate-400 text-sm font-medium uppercase tracking-wide">Operative (Tier 1)</p>
+<span class="material-symbols-outlined text-blue-400 text-[20px]">person</span>
+</div>
+<p class="text-white text-3xl font-bold tracking-tight">3,100</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[#0bda68] text-[16px]">trending_up</span>
+<p class="text-[#0bda68] text-xs font-bold">+15% <span class="text-slate-500 font-normal">uptake</span></p>
+</div>
+</div>
+<!-- Stat Card 4 -->
+<div class="glass-card flex flex-col gap-1 p-5 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<p class="text-slate-400 text-sm font-medium uppercase tracking-wide">Ghost (Tier 2)</p>
+<span class="material-symbols-outlined text-purple-400 text-[20px]">visibility_off</span>
+</div>
+<p class="text-white text-3xl font-bold tracking-tight">1,150</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[#0bda68] text-[16px]">trending_up</span>
+<p class="text-[#0bda68] text-xs font-bold">+8% <span class="text-slate-500 font-normal">uptake</span></p>
+</div>
+</div>
+</section>
+<!-- Controls & Filters -->
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4 py-2">
+<div class="glass-panel rounded-lg p-1 flex">
+<button class="px-4 py-1.5 rounded-md bg-primary text-white text-sm font-medium shadow-md transition-all">
+                                    Monthly
+                                </button>
+<button class="px-4 py-1.5 rounded-md text-slate-400 hover:text-white text-sm font-medium transition-all">
+                                    Yearly
+                                </button>
+</div>
+<div class="glass-panel p-1 rounded-lg flex items-center">
+<label class="cursor-pointer flex items-center justify-center px-4 py-1.5 rounded-md has-[:checked]:bg-white/10 has-[:checked]:text-white text-slate-400 transition-all">
+<span class="text-sm font-medium">USD ($)</span>
+<input checked="" class="hidden" name="currency" type="radio" value="usd"/>
+</label>
+<label class="cursor-pointer flex items-center justify-center px-4 py-1.5 rounded-md has-[:checked]:bg-white/10 has-[:checked]:text-white text-slate-400 transition-all">
+<span class="text-sm font-medium">EUR (€)</span>
+<input class="hidden" name="currency" type="radio" value="eur"/>
+</label>
+<label class="cursor-pointer flex items-center justify-center px-4 py-1.5 rounded-md has-[:checked]:bg-white/10 has-[:checked]:text-white text-slate-400 transition-all">
+<span class="text-sm font-medium">ETH (Ξ)</span>
+<input class="hidden" name="currency" type="radio" value="eth"/>
+</label>
+</div>
+</div>
+<!-- Pricing Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Card 1: Visitor -->
+<article class="glass-card flex flex-col gap-6 rounded-xl p-8 relative group">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<h3 class="text-white text-xl font-bold">Visitor</h3>
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/10 text-slate-300 border border-white/5">Active</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-white text-5xl font-black tracking-tight">$0</span>
+<span class="text-slate-400 text-lg font-medium">/mo</span>
+</div>
+<p class="text-slate-400 text-sm mt-1">Basic anonymous access for quick disposables.</p>
+</div>
+<div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+<div class="flex flex-col gap-3 flex-1">
+<div class="flex items-center gap-3 text-slate-300 text-sm">
+<span class="material-symbols-outlined text-green-400 text-[20px]">check_circle</span>
+                                        10 min duration
+                                    </div>
+<div class="flex items-center gap-3 text-slate-300 text-sm">
+<span class="material-symbols-outlined text-green-400 text-[20px]">check_circle</span>
+                                        Random domain assignment
+                                    </div>
+<div class="flex items-center gap-3 text-slate-500 text-sm">
+<span class="material-symbols-outlined text-slate-600 text-[20px]">cancel</span>
+                                        No API access
+                                    </div>
+<div class="flex items-center gap-3 text-slate-500 text-sm">
+<span class="material-symbols-outlined text-slate-600 text-[20px]">cancel</span>
+                                        No custom aliases
+                                    </div>
+</div>
+<div class="flex gap-3 pt-2">
+<button class="flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all border border-white/10 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                                        Edit
+                                    </button>
+<button class="size-10 rounded-lg bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all border border-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</article>
+<!-- Card 2: Operative (Popular) -->
+<article class="glass-card flex flex-col gap-6 rounded-xl p-8 relative border-primary/40 bg-primary/5 shadow-[0_0_30px_rgba(37,37,244,0.1)] group">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg shadow-primary/40 uppercase tracking-widest border border-white/20">
+                                    Most Popular
+                                </div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<h3 class="text-white text-xl font-bold">Operative</h3>
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-500/20 text-green-400 border border-green-500/20">Active</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-white text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70">$5</span>
+<span class="text-slate-400 text-lg font-medium">/mo</span>
+</div>
+<p class="text-slate-300 text-sm mt-1">Enhanced privacy for regular users.</p>
+</div>
+<div class="w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+<div class="flex flex-col gap-3 flex-1">
+<div class="flex items-center gap-3 text-white text-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+                                        Custom domain support
+                                    </div>
+<div class="flex items-center gap-3 text-white text-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+                                        Basic API Access
+                                    </div>
+<div class="flex items-center gap-3 text-white text-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+                                        Persistent Inbox (7 days)
+                                    </div>
+<div class="flex items-center gap-3 text-white text-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+                                        5 Aliases
+                                    </div>
+</div>
+<div class="flex gap-3 pt-2">
+<button class="flex-1 h-10 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                                        Edit Package
+                                    </button>
+</div>
+</article>
+<!-- Card 3: Ghost -->
+<article class="glass-card flex flex-col gap-6 rounded-xl p-8 relative group">
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<h3 class="text-white text-xl font-bold">Ghost</h3>
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/20">Best Value</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-white text-5xl font-black tracking-tight">$15</span>
+<span class="text-slate-400 text-lg font-medium">/mo</span>
+</div>
+<p class="text-slate-400 text-sm mt-1">Maximum anonymity and power tools.</p>
+</div>
+<div class="w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div>
+<div class="flex flex-col gap-3 flex-1">
+<div class="flex items-center gap-3 text-slate-300 text-sm">
+<span class="material-symbols-outlined text-purple-400 text-[20px]">verified_user</span>
+                                        Unlimited Aliases
+                                    </div>
+<div class="flex items-center gap-3 text-slate-300 text-sm">
+<span class="material-symbols-outlined text-purple-400 text-[20px]">lock</span>
+                                        Zero-knowledge Encrypted Storage
+                                    </div>
+<div class="flex items-center gap-3 text-slate-300 text-sm">
+<span class="material-symbols-outlined text-purple-400 text-[20px]">rocket_launch</span>
+                                        Priority Support (24/7)
+                                    </div>
+<div class="flex items-center gap-3 text-slate-300 text-sm">
+<span class="material-symbols-outlined text-purple-400 text-[20px]">code</span>
+                                        Full API Access
+                                    </div>
+</div>
+<div class="flex gap-3 pt-2">
+<button class="flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all border border-white/10 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                                        Edit
+                                    </button>
+<button class="size-10 rounded-lg bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all border border-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</article>
+<!-- Card 4: Enterprise (New/Example) -->
+<article class="glass-card flex flex-col gap-6 rounded-xl p-8 relative border-dashed border-2 border-slate-700/50 bg-transparent hover:bg-white/5 group items-center justify-center text-center cursor-pointer min-h-[400px]">
+<div class="p-4 rounded-full bg-white/5 text-slate-400 group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-white text-xl font-bold">Add Custom Tier</h3>
+<p class="text-slate-400 text-sm max-w-[200px]">Create a new specialized package for enterprise or specific use cases.</p>
+</div>
+</article>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

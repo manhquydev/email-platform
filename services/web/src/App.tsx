@@ -4,7 +4,12 @@ import { Suspense, lazy } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LandingPage } from "./pages/LandingPage";
-import { TermsOfService, PrivacyPolicy, AcceptableUse } from "./pages/Legal";
+import { Features } from "./pages/Features";
+import { API } from "./pages/API";
+import { Pricing } from "./pages/Pricing";
+import { Docs } from "./pages/Docs";
+import { TermsOfService, PrivacyPolicy, AcceptableUse, GDPR } from "./pages/Legal";
+import { Support, Contact, Sales } from "./pages/Support";
 import { MainLayout } from "./layouts/MainLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AuthLayout } from "./layouts/AuthLayout";
@@ -42,9 +47,17 @@ function App() {
                 {/* Public pages with shared nav + footer */}
                 <Route element={<PublicLayout />}>
                   <Route path="/" element={<LandingPage />} />
+                  <Route path="/features" element={<Features />} />
+                  <Route path="/api" element={<API />} />
+                  <Route path="/pricing" element={<Pricing />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/acceptable-use" element={<AcceptableUse />} />
+                  <Route path="/gdpr" element={<GDPR />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/sales" element={<Sales />} />
+                  <Route path="/docs" element={<Docs />} />
                   <Route path="/verify-email" element={<VerifyEmail />} />
                 </Route>
 
@@ -54,15 +67,17 @@ function App() {
                   <Route path="/register" element={<Register />} />
                 </Route>
 
-                {/* NEW: Inbox Manager with tabs */}
-                <Route path="/app" element={<InboxManager />} />
+                {/* Classic Dashboard (Wireframe Implementation) */}
+                <Route path="/app" element={<Dashboard />} />
+
+                {/* Inbox Manager */}
+                <Route path="/app/manager" element={<InboxManager />} />
 
                 {/* Legacy Focus Stream Dashboard */}
                 <Route path="/app/stream" element={<FocusDashboard />} />
 
                 {/* Protected app routes */}
                 <Route element={<MainLayout />}>
-                  <Route path="/app/classic" element={<Dashboard />} />
                   <Route path="/admin/*" element={<Admin />} />
                   <Route path="/authenticator" element={<Authenticator />} />
                   <Route path="/settings" element={<Settings />} />

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ephemera - Focus Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2525f4",
+                        "background-light": "#f5f5f8",
+                        "background-dark": "#101022",
+                        "surface-dark": "#16162a",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for the email body */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Nebula Glow Animation */
+        @keyframes pulse-nebula {
+            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+        }
+        .nebula-glow {
+            animation: pulse-nebula 8s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-white overflow-hidden h-screen w-full flex flex-col relative selection:bg-primary selection:text-white">
+<!-- Ambient Background Effects -->
+<!-- The "Nebula" Glow -->
+<div class="absolute top-1/2 left-1/2 w-[800px] h-[800px] bg-primary rounded-full blur-[150px] nebula-glow pointer-events-none -z-10 mix-blend-screen"></div>
+<!-- Noise texture overlay for high-tech feel (optional, simulated with pattern) -->
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none -z-10" data-alt="Subtle stardust noise pattern"></div>
+<!-- Top Navigation (Minimal Focus Header) -->
+<header class="w-full px-8 py-6 flex justify-between items-center z-20 absolute top-0 left-0 right-0">
+<div class="flex items-center gap-3 text-white/80 hover:text-white transition-colors cursor-pointer group">
+<div class="size-8 text-primary group-hover:text-white transition-colors">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_6_543)">
+<path d="M42.1739 20.1739L27.8261 5.82609C29.1366 7.13663 28.3989 10.1876 26.2002 13.7654C24.8538 15.9564 22.9595 18.3449 20.6522 20.6522C18.3449 22.9595 15.9564 24.8538 13.7654 26.2002C10.1876 28.3989 7.13663 29.1366 5.82609 27.8261L20.1739 42.1739C21.4845 43.4845 24.5355 42.7467 28.1133 40.548C30.3042 39.2016 32.6927 37.3073 35 35C37.3073 32.6927 39.2016 30.3042 40.548 28.1133C42.7467 24.5355 43.4845 21.4845 42.1739 20.1739Z" fill="currentColor"></path>
+<path clip-rule="evenodd" d="M7.24189 26.4066C7.31369 26.4411 7.64204 26.5637 8.52504 26.3738C9.59462 26.1438 11.0343 25.5311 12.7183 24.4963C14.7583 23.2426 17.0256 21.4503 19.238 19.238C21.4503 17.0256 23.2426 14.7583 24.4963 12.7183C25.5311 11.0343 26.1438 9.59463 26.3738 8.52504C26.5637 7.64204 26.4411 7.31369 26.4066 7.24189C26.345 7.21246 26.143 7.14535 25.6664 7.1918C24.9745 7.25925 23.9954 7.5498 22.7699 8.14278C20.3369 9.32007 17.3369 11.4915 14.4142 14.4142C11.4915 17.3369 9.32007 20.3369 8.14278 22.7699C7.5498 23.9954 7.25925 24.9745 7.1918 25.6664C7.14534 26.143 7.21246 26.345 7.24189 26.4066ZM29.9001 10.7285C29.4519 12.0322 28.7617 13.4172 27.9042 14.8126C26.465 17.1544 24.4686 19.6641 22.0664 22.0664C19.6641 24.4686 17.1544 26.465 14.8126 27.9042C13.4172 28.7617 12.0322 29.4519 10.7285 29.9001L21.5754 40.747C21.6001 40.7606 21.8995 40.931 22.8729 40.7217C23.9424 40.4916 25.3821 39.879 27.0661 38.8441C29.1062 37.5904 31.3734 35.7982 33.5858 33.5858C35.7982 31.3734 37.5904 29.1062 38.8441 27.0661C39.879 25.3821 40.4916 23.9425 40.7216 22.8729C40.931 21.8995 40.7606 21.6001 40.747 21.5754L29.9001 10.7285ZM29.2403 4.41187L43.5881 18.7597C44.9757 20.1473 44.9743 22.1235 44.6322 23.7139C44.2714 25.3919 43.4158 27.2666 42.252 29.1604C40.8128 31.5022 38.8165 34.012 36.4142 36.4142C34.012 38.8165 31.5022 40.8128 29.1604 42.252C27.2666 43.4158 25.3919 44.2714 23.7139 44.6322C22.1235 44.9743 20.1473 44.9757 18.7597 43.5881L4.41187 29.2403C3.29027 28.1187 3.08209 26.5973 3.21067 25.2783C3.34099 23.9415 3.8369 22.4852 4.54214 21.0277C5.96129 18.0948 8.43335 14.7382 11.5858 11.5858C14.7382 8.43335 18.0948 5.9613 21.0277 4.54214C22.4852 3.8369 23.9415 3.34099 25.2783 3.21067C26.5973 3.08209 28.1187 3.29028 29.2403 4.41187Z" fill="currentColor" fill-rule="evenodd"></path>
+</g>
+<defs>
+<clippath id="clip0_6_543"><rect fill="white" height="48" width="48"></rect></clippath>
+</defs>
+</svg>
+</div>
+<span class="text-sm font-bold tracking-widest uppercase">Ephemera</span>
+</div>
+<button class="group flex items-center justify-center gap-2 rounded-lg bg-[#222249] hover:bg-[#313168] border border-white/5 py-2 px-4 transition-all duration-200">
+<span class="text-xs font-bold text-white/80 group-hover:text-white uppercase tracking-wider">Exit Focus</span>
+<span class="material-symbols-outlined text-[18px] text-white/60 group-hover:text-white transition-colors">close_fullscreen</span>
+</button>
+</header>
+<!-- Navigation Chevrons -->
+<div class="fixed left-6 top-1/2 -translate-y-1/2 z-20 hidden md:block">
+<button class="size-12 rounded-full border border-white/10 bg-[#101023]/50 text-white/40 hover:text-primary hover:border-primary/50 hover:bg-[#101023]/80 backdrop-blur-md flex items-center justify-center transition-all duration-300 group">
+<span class="material-symbols-outlined text-3xl group-hover:-translate-x-0.5 transition-transform">chevron_left</span>
+</button>
+<div class="text-center mt-2 opacity-0 hover:opacity-100 transition-opacity">
+<span class="text-[10px] text-white/40 uppercase tracking-widest font-mono">Prev</span>
+</div>
+</div>
+<div class="fixed right-6 top-1/2 -translate-y-1/2 z-20 hidden md:block">
+<button class="size-12 rounded-full border border-white/10 bg-[#101023]/50 text-white/40 hover:text-primary hover:border-primary/50 hover:bg-[#101023]/80 backdrop-blur-md flex items-center justify-center transition-all duration-300 group">
+<span class="material-symbols-outlined text-3xl group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</button>
+<div class="text-center mt-2 opacity-0 hover:opacity-100 transition-opacity">
+<span class="text-[10px] text-white/40 uppercase tracking-widest font-mono">Next</span>
+</div>
+</div>
+<!-- Main Content Area: Centered Floating Card -->
+<main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 z-10 w-full max-w-[1200px] mx-auto h-full">
+<!-- The Glass Card -->
+<article class="relative flex flex-col w-full max-w-4xl max-h-[85vh] bg-[#101022]/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-500">
+<!-- Contextual Toolbar & Timer (Modified ProgressBar) -->
+<div class="flex flex-col border-b border-white/5 bg-[#16162a]/50">
+<div class="flex items-center justify-between px-6 py-3">
+<div class="flex items-center gap-2 text-white/60">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<p class="text-xs font-mono font-medium tracking-wide">AUTO-DESTRUCT</p>
+</div>
+<p class="text-primary text-sm font-mono font-bold">04:59:00</p>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-[#313168]/30 h-1">
+<div class="h-full bg-primary shadow-[0_0_10px_#2525f4]" style="width: 75%;"></div>
+</div>
+</div>
+<!-- Email Header Content -->
+<div class="px-6 pt-6 pb-2 md:px-10 md:pt-8 md:pb-4 flex-shrink-0">
+<!-- Chips & Metadata -->
+<div class="flex flex-wrap gap-3 mb-4">
+<div class="flex h-7 items-center justify-center gap-x-2 rounded px-3 bg-primary/10 border border-primary/20">
+<span class="material-symbols-outlined text-[16px] text-primary">lock</span>
+<p class="text-primary text-xs font-bold uppercase tracking-wider">E2E Encrypted</p>
+</div>
+<div class="flex h-7 items-center justify-center gap-x-2 rounded px-3 bg-[#222249] border border-white/5">
+<span class="material-symbols-outlined text-[16px] text-white/70">schedule</span>
+<p class="text-white/70 text-xs font-medium uppercase tracking-wider">Disposable</p>
+</div>
+</div>
+<!-- Subject (HeadlineText) -->
+<h1 class="text-white text-2xl md:text-3xl lg:text-4xl font-bold leading-tight tracking-tight mb-6">
+                    Project Nebula: Q4 Security Audit Results
+                </h1>
+<!-- Sender Info (ProfileHeader) -->
+<div class="flex items-center justify-between gap-4 py-2 border-b border-white/5 pb-6">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-12 w-12 border-2 border-[#222249]" data-alt="Abstract geometric avatar of sender" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC2de_pW7NnLhTQ6k4HGUg3DyDPTBW32-4A-co-GB7Tv0Oh2AIW_hrVGx83cOIsxEAt0cMmzL68pIlMwxygqG5POLISb8yLwvaS_miPBUY3n2b2L6riwHBAZPiQKV6MI97TKj2F6hf8MZwjJdxAgx5GaJCMSmQEvc0omgMZVU8H8GzViZqFvoBAbeoRpT0ZjgiT-WgJ-LZR1WwJmelfOajQEvV_tnCytDPPe64aRNmCAjxo7NPbNiAECyToyyFKKVSV8dlucyR51GXf");'></div>
+<div class="absolute -bottom-1 -right-1 bg-green-500 size-3 rounded-full border-2 border-[#101022]"></div>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-baseline gap-2">
+<p class="text-white text-lg font-bold leading-none">Alex Chen</p>
+<span class="text-xs text-white/40 font-mono hidden sm:inline-block">&lt;alex.chen@hash.ephemera.io&gt;</span>
+</div>
+<p class="text-[#9090cb] text-sm font-normal mt-1">
+                                to me • <span class="text-white/40">Today, 10:42 AM</span>
+</p>
+</div>
+</div>
+<!-- Quick Actions Row -->
+<div class="flex items-center gap-1">
+<button class="size-9 rounded hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors" title="Star">
+<span class="material-symbols-outlined text-[20px]">star</span>
+</button>
+<button class="size-9 rounded hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors" title="Reply">
+<span class="material-symbols-outlined text-[20px]">reply</span>
+</button>
+<button class="size-9 rounded hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors" title="More">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Scrollable Body Content -->
+<div class="flex-1 overflow-y-auto px-6 py-4 md:px-10 custom-scrollbar">
+<div class="prose prose-invert prose-lg max-w-none text-[#e2e2e8] font-body leading-relaxed">
+<p class="mb-4">Hi Team,</p>
+<p class="mb-4">
+                        We have completed the comprehensive security audit for the Q4 Nebula release. The results are promising, with zero critical vulnerabilities found in the core encryption layer. However, the external API endpoints showed some latency during high-load stress testing.
+                    </p>
+<p class="mb-4">
+                        Here is a summary of the findings:
+                    </p>
+<ul class="list-disc pl-5 mb-6 space-y-2 text-[#9090cb]">
+<li><strong class="text-white">Encryption Protocol:</strong> Passed (A+ Rating)</li>
+<li><strong class="text-white">Data Retention Policy:</strong> Verified automated purging</li>
+<li><strong class="text-white">API Rate Limiting:</strong> Optimization needed for bursts &gt;10k req/s</li>
+</ul>
+<p class="mb-4">
+                        The full report is attached below. Because this is a sensitive document, please ensure you review it within the disposable window. This message and all attachments will be permanently scrubbed from our servers in approximately 5 hours.
+                    </p>
+<p class="mb-8">
+                        Regards,<br/>
+                        Alex
+                    </p>
+<!-- Attachment Pill -->
+<div class="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 w-fit hover:bg-white/10 cursor-pointer transition-colors group">
+<div class="size-10 rounded bg-[#2525f4]/20 flex items-center justify-center text-primary group-hover:text-white group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-white">audit_q4_final.pdf</span>
+<span class="text-xs text-white/50">2.4 MB • Encrypted</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action Area -->
+<div class="p-4 md:p-6 border-t border-white/5 bg-[#16162a]/80 backdrop-blur-md flex gap-4 items-center">
+<div class="flex-1 relative">
+<input class="w-full bg-[#101022] border border-white/10 text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-white/30 font-body" placeholder="Type a secure reply..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded hover:bg-white/10 text-white/50 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+<button class="hidden sm:flex h-11 items-center justify-center gap-2 px-5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 transition-all text-sm font-bold whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">delete_forever</span>
+<span>Destroy</span>
+</button>
+</div>
+</article>
+<!-- Keyboard Shortcuts Hint -->
+<div class="mt-6 flex gap-6 text-xs text-white/30 font-mono">
+<span class="flex items-center gap-1"><kbd class="bg-white/10 px-1.5 py-0.5 rounded text-white/60">J</kbd> Next</span>
+<span class="flex items-center gap-1"><kbd class="bg-white/10 px-1.5 py-0.5 rounded text-white/60">K</kbd> Prev</span>
+<span class="flex items-center gap-1"><kbd class="bg-white/10 px-1.5 py-0.5 rounded text-white/60">E</kbd> Archive</span>
+</div>
+</main>
+</body></html>

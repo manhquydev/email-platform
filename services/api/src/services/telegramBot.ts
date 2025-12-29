@@ -138,10 +138,18 @@ export async function respondToCallbackQuery(
  * Create a link token for user to connect Telegram
  */
 export async function createTelegramLinkToken(userId: string): Promise<string> {
-    // Delete any existing unused tokens for this user
-    await prisma.telegramLinkToken.deleteMany({
-        where: { userId, usedAt: null }
+    // Check if there's an existing unused, unexpired token
+    const existingToken = await prisma.telegramLinkToken.findFirst({
+        where: {
+            userId,
+            usedAt: null,
+            expiresAt: { gt: new Date() }
+        }
     });
+
+    if (existingToken) {
+        return existingToken.token;
+    }
 
     // Create new token
     const token = generateLinkToken();
@@ -151,12 +159,13 @@ export async function createTelegramLinkToken(userId: string): Promise<string> {
         data: {
             userId,
             token,
-            expiresAt,
+            expiresAt
         }
     });
 
     return token;
 }
+
 
 /**
  * Link Telegram account using token

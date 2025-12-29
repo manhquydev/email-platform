@@ -1,0 +1,156 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.15 [39m[90mD:/project/Clone/email-platform/services/api[39m
+
+[90mstdout[2m | src/test/webhooks.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[90mstdout[2m | src/test/webhooks.test.ts
+[22m[39m[OutboundService] Initializing with host: , port: 587, secure: false
+
+[90mstdout[2m | src/test/webhooks.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+[90mstdout[2m | src/test/webhooks.test.ts
+[22m[39m[DEBUG] Outbound enabled: [33mfalse[39m
+
+[18:10:00 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-1"
+    req: {
+      "method": "POST",
+      "url": "/auth/login",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[18:10:00 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-1"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 112.1343999998644
+[18:10:00 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-2"
+    req: {
+      "method": "POST",
+      "url": "/webhooks",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[18:10:00 UTC] [32mINFO[39m: [36mRoute POST:/webhooks not found[39m
+    reqId: "req-2"
+[18:10:00 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-2"
+    res: {
+      "statusCode": 404
+    }
+    responseTime: 1.5915999999269843
+[18:10:00 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-3"
+    req: {
+      "method": "POST",
+      "url": "/auth/login",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[18:10:00 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-3"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 77.39520000014454
+[18:10:00 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-4"
+    req: {
+      "method": "POST",
+      "url": "/auth/login",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+ [31m❯[39m src/test/webhooks.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 831[2mms[22m[39m
+[31m     [31m×[31m should create, list, and delete a webhook[39m[32m 260[2mms[22m[39m
+     [32m✓[39m should sign the payload correctly[32m 158[2mms[22m[39m
+[31m     [31m×[31m should queue a test webhook[39m[32m 156[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/test/webhooks.test.ts[2m > [22mWebhook System[2m > [22mshould create, list, and delete a webhook
+[31m[1mAssertionError[22m: expected 404 to be 201 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 201[39m
+[31m+ 404[39m
+
+[36m [2m❯[22m src/test/webhooks.test.ts:[2m42:38[22m[39m
+    [90m 40| [39m            }
+    [90m 41| [39m        })[33m;[39m
+    [90m 42| [39m        [34mexpect[39m(createRes[33m.[39mstatusCode)[33m.[39m[34mtoBe[39m([34m201[39m)[33m;[39m
+    [90m   | [39m                                     [31m^[39m
+    [90m 43| [39m        [35mconst[39m webhook [33m=[39m createRes[33m.[39m[34mjson[39m()[33m;[39m
+    [90m 44| [39m        [34mexpect[39m(webhook[33m.[39mname)[33m.[39m[34mtoBe[39m([32m'Test Webhook'[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/webhooks.test.ts[2m > [22mWebhook System[2m > [22mshould queue a test webhook
+[31m[1mAssertionError[22m: expected 404 to be 200 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 200[39m
+[31m+ 404[39m
+
+[36m [2m❯[22m src/test/webhooks.test.ts:[2m104:36[22m[39m
+    [90m102| [39m            headers[33m:[39m { [33mAuthorization[39m[33m:[39m [32m`Bearer [39m[36m${[39muserToken[36m}[39m[32m`[39m }
+    [90m103| [39m        })[33m;[39m
+    [90m104| [39m        [34mexpect[39m(testRes[33m.[39mstatusCode)[33m.[39m[34mtoBe[39m([34m200[39m)[33m;[39m
+    [90m   | [39m                                   [31m^[39m
+    [90m105| [39m        [34mexpect[39m(testRes[33m.[39m[34mjson[39m()[33m.[39mmessage)[33m.[39m[34mtoBe[39m([32m'Test webhook queued'[39m)[33m;[39m
+    [90m106| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 01:09:56
+[2m   Duration [22m 4.57s[2m (transform 509ms, setup 0ms, import 3.52s, tests 831ms, environment 0ms)[22m
+
+[18:10:00 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-4"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 74.39920000033453
+[18:10:00 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-5"
+    req: {
+      "method": "POST",
+      "url": "/webhooks",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[18:10:00 UTC] [32mINFO[39m: [36mRoute POST:/webhooks not found[39m
+    reqId: "req-5"
+[18:10:00 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-5"
+    res: {
+      "statusCode": 404
+    }
+    responseTime: 0.5697000003419816
+[18:10:00 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-6"
+    req: {
+      "method": "POST",
+      "url": "/webhooks/undefined/test",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[18:10:00 UTC] [32mINFO[39m: [36mRoute POST:/webhooks/undefined/test not found[39m
+    reqId: "req-6"
+[18:10:00 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-6"
+    res: {
+      "statusCode": 404
+    }
+    responseTime: 0.6814000001177192

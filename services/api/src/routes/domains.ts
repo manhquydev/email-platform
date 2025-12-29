@@ -95,7 +95,7 @@ export async function domainRoutes(app: FastifyInstance) {
       isPublic: isAdmin,
     });
 
-    return { domain };
+    return reply.status(201).send({ domain });
   });
 
   app.post("/domains/:id/verify", { preHandler: app.authenticate }, async (request, reply) => {

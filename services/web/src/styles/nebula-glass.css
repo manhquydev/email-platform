@@ -793,11 +793,61 @@
 
 .message-item.active {
     background: var(--nebula-glow-violet);
-    border-left: 3px solid var(--nebula-violet);
-}
 
-.message-item.unread {
-    background: var(--nebula-surface);
+    /* ============================================
+   11. ANIMATED BACKGROUND BLOBS (Admin)
+   ============================================ */
+
+    .neo-blob-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 0;
+        pointer-events: none;
+        animation: neo-float 10s ease-in-out infinite;
+    }
+
+    .neo-blob-orb-violet {
+        background: var(--nebula-violet);
+        box-shadow: 0 0 100px var(--nebula-violet);
+    }
+
+    .neo-blob-orb-cyan {
+        background: var(--nebula-cyan);
+        box-shadow: 0 0 100px var(--nebula-cyan);
+        animation-delay: -5s;
+    }
+
+    @keyframes neo-float {
+
+        0%,
+        100% {
+            transform: translate(0, 0) scale(1);
+        }
+
+        50% {
+            transform: translate(20px, -20px) scale(1.1);
+        }
+    }
+
+    /* ============================================
+   12. GLASS PANEL (Wireframe Match)
+   ============================================ */
+
+    .glass-panel {
+        background: var(--neo-glass-bg-medium);
+        backdrop-filter: var(--neo-glass-blur-medium);
+        border: 1px solid var(--neo-glass-border);
+        box-shadow: var(--neo-shadow-float);
+        transition: all var(--nebula-transition-normal);
+    }
+
+    .glass-panel:hover {
+        background: var(--neo-glass-bg-heavy);
+        border-color: var(--neo-glass-border-bright);
+        box-shadow: var(--neo-shadow-lift);
+    }
+
 }
 
 .message-item.unread::before {
@@ -4249,4 +4299,183 @@
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* ============================================
+   17. SITE FOOTER (Added)
+   ============================================ */
+
+.site-footer {
+    background: var(--nebula-void);
+    border-top: 1px solid var(--nebula-border);
+    padding-top: var(--nebula-space-2xl);
+    padding-bottom: var(--nebula-space-lg);
+    position: relative;
+    z-index: 10;
+    overflow: visible !important;
+    /* Ensure content isn't clipped */
+}
+
+.site-footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--nebula-space-lg);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--nebula-space-2xl);
+    position: relative;
+    /* Create stacking context */
+    z-index: 5;
+    /* Ensure above background */
+}
+
+@media (min-width: 1024px) {
+    .site-footer-container {
+        grid-template-columns: 2fr 3fr;
+    }
+}
+
+/* Brand Section */
+.site-footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nebula-space-md);
+    max-width: 350px;
+}
+
+.site-footer-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--nebula-space-sm);
+    text-decoration: none;
+    color: var(--nebula-text);
+}
+
+.site-footer-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--nebula-elevated);
+    border-radius: var(--nebula-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nebula-violet);
+}
+
+.site-footer-logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.site-footer-tagline {
+    color: var(--nebula-text-secondary);
+    line-height: 1.6;
+    font-size: 0.9375rem;
+}
+
+.site-footer-social {
+    display: flex;
+    gap: var(--nebula-space-md);
+    margin-top: var(--nebula-space-xs);
+}
+
+.site-footer-social a {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--nebula-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nebula-text-muted);
+    transition: all var(--nebula-transition-fast);
+}
+
+.site-footer-social a:hover {
+    background: var(--nebula-violet);
+    color: white;
+}
+
+/* Links Grid */
+.site-footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--nebula-space-xl);
+}
+
+@media (min-width: 640px) {
+    .site-footer-links {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.site-footer-group h4 {
+    color: var(--nebula-text);
+    font-weight: 700;
+    margin-bottom: var(--nebula-space-lg);
+    font-size: 1rem;
+}
+
+.site-footer-group a {
+    display: block;
+    color: var(--nebula-text-secondary);
+    text-decoration: none;
+    margin-bottom: var(--nebula-space-md);
+    font-size: 0.9375rem;
+    transition: color var(--nebula-transition-fast);
+}
+
+.site-footer-group a:hover {
+    color: var(--nebula-violet);
+}
+
+/* Bottom Bar */
+.site-footer-bottom {
+    margin-top: var(--nebula-space-2xl);
+    padding-top: var(--nebula-space-lg);
+    border-top: 1px solid var(--nebula-border-subtle);
+    position: relative;
+    z-index: 5;
+}
+
+.site-footer-bottom-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--nebula-space-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--nebula-space-md);
+}
+
+@media (min-width: 640px) {
+    .site-footer-bottom-container {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+.site-footer-copyright {
+    color: var(--nebula-text-muted);
+    font-size: 0.875rem;
+}
+
+.site-footer-status {
+    display: flex;
+    align-items: center;
+    gap: var(--nebula-space-sm);
+    color: var(--nebula-text-secondary);
+    font-size: 0.875rem;
+    background: var(--nebula-elevated);
+    padding: 6px 12px;
+    border-radius: var(--nebula-radius-full);
+    border: 1px solid var(--nebula-border);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--nebula-success);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--nebula-success);
 }

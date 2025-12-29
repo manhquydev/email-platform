@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ephemera - Terms of Service</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2525f4",
+                        "background-light": "#f5f5f8",
+                        "background-dark": "#0B0B15",
+                        "glass-border": "rgba(255, 255, 255, 0.08)",
+                        "glass-surface": "rgba(16, 16, 35, 0.6)",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .nebula-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(37, 37, 244, 0.15) 0%, rgba(11, 11, 21, 0) 50%);
+        }
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        /* Custom scrollbar for technical feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0B15; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222249; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2525f4; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden selection:bg-primary selection:text-white">
+<!-- Background Nebula Effects -->
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-primary/20 rounded-full blur-[120px] opacity-40 animate-pulse"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-purple-900/20 rounded-full blur-[100px] opacity-30"></div>
+</div>
+<div class="flex min-h-screen flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-glass-border glass-panel bg-[#0B0B15]/80 px-6 py-4 lg:px-10">
+<div class="flex items-center gap-4 text-white">
+<div class="flex size-8 items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">token</span>
+</div>
+<h2 class="text-white text-xl font-bold leading-tight tracking-tight">Ephemera</h2>
+</div>
+<div class="hidden lg:flex flex-1 justify-end gap-8 items-center">
+<div class="flex items-center gap-9">
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#">Features</a>
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#">Pricing</a>
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#">API Docs</a>
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#">Login</a>
+</div>
+<button class="flex h-10 items-center justify-center rounded-lg bg-primary hover:bg-primary/90 transition-all px-6 text-white text-sm font-bold shadow-[0_0_15px_rgba(37,37,244,0.4)]">
+<span class="truncate">Get Started</span>
+</button>
+</div>
+<!-- Mobile Menu Toggle -->
+<button class="lg:hidden text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Main Layout -->
+<main class="flex-grow flex justify-center py-8 lg:py-12 px-4 sm:px-6 lg:px-8">
+<div class="flex w-full max-w-7xl gap-10">
+<!-- Sticky Sidebar (TOC) -->
+<aside class="hidden lg:block w-64 shrink-0 sticky top-32 h-fit">
+<div class="flex flex-col gap-6 p-6 rounded-2xl border border-glass-border bg-glass-surface glass-panel">
+<div class="flex flex-col gap-1">
+<h3 class="text-white text-lg font-bold">Table of Contents</h3>
+<p class="text-[#9090cb] text-xs">Jump to section</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary transition-all" href="#introduction">
+<span class="material-symbols-outlined text-lg">flag</span>
+<span class="text-sm font-medium">Introduction</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all" href="#security">
+<span class="material-symbols-outlined text-lg">lock</span>
+<span class="text-sm font-medium">Account Security</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all" href="#api-limits">
+<span class="material-symbols-outlined text-lg">speed</span>
+<span class="text-sm font-medium">API Usage Limits</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all" href="#anonymity">
+<span class="material-symbols-outlined text-lg">visibility_off</span>
+<span class="text-sm font-medium">Anonymity</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all" href="#payment">
+<span class="material-symbols-outlined text-lg">payments</span>
+<span class="text-sm font-medium">Payments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all" href="#termination">
+<span class="material-symbols-outlined text-lg">cancel</span>
+<span class="text-sm font-medium">Termination</span>
+</a>
+</nav>
+<div class="pt-4 mt-2 border-t border-white/10">
+<button class="flex items-center justify-center w-full gap-2 px-3 py-2 rounded-lg border border-white/20 text-white text-sm hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-lg">download</span>
+                                Download PDF
+                            </button>
+</div>
+</div>
+</aside>
+<!-- Content Area -->
+<div class="flex-1 min-w-0">
+<div class="rounded-3xl border border-glass-border bg-[#15152a]/60 glass-panel p-6 sm:p-10 lg:p-12 shadow-2xl relative overflow-hidden">
+<!-- Top Gradient Line -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+<!-- Page Header -->
+<div class="flex flex-col gap-4 mb-10 pb-8 border-b border-white/10">
+<div class="flex flex-wrap items-start justify-between gap-4">
+<div class="space-y-2">
+<h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white">Terms of Service</h1>
+<p class="text-[#9090cb] text-lg max-w-2xl">Legal agreements for using the Ephemera platform, APIs, and associated services.</p>
+</div>
+<div class="flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 pl-3 pr-4 py-1.5">
+<span class="material-symbols-outlined text-primary text-sm">history</span>
+<p class="text-primary text-xs font-bold uppercase tracking-wide">Last Updated: Oct 24, 2023</p>
+</div>
+</div>
+</div>
+<!-- Content Sections -->
+<div class="space-y-12 text-[#b0b0d0] leading-relaxed">
+<!-- Introduction -->
+<section class="scroll-mt-32" id="introduction">
+<h2 class="text-white text-2xl font-bold mb-4 flex items-center gap-2">
+<span class="text-primary">1.</span> Introduction
+                                </h2>
+<p class="mb-4">
+                                    Welcome to Ephemera. These Terms of Service ("Terms") govern your access to and use of our website, disposable email services, and developer APIs (collectively, the "Services"). By accessing or using the Services, you agree to be bound by these Terms. If you do not agree to these Terms, you may not access or use the Services.
+                                </p>
+<p>
+                                    Ephemera is designed for privacy-conscious developers and users who require temporary email solutions. We prioritize data minimalism and security above all else.
+                                </p>
+</section>
+<!-- Account Security -->
+<section class="scroll-mt-32" id="security">
+<h2 class="text-white text-2xl font-bold mb-4 flex items-center gap-2">
+<span class="text-primary">2.</span> Account Security
+                                </h2>
+<p class="mb-4">
+                                    You are responsible for safeguarding the password and API keys that you use to access the Services and for any activities or actions under your password or API keys. We encourage you to use "strong" passwords (passwords that use a combination of upper and lower case letters, numbers and symbols) with your account.
+                                </p>
+<div class="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-4 mt-6">
+<span class="material-symbols-outlined text-orange-400 shrink-0">warning</span>
+<div>
+<h4 class="text-orange-200 font-bold text-sm mb-1">API Key Security</h4>
+<p class="text-orange-200/80 text-sm">Do not commit your API keys to public repositories (e.g., GitHub). Ephemera will automatically revoke keys found in public leaks to protect your account quota.</p>
+</div>
+</div>
+</section>
+<!-- API Usage Limits -->
+<section class="scroll-mt-32" id="api-limits">
+<h2 class="text-white text-2xl font-bold mb-4 flex items-center gap-2">
+<span class="text-primary">3.</span> API Usage Limits
+                                </h2>
+<p class="mb-4">
+                                    Ephemera provides various subscription tiers with specific rate limits to ensure quality of service for all users.
+                                </p>
+<ul class="list-disc pl-5 space-y-2 mb-4 marker:text-primary">
+<li><strong>Free Tier:</strong> Limited to 100 requests per hour. No custom domains.</li>
+<li><strong>Developer Tier:</strong> 10,000 requests per hour. Custom webhook support.</li>
+<li><strong>Enterprise Tier:</strong> Unlimited requests (subject to fair use) and dedicated support.</li>
+</ul>
+<p>
+                                    Exceeding these limits may result in temporary throttling of your API access (HTTP 429). Persistent abuse may lead to account suspension.
+                                </p>
+</section>
+<!-- Anonymity Guarantees -->
+<section class="scroll-mt-32" id="anonymity">
+<h2 class="text-white text-2xl font-bold mb-4 flex items-center gap-2">
+<span class="text-primary">4.</span> Anonymity Guarantees
+                                </h2>
+<p class="mb-6">
+                                    We are committed to the principle of data minimalism. Our architecture is designed to know as little about you as possible while still providing the service.
+                                </p>
+<div class="grid md:grid-cols-2 gap-4">
+<div class="bg-[#101023] p-5 rounded-xl border border-white/5">
+<div class="flex items-center gap-3 mb-3 text-white">
+<span class="material-symbols-outlined text-green-400">check_circle</span>
+<span class="font-bold">What We Store</span>
+</div>
+<ul class="text-sm space-y-2 text-[#9090cb]">
+<li>Active email contents (until expiry)</li>
+<li>Account email address (hashed)</li>
+<li>Current API usage counters</li>
+</ul>
+</div>
+<div class="bg-[#101023] p-5 rounded-xl border border-white/5">
+<div class="flex items-center gap-3 mb-3 text-white">
+<span class="material-symbols-outlined text-red-400">cancel</span>
+<span class="font-bold">What We Do NOT Store</span>
+</div>
+<ul class="text-sm space-y-2 text-[#9090cb]">
+<li>Your IP Address logs</li>
+<li>Browser User-Agent strings</li>
+<li>Payment Details (handled by Stripe)</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- Payment & Subscriptions -->
+<section class="scroll-mt-32" id="payment">
+<h2 class="text-white text-2xl font-bold mb-4 flex items-center gap-2">
+<span class="text-primary">5.</span> Payment &amp; Subscriptions
+                                </h2>
+<p class="mb-4">
+                                    Paid services are billed on a subscription basis. You will be billed in advance on a recurring and periodic basis ("Billing Cycle"). Billing cycles are set either on a monthly or annual basis, depending on the type of subscription plan you select when purchasing a Subscription.
+                                </p>
+<p>
+                                    We use a third-party payment processor (Stripe) to bill you through a payment account linked to your account. The processing of payments will be subject to the terms, conditions, and privacy policies of the Payment Processor.
+                                </p>
+</section>
+<!-- Termination -->
+<section class="scroll-mt-32" id="termination">
+<h2 class="text-white text-2xl font-bold mb-4 flex items-center gap-2">
+<span class="text-primary">6.</span> Termination
+                                </h2>
+<p class="mb-4">
+                                    We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Services will immediately cease.
+                                </p>
+<p>
+                                    If you wish to terminate your account, you may simply discontinue using the Services or delete your account via the user dashboard.
+                                </p>
+</section>
+</div>
+<!-- Document Footer -->
+<div class="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#9090cb]">
+<p>© 2023 Ephemera Inc. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-white transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-white transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

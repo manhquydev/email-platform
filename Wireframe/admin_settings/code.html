@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ephemera Admin - Platform Settings</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2525f4",
+              "background-light": "#f5f5f8",
+              "background-dark": "#050510", // Deep space dark
+              "glass-bg": "rgba(255, 255, 255, 0.03)",
+              "glass-border": "rgba(255, 255, 255, 0.08)",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"],
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            boxShadow: {
+                "neon": "0 0 20px rgba(37, 37, 244, 0.4)",
+                "neon-sm": "0 0 10px rgba(37, 37, 244, 0.3)",
+                "glass": "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050510;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333355;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444466;
+        }
+
+        /* Range Slider Customization */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+        }
+        input[type=range]:focus {
+            outline: none; 
+        }
+        
+        /* Toggle Switch Checkbox */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2525f4;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2525f4;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display antialiased overflow-hidden selection:bg-primary/30 selection:text-white">
+<!-- Nebula Background Effects -->
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] opacity-40 mix-blend-screen"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[60%] rounded-full bg-purple-600/10 blur-[100px] opacity-30 mix-blend-screen"></div>
+<div class="absolute top-[20%] right-[20%] w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[80px] opacity-20"></div>
+</div>
+<div class="flex h-screen w-full">
+<!-- Side Navigation -->
+<aside class="w-72 h-full flex flex-col border-r border-glass-border bg-[#0a0a16]/60 backdrop-blur-xl relative z-20">
+<!-- Brand -->
+<div class="p-6 flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-neon-sm">
+<span class="material-symbols-outlined text-white text-xl">all_inclusive</span>
+</div>
+<div>
+<h1 class="font-bold text-lg tracking-tight leading-none">Ephemera</h1>
+<span class="text-xs text-white/50 font-body">Admin Console v2.0</span>
+</div>
+</div>
+<!-- Nav Links -->
+<nav class="flex-1 px-4 flex flex-col gap-2 overflow-y-auto">
+<p class="px-4 text-xs font-semibold text-white/40 uppercase tracking-wider mb-2 mt-2">Main Menu</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<p class="px-4 text-xs font-semibold text-white/40 uppercase tracking-wider mb-2 mt-6">Configuration</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">tune</span>
+<span class="text-sm font-medium">General</span>
+</a>
+<!-- Active Item -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 border border-primary/20 text-white shadow-[0_0_15px_rgba(37,37,244,0.15)] relative overflow-hidden group" href="#">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50"></div>
+<span class="material-symbols-outlined text-primary relative z-10">settings_applications</span>
+<span class="text-sm font-medium relative z-10">Platform Settings</span>
+<div class="w-1.5 h-1.5 rounded-full bg-primary shadow-neon ml-auto relative z-10"></div>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">shield</span>
+<span class="text-sm font-medium">Security</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">palette</span>
+<span class="text-sm font-medium">Branding</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">api</span>
+<span class="text-sm font-medium">API Keys</span>
+</a>
+</nav>
+<!-- User Profile -->
+<div class="p-4 border-t border-glass-border">
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-cover bg-center shadow-lg" data-alt="Admin user profile picture showing a person with neon lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBMyf_By8wr9B2-41Gcw0peDII5RzeHRTUsNKhXJ6DYOhWc0u0yAHRaoO7Q6rNEV1zMaDbzB-xZVXDp8Gtaf0Hvuj_loQlg0aY8dKtZTFkHOhblnZ8JbDYleMg5MbJPhHua5Ze2NeZ1ia87vAElBlmzJd5PkIComTyHShdZ-9letFE2P_Y4h77LJFAnCy5ueX8fQV7SU9sTxcZGmbVYVJvWzZlHMwyzNB98OynBkgamr59TFJJRCxORg4qNMsqj6tqk-kmRv0R2RNeI')"></div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-sm font-medium text-white truncate">Elena Void</span>
+<span class="text-xs text-primary truncate">Super Admin</span>
+</div>
+<span class="material-symbols-outlined ml-auto text-white/50 text-sm">expand_more</span>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 h-full overflow-y-auto relative scroll-smooth">
+<div class="max-w-5xl mx-auto p-8 pb-32">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-end gap-4 mb-10 animate-fade-in-up">
+<div class="flex flex-col gap-2">
+<h1 class="text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Platform Settings</h1>
+<p class="text-blue-200/60 text-lg font-light max-w-2xl">Manage system-wide configurations, limits, and core parameters for the Ephemera engine.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white text-sm font-medium transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">history</span>
+                            View Audit Log
+                        </button>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 gap-8">
+<!-- SMTP Section (Glass Card) -->
+<section class="rounded-2xl border border-glass-border bg-glass-bg backdrop-blur-md p-1 shadow-glass overflow-hidden group/card hover:border-primary/30 transition-colors duration-500">
+<div class="bg-[#0f0f1a]/40 p-6 md:p-8 rounded-xl h-full">
+<div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
+<div class="p-2 rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined">dns</span>
+</div>
+<h2 class="text-xl font-bold text-white tracking-wide">SMTP Configuration</h2>
+<span class="ml-auto px-2 py-1 rounded text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30">ACTIVE</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<!-- SMTP Host -->
+<label class="flex flex-col gap-2 group/input">
+<span class="text-sm font-medium text-blue-200/80">SMTP Host</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within/input:text-primary transition-colors">computer</span>
+<input class="w-full h-12 bg-[#050510] border border-white/10 rounded-lg pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:shadow-[0_0_15px_rgba(37,37,244,0.3)] transition-all placeholder:text-white/20" placeholder="e.g. smtp.example.com" type="text" value="smtp.ephemera-secure.net"/>
+</div>
+</label>
+<!-- SMTP Port -->
+<label class="flex flex-col gap-2 group/input">
+<span class="text-sm font-medium text-blue-200/80">SMTP Port</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within/input:text-primary transition-colors">tag</span>
+<input class="w-full h-12 bg-[#050510] border border-white/10 rounded-lg pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:shadow-[0_0_15px_rgba(37,37,244,0.3)] transition-all placeholder:text-white/20" type="number" value="587"/>
+</div>
+</label>
+<!-- Encryption -->
+<label class="flex flex-col gap-2 group/input">
+<span class="text-sm font-medium text-blue-200/80">Encryption Method</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within/input:text-primary transition-colors">lock</span>
+<select class="w-full h-12 bg-[#050510] border border-white/10 rounded-lg pl-12 pr-10 text-white focus:outline-none focus:border-primary focus:shadow-[0_0_15px_rgba(37,37,244,0.3)] transition-all appearance-none cursor-pointer">
+<option>TLS (Transport Layer Security)</option>
+<option>SSL (Secure Sockets Layer)</option>
+<option>None</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none">expand_more</span>
+</div>
+</label>
+<!-- Connection Timeout -->
+<label class="flex flex-col gap-2 group/input">
+<span class="text-sm font-medium text-blue-200/80">Connection Timeout (ms)</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within/input:text-primary transition-colors">timer</span>
+<input class="w-full h-12 bg-[#050510] border border-white/10 rounded-lg pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:shadow-[0_0_15px_rgba(37,37,244,0.3)] transition-all placeholder:text-white/20" type="number" value="5000"/>
+</div>
+</label>
+</div>
+<!-- Slider Section -->
+<div class="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+<div class="flex justify-between items-center mb-4">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white">Daily Send Limit</span>
+<span class="text-xs text-white/50">Maximum emails allocated per user tier per day.</span>
+</div>
+<span class="text-primary font-bold font-mono bg-primary/10 px-3 py-1 rounded border border-primary/20">15,000</span>
+</div>
+<div class="relative w-full h-6 flex items-center">
+<input class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer [&amp;::-webkit-slider-thumb]:w-4 [&amp;::-webkit-slider-thumb]:h-4 [&amp;::-webkit-slider-thumb]:bg-primary [&amp;::-webkit-slider-thumb]:rounded-full [&amp;::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(37,37,244,0.8)] [&amp;::-webkit-slider-thumb]:appearance-none" max="50000" min="1000" type="range" value="15000"/>
+<div class="absolute top-1/2 left-0 h-1.5 bg-primary rounded-l-lg pointer-events-none" style="width: 30%;"></div>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Security Section -->
+<section class="rounded-2xl border border-glass-border bg-glass-bg backdrop-blur-md p-1 shadow-glass overflow-hidden hover:border-primary/30 transition-colors duration-500">
+<div class="bg-[#0f0f1a]/40 p-6 md:p-8 rounded-xl h-full flex flex-col">
+<div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
+<div class="p-2 rounded-lg bg-red-500/20 text-red-400">
+<span class="material-symbols-outlined">shield</span>
+</div>
+<h2 class="text-xl font-bold text-white tracking-wide">Security &amp; Access</h2>
+</div>
+<div class="space-y-6">
+<!-- Toggle Item -->
+<div class="flex items-center justify-between">
+<div class="pr-4">
+<p class="text-sm font-medium text-white">Enforce 2FA for Admins</p>
+<p class="text-xs text-white/50 mt-1">Requires two-factor authentication for all dashboard access.</p>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-800 appearance-none cursor-pointer transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.2)] checked:shadow-[0_0_15px_rgba(37,37,244,0.6)] checked:translate-x-full" id="toggle-2fa" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-800 cursor-pointer border border-white/10" for="toggle-2fa"></label>
+</div>
+</div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between">
+<div class="pr-4">
+<p class="text-sm font-medium text-white">Disposable Email Blocklist</p>
+<p class="text-xs text-white/50 mt-1">Automatically reject registrations from known temp mail providers.</p>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-800 appearance-none cursor-pointer transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.2)] checked:shadow-[0_0_15px_rgba(37,37,244,0.6)] right-0 border-primary checked:bg-white" id="toggle-blocklist" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-primary cursor-pointer border border-primary/50" for="toggle-blocklist"></label>
+</div>
+</div>
+<!-- Select Item -->
+<div class="pt-4 border-t border-white/5">
+<label class="flex flex-col gap-2">
+<span class="text-sm font-medium text-blue-200/80">Log Retention Policy</span>
+<div class="relative">
+<select class="w-full h-10 bg-[#050510] border border-white/10 rounded-lg px-3 text-sm text-white focus:outline-none focus:border-primary focus:shadow-neon-sm transition-all appearance-none cursor-pointer">
+<option>Delete after 30 days</option>
+<option>Delete after 90 days</option>
+<option>Keep indefinitely (Not Recommended)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none text-lg">expand_more</span>
+</div>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Branding Section -->
+<section class="rounded-2xl border border-glass-border bg-glass-bg backdrop-blur-md p-1 shadow-glass overflow-hidden hover:border-primary/30 transition-colors duration-500">
+<div class="bg-[#0f0f1a]/40 p-6 md:p-8 rounded-xl h-full flex flex-col">
+<div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
+<div class="p-2 rounded-lg bg-purple-500/20 text-purple-400">
+<span class="material-symbols-outlined">palette</span>
+</div>
+<h2 class="text-xl font-bold text-white tracking-wide">Branding</h2>
+</div>
+<div class="space-y-6 flex-1">
+<!-- Upload Area -->
+<div>
+<span class="text-sm font-medium text-blue-200/80 mb-2 block">Platform Logo</span>
+<div class="border-2 border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center bg-white/[0.02] hover:bg-white/5 hover:border-primary/50 hover:text-primary transition-all cursor-pointer group/upload">
+<div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3 group-hover/upload:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-white/50 group-hover/upload:text-primary">cloud_upload</span>
+</div>
+<p class="text-sm font-medium text-white/70">Click to upload or drag and drop</p>
+<p class="text-xs text-white/30 mt-1">SVG, PNG, JPG (max. 800x400px)</p>
+</div>
+</div>
+<!-- Domain Input -->
+<label class="flex flex-col gap-2 group/input">
+<span class="text-sm font-medium text-blue-200/80">Custom Sending Domain</span>
+<div class="flex gap-2">
+<input class="flex-1 h-10 bg-[#050510] border border-white/10 rounded-lg px-3 text-sm text-white focus:outline-none focus:border-primary focus:shadow-[0_0_15px_rgba(37,37,244,0.3)] transition-all placeholder:text-white/20" type="text" value="mail.ephemera.io"/>
+<button class="px-3 h-10 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-medium text-white transition-colors">Verify</button>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-green-500 text-sm">check_circle</span>
+<span class="text-xs text-green-400">Domain verified and active</span>
+</div>
+</label>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Sticky Actions Footer -->
+<div class="fixed bottom-0 left-72 right-0 p-6 z-40 pointer-events-none">
+<div class="max-w-5xl mx-auto flex justify-end">
+<div class="pointer-events-auto flex items-center gap-3 p-2 pr-2 pl-6 bg-[#0a0a16]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50">
+<span class="text-sm text-white/50 mr-2 hidden sm:inline-block">Unsaved changes in Security</span>
+<button class="px-6 py-2.5 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors">Reset</button>
+<button class="px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-primary shadow-neon hover:bg-blue-600 hover:shadow-[0_0_30px_rgba(37,37,244,0.6)] transition-all transform hover:-translate-y-0.5">
+                            Save Changes
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,940 +1,187 @@
-import { useState, useEffect, useCallback, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api";
-import { getFriendlyErrorMessage } from "../utils/errorMapping";
-import toast from "react-hot-toast";
-import { SecondaryLayout } from "../layouts/SecondaryLayout";
-import { PasskeyManager } from "../components/Auth/PasskeyManager";
-import { ConfirmationModal } from "../components/ConfirmationModal";
+import { GeneralSettings } from "../components/settings/GeneralSettings";
+import { SecuritySettings } from "../components/settings/SecuritySettings";
+import { SubscriptionSettings } from "../components/settings/SubscriptionSettings";
+import { NotificationsSettings } from "../components/settings/NotificationsSettings";
+import { DeveloperSettings } from "../components/settings/DeveloperSettings";
+import { FiltersTab } from "../components/settings/FiltersTab";
+import { LabelsTab } from "../components/settings/LabelsTab";
+import type { Inbox } from "../types";
 
+// Types
 interface UserProfile {
     id: string;
     email: string;
     role: string;
     createdAt: string;
-    emailVerified: string | null;
-    twoFactorEnabled: boolean;
     tier: string;
     subscriptionEndsAt?: string | null;
     credits: number;
+    emailVerified: string | null;
+    twoFactorEnabled: boolean;
     _count: { domains: number; inboxes: number };
 }
 
-type SettingsTab = 'account' | 'subscription' | 'security' | 'notifications';
+type SettingsTab = 'general' | 'security' | 'subscription' | 'developer' | 'notifications' | 'filters' | 'labels' | 'domains';
 
 export function Settings() {
-    const { token, user } = useAuth();
+    const { token, user, logout } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState<SettingsTab>('general');
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<SettingsTab>('account');
 
-    // Password change
-    const [password, setPassword] = useState("");
-    const [passwordMsg, setPasswordMsg] = useState("");
-    const [passwordErr, setPasswordErr] = useState("");
-    const [passwordBusy, setPasswordBusy] = useState(false);
-
-    // 2FA states
-    const [twoFAStep, setTwoFAStep] = useState<"idle" | "setup" | "verify" | "backup">("idle");
-    const [qrCode, setQrCode] = useState("");
-    const [totpSecret, setTotpSecret] = useState("");
-    const [verifyCode, setVerifyCode] = useState("");
-    const [backupCodes, setBackupCodes] = useState<string[]>([]);
-    const [twoFABusy, setTwoFABusy] = useState(false);
-    const [twoFAError, setTwoFAError] = useState("");
-
-    // Telegram integration states
-    const [telegramStatus, setTelegramStatus] = useState<{
-        linked: boolean;
-        linkedAt?: string;
-        notifyOnEmail: boolean;
-    } | null>(null);
-    const [telegramLinkToken, setTelegramLinkToken] = useState<string | null>(null);
-    const [telegramBotLink, setTelegramBotLink] = useState<string | null>(null);
-    const [telegramBusy, setTelegramBusy] = useState(false);
-
-    // Subscription states
-    const [redeemCode, setRedeemCode] = useState("");
-    const [redeemBusy, setRedeemBusy] = useState(false);
-
-    // Confirmation Modal states
-    const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
-    const [showDisable2FAConfirm, setShowDisable2FAConfirm] = useState(false);
-    const [twoFAPassword, setTwoFAPassword] = useState("");
-    const [isProcessing, setIsProcessing] = useState(false);
-
-    const handleRedeem = async () => {
-        if (!redeemCode.trim()) return;
-        setRedeemBusy(true);
-        try {
-            const res = await api<{ message: string; user: any }>("/subscription/redeem", {
-                method: "POST",
-                token,
-                body: { code: redeemCode }
-            });
-            toast.success(res.message);
-            setRedeemCode("");
-            loadProfile();
-        } catch (error) {
-            toast.error(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setRedeemBusy(false);
-        }
-    };
-
-    const handlePortal = async () => {
-        try {
-            toast.loading("Đang chuyển hướng đến cổng thanh toán...");
-            const res = await api<{ url: string }>("/billing/portal", { method: "POST", token });
-            if (res.url) {
-                window.location.href = res.url;
-            } else {
-                toast.dismiss();
-                toast.error("Không tìm thấy đường dẫn cổng thanh toán");
+    // Sync activeTab with URL params
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get('tab') as SettingsTab;
+        if (tab && ['general', 'security', 'subscription', 'developer', 'notifications', 'filters', 'labels', 'domains'].includes(tab)) {
+            if (tab !== activeTab) {
+                setActiveTab(tab);
             }
-        } catch (error) {
-            toast.dismiss();
-            toast.error(getFriendlyErrorMessage((error as Error).message));
         }
+    }, [location.search, activeTab]);
+
+    // Update URL when tab changes
+    const changeTab = (tab: SettingsTab) => {
+        setActiveTab(tab);
+        navigate(`?tab=${tab}`, { replace: true });
     };
+
+    // Inboxes for filters/labels
+    const [inboxes, setInboxes] = useState<Inbox[]>([]);
+    const [selectedInboxId, setSelectedInboxId] = useState<string>("");
 
     const loadProfile = useCallback(async () => {
         if (!token) return;
         setLoading(true);
         try {
             const res = await api<{ user: UserProfile }>("/auth/me", { token });
-            setProfile(res.user);
+            if (res?.user) setProfile(res.user);
         } catch {
+            // Fallback if load fails
             setProfile({
                 id: user?.id || "",
                 email: user?.email || "",
                 role: user?.role || "USER",
                 createdAt: new Date().toISOString(),
+                tier: "FREE",
+                credits: 0,
                 emailVerified: null,
                 twoFactorEnabled: false,
-                tier: "FREE",
                 subscriptionEndsAt: null,
-                credits: 0,
                 _count: { domains: 0, inboxes: 0 }
             });
         } finally {
             setLoading(false);
         }
-    }, [token, user]);
+    }, [token, user?.id, user?.email, user?.role]); // Use primitives
+
+    const loadInboxes = useCallback(async () => {
+        if (!token) return;
+        try {
+            const res = await api<{ inboxes: Inbox[] }>("/inboxes", { token });
+            const inboxesData = res?.inboxes || [];
+            setInboxes(inboxesData);
+
+            // Set default selected inbox ONLY if not already set
+            if (inboxesData && inboxesData.length > 0) {
+                setSelectedInboxId((current: string) => (current ? current : inboxesData[0].id));
+            }
+        } catch (err) {
+            console.error("Failed to load inboxes", err);
+            setInboxes([]);
+        }
+    }, [token]); // Removed selectedInboxId dependency to break loop
 
     useEffect(() => {
         loadProfile();
-        loadTelegramStatus();
-    }, [loadProfile]);
+        loadInboxes();
+    }, [loadProfile, loadInboxes]);
 
-    const loadTelegramStatus = async () => {
-        if (!token) return;
-        try {
-            const status = await api<{ linked: boolean; linkedAt?: string; notifyOnEmail: boolean }>(
-                "/telegram/status",
-                { token }
-            );
-            setTelegramStatus(status);
-        } catch {
-            // Telegram not configured, ignore
-        }
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
     };
-
-    const generateTelegramLink = async () => {
-        setTelegramBusy(true);
-        try {
-            const res = await api<{ token: string; botLink: string }>(
-                "/telegram/link-token",
-                { method: "POST", token }
-            );
-            setTelegramLinkToken(res.token);
-            setTelegramBotLink(res.botLink);
-            toast.success("Mã liên kết đã được tạo!");
-        } catch (error) {
-            toast.error(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setTelegramBusy(false);
-        }
-    };
-
-    const unlinkTelegram = () => {
-        setShowUnlinkConfirm(true);
-    };
-
-    const confirmUnlinkTelegram = async () => {
-        setIsProcessing(true);
-        setTelegramBusy(true);
-        try {
-            await api("/telegram/unlink", { method: "DELETE", token });
-            setTelegramStatus({ linked: false, notifyOnEmail: true });
-            toast.success("Đã hủy liên kết Telegram");
-            setShowUnlinkConfirm(false);
-        } catch (error) {
-            toast.error(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setTelegramBusy(false);
-            setIsProcessing(false);
-        }
-    };
-
-    const toggleTelegramNotify = async () => {
-        if (!telegramStatus) return;
-        setTelegramBusy(true);
-        try {
-            await api("/telegram/preferences", {
-                method: "PATCH",
-                token,
-                body: { notifyOnEmail: !telegramStatus.notifyOnEmail }
-            });
-            setTelegramStatus(prev => prev ? { ...prev, notifyOnEmail: !prev.notifyOnEmail } : null);
-            toast.success(telegramStatus.notifyOnEmail ? "Đã tắt thông báo" : "Đã bật thông báo");
-        } catch (error) {
-            toast.error(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setTelegramBusy(false);
-        }
-    };
-
-    const handlePasswordChange = async (e: FormEvent) => {
-        e.preventDefault();
-        if (!password || password.length < 6) {
-            setPasswordErr("Mật khẩu phải có ít nhất 6 ký tự");
-            return;
-        }
-        setPasswordBusy(true);
-        setPasswordMsg("");
-        setPasswordErr("");
-        try {
-            await api("/auth/change-password", { method: "POST", token, body: { newPassword: password } });
-            setPasswordMsg("Đã cập nhật mật khẩu thành công!");
-            setPassword("");
-            toast.success("Mật khẩu đã được thay đổi");
-        } catch (error) {
-            setPasswordErr(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setPasswordBusy(false);
-        }
-    };
-
-    const setup2FA = async () => {
-        setTwoFABusy(true);
-        setTwoFAError("");
-        try {
-            const res = await api<{ qrCode: string; secret: string }>("/auth/2fa/setup", { method: "POST", token });
-            setQrCode(res.qrCode);
-            setTotpSecret(res.secret);
-            setTwoFAStep("setup");
-        } catch (error) {
-            setTwoFAError(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setTwoFABusy(false);
-        }
-    };
-
-    const enable2FA = async () => {
-        if (verifyCode.length !== 6) {
-            setTwoFAError("Vui lòng nhập mã 6 chữ số");
-            return;
-        }
-        setTwoFABusy(true);
-        setTwoFAError("");
-        try {
-            const res = await api<{ ok: boolean; backupCodes: string[] }>("/auth/2fa/enable", {
-                method: "POST",
-                token,
-                body: { code: verifyCode }
-            });
-            setBackupCodes(res.backupCodes);
-            setTwoFAStep("backup");
-            toast.success("2FA đã được kích hoạt!");
-            loadProfile();
-        } catch (error) {
-            setTwoFAError(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setTwoFABusy(false);
-        }
-    };
-
-    const disable2FA = () => {
-        setTwoFAPassword("");
-        setShowDisable2FAConfirm(true);
-    };
-
-    const confirmDisable2FA = async () => {
-        if (!twoFAPassword) {
-            setTwoFAError("Vui lòng nhập mật khẩu");
-            return;
-        }
-
-        setIsProcessing(true);
-        setTwoFABusy(true);
-        setTwoFAError("");
-        try {
-            await api("/auth/2fa/disable", { method: "POST", token, body: { password: twoFAPassword } });
-            toast.success("2FA đã được tắt");
-            setTwoFAStep("idle");
-            setShowDisable2FAConfirm(false);
-            setTwoFAPassword("");
-            loadProfile();
-        } catch (error) {
-            setTwoFAError(getFriendlyErrorMessage((error as Error).message));
-        } finally {
-            setTwoFABusy(false);
-            setIsProcessing(false);
-        }
-    };
-
-    // Password strength indicator
-    const getPasswordStrength = (pwd: string) => {
-        if (!pwd) return { score: 0, label: '', color: '' };
-        let score = 0;
-        if (pwd.length >= 6) score++;
-        if (pwd.length >= 10) score++;
-        if (/[A-Z]/.test(pwd)) score++;
-        if (/[0-9]/.test(pwd)) score++;
-        if (/[^A-Za-z0-9]/.test(pwd)) score++;
-
-        if (score <= 2) return { score, label: 'Yếu', color: 'bg-red-500' };
-        if (score <= 3) return { score, label: 'Trung bình', color: 'bg-yellow-500' };
-        if (score <= 4) return { score, label: 'Tốt', color: 'bg-green-500' };
-        return { score, label: 'Mạnh', color: 'bg-green-600' };
-    };
-
-    const passwordStrength = getPasswordStrength(password);
-
-    if (loading) {
-        return (
-            <SecondaryLayout>
-                <div className="flex items-center justify-center h-full" style={{ background: 'var(--nebula-void)' }}>
-                    <div className="spinner" />
-                </div>
-            </SecondaryLayout>
-        );
-    }
-
-    const tabs = [
-        { id: 'account' as const, label: 'Tài khoản', icon: UserIcon },
-        { id: 'subscription' as const, label: 'Gói & Tín dụng', icon: CreditCardIcon },
-        { id: 'security' as const, label: 'Bảo mật', icon: ShieldIcon },
-        { id: 'notifications' as const, label: 'Thông báo', icon: BellIcon },
-    ];
 
     return (
-        <SecondaryLayout>
-            <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
-                {/* Page Header */}
-                <div className="page-header">
-                    <div className="page-header-content">
-                        <div className="flex items-center">
-                            <div className="page-header-icon">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 className="page-header-title">Cài đặt</h1>
-                                <p className="page-header-subtitle">Quản lý tài khoản và tùy chọn bảo mật</p>
-                            </div>
+        <div className="flex h-full w-full relative bg-transparent text-white font-display overflow-hidden">
+            {/* Sidebar Navigation */}
+            <aside className="w-64 flex-shrink-0 h-full border-r border-white/10 bg-[#0a0a14]/50 backdrop-blur-xl flex flex-col z-10 relative">
+                <div className="p-6 pb-2">
+                    <h2 className="text-xl font-bold tracking-tight text-white mb-2">Cài đặt</h2>
+                </div>
+
+                <nav className="flex-1 px-4 py-2 flex flex-col gap-1 overflow-y-auto">
+                    <p className="px-4 text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 mt-2">Tài khoản</p>
+                    <NavButon active={activeTab === 'general'} icon="person" label="Chung" onClick={() => changeTab('general')} />
+                    <NavButon active={activeTab === 'security'} icon="shield" label="Bảo mật" onClick={() => changeTab('security')} />
+                    <NavButon active={activeTab === 'subscription'} icon="credit_card" label="Gói & Thanh toán" onClick={() => changeTab('subscription')} />
+                    <NavButon active={activeTab === 'notifications'} icon="notifications" label="Thông báo" onClick={() => changeTab('notifications')} />
+
+                    <p className="px-4 text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 mt-6">Email</p>
+                    <NavButon active={activeTab === 'filters'} icon="filter_list" label="Bộ lọc" onClick={() => changeTab('filters')} />
+                    <NavButon active={activeTab === 'labels'} icon="label" label="Nhãn" onClick={() => changeTab('labels')} />
+                    <Link to="/my-domains" className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                        <span className="material-symbols-outlined text-[20px]">globe</span>
+                        <span className="text-sm font-medium">Tên miền riêng</span>
+                    </Link>
+
+                    <p className="px-4 text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 mt-6">Nhà phát triển</p>
+                    <NavButon active={activeTab === 'developer'} icon="code" label="Khóa API" onClick={() => changeTab('developer')} />
+                </nav>
+
+                <div className="p-4 border-t border-white/10">
+                    <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/5 border border-white/5 mb-3">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center text-sm font-bold">
+                            {profile?.email?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="overflow-hidden">
+                            <p className="text-xs font-medium text-white truncate">{profile?.email?.split('@')[0]}</p>
+                            <p className="text-[10px] text-primary truncate">Gói {profile?.tier}</p>
                         </div>
                     </div>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-white text-sm py-2 transition-colors hover:bg-white/5 rounded-lg"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">logout</span>
+                        Đăng xuất
+                    </button>
                 </div>
+            </aside>
 
-                {/* Content */}
-                <div className="max-w-4xl mx-auto px-4 py-6 md:px-6 md:py-8">
-                    {/* Tabs */}
-                    <div className="tabs-nebula">
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                className={`tab-nebula ${activeTab === tab.id ? 'active' : ''}`}
-                                onClick={() => setActiveTab(tab.id)}
-                            >
-                                <tab.icon />
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Tab Content */}
-                    <div className="space-y-6 animate-nebula-fade-in">
-                        {/* Account Tab */}
-                        {activeTab === 'account' && (
-                            <>
-                                {/* Profile Card */}
-                                <div className="glass-card">
-                                    <div className="glass-card-header">
-                                        <h3 className="font-semibold" style={{ color: 'var(--nebula-text)' }}>Thông tin tài khoản</h3>
-                                    </div>
-                                    <div className="glass-card-body">
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold" style={{ background: 'linear-gradient(135deg, var(--nebula-violet), var(--nebula-pink))' }}>
-                                                {profile?.email?.charAt(0).toUpperCase() || "U"}
-                                            </div>
-                                            <div>
-                                                <h2 className="text-xl font-semibold" style={{ color: 'var(--nebula-text)' }}>{profile?.email?.split("@")[0]}</h2>
-                                                <p style={{ color: 'var(--nebula-text-muted)' }}>{profile?.email}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <div className="stat-card">
-                                                <div className="stat-card-icon">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                                    </svg>
-                                                </div>
-                                                <div className="stat-card-label">Vai trò</div>
-                                                <div className="stat-card-value text-lg">{profile?.role === "ADMIN" ? "Admin" : "User"}</div>
-                                            </div>
-                                            <div className="stat-card">
-                                                <div className="stat-card-icon">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
-                                                    </svg>
-                                                </div>
-                                                <div className="stat-card-label">Gói dịch vụ</div>
-                                                <div className="stat-card-value text-lg">{profile?.tier || "FREE"}</div>
-                                            </div>
-                                            <div className="stat-card">
-                                                <div className="stat-card-icon">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
-                                                    </svg>
-                                                </div>
-                                                <div className="stat-card-label">Domains</div>
-                                                <div className="stat-card-value text-lg">{profile?._count?.domains ?? 0}</div>
-                                            </div>
-                                            <div className="stat-card">
-                                                <div className="stat-card-icon">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                                    </svg>
-                                                </div>
-                                                <div className="stat-card-label">Hộp thư</div>
-                                                <div className="stat-card-value text-lg">{profile?._count?.inboxes ?? 0}</div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--nebula-border)' }}>
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span style={{ color: 'var(--nebula-text-muted)' }}>Ngày đăng ký</span>
-                                                <span style={{ color: 'var(--nebula-text)' }}>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString("vi-VN") : "—"}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Quick Links */}
-                                <div className="glass-card">
-                                    <div className="glass-card-header">
-                                        <h3 className="font-semibold" style={{ color: 'var(--nebula-text)' }}>Truy cập nhanh</h3>
-                                    </div>
-                                    <div className="glass-card-body">
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                            <Link to="/app" className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-[var(--nebula-elevated)] transition-colors text-center">
-                                                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--nebula-elevated)' }}>
-                                                    <svg className="w-5 h-5" style={{ color: 'var(--nebula-text-muted)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                                    </svg>
-                                                </div>
-                                                <span className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>Inbox</span>
-                                            </Link>
-                                            <Link to="/my-domains" className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-[var(--nebula-elevated)] transition-colors text-center">
-                                                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--nebula-elevated)' }}>
-                                                    <svg className="w-5 h-5" style={{ color: 'var(--nebula-text-muted)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3" />
-                                                    </svg>
-                                                </div>
-                                                <span className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>Domains</span>
-                                            </Link>
-                                            <Link to="/authenticator" className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-[var(--nebula-elevated)] transition-colors text-center">
-                                                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--nebula-elevated)' }}>
-                                                    <svg className="w-5 h-5" style={{ color: 'var(--nebula-text-muted)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                                                    </svg>
-                                                </div>
-                                                <span className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>2FA</span>
-                                            </Link>
-                                            <Link to="/forwarding" className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-[var(--nebula-elevated)] transition-colors text-center">
-                                                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--nebula-elevated)' }}>
-                                                    <svg className="w-5 h-5" style={{ color: 'var(--nebula-text-muted)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                                                    </svg>
-                                                </div>
-                                                <span className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>Forwarding</span>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Subscription Tab */}
-                        {activeTab === 'subscription' && (
-                            <div className="space-y-6">
-                                {/* Current Plan Card */}
-                                <div className="glass-card">
-                                    <div className="glass-card-header">
-                                        <h3 className="font-semibold" style={{ color: 'var(--nebula-text)' }}>Gói dịch vụ hiện tại</h3>
-                                    </div>
-                                    <div className="glass-card-body">
-                                        <div className="flex items-center justify-between mb-6">
-                                            <div>
-                                                <div className="text-sm mb-1" style={{ color: 'var(--nebula-text-muted)' }}>Cấp độ</div>
-                                                <div className="text-2xl font-bold" style={{ color: 'var(--nebula-text)' }}>
-                                                    {profile?.tier}
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-sm mb-1" style={{ color: 'var(--nebula-text-muted)' }}>Tín dụng (Credits)</div>
-                                                <div className="text-2xl font-bold" style={{ color: 'var(--nebula-success)' }}>
-                                                    {profile?.credits || 0}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {profile?.subscriptionEndsAt && (
-                                            <div className="p-4 rounded-xl mb-6" style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                                                <p className="text-sm" style={{ color: 'var(--nebula-blue)' }}>
-                                                    Gói cước sẽ hết hạn vào: <span className="font-semibold">{new Date(profile.subscriptionEndsAt).toLocaleDateString("vi-VN")}</span>
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {(profile?.tier !== 'FREE' || profile?.subscriptionEndsAt) && (
-                                            <button
-                                                onClick={handlePortal}
-                                                className="btn-nebula btn-nebula-secondary w-full mb-6 flex items-center justify-center gap-2"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                                </svg>
-                                                Quản lý thanh toán & Hóa đơn
-                                            </button>
-                                        )}
-
-                                        <div className="border-t pt-6" style={{ borderColor: 'var(--nebula-border)' }}>
-                                            <h4 className="text-sm font-medium mb-4" style={{ color: 'var(--nebula-text)' }}>Nhập mã quy đổi</h4>
-                                            <div className="flex gap-3">
-                                                <input
-                                                    type="text"
-                                                    value={redeemCode}
-                                                    onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
-                                                    placeholder="XXXX-XXXX-XXXX"
-                                                    className="input-nebula flex-1 font-mono uppercase"
-                                                />
-                                                <button
-                                                    onClick={handleRedeem}
-                                                    disabled={redeemBusy || !redeemCode}
-                                                    className="btn-nebula btn-nebula-primary"
-                                                >
-                                                    {redeemBusy ? "Đang xử lý..." : "Quy đổi"}
-                                                </button>
-                                            </div>
-                                            <p className="text-xs mt-2" style={{ color: 'var(--nebula-text-muted)' }}>
-                                                Nhập mã từ thẻ quà tặng hoặc sự kiện để nâng cấp gói hoặc nhận thêm credits.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Security Tab */}
-                        {activeTab === 'security' && (
-                            <>
-                                {/* Change Password */}
-                                <div className="glass-card">
-                                    <div className="glass-card-header">
-                                        <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--nebula-text)' }}>
-                                            <svg className="w-5 h-5" style={{ color: 'var(--nebula-text-muted)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                                            </svg>
-                                            Đổi mật khẩu
-                                        </h3>
-                                    </div>
-                                    <div className="glass-card-body">
-                                        <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
-                                            <div>
-                                                <label className="label-nebula">Mật khẩu mới</label>
-                                                <input
-                                                    type="password"
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
-                                                    placeholder="Tối thiểu 6 ký tự"
-                                                    className="input-nebula"
-                                                    minLength={6}
-                                                />
-                                                {password && (
-                                                    <div className="mt-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="flex-1 h-1.5 rounded-full bg-[var(--nebula-elevated)] overflow-hidden">
-                                                                <div
-                                                                    className={`h-full transition-all ${passwordStrength.color}`}
-                                                                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                                                                />
-                                                            </div>
-                                                            <span className="text-xs font-medium" style={{ color: 'var(--nebula-text-muted)' }}>{passwordStrength.label}</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <button type="submit" disabled={passwordBusy} className="btn-nebula btn-nebula-primary">
-                                                {passwordBusy ? "Đang cập nhật..." : "Cập nhật mật khẩu"}
-                                            </button>
-                                            {passwordMsg && <p className="text-sm" style={{ color: 'var(--nebula-success)' }}>{passwordMsg}</p>}
-                                            {passwordErr && <p className="text-sm" style={{ color: 'var(--nebula-error)' }}>{passwordErr}</p>}
-                                        </form>
-                                    </div>
-                                </div>
-
-                                {/* Two-Factor Authentication */}
-                                <div className="glass-card">
-                                    <div className="glass-card-header">
-                                        <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--nebula-text)' }}>
-                                            <svg className="w-5 h-5" style={{ color: 'var(--nebula-text-muted)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                                            </svg>
-                                            Xác thực hai yếu tố (2FA)
-                                        </h3>
-                                        {profile?.twoFactorEnabled && (
-                                            <span className="px-2 py-1 text-xs font-medium rounded-full" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--nebula-success)' }}>
-                                                Đã bật
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="glass-card-body">
-                                        {twoFAError && <p className="text-sm mb-3" style={{ color: 'var(--nebula-error)' }}>{twoFAError}</p>}
-
-                                        {/* Not enabled */}
-                                        {!profile?.twoFactorEnabled && twoFAStep === "idle" && (
-                                            <div className="space-y-4">
-                                                <p style={{ color: 'var(--nebula-text-muted)' }}>
-                                                    Bảo vệ tài khoản của bạn bằng xác thực hai yếu tố. Sử dụng ứng dụng như Google Authenticator.
-                                                </p>
-                                                <button onClick={setup2FA} disabled={twoFABusy} className="btn-nebula btn-nebula-primary">
-                                                    {twoFABusy ? "Đang thiết lập..." : "Kích hoạt 2FA"}
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* Setup QR */}
-                                        {twoFAStep === "setup" && (
-                                            <div className="space-y-4">
-                                                <p style={{ color: 'var(--nebula-text-muted)' }}>Quét mã QR bằng ứng dụng xác thực:</p>
-                                                <div className="p-4 rounded-xl inline-block" style={{ background: 'white' }}>
-                                                    <img src={qrCode} alt="2FA QR Code" className="w-48 h-48" />
-                                                </div>
-                                                <p className="text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
-                                                    Hoặc nhập thủ công: <code className="px-2 py-1 rounded" style={{ background: 'var(--nebula-elevated)' }}>{totpSecret}</code>
-                                                </p>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="text"
-                                                        value={verifyCode}
-                                                        onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                                                        placeholder="000000"
-                                                        className="input-nebula w-32 text-center tracking-widest font-mono"
-                                                        maxLength={6}
-                                                    />
-                                                    <button onClick={enable2FA} disabled={twoFABusy || verifyCode.length !== 6} className="btn-nebula btn-nebula-primary">
-                                                        {twoFABusy ? "Đang xác minh..." : "Xác nhận"}
-                                                    </button>
-                                                    <button onClick={() => setTwoFAStep("idle")} className="btn-nebula btn-nebula-secondary">
-                                                        Hủy
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Backup codes */}
-                                        {twoFAStep === "backup" && (
-                                            <div className="space-y-4">
-                                                <div className="p-4 rounded-xl" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                                                    <p className="text-sm font-medium mb-2" style={{ color: 'var(--nebula-warning)' }}>⚠️ Lưu mã dự phòng!</p>
-                                                    <p className="text-xs mb-3" style={{ color: 'var(--nebula-text-muted)' }}>
-                                                        Các mã này cho phép bạn đăng nhập nếu mất điện thoại. Mỗi mã chỉ dùng được một lần.
-                                                    </p>
-                                                    <div className="grid grid-cols-2 gap-2 font-mono text-sm">
-                                                        {backupCodes.map((code, i) => (
-                                                            <div key={i} className="px-3 py-2 rounded" style={{ background: 'var(--nebula-surface)', color: 'var(--nebula-text)' }}>
-                                                                {code}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <button onClick={() => setTwoFAStep("idle")} className="btn-nebula btn-nebula-primary">
-                                                    Tôi đã lưu mã
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* Already enabled */}
-                                        {profile?.twoFactorEnabled && twoFAStep === "idle" && (
-                                            <div className="space-y-4">
-                                                <div className="flex items-center gap-2" style={{ color: 'var(--nebula-success)' }}>
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <span className="text-sm font-medium">2FA đã được kích hoạt</span>
-                                                </div>
-                                                <button onClick={disable2FA} disabled={twoFABusy} className="btn-nebula btn-nebula-secondary" style={{ color: 'var(--nebula-error)' }}>
-                                                    {twoFABusy ? "Đang xử lý..." : "Tắt 2FA"}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <PasskeyManager />
-                            </>
-                        )}
-
-                        {/* Notifications Tab */}
-                        {activeTab === 'notifications' && (
-                            <div className="glass-card">
-                                <div className="glass-card-header">
-                                    <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--nebula-text)' }}>
-                                        <svg className="w-5 h-5" style={{ color: '#0088cc' }} viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                                        </svg>
-                                        Thông báo Telegram
-                                    </h3>
-                                </div>
-                                <div className="glass-card-body">
-                                    {telegramStatus?.linked ? (
-                                        <div className="space-y-4">
-                                            {/* Linked Status Banner */}
-                                            <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                                                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(16, 185, 129, 0.2)' }}>
-                                                    <svg className="w-5 h-5" style={{ color: 'var(--nebula-success)' }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium" style={{ color: 'var(--nebula-success)' }}>Đã liên kết Telegram</p>
-                                                    {telegramStatus.linkedAt && (
-                                                        <p className="text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
-                                                            Liên kết từ: {new Date(telegramStatus.linkedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Notification Toggle */}
-                                            <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--nebula-elevated)' }}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6, 182, 212, 0.1)' }}>
-                                                        <svg className="w-4 h-4" style={{ color: 'var(--nebula-cyan)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>Thông báo email mới</span>
-                                                        <p className="text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
-                                                            {telegramStatus.notifyOnEmail ? 'Đang bật' : 'Đang tắt'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={toggleTelegramNotify}
-                                                    disabled={telegramBusy}
-                                                    className={`relative w-11 h-6 rounded-full transition-colors ${telegramStatus.notifyOnEmail ? 'bg-[var(--nebula-success)]' : 'bg-[var(--nebula-border)]'}`}
-                                                >
-                                                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow ${telegramStatus.notifyOnEmail ? 'translate-x-5' : ''}`} />
-                                                </button>
-                                            </div>
-
-                                            {/* Unlink Button */}
-                                            <button
-                                                onClick={unlinkTelegram}
-                                                disabled={telegramBusy}
-                                                className="btn-nebula btn-nebula-secondary w-full flex items-center justify-center gap-2"
-                                                style={{ color: 'var(--nebula-error)' }}
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.181 8.68a4.503 4.503 0 0 1 1.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 0 0 6.364 6.364l3.536-3.536m5.657-5.657 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364L12.75 4.87" />
-                                                </svg>
-                                                {telegramBusy ? "Đang xử lý..." : "Hủy liên kết Telegram"}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {/* Benefits description */}
-                                            <div className="p-4 rounded-xl" style={{ background: 'var(--nebula-elevated)', border: '1px solid var(--nebula-border)' }}>
-                                                <div className="flex items-start gap-3">
-                                                    <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6, 182, 212, 0.1)' }}>
-                                                        <svg className="w-4 h-4" style={{ color: 'var(--nebula-cyan)' }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium mb-1" style={{ color: 'var(--nebula-text)' }}>Nhận thông báo tức thì</p>
-                                                        <p className="text-xs" style={{ color: 'var(--nebula-text-muted)' }}>
-                                                            Email mới, mã OTP, và thông tin quan trọng sẽ được gửi ngay đến Telegram của bạn.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* How to link - Step by step */}
-                                            <div className="space-y-3">
-                                                <p className="text-sm font-medium" style={{ color: 'var(--nebula-text)' }}>Cách liên kết:</p>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--nebula-purple)' }}>1</div>
-                                                    <span className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>Nhấn nút bên dưới để lấy mã liên kết</span>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--nebula-purple)' }}>2</div>
-                                                    <span className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>Mở Telegram Bot và gửi mã</span>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--nebula-purple)' }}>3</div>
-                                                    <span className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>Hoàn tất! Bạn sẽ nhận thông báo ngay</span>
-                                                </div>
-                                            </div>
-
-                                            {telegramLinkToken ? (
-                                                <div className="space-y-4">
-                                                    <div className="p-4 rounded-xl" style={{ background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)' }}>
-                                                        <p className="text-sm mb-2" style={{ color: 'var(--nebula-cyan)' }}>Mã liên kết của bạn:</p>
-                                                        <div className="flex items-center gap-3">
-                                                            <code className="text-2xl font-mono font-bold tracking-widest" style={{ color: 'var(--nebula-cyan)' }}>
-                                                                {telegramLinkToken}
-                                                            </code>
-                                                            <button
-                                                                onClick={() => {
-                                                                    navigator.clipboard.writeText(telegramLinkToken);
-                                                                    toast.success("Đã copy mã!");
-                                                                }}
-                                                                className="btn-nebula btn-nebula-ghost btn-nebula-icon"
-                                                            >
-                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                        <p className="text-xs mt-2" style={{ color: 'var(--nebula-text-muted)' }}>Mã có hiệu lực trong 15 phút</p>
-                                                    </div>
-
-                                                    <div className="flex gap-3">
-                                                        <a
-                                                            href={telegramBotLink || '#'}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="btn-nebula btn-nebula-primary"
-                                                        >
-                                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                                                            </svg>
-                                                            Mở Telegram Bot
-                                                        </a>
-                                                        <button
-                                                            onClick={() => {
-                                                                setTelegramLinkToken(null);
-                                                                setTelegramBotLink(null);
-                                                            }}
-                                                            className="btn-nebula btn-nebula-secondary"
-                                                        >
-                                                            Hủy
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={generateTelegramLink}
-                                                    disabled={telegramBusy}
-                                                    className="btn-nebula btn-nebula-primary"
-                                                >
-                                                    {telegramBusy ? "Đang tạo..." : "Liên kết Telegram"}
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+            {/* Main Content Area */}
+            <main className="flex-1 h-full overflow-y-auto relative z-0 scrollbar-hide">
+                <div className="max-w-5xl mx-auto px-8 py-10 pb-24">
+                    {activeTab === 'general' && <GeneralSettings profile={profile} loading={loading} />}
+                    {activeTab === 'security' && <SecuritySettings profile={profile} loadProfile={loadProfile} />}
+                    {activeTab === 'subscription' && <SubscriptionSettings profile={profile} loadProfile={loadProfile} />}
+                    {activeTab === 'developer' && <DeveloperSettings />}
+                    {activeTab === 'notifications' && <NotificationsSettings />}
+                    {activeTab === 'filters' && <FiltersTab inboxes={inboxes} selectedInboxId={selectedInboxId} onInboxChange={setSelectedInboxId} />}
+                    {activeTab === 'labels' && <LabelsTab inboxes={inboxes} selectedInboxId={selectedInboxId} onInboxChange={setSelectedInboxId} />}
                 </div>
-
-                <ConfirmationModal
-                    isOpen={showUnlinkConfirm}
-                    title="Hủy liên kết Telegram"
-                    message="Bạn có chắc muốn hủy liên kết Telegram? Bạn sẽ không nhận được thông báo qua Telegram nữa."
-                    confirmLabel="Hủy liên kết"
-                    isDestructive
-                    isLoading={isProcessing}
-                    onConfirm={confirmUnlinkTelegram}
-                    onCancel={() => setShowUnlinkConfirm(false)}
-                />
-
-                <ConfirmationModal
-                    isOpen={showDisable2FAConfirm}
-                    title="Tắt xác thực 2FA"
-                    message="Vui lòng nhập mật khẩu để xác nhận tắt tính năng xác thực hai yếu tố."
-                    confirmLabel="Xác nhận tắt"
-                    isDestructive
-                    isLoading={isProcessing}
-                    onConfirm={confirmDisable2FA}
-                    onCancel={() => {
-                        setShowDisable2FAConfirm(false);
-                        setTwoFAPassword("");
-                        setTwoFAError("");
-                    }}
-                >
-                    <div className="space-y-2">
-                        <label className="text-sm text-gray-400">Mật khẩu của bạn</label>
-                        <input
-                            type="password"
-                            value={twoFAPassword}
-                            onChange={(e) => setTwoFAPassword(e.target.value)}
-                            placeholder="Nhập mật khẩu"
-                            className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-indigo-500 transition-colors"
-                            autoFocus
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && twoFAPassword) {
-                                    confirmDisable2FA();
-                                }
-                            }}
-                        />
-                        {twoFAError && <p className="text-xs text-red-500">{twoFAError}</p>}
-                    </div>
-                </ConfirmationModal>
-            </div>
-        </SecondaryLayout>
+            </main>
+        </div>
     );
 }
 
-// Tab Icons
-function UserIcon() {
+function NavButon({ active, icon, label, onClick }: { active: boolean; icon: string; label: string; onClick: () => void }) {
     return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-    );
-}
-
-function ShieldIcon() {
-    return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-        </svg>
-    );
-}
-
-function BellIcon() {
-    return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-        </svg>
-    );
-}
-
-function CreditCardIcon() {
-    return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-        </svg>
+        <button
+            onClick={onClick}
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all w-full text-left ${active
+                ? 'bg-primary/20 text-white border border-primary/30 shadow-[0_0_15px_rgba(37,37,244,0.3)]'
+                : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+        >
+            <span className={`material-symbols-outlined text-[20px] ${active ? 'filled' : ''}`}>{icon}</span>
+            <span className="text-sm font-medium">{label}</span>
+        </button>
     );
 }

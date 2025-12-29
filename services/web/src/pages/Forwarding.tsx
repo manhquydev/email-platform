@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api";
 import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
-import { SecondaryLayout } from "../layouts/SecondaryLayout";
+
 import { ConfirmationModal } from "../components/ConfirmationModal";
 
 interface ForwardingRule {
@@ -233,16 +233,16 @@ export function Forwarding() {
 
     if (loading) {
         return (
-            <SecondaryLayout>
+            <div className="flex-1 h-full">
                 <div className="flex items-center justify-center h-full" style={{ background: 'var(--nebula-void)' }}>
                     <div className="spinner" />
                 </div>
-            </SecondaryLayout>
+            </div>
         );
     }
 
     return (
-        <SecondaryLayout>
+        <div className="flex-1 h-full flex flex-col min-w-0">
             <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
                 {/* Page Header */}
                 <div className="page-header">
@@ -635,6 +635,6 @@ export function Forwarding() {
                     onCancel={() => setRuleToDelete(null)}
                 />
             </div>
-        </SecondaryLayout>
+        </div>
     );
 }

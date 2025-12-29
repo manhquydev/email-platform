@@ -26,7 +26,7 @@ describe("Telegram Integration", () => {
         // Create test user and login
         const hashed = await bcrypt.hash("password123", 10);
         const user = await prisma.user.create({
-            data: { email: "telegram-test@example.com", passwordHash: hashed, role: "USER" },
+            data: { email: "telegram-test@example.com", passwordHash: hashed, role: "USER", emailVerified: new Date() },
         });
         userId = user.id;
 

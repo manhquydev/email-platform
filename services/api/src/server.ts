@@ -22,6 +22,7 @@ import { billingRoutes } from "./routes/billing";
 import { filterRoutes } from "./routes/filters";
 import { authenticatorRoutes } from "./routes/authenticator";
 import { telegramRoutes } from "./routes/telegram";
+import { webhookRoutes } from "./routes/webhooks";
 import { forwardingRoutes } from "./routes/forwarding";
 import { subscriptionRoutes } from "./routes/subscription";
 import { setupBotCommands } from "./services/telegramBot";
@@ -29,6 +30,10 @@ import { webauthnRoutes } from "./routes/webauthn";
 import { magicLinkRoutes } from "./routes/magic-link";
 import { notificationRoutes } from "./routes/notifications";
 import { uploadRoutes } from "./routes/upload";
+import { apiKeysRoutes } from "./routes/api-keys";
+import { setupSwagger } from "./plugins/swagger";
+import crypto from "crypto";
+import { prisma } from "./lib/prisma";
 
 // ... existing imports ...
 
@@ -88,7 +93,7 @@ export const buildServer = () => {
   app.register(multipart, { attachFieldsToBody: false, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
   app.register(fastifyStatic, {
-    root: path.join(appConfig.storageDir, "uploads"),
+    root: path.resolve(appConfig.storageDir, "uploads"),
     prefix: "/public/uploads/",
     decorateReply: false
   });
@@ -142,7 +147,36 @@ export const buildServer = () => {
     done();
   });
 
+
+
+  // ... [middle of file] ...
+
   app.decorate("authenticate", async (request: FastifyRequest, reply: FastifyReply) => {
+    // Check API Key
+    const apiKey = request.headers['x-api-key'];
+    if (typeof apiKey === 'string') {
+      const hash = crypto.createHash('sha256').update(apiKey).digest('hex');
+
+      const keyRecord = await prisma.apiKey.findUnique({
+        where: { keyHash: hash },
+        include: { user: true }
+      });
+
+      if (keyRecord) {
+        request.user = {
+          userId: keyRecord.userId,
+          role: keyRecord.user.role,
+          tier: keyRecord.user.tier,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 3600 // Valid for current request
+        };
+        // Async update lastUsed
+        prisma.apiKey.update({ where: { id: keyRecord.id }, data: { lastUsedAt: new Date() } }).catch(() => { });
+        return;
+      }
+      return reply.status(401).send({ error: "Invalid API Key" });
+    }
+
     try {
       await request.jwtVerify();
     } catch (err) {
@@ -158,41 +192,30 @@ export const buildServer = () => {
 
   app.decorate("requireAdmin", async (request: FastifyRequest, reply: FastifyReply) => {
     await app.authenticate(request, reply);
-    if ((request.user as any)?.role !== "ADMIN") {
-      return reply.status(403).send({ error: "Forbidden" });
+    // If authenticate fails, it sends response and stops? 
+    // Wait, app.authenticate returns Promise<void>. 
+    // It calls reply.send() if error, but does it stop execution?
+    // It returns, but the caller must check?
+    // In authenticate implementation: return reply.status(401).send(...)
+    // If reply is sent, Fastify usually handles it.
+
+    // Check if response is already sent
+    if (reply.sent) return;
+
+    const user = (request as any).user;
+    if (!user || user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Admin access required" });
     }
   });
 
-  app.get("/", async () => ({
-    ok: true,
-    service: "api",
-    docs: {
-      health: "/health",
-      ready: "/ready",
-      login: "/auth/login",
-      domains: ["/domains", "/domains/:id/verify"],
-      inboxes: ["/inboxes", "/inboxes/:id/messages"],
-      messages: ["/messages/:id"],
-      abuse: ["/abuse/rules", "/abuse/reports", "/public/inboxes"],
-    },
-  }));
+  setupSwagger(app);
 
-  app.get("/metrics", async (request, reply) => {
-    const metrics = await promRegister.metrics();
-    reply.header("Content-Type", promRegister.contentType);
-    return reply.send(metrics);
-  });
-
-  // ... existing imports
-
-  app.register(healthRoutes);
-  app.register(publicRoutes);
   app.register(authRoutes);
-  app.register(webauthnRoutes);
-  app.register(magicLinkRoutes);
+  app.register(publicRoutes);
   app.register(domainRoutes);
   app.register(inboxRoutes);
   app.register(messageRoutes);
+  app.register(healthRoutes);
   app.register(abuseRoutes);
   app.register(adminRoutes);
   app.register(billingRoutes);
@@ -200,9 +223,14 @@ export const buildServer = () => {
   app.register(authenticatorRoutes);
   app.register(telegramRoutes);
   app.register(forwardingRoutes);
+  app.register(webauthnRoutes);
+  app.register(magicLinkRoutes);
+
   app.register(subscriptionRoutes);
+  app.register(apiKeysRoutes);
   app.register(notificationRoutes, { prefix: "/notifications" });
   app.register(uploadRoutes, { prefix: "/uploads" });
+  app.register(webhookRoutes);
 
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);

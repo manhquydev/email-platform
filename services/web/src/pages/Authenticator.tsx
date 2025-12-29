@@ -3,7 +3,7 @@ import { toast } from "react-hot-toast";
 import { authenticator } from "otplib";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE } from "../utils/api";
-import { SecondaryLayout } from "../layouts/SecondaryLayout";
+
 import { ConfirmationModal } from "../components/ConfirmationModal";
 
 interface AuthenticatorAccount {
@@ -179,7 +179,7 @@ export function Authenticator() {
     };
 
     return (
-        <SecondaryLayout>
+        <div className="flex-1 h-full flex flex-col min-w-0">
             <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
                 {/* Premium Header */}
                 <div className="page-header">
@@ -411,6 +411,6 @@ export function Authenticator() {
                     onCancel={() => setAccountToDelete(null)}
                 />
             </div>
-        </SecondaryLayout>
+        </div>
     );
 }

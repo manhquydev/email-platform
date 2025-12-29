@@ -7,6 +7,14 @@ interface SiteFooterProps {
 export function SiteFooter({ variant = "full" }: SiteFooterProps) {
     const currentYear = new Date().getFullYear();
 
+    const handleNavClick = () => {
+        const container = document.getElementById("app-main-scroll") || document.querySelector(".public-layout") || window;
+        container.scrollTo({ top: 0, behavior: "instant" });
+        if (container instanceof HTMLElement) {
+            container.scrollTop = 0;
+        }
+    };
+
     if (variant === "minimal") {
         return (
             <footer className="site-footer-minimal neo-glass-light">
@@ -15,8 +23,8 @@ export function SiteFooter({ variant = "full" }: SiteFooterProps) {
                         © {currentYear} Ephemera
                     </span>
                     <div className="site-footer-minimal-links">
-                        <Link to="/terms" className="neo-hover-lift">Điều khoản</Link>
-                        <Link to="/privacy" className="neo-hover-lift">Bảo mật</Link>
+                        <Link to="/terms" className="neo-hover-lift" onClick={handleNavClick}>Điều khoản</Link>
+                        <Link to="/privacy" className="neo-hover-lift" onClick={handleNavClick}>Bảo mật</Link>
                     </div>
                 </div>
             </footer>
@@ -28,7 +36,7 @@ export function SiteFooter({ variant = "full" }: SiteFooterProps) {
             <div className="site-footer-container">
                 {/* Brand Section */}
                 <div className="site-footer-brand neo-animate-fade-in-up">
-                    <Link to="/" className="site-footer-logo neo-hover-scale">
+                    <Link to="/" className="site-footer-logo neo-hover-scale" onClick={handleNavClick}>
                         <div className="site-footer-logo-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
@@ -61,24 +69,24 @@ export function SiteFooter({ variant = "full" }: SiteFooterProps) {
                 <div className="site-footer-links">
                     <div className="site-footer-group neo-animate-fade-in-up neo-stagger-1">
                         <h4>Sản phẩm</h4>
-                        <Link to="/#features" className="neo-hover-lift">Tính năng</Link>
-                        <Link to="/#pricing" className="neo-hover-lift">Bảng giá</Link>
-                        <Link to="/#how-it-works" className="neo-hover-lift">Cách hoạt động</Link>
-                        <Link to="/#api" className="neo-hover-lift">Tài liệu API</Link>
+                        <Link to="/#features" className="neo-hover-lift" onClick={handleNavClick}>Tính năng</Link>
+                        <Link to="/#pricing" className="neo-hover-lift" onClick={handleNavClick}>Bảng giá</Link>
+                        <Link to="/#how-it-works" className="neo-hover-lift" onClick={handleNavClick}>Cách hoạt động</Link>
+                        <Link to="/#api" className="neo-hover-lift" onClick={handleNavClick}>Tài liệu API</Link>
                     </div>
                     <div className="site-footer-group neo-animate-fade-in-up neo-stagger-2">
                         <h4>Tài khoản</h4>
-                        <Link to="/login" className="neo-hover-lift">Đăng nhập</Link>
-                        <Link to="/register" className="neo-hover-lift">Đăng ký</Link>
-                        <Link to="/app" className="neo-hover-lift">Dashboard</Link>
-                        <Link to="/support" className="neo-hover-lift">Hỗ trợ</Link>
+                        <Link to="/login" className="neo-hover-lift" onClick={handleNavClick}>Đăng nhập</Link>
+                        <Link to="/register" className="neo-hover-lift" onClick={handleNavClick}>Đăng ký</Link>
+                        <Link to="/app" className="neo-hover-lift" onClick={handleNavClick}>Dashboard</Link>
+                        <Link to="/support" className="neo-hover-lift" onClick={handleNavClick}>Hỗ trợ</Link>
                     </div>
                     <div className="site-footer-group neo-animate-fade-in-up neo-stagger-3">
                         <h4>Pháp lý</h4>
-                        <Link to="/terms" className="neo-hover-lift">Điều khoản dịch vụ</Link>
-                        <Link to="/privacy" className="neo-hover-lift">Chính sách bảo mật</Link>
-                        <Link to="/acceptable-use" className="neo-hover-lift">Sử dụng chấp nhận</Link>
-                        <Link to="/gdpr" className="neo-hover-lift">Tuân thủ GDPR</Link>
+                        <Link to="/terms" className="neo-hover-lift" onClick={handleNavClick}>Điều khoản dịch vụ</Link>
+                        <Link to="/privacy" className="neo-hover-lift" onClick={handleNavClick}>Chính sách bảo mật</Link>
+                        <Link to="/acceptable-use" className="neo-hover-lift" onClick={handleNavClick}>Sử dụng chấp nhận</Link>
+                        <Link to="/gdpr" className="neo-hover-lift" onClick={handleNavClick}>Tuân thủ GDPR</Link>
                     </div>
                 </div>
             </div>

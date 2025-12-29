@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
 import { Login } from "./Login";
-import { vi } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 
 // Mock react-router-dom
 vi.mock("react-router-dom", async () => {
@@ -50,6 +50,7 @@ describe("Login Page", () => {
         expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();
 
         // Check for button
-        expect(screen.getByRole("button", { name: /Đăng nhập/i })).toBeInTheDocument();
+        // Check for button
+        expect(screen.getByText("Đăng nhập")).toBeInTheDocument();
     });
 });

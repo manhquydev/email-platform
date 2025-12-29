@@ -3,6 +3,8 @@ import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { api, PAGE_SIZE } from "../utils/api";
 import { InboxCard } from "../components/InboxCard";
+import { GlassCard } from "../components/ui/GlassCard";
+import { cn } from "../utils/cn";
 import { TabNavigation, InboxTabIcon, MessagesTabIcon } from "../components/TabNavigation";
 import { EmailStream } from "../components/EmailStream";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
@@ -55,14 +57,18 @@ export function InboxManager() {
         if (!token) return;
         try {
             const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
-            setDomains(res.data);
-            if (res.data.length > 0 && !selectedDomain) {
-                setSelectedDomain(res.data[0].id);
-            }
+            setDomains(res?.data || []);
         } catch (e) {
             toast.error("Lỗi tải danh sách domain");
         }
-    }, [token, selectedDomain]);
+    }, [token]);
+
+    // Auto-select domain
+    useEffect(() => {
+        if (domains.length > 0 && !selectedDomain) {
+            setSelectedDomain(domains[0].id);
+        }
+    }, [domains, selectedDomain]);
 
     const loadInboxes = useCallback(async () => {
         if (!token) return;
@@ -73,7 +79,7 @@ export function InboxManager() {
                 personal: "true" // Fetch all personal inboxes across all domains
             });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
-            setInboxes(res.data);
+            setInboxes(res?.data || []);
         } catch (e) {
             toast.error("Lỗi tải danh sách inbox");
         } finally {
@@ -91,7 +97,7 @@ export function InboxManager() {
                 offset: "0"
             });
             const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
-            setMessages(res.data);
+            setMessages(res?.data || []);
         } catch (e) {
             toast.error("Lỗi tải email");
         } finally {
@@ -316,6 +322,8 @@ export function InboxManager() {
 
 
 
+    // ... (imports remain)
+
     return (
         <FocusStreamLayout
             domains={domains}
@@ -327,7 +335,7 @@ export function InboxManager() {
         >
 
             {/* Tab Navigation */}
-            <div className="inbox-manager-header">
+            <div className="sticky top-0 z-30">
                 <TabNavigation
                     tabs={tabs}
                     activeTab={activeTab}
@@ -336,87 +344,102 @@ export function InboxManager() {
             </div>
 
             {/* Tab Content */}
-            <div className="inbox-manager-content">
+            <div className="p-4 md:p-6 w-full max-w-7xl mx-auto">
                 {activeTab === 'inboxes' ? (
-                    <div className="inbox-manager-list-container">
+                    <div className="flex flex-col gap-4">
                         {/* Toolbar */}
-                        <div className="inbox-manager-toolbar">
-                            <div className="inbox-manager-toolbar-left">
-                                <label className="inbox-manager-select-all">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedInboxIds.size === filteredInboxes.length && filteredInboxes.length > 0}
-                                        onChange={handleSelectAll}
-                                    />
-                                    <span>Chọn tất cả</span>
+                        <GlassCard className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl">
+                            <div className="flex items-center gap-4 w-full md:w-auto">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative">
+                                        <input
+                                            type="checkbox"
+                                            className="peer sr-only"
+                                            checked={selectedInboxIds.size === filteredInboxes.length && filteredInboxes.length > 0}
+                                            onChange={handleSelectAll}
+                                        />
+                                        <div className="w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50">
+                                            <svg className="w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <span className="text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors">Select all</span>
                                 </label>
 
                                 {selectedInboxIds.size > 0 && (
-                                    <div className="inbox-manager-batch-actions">
-                                        <button onClick={handleCopyAll} className="inbox-manager-batch-btn">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <div className="flex items-center gap-2 animate-fade-in">
+                                        <button onClick={handleCopyAll} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-text-main transition-colors border border-white/10">
+                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                                             </svg>
-                                            Sao chép ({selectedInboxIds.size})
+                                            Copy ({selectedInboxIds.size})
                                         </button>
-                                        <button onClick={handleBatchDelete} className="inbox-manager-batch-btn inbox-manager-batch-btn--danger">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <button onClick={handleBatchDelete} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-xs font-medium text-red-400 hover:text-red-300 transition-colors border border-red-500/20">
+                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                                             </svg>
-                                            Xóa ({selectedInboxIds.size})
+                                            Delete ({selectedInboxIds.size})
                                         </button>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="inbox-manager-toolbar-right">
-                                <select
-                                    value={filterBy}
-                                    onChange={(e) => setFilterBy(e.target.value as FilterOption)}
-                                    className="inbox-manager-filter"
-                                >
-                                    <option value="all">Tất cả</option>
-                                    <option value="active">Đang hoạt động</option>
-                                    <option value="expiring">Sắp hết hạn</option>
-                                    <option value="expired">Đã hết hạn</option>
-                                </select>
-
-                                <select
-                                    value={sortBy}
-                                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                    className="inbox-manager-sort"
-                                >
-                                    <option value="created">Mới nhất</option>
-                                    <option value="name">Tên A-Z</option>
-                                    <option value="ttl">Thời hạn</option>
-                                </select>
+                            <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                                <div className="flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5">
+                                    <select
+                                        value={filterBy}
+                                        onChange={(e) => setFilterBy(e.target.value as FilterOption)}
+                                        className="bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"
+                                    >
+                                        <option value="all">All Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="expiring">Expiring Soon</option>
+                                        <option value="expired">Expired</option>
+                                    </select>
+                                    <div className="w-px h-4 bg-white/10" />
+                                    <select
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                        className="bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"
+                                    >
+                                        <option value="created">Newest</option>
+                                        <option value="name">Name A-Z</option>
+                                        <option value="ttl">Time Left</option>
+                                    </select>
+                                </div>
 
                                 <button
-                                    className="inbox-manager-create-btn"
+                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"
                                     onClick={() => setShowCreateModal(true)}
                                 >
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                     </svg>
-                                    Tạo mới
+                                    Create New
                                 </button>
                             </div>
-                        </div>
+                        </GlassCard>
 
                         {/* Inbox List */}
-                        <div className="inbox-manager-list">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                             {busy && inboxes.length === 0 ? (
-                                Array(5).fill(0).map((_, i) => <InboxCardSkeleton key={i} />)
+                                Array(6).fill(0).map((_, i) => <InboxCardSkeleton key={i} />)
                             ) : filteredInboxes.length === 0 ? (
-                                <div className="inbox-manager-empty">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
-                                    </svg>
-                                    <h3>Chưa có hộp thư nào</h3>
-                                    <p>Tạo email tạm thời đầu tiên của bạn</p>
-                                    <button onClick={() => setShowCreateModal(true)}>
-                                        Tạo email mới
+                                <div className="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
+                                    <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
+                                        <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2">No inboxes found</h3>
+                                    <p className="text-text-secondary max-w-sm mx-auto mb-6">Start by creating your first temporary email inbox to receive messages.</p>
+                                    <button
+                                        onClick={() => setShowCreateModal(true)}
+                                        className="px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"
+                                    >
+                                        Create your first inbox
                                     </button>
                                 </div>
                             ) : (
@@ -438,44 +461,70 @@ export function InboxManager() {
 
                         {/* Footer stats */}
                         {filteredInboxes.length > 0 && (
-                            <div className="inbox-manager-footer">
-                                <span>{filteredInboxes.length} hộp thư</span>
+                            <div className="flex items-center justify-center text-xs text-text-secondary py-4">
+                                <span>{filteredInboxes.length} inboxes</span>
                                 {selectedInboxIds.size > 0 && (
-                                    <span> • {selectedInboxIds.size} đã chọn</span>
+                                    <span className="ml-1">• {selectedInboxIds.size} selected</span>
                                 )}
                             </div>
                         )}
                     </div>
                 ) : (
                     /* Messages Tab */
-                    <div className="inbox-manager-messages">
+                    <div className="flex flex-col h-[calc(100vh-140px)]">
                         {activeInbox ? (
-                            <>
-                                <div className="inbox-manager-messages-header">
-                                    <h2>{activeInbox.localPart}@{activeInbox.domain?.name}</h2>
-                                    <span className="inbox-manager-messages-count">{messages.length} emails</span>
-                                </div>
-                                {busy && messages.length === 0 ? (
-                                    <div className="space-y-0">
-                                        {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                            <div className="flex flex-col h-full">
+                                <GlassCard className="mb-4 p-4 flex items-center justify-between rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 className="font-bold text-lg text-text-main">{activeInbox.localPart}@{activeInbox.domain?.name}</h2>
+                                            <p className="text-xs text-text-secondary">{messages.length} messages</p>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <EmailStream
-                                        messages={messages}
-                                        selectedMessageId={selectedMessage?.id || null}
-                                        onSelectMessage={handleSelectMessage}
-                                    />
-                                )}
-                            </>
+                                    <button
+                                        className="p-2 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                        onClick={() => loadMessages(activeInbox.id)}
+                                        title="Refresh"
+                                    >
+                                        <svg className={cn("w-5 h-5", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </GlassCard>
+
+                                <div className="flex-1 overflow-y-auto min-h-0 rounded-2xl bg-surface/20 border border-white/5 backdrop-blur-sm">
+                                    {busy && messages.length === 0 ? (
+                                        <div className="p-4 space-y-3">
+                                            {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                                        </div>
+                                    ) : (
+                                        <EmailStream
+                                            messages={messages}
+                                            selectedMessageId={selectedMessage?.id || null}
+                                            onSelectMessage={handleSelectMessage}
+                                        />
+                                    )}
+                                </div>
+                            </div>
                         ) : (
-                            <div className="inbox-manager-no-inbox">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                </svg>
-                                <h3>Chọn một hộp thư</h3>
-                                <p>Chọn hộp thư từ tab "Hộp thư" để xem tin nhắn</p>
-                                <button onClick={() => setActiveTab('inboxes')}>
-                                    Đi đến Hộp thư
+                            <div className="flex flex-col items-center justify-center h-full text-center opacity-60">
+                                <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
+                                    <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-text-main mb-2">Select an inbox</h3>
+                                <p className="text-text-secondary max-w-sm mb-6">Choose an inbox from the list to view its messages.</p>
+                                <button
+                                    onClick={() => setActiveTab('inboxes')}
+                                    className="px-6 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                                >
+                                    Go to Inboxes
                                 </button>
                             </div>
                         )}
@@ -483,37 +532,50 @@ export function InboxManager() {
                 )}
             </div>
 
-            {/* Message Detail Overlay */}
+            {/* Message Detail Overlay - Using standard fixed overlay or maybe a drawer component? Keeping custom for now but styled */}
             {showDetail && selectedMessage && (
-                <div className="stream-detail-overlay" onClick={() => setShowDetail(false)}>
-                    <div className="stream-detail-panel" onClick={e => e.stopPropagation()}>
-                        <div className="stream-detail-header">
-                            <button onClick={() => setShowDetail(false)} className="stream-detail-close">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowDetail(false)}>
+                    <GlassCard
+                        className="w-full max-w-4xl max-h-full h-[80vh] flex flex-col rounded-2xl shadow-2xl relative overflow-hidden bg-bg-secondary/95"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-surface/30">
+                            <div>
+                                <h2 className="text-xl font-bold text-text-main pr-8">{selectedMessage.subject || '(No Subject)'}</h2>
+                                <div className="flex items-center gap-2 mt-1 text-sm text-text-secondary">
+                                    <span className="font-medium text-primary bg-primary/10 px-2 py-0.5 rounded text-xs">From</span>
+                                    <span>{selectedMessage.fromAddress}</span>
+                                    <span className="text-muted">•</span>
+                                    <span>{new Date(selectedMessage.receivedAt).toLocaleString('vi-VN')}</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowDetail(false)}
+                                className="absolute top-4 right-4 p-2 rounded-lg bg-surface hover:bg-white/10 text-text-secondary hover:text-white transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
-                            <h2>{selectedMessage.subject || '(Không có tiêu đề)'}</h2>
                         </div>
-                        <div className="stream-detail-meta">
-                            <strong>Từ:</strong> {selectedMessage.fromAddress}<br />
-                            <strong>Ngày:</strong> {new Date(selectedMessage.receivedAt).toLocaleString('vi-VN')}
-                        </div>
-                        <div className="stream-detail-body">
+
+                        {/* Body */}
+                        <div className="flex-1 overflow-auto bg-white">
                             {selectedMessage.htmlBody ? (
                                 <iframe
                                     srcDoc={selectedMessage.htmlBody}
                                     title="Email content"
                                     sandbox="allow-same-origin allow-scripts"
-                                    style={{ width: '100%', height: '400px', border: 'none' }}
+                                    className="w-full h-full border-0"
                                 />
                             ) : (
-                                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
-                                    {selectedMessage.textBody || 'Không có nội dung'}
-                                </pre>
+                                <div className="p-6 whitespace-pre-wrap font-mono text-sm text-gray-800">
+                                    {selectedMessage.textBody || 'No content'}
+                                </div>
                             )}
                         </div>
-                    </div>
+                    </GlassCard>
                 </div>
             )}
 
@@ -525,19 +587,8 @@ export function InboxManager() {
                         token={token}
                         onClose={() => setShowCreateModal(false)}
                         onInboxCreated={(newInbox) => {
-                            setInboxes(prev => {
-                                // Add to top of list
-                                return [newInbox, ...prev];
-                            });
-
-                            // If we created an inbox on a different domain, switch to it? 
-                            // Or just rely on the 'personal=true' filter which shows all my inboxes anyway.
-                            // The current implementation loads ALL personal inboxes so domain filter isn't strictly necessary for visibility.
-                            // But if we want to filter by domain in UI, we might want to switch.
-                            // However, since we show ALL, just prepending is enough.
-
+                            setInboxes(prev => [newInbox, ...prev]);
                             setShowCreateModal(false);
-                            // Toast is already handled in modal, but we can keep or remove. Modal has one.
                         }}
                     />
                 )}
@@ -545,9 +596,9 @@ export function InboxManager() {
 
             <ConfirmationModal
                 isOpen={!!inboxToDelete}
-                title="Xác nhận xóa hộp thư"
-                message={`Bạn có chắc chắn muốn xóa hộp thư ${inboxToDelete?.localPart}@${inboxToDelete?.domain?.name}? Hành động này không thể hoàn tác.`}
-                confirmLabel="Xóa"
+                title="Confirm Deletion"
+                message={`Are you sure you want to delete ${inboxToDelete?.localPart}@${inboxToDelete?.domain?.name}? This action cannot be undone.`}
+                confirmLabel="Delete"
                 isDestructive
                 isLoading={busy}
                 onConfirm={confirmDeleteInbox}
@@ -556,9 +607,9 @@ export function InboxManager() {
 
             <ConfirmationModal
                 isOpen={showBatchDeleteConfirm}
-                title="Xác nhận xóa hàng loạt"
-                message={`Bạn có chắc chắn muốn xóa ${selectedInboxIds.size} hộp thư đã chọn? Hành động này không thể hoàn tác.`}
-                confirmLabel="Xóa tất cả"
+                title="Confirm Batch Deletion"
+                message={`Are you sure you want to delete ${selectedInboxIds.size} selected inboxes? This action cannot be undone.`}
+                confirmLabel="Delete All"
                 isDestructive
                 isLoading={isBatchDeleting}
                 onConfirm={confirmBatchDelete}

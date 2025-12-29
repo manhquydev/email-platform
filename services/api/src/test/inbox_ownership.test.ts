@@ -93,7 +93,7 @@ describe("Inbox Ownership Tests (Mocked)", () => {
             payload: { domainId, localPart: "myemail" }
         });
 
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(201);
         expect(prismaMock.inbox.create).toHaveBeenCalledWith(
             expect.objectContaining({
                 data: expect.objectContaining({

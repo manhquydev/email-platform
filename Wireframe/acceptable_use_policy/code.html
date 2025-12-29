@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Acceptable Use Policy - Ephemera</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2525f4",
+                        "background-light": "#f5f5f8",
+                        "background-dark": "#101022",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-header {
+            background: rgba(16, 16, 34, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nebula-gradient-1 {
+            background: radial-gradient(circle at center, rgba(37, 37, 244, 0.15) 0%, rgba(16, 16, 34, 0) 70%);
+        }
+        
+        .nebula-gradient-2 {
+            background: radial-gradient(circle at center, rgba(100, 50, 200, 0.12) 0%, rgba(16, 16, 34, 0) 70%);
+        }
+
+        /* Custom scrollbar for sidebar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display overflow-x-hidden selection:bg-primary/30 selection:text-primary-100 min-h-screen flex flex-col">
+<!-- Nebula Background Effects -->
+<div class="fixed top-0 left-0 w-full h-screen overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] nebula-gradient-1 rounded-full blur-3xl opacity-60"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] nebula-gradient-2 rounded-full blur-3xl opacity-50"></div>
+</div>
+<!-- Top Navigation -->
+<header class="glass-header fixed top-0 w-full z-50 h-16 flex items-center px-4 lg:px-10 justify-between transition-all duration-300">
+<div class="flex items-center gap-4 text-white">
+<div class="size-8 text-primary flex items-center justify-center">
+<svg fill="none" height="32" viewbox="0 0 48 48" width="32" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.1739 20.1739L27.8261 5.82609C29.1366 7.13663 28.3989 10.1876 26.2002 13.7654C24.8538 15.9564 22.9595 18.3449 20.6522 20.6522C18.3449 22.9595 15.9564 24.8538 13.7654 26.2002C10.1876 28.3989 7.13663 29.1366 5.82609 27.8261L20.1739 42.1739C21.4845 43.4845 24.5355 42.7467 28.1133 40.548C30.3042 39.2016 32.6927 37.3073 35 35C37.3073 32.6927 39.2016 30.3042 40.548 28.1133C42.7467 24.5355 43.4845 21.4845 42.1739 20.1739Z" fill="currentColor"></path>
+<path clip-rule="evenodd" d="M7.24189 26.4066C7.31369 26.4411 7.64204 26.5637 8.52504 26.3738C9.59462 26.1438 11.0343 25.5311 12.7183 24.4963C14.7583 23.2426 17.0256 21.4503 19.238 19.238C21.4503 17.0256 23.2426 14.7583 24.4963 12.7183C25.5311 11.0343 26.1438 9.59463 26.3738 8.52504C26.5637 7.64204 26.4411 7.31369 26.4066 7.24189C26.345 7.21246 26.143 7.14535 25.6664 7.1918C24.9745 7.25925 23.9954 7.5498 22.7699 8.14278C20.3369 9.32007 17.3369 11.4915 14.4142 14.4142C11.4915 17.3369 9.32007 20.3369 8.14278 22.7699C7.5498 23.9954 7.25925 24.9745 7.1918 25.6664C7.14534 26.143 7.21246 26.345 7.24189 26.4066ZM29.9001 10.7285C29.4519 12.0322 28.7617 13.4172 27.9042 14.8126C26.465 17.1544 24.4686 19.6641 22.0664 22.0664C19.6641 24.4686 17.1544 26.465 14.8126 27.9042C13.4172 28.7617 12.0322 29.4519 10.7285 29.9001L21.5754 40.747C21.6001 40.7606 21.8995 40.931 22.8729 40.7217C23.9424 40.4916 25.3821 39.879 27.0661 38.8441C29.1062 37.5904 31.3734 35.7982 33.5858 33.5858C35.7982 31.3734 37.5904 29.1062 38.8441 27.0661C39.879 25.3821 40.4916 23.9425 40.7216 22.8729C40.931 21.8995 40.7606 21.6001 40.747 21.5754L29.9001 10.7285ZM29.2403 4.41187L43.5881 18.7597C44.9757 20.1473 44.9743 22.1235 44.6322 23.7139C44.2714 25.3919 43.4158 27.2666 42.252 29.1604C40.8128 31.5022 38.8165 34.012 36.4142 36.4142C34.012 38.8165 31.5022 40.8128 29.1604 42.252C27.2666 43.4158 25.3919 44.2714 23.7139 44.6322C22.1235 44.9743 20.1473 44.9757 18.7597 43.5881L4.41187 29.2403C3.29027 28.1187 3.08209 26.5973 3.21067 25.2783C3.34099 23.9415 3.8369 22.4852 4.54214 21.0277C5.96129 18.0948 8.43335 14.7382 11.5858 11.5858C14.7382 8.43335 18.0948 5.9613 21.0277 4.54214C22.4852 3.8369 23.9415 3.34099 25.2783 3.21067C26.5973 3.08209 28.1187 3.29028 29.2403 4.41187Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Ephemera</h2>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<nav class="flex items-center gap-6">
+<a class="text-white/70 hover:text-white text-sm font-medium transition-colors" href="#">Features</a>
+<a class="text-white/70 hover:text-white text-sm font-medium transition-colors" href="#">Pricing</a>
+<a class="text-white/70 hover:text-white text-sm font-medium transition-colors" href="#">Docs</a>
+<a class="text-white/70 hover:text-white text-sm font-medium transition-colors" href="#">Login</a>
+</nav>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-[0_0_20px_rgba(37,37,244,0.3)] transition-all">
+<span class="truncate">Sign Up</span>
+</button>
+</div>
+<div class="md:hidden">
+<button class="text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Content Layout -->
+<div class="layout-container flex flex-col pt-24 pb-12 px-4 md:px-8 xl:px-40 relative z-10 max-w-[1400px] mx-auto w-full">
+<div class="flex flex-col lg:flex-row gap-8 xl:gap-12 items-start">
+<!-- Side Navigation (Sticky) -->
+<aside class="w-full lg:w-72 shrink-0 lg:sticky lg:top-28 hidden lg:block">
+<div class="glass-panel p-5 rounded-xl flex flex-col gap-6">
+<h1 class="text-white text-xs font-bold uppercase tracking-wider opacity-60 px-3">Table of Contents</h1>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/20 text-white transition-colors border border-primary/20" href="#introduction">
+<span class="material-symbols-outlined text-[20px] text-primary">info</span>
+<span class="text-sm font-medium">Introduction</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-colors" href="#prohibited">
+<span class="material-symbols-outlined text-[20px]">block</span>
+<span class="text-sm font-medium">Prohibited Activities</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-colors" href="#api">
+<span class="material-symbols-outlined text-[20px]">code</span>
+<span class="text-sm font-medium">API Usage</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-colors" href="#abuse">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span class="text-sm font-medium">System Abuse</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-colors" href="#enforcement">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+<span class="text-sm font-medium">Enforcement</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-colors" href="#reporting">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+<span class="text-sm font-medium">Reporting Abuse</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 min-w-0 w-full">
+<!-- Page Heading -->
+<div class="mb-10 animate-fade-in-up">
+<h1 class="text-white text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-4">Acceptable Use Policy</h1>
+<div class="flex items-center gap-3 text-white/50 text-sm">
+<span class="px-2 py-1 rounded bg-white/10 text-xs font-mono">v2.4</span>
+<span>Last Updated: October 24, 2023</span>
+</div>
+</div>
+<!-- Introduction -->
+<section class="glass-panel p-6 md:p-8 rounded-xl mb-8" id="introduction">
+<p class="text-white/90 text-lg leading-relaxed font-light">
+                        Ephemera is dedicated to providing a secure, private, and anonymous communication platform. To ensure the safety and reliability of our service for all users, we have established this Acceptable Use Policy (AUP). By using Ephemera, you agree to comply with the guidelines outlined below. Our goal is to protect user privacy without enabling malicious behavior.
+                    </p>
+</section>
+<!-- Prohibited Activities -->
+<section class="mb-12" id="prohibited">
+<h2 class="text-white text-2xl font-bold mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">block</span>
+                        Prohibited Activities
+                    </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Card 1 -->
+<div class="glass-panel p-6 rounded-xl border-l-4 border-l-red-500/50 hover:bg-white/5 transition-colors">
+<div class="flex items-start justify-between mb-4">
+<h3 class="text-white font-bold text-lg">Spam &amp; Unsolicited Mail</h3>
+<span class="material-symbols-outlined text-white/40">mail_lock</span>
+</div>
+<p class="text-white/70 text-sm leading-relaxed">
+                                Sending unsolicited bulk emails (spam) is strictly prohibited. You may not use our service to distribute advertisements, promotions, or solicitations to users who have not explicitly requested them.
+                            </p>
+</div>
+<!-- Card 2 -->
+<div class="glass-panel p-6 rounded-xl border-l-4 border-l-orange-500/50 hover:bg-white/5 transition-colors">
+<div class="flex items-start justify-between mb-4">
+<h3 class="text-white font-bold text-lg">Phishing &amp; Deception</h3>
+<span class="material-symbols-outlined text-white/40">phishing</span>
+</div>
+<p class="text-white/70 text-sm leading-relaxed">
+                                Creating misleading emails or domains to trick recipients into revealing sensitive information (passwords, financial data) constitutes a severe violation and will result in immediate termination.
+                            </p>
+</div>
+<!-- Card 3 -->
+<div class="glass-panel p-6 rounded-xl border-l-4 border-l-yellow-500/50 hover:bg-white/5 transition-colors">
+<div class="flex items-start justify-between mb-4">
+<h3 class="text-white font-bold text-lg">Malware Distribution</h3>
+<span class="material-symbols-outlined text-white/40">bug_report</span>
+</div>
+<p class="text-white/70 text-sm leading-relaxed">
+                                Using Ephemera to host, distribute, or link to malicious software, viruses, trojans, or worms is forbidden. Our scanners actively monitor for such signatures.
+                            </p>
+</div>
+<!-- Card 4 -->
+<div class="glass-panel p-6 rounded-xl border-l-4 border-l-purple-500/50 hover:bg-white/5 transition-colors">
+<div class="flex items-start justify-between mb-4">
+<h3 class="text-white font-bold text-lg">Illegal Activities</h3>
+<span class="material-symbols-outlined text-white/40">policy</span>
+</div>
+<p class="text-white/70 text-sm leading-relaxed">
+                                Any use of the service for activities that violate local, state, national, or international laws is prohibited. We cooperate with law enforcement for valid legal requests despite our privacy focus.
+                            </p>
+</div>
+</div>
+</section>
+<!-- API Usage -->
+<section class="mb-12" id="api">
+<h2 class="text-white text-2xl font-bold mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">code</span>
+                        API Usage &amp; Limits
+                    </h2>
+<div class="glass-panel p-8 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-9xl">api</span>
+</div>
+<p class="text-white/80 mb-6 relative z-10">
+                            Our developer APIs are designed to integrate disposable email functionality into your applications. To ensure quality of service for everyone:
+                        </p>
+<ul class="space-y-4 relative z-10">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary shrink-0 mt-0.5 text-sm">check_circle</span>
+<span class="text-white/70 text-sm"><strong>Rate Limiting:</strong> Free tier keys are limited to 100 requests per minute. Enterprise keys have custom limits.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary shrink-0 mt-0.5 text-sm">check_circle</span>
+<span class="text-white/70 text-sm"><strong>Scraping:</strong> Automated scraping of our web interface is prohibited. Please use the official API endpoints.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary shrink-0 mt-0.5 text-sm">check_circle</span>
+<span class="text-white/70 text-sm"><strong>Key Sharing:</strong> API keys are for individual or organizational use and should not be publicly shared or sold.</span>
+</li>
+</ul>
+</div>
+</section>
+<!-- System Abuse -->
+<section class="mb-12" id="abuse">
+<h2 class="text-white text-2xl font-bold mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">warning</span>
+                        System Abuse
+                    </h2>
+<div class="glass-panel p-8 rounded-xl">
+<p class="text-white/80 leading-relaxed mb-4">
+                            You agree not to interfere with or disrupt the integrity or performance of the Ephemera Service or the data contained therein. This includes attempting to gain unauthorized access to the Service or its related systems or networks.
+                        </p>
+<p class="text-white/80 leading-relaxed">
+                            Load testing, penetration testing, or vulnerability scanning of our infrastructure without prior written permission is strictly prohibited and will be treated as an attack.
+                        </p>
+</div>
+</section>
+<!-- Enforcement -->
+<section class="mb-12" id="enforcement">
+<h2 class="text-white text-2xl font-bold mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">gavel</span>
+                        Enforcement
+                    </h2>
+<div class="flex flex-col md:flex-row gap-6">
+<div class="flex-1">
+<p class="text-white/80 mb-4">
+                                Violations of this Policy may result in actions including but not limited to:
+                            </p>
+<ul class="list-disc pl-5 space-y-2 text-white/70 marker:text-primary">
+<li>Temporary suspension of service</li>
+<li>Permanent account termination</li>
+<li>Blocking of IP addresses or domains</li>
+<li>Removal of content</li>
+<li>Reporting to relevant authorities</li>
+</ul>
+</div>
+<div class="flex-1 glass-panel p-6 rounded-xl bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
+<h4 class="text-white font-bold mb-2">Our Discretion</h4>
+<p class="text-white/60 text-sm">Ephemera retains sole discretion to determine whether a violation of this Policy has occurred. We are not liable for any damages resulting from the enforcement of this policy.</p>
+</div>
+</div>
+</section>
+<!-- Reporting -->
+<section class="mb-20" id="reporting">
+<div class="glass-panel p-8 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-transparent flex flex-col md:flex-row items-center justify-between gap-6">
+<div>
+<h2 class="text-xl font-bold text-white mb-2">Witnessed a violation?</h2>
+<p class="text-white/70 text-sm">Help us keep Ephemera safe. Report abuse immediately.</p>
+</div>
+<a class="flex items-center gap-2 bg-white text-background-dark hover:bg-white/90 px-6 py-3 rounded-lg font-bold text-sm transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" href="mailto:abuse@ephemera.io">
+<span class="material-symbols-outlined text-lg">flag</span>
+                            Report Abuse
+                        </a>
+</div>
+</section>
+<!-- Footer -->
+<footer class="border-t border-white/10 pt-8 mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="text-white/40 text-sm">
+                            © 2023 Ephemera Inc. All rights reserved.
+                        </div>
+<div class="flex gap-6">
+<a class="text-white/40 hover:text-white text-sm transition-colors" href="#">Privacy Policy</a>
+<a class="text-white/40 hover:text-white text-sm transition-colors" href="#">Terms of Service</a>
+<a class="text-white/40 hover:text-white text-sm transition-colors" href="#">Security</a>
+</div>
+</div>
+</footer>
+</main>
+</div>
+</div>
+</body></html>

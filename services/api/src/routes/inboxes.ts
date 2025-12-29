@@ -111,7 +111,7 @@ export async function inboxRoutes(app: FastifyInstance) {
       email: `${localPart}@${domain.name}`
     });
 
-    return { inbox };
+    return reply.status(201).send({ inbox });
   });
 
   // DELETE inbox (soft delete)

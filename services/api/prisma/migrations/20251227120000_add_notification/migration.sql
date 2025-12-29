@@ -8,6 +8,7 @@ CREATE TABLE "Notification" (
     "type" "NotificationType" NOT NULL DEFAULT 'INFO',
     "title" TEXT NOT NULL,
     "message" TEXT NOT NULL,
+    "imageUrl" TEXT,
     "isRead" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

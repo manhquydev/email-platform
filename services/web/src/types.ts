@@ -54,3 +54,82 @@ export type PaginatedResponse<T> = {
     data: T[];
     meta?: { total?: number };
 };
+
+// ==================
+// FILTERS & LABELS
+// ==================
+
+export type FilterField = 'FROM' | 'TO' | 'SUBJECT' | 'BODY' | 'HAS_ATTACHMENT';
+export type FilterOperator = 'CONTAINS' | 'NOT_CONTAINS' | 'EQUALS' | 'NOT_EQUALS' | 'STARTS_WITH' | 'ENDS_WITH' | 'REGEX';
+export type FilterActionType = 'MOVE_TO_FOLDER' | 'ADD_LABEL' | 'REMOVE_LABEL' | 'MARK_READ' | 'MARK_SPAM' | 'DELETE' | 'FORWARD';
+export type FilterMatchType = 'ALL' | 'ANY';
+
+export interface FilterCondition {
+    field: FilterField;
+    operator: FilterOperator;
+    value: string;
+}
+
+export interface FilterAction {
+    type: FilterActionType;
+    value?: string;
+}
+
+export interface EmailFilter {
+    id: string;
+    inboxId: string;
+    name: string;
+    description?: string;
+    matchType: FilterMatchType;
+    conditions: FilterCondition[];
+    actions: FilterAction[];
+    priority: number;
+    isEnabled: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Label {
+    id: string;
+    inboxId: string;
+    name: string;
+    color?: string;
+    parentId?: string;
+    createdAt: string;
+    updatedAt: string;
+    _count?: {
+        messages: number;
+    };
+    children?: Label[];
+}
+
+export interface Webhook {
+    id: string;
+    userId: string;
+    name: string;
+    url: string;
+    events: string[];
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface WebhookLog {
+    id: string;
+    webhookId: string;
+    eventType: string;
+    payload: any;
+    statusCode?: number;
+    responseBody?: string;
+    duration?: number;
+    createdAt: string;
+}
+
+export interface Payment {
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    createdAt: string;
+    stripePaymentId?: string;
+}

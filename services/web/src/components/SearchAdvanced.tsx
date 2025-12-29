@@ -16,6 +16,7 @@ interface SearchAdvancedProps {
     onFilterChange?: (filters: SearchFilter) => void;
     placeholder?: string;
     className?: string;
+    onClose?: () => void;
 }
 
 export function SearchAdvanced({
@@ -24,6 +25,7 @@ export function SearchAdvanced({
     onFilterChange,
     placeholder = "Tìm kiếm email...",
     className = "",
+    onClose
 }: SearchAdvancedProps) {
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState<SearchFilter>({});
@@ -50,6 +52,8 @@ export function SearchAdvanced({
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
                 setShowSuggestions(false);
                 setShowFilters(false);
+                // Optional: call onClose if clicking outside the entire container? 
+                // Mostly handled by parent overlay
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -64,6 +68,7 @@ export function SearchAdvanced({
             localStorage.setItem('email-recent-searches', JSON.stringify(updated));
         }
         setShowSuggestions(false);
+        onClose?.();
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -73,6 +78,7 @@ export function SearchAdvanced({
         if (e.key === 'Escape') {
             setShowSuggestions(false);
             setShowFilters(false);
+            onClose?.();
         }
     };
 

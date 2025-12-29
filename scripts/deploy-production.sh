@@ -10,8 +10,20 @@ echo "🚀 Starting deployment of Email Platform..."
 echo "============================================"
 
 # Navigate to project directory
-cd /root/email-platform.
+cd /root/email-platform
 echo "📁 Current directory: $(pwd)"
+
+# =============================================================
+# CONFIGURATION
+# =============================================================
+export DOMAIN="manhquy.click"
+export ACME_EMAIL="admin@manhquy.click"
+export VITE_API_BASE="https://api.manhquy.click"
+
+echo "🌍 Deploying to Domain: $DOMAIN"
+echo "📧 SSL Email: $ACME_EMAIL"
+echo "🔗 API Base: $VITE_API_BASE"
+# =============================================================
 
 # Step 1: Pull latest code
 echo ""
@@ -21,7 +33,7 @@ git pull https://manhquydev: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@github.com/
 # Step 2: Rebuild Docker containers
 echo ""
 echo "🐳 Step 2: Rebuilding Docker containers..."
-docker compose -f docker-compose.prod.yml up -d --build
+DOMAIN=$DOMAIN ACME_EMAIL=$ACME_EMAIL docker compose -f docker-compose.prod.yml up -d --build
 
 # Wait for containers to start
 echo ""

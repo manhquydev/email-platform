@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import { startHttpServer } from "./server";
 import { startSmtpServer } from "./smtp";
 import { setupEmailWorker } from "./worker";
+import { setupWebhookWorker } from "./webhookWorker";
 import { prisma } from "./lib/prisma";
 import { appConfig } from "./config";
 import { hashPassword } from "./utils/password";
@@ -65,6 +66,7 @@ const main = async () => {
   await ensureAdminUser(app.log);
   const smtp = startSmtpServer(app.log);
   const worker = setupEmailWorker(app.log);
+  const webhookWorker = setupWebhookWorker(app.log);
 
   // Verify outbound email connection on startup
   const { outboundService } = await import("./services/outbound");
@@ -89,6 +91,7 @@ const main = async () => {
     smtp.close();
     cleanupJob.stop();
     await worker.close();
+    await webhookWorker.close();
     await prisma.$disconnect();
     process.exit(0);
   };

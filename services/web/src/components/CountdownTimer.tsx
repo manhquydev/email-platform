@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { cn } from '../utils/cn';
 
 interface CountdownTimerProps {
     expiresAt: string | Date;
+    className?: string;
 }
 
-export function CountdownTimer({ expiresAt }: CountdownTimerProps) {
+export function CountdownTimer({ expiresAt, className }: CountdownTimerProps) {
     const [timeLeft, setTimeLeft] = useState<string>('');
     const [colorClass, setColorClass] = useState<string>('text-muted');
 
@@ -50,7 +52,7 @@ export function CountdownTimer({ expiresAt }: CountdownTimerProps) {
     }, [expiresAt]);
 
     return (
-        <div className="flex items-center gap-1">
+        <div className={cn("flex items-center gap-1", className)}>
             <svg className={`w-3 h-3 ${colorClass}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

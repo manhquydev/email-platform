@@ -3,7 +3,8 @@ import { FastifyInstance } from "fastify";
 import { buildServer } from "../server";
 
 // 1. Mock Prisma BEFORE importing app/routes
-const prismaMock = {
+// 1. Mock Prisma BEFORE importing app/routes
+const prismaMock = vi.hoisted(() => ({
     domain: {
         findUnique: vi.fn(),
         findMany: vi.fn(),
@@ -23,8 +24,26 @@ const prismaMock = {
     auditLog: {
         create: vi.fn(),
     },
-    $transaction: vi.fn((callback) => callback(prismaMock)),
-};
+    $transaction: vi.fn((callback) => callback({
+        domain: {
+            findUnique: vi.fn(),
+            findMany: vi.fn(),
+            create: vi.fn(),
+            update: vi.fn(),
+            delete: vi.fn(),
+            count: vi.fn(),
+        },
+        inbox: {
+            findUnique: vi.fn(),
+            create: vi.fn(),
+            update: vi.fn(),
+            delete: vi.fn(),
+            count: vi.fn(),
+            findMany: vi.fn(),
+        },
+        // minimalist recursive mock for transaction
+    })),
+}));
 
 vi.mock("../lib/prisma", () => ({
     prisma: prismaMock,

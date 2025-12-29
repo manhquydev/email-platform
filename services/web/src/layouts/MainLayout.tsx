@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api";
+import { AppShell } from "./AppShell";
 
 export function MainLayout() {
     const { token } = useAuth();
@@ -26,8 +27,8 @@ export function MainLayout() {
     }
 
     return (
-        <div className="h-full w-full bg-bg text-text-main">
+        <AppShell>
             <Outlet />
-        </div>
+        </AppShell>
     );
 }

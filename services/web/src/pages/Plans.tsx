@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { SecondaryLayout } from "../layouts/SecondaryLayout";
+
 import { api } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -153,7 +153,7 @@ export function Plans() {
     ];
 
     return (
-        <SecondaryLayout>
+        <div className="flex-1 h-full flex flex-col min-w-0">
             <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
                 {/* Header */}
                 <div className="page-header">
@@ -284,6 +284,6 @@ export function Plans() {
                     </div>
                 </div>
             </div>
-        </SecondaryLayout>
+        </div>
     );
 }

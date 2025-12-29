@@ -16,6 +16,7 @@ import { syncMessageToMaildir } from './services/maildirSync';
 import { processFiltersForMessage } from './services/emailFilters';
 import { notifyNewEmail } from './services/telegramBot';
 import { forwardMessageIfMatched } from './services/emailForwarder';
+import { triggerWebhook } from './services/webhookService';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -271,6 +272,23 @@ export const setupEmailWorker = (logger: Logger) => {
                             await forwardMessageIfMatched(messageWithRelations as any);
                         } catch (forwardErr) {
                             logger.warn({ err: forwardErr }, 'failed to forward email');
+                        }
+
+                        // Release 4: Webhooks
+                        try {
+                            if (messageWithRelations.inbox.ownerId) {
+                                await triggerWebhook(messageWithRelations.inbox.ownerId, 'email.received', {
+                                    id: message.id,
+                                    inboxId: message.inboxId,
+                                    from: fromAddress,
+                                    to: toAddress,
+                                    subject: message.subject,
+                                    receivedAt: message.receivedAt,
+                                    size: message.size,
+                                });
+                            }
+                        } catch (webhookErr) {
+                            logger.warn({ err: webhookErr }, 'failed to trigger webhook');
                         }
                     }
                 } catch (maildirErr) {

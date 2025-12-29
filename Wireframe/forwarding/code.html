@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ephemera - Forwarding Rules</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#8c25f4",
+              "primary-glow": "#a755f7",
+              "background-light": "#f7f5f8",
+              "background-dark": "#05050A", // Deep void color
+              "surface-dark": "#1a1023",
+              "glass-border": "rgba(255, 255, 255, 0.08)",
+              "glass-bg": "rgba(255, 255, 255, 0.03)",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"],
+              "mono": ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"]
+            },
+            boxShadow: {
+                'glow': '0 0 20px -5px rgba(140, 37, 244, 0.3)',
+                'glow-lg': '0 0 40px -10px rgba(140, 37, 244, 0.4)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: "Space Grotesk", sans-serif;
+            background-color: #05050A;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.15) 0%, transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(140, 37, 244, 0.1) 0%, transparent 25%);
+            background-attachment: fixed;
+        }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(26, 16, 35, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .glass-input:focus {
+            border-color: #8c25f4;
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 15px rgba(140, 37, 244, 0.2);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+        }
+        
+        .nav-item.active {
+            background: rgba(140, 37, 244, 0.2);
+            border: 1px solid rgba(140, 37, 244, 0.3);
+            border-radius: 0.5rem;
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        /* Custom scrollbar for table */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(140, 37, 244, 0.3); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(140, 37, 244, 0.5); 
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex overflow-hidden">
+<!-- Side Navigation -->
+<nav class="w-64 glass-panel border-r border-glass-border flex flex-col h-screen fixed left-0 top-0 z-50">
+<div class="p-6 pb-8 border-b border-glass-border/30">
+<div class="flex items-center gap-3">
+<div class="bg-gradient-to-br from-primary to-purple-900 rounded-lg h-10 w-10 flex items-center justify-center shadow-glow">
+<span class="material-symbols-outlined text-white text-2xl">privacy_tip</span>
+</div>
+<div>
+<h1 class="text-lg font-bold tracking-tight text-white">Ephemera</h1>
+<p class="text-xs text-purple-300 font-light tracking-wide">Premium Privacy</p>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+<a class="nav-item flex items-center gap-3 px-3 py-3 text-gray-300 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">inbox</span>
+<span class="text-sm font-medium">Inbox</span>
+</a>
+<a class="nav-item active flex items-center gap-3 px-3 py-3 text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px] text-primary-glow">forward_to_inbox</span>
+<span class="text-sm font-medium">Forwarding</span>
+</a>
+<a class="nav-item flex items-center gap-3 px-3 py-3 text-gray-300 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">language</span>
+<span class="text-sm font-medium">Domains</span>
+</a>
+<a class="nav-item flex items-center gap-3 px-3 py-3 text-gray-300 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">code</span>
+<span class="text-sm font-medium">API Keys</span>
+</a>
+<div class="pt-4 pb-2">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
+</div>
+<a class="nav-item flex items-center gap-3 px-3 py-3 text-gray-300 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+<a class="nav-item flex items-center gap-3 px-3 py-3 text-gray-300 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">security</span>
+<span class="text-sm font-medium">Audit Log</span>
+</a>
+</div>
+<div class="p-4 border-t border-glass-border/30">
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition cursor-pointer group">
+<div class="h-8 w-8 rounded-full bg-cover bg-center border border-primary/50" data-alt="User avatar abstract gradient" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAc8GDb2IG2NVNlq81joIrmMVYHRfuAqJ6JZ0P-aCmW64X19Q6ix4PE3Qj11pf8gsWmBZJ3CCU0dnDke9gPvMtgQFiwP9WD8D78f6_wwxxD58W7gjqzoJkUTFEZu20_guDUNeESR2HLsfoYnPYAAqygLtL9KpdtB3K75EWwO3VU645IQE9msflfTLAP6Zs6vlFKBy9manZvJp3SDZC7f0C58whyDhVw5gt8XsSS1q5ZoHarybdojOacgDTphsPa_3xZq8PEfJsxcrHr');"></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium text-white truncate">alex@ephem.io</p>
+<p class="text-xs text-gray-400 truncate">Pro Plan</p>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-white text-sm">expand_more</span>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8 lg:p-12 overflow-y-auto h-screen relative">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 animate-fade-in-down">
+<div class="max-w-2xl">
+<h1 class="text-4xl lg:text-5xl font-light tracking-tight text-white mb-2">Forwarding Rules</h1>
+<p class="text-gray-400 text-lg font-light">Manage how your aliases route to your real inbox. Stay hidden.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg glass-panel hover:bg-white/10 transition text-sm font-medium text-gray-300 border-white/10">
+<span class="material-symbols-outlined text-[18px]">visibility_off</span>
+<span>Global Privacy Mode</span>
+</button>
+</div>
+</header>
+<!-- Stats Bar -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<div class="glass-panel p-5 rounded-xl border-l-4 border-l-primary/50 relative overflow-hidden group">
+<div class="absolute right-0 top-0 opacity-10 group-hover:opacity-20 transition-opacity transform translate-x-1/3 -translate-y-1/3">
+<span class="material-symbols-outlined text-[120px]">alternate_email</span>
+</div>
+<p class="text-gray-400 text-sm font-medium mb-1">Active Aliases</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-bold text-white tracking-tight">12</span>
+<span class="text-xs text-emerald-400 mb-1.5 flex items-center">
+<span class="material-symbols-outlined text-[14px] mr-0.5">trending_up</span> +2 this week
+                    </span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl border-l-4 border-l-purple-500/50 relative overflow-hidden group">
+<div class="absolute right-0 top-0 opacity-10 group-hover:opacity-20 transition-opacity transform translate-x-1/3 -translate-y-1/3">
+<span class="material-symbols-outlined text-[120px]">send</span>
+</div>
+<p class="text-gray-400 text-sm font-medium mb-1">Emails Forwarded</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-bold text-white tracking-tight">1,402</span>
+<span class="text-xs text-gray-500 mb-1.5">Lifetime</span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl border-l-4 border-l-pink-500/50 relative overflow-hidden group">
+<div class="absolute right-0 top-0 opacity-10 group-hover:opacity-20 transition-opacity transform translate-x-1/3 -translate-y-1/3">
+<span class="material-symbols-outlined text-[120px]">shield</span>
+</div>
+<p class="text-gray-400 text-sm font-medium mb-1">Spam Blocked</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-bold text-white tracking-tight">450</span>
+<span class="text-xs text-emerald-400 mb-1.5 font-medium">Auto-filtered</span>
+</div>
+</div>
+</div>
+<!-- Quick Mask Generator -->
+<section class="mb-10 relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+<div class="glass-panel p-6 md:p-8 rounded-xl relative">
+<div class="flex flex-col md:flex-row gap-6 items-end">
+<div class="flex-1 w-full">
+<label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">auto_fix_high</span>
+                            Quick Mask Generator
+                        </label>
+<div class="flex items-center gap-2">
+<div class="relative flex-1">
+<input class="glass-input w-full rounded-lg py-3 pl-4 pr-32 focus:outline-none focus:ring-0 font-mono text-sm tracking-wide" placeholder="Enter prefix..." type="text" value="neon-sky-842"/>
+<span class="absolute right-4 top-3 text-gray-500 font-mono select-none pointer-events-none">@ephem.io</span>
+</div>
+<button class="bg-primary hover:bg-primary-glow text-white px-6 py-3 rounded-lg font-medium shadow-glow hover:shadow-glow-lg transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                                Create Mask
+                            </button>
+</div>
+</div>
+<div class="flex items-center gap-4 pb-2">
+<label class="flex items-center cursor-pointer relative">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-3 text-sm font-medium text-gray-300">Forward to Primary</span>
+</label>
+<div class="h-8 w-px bg-white/10 mx-2 hidden md:block"></div>
+<button class="text-gray-400 hover:text-white transition p-2 rounded-lg hover:bg-white/5" title="Advanced Options">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Rules Table Section -->
+<section class="glass-panel rounded-xl overflow-hidden border border-glass-border">
+<div class="p-5 border-b border-glass-border flex flex-wrap justify-between items-center gap-4">
+<h2 class="text-lg font-semibold text-white">Active Rules</h2>
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-500 text-[18px]">search</span>
+<input class="glass-input h-9 w-64 rounded-lg pl-9 pr-4 text-sm focus:outline-none focus:ring-0 placeholder:text-gray-600" placeholder="Search aliases..." type="text"/>
+</div>
+<button class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm transition">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span>Filter</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-xs text-gray-400 uppercase tracking-wider border-b border-glass-border bg-white/[0.02]">
+<th class="px-6 py-4 font-medium">Status</th>
+<th class="px-6 py-4 font-medium">Alias Address</th>
+<th class="px-6 py-4 font-medium">Destination</th>
+<th class="px-6 py-4 font-medium">Rules / Filters</th>
+<th class="px-6 py-4 font-medium text-right">Activity</th>
+<th class="px-6 py-4 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-white/5">
+<!-- Row 1 -->
+<tr class="group hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="status-dot bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+<span class="text-gray-300">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-white group-hover:text-primary-glow transition-colors">
+                                shop-amazon@ephem.io
+                                <button class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-white" title="Copy">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</td>
+<td class="px-6 py-4 text-gray-400">
+                                alex@gmail.com
+                            </td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs">Standard</span>
+</td>
+<td class="px-6 py-4 text-right text-gray-500 text-xs">
+                                2m ago
+                            </td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-white p-1 rounded hover:bg-white/10 transition">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="status-dot bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]"></span>
+<span class="text-gray-300">Paused</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-white group-hover:text-primary-glow transition-colors">
+                                newsletter-sub@ephem.io
+                            </td>
+<td class="px-6 py-4 text-gray-400">
+                                alex@gmail.com
+                            </td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-md bg-red-500/10 text-red-300 border border-red-500/20 text-xs flex w-fit items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">attachment</span> Block Attachments
+                                </span>
+</td>
+<td class="px-6 py-4 text-right text-gray-500 text-xs">
+                                4d ago
+                            </td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-white p-1 rounded hover:bg-white/10 transition">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="status-dot bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+<span class="text-gray-300">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-white group-hover:text-primary-glow transition-colors">
+                                dev-test-01@mycustom.dev
+                            </td>
+<td class="px-6 py-4 text-gray-400 font-mono text-xs">
+                                webhook://api.site.com/v1/inbound
+                            </td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20 text-xs">Dev API</span>
+</td>
+<td class="px-6 py-4 text-right text-gray-500 text-xs">
+                                Just now
+                            </td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-white p-1 rounded hover:bg-white/10 transition">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="status-dot bg-gray-600"></span>
+<span class="text-gray-500">Disabled</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-gray-500 group-hover:text-gray-400 transition-colors decoration-slice line-through">
+                                temp-sign-up-22@ephem.io
+                            </td>
+<td class="px-6 py-4 text-gray-600">
+                                alex@gmail.com
+                            </td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded-md bg-gray-800 text-gray-500 border border-gray-700 text-xs">Expired</span>
+</td>
+<td class="px-6 py-4 text-right text-gray-600 text-xs">
+                                2w ago
+                            </td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-500 hover:text-white p-1 rounded hover:bg-white/10 transition">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-glass-border flex justify-between items-center bg-white/[0.01]">
+<span class="text-xs text-gray-500">Showing 1-4 of 12 aliases</span>
+<div class="flex gap-1">
+<button class="px-3 py-1 rounded hover:bg-white/10 text-gray-400 text-sm disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1 rounded hover:bg-white/10 text-white text-sm">Next</button>
+</div>
+</div>
+</section>
+<footer class="mt-12 mb-6 flex justify-between items-center text-xs text-gray-600 border-t border-glass-border/30 pt-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-gray-500">lock</span>
+<span>End-to-end encryption enabled via PGP keys.</span>
+</div>
+<div class="flex gap-4">
+<a class="hover:text-primary transition" href="#">Documentation</a>
+<a class="hover:text-primary transition" href="#">Support</a>
+<a class="hover:text-primary transition" href="#">Privacy Policy</a>
+</div>
+</footer>
+</main>
+</body></html>

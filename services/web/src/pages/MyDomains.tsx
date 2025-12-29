@@ -4,7 +4,7 @@ import { api } from "../utils/api";
 import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
 import type { Domain } from "../types";
-import { SecondaryLayout } from "../layouts/SecondaryLayout";
+
 import { ConfirmationModal } from "../components/ConfirmationModal";
 
 export function MyDomains() {
@@ -114,16 +114,16 @@ export function MyDomains() {
 
     if (loading) {
         return (
-            <SecondaryLayout>
+            <div className="flex-1 h-full">
                 <div className="flex items-center justify-center h-full" style={{ background: 'var(--nebula-void)' }}>
                     <div className="spinner" />
                 </div>
-            </SecondaryLayout>
+            </div>
         );
     }
 
     return (
-        <SecondaryLayout>
+        <div className="flex-1 h-full flex flex-col min-w-0">
             <div className="flex-1 overflow-y-auto" style={{ background: 'var(--nebula-void)' }}>
                 {/* Page Header */}
                 <div className="page-header">
@@ -136,7 +136,7 @@ export function MyDomains() {
                                 </svg>
                             </div>
                             <div>
-                                <h1 className="page-header-title">Quản lý Domain</h1>
+                                <h1 className="page-header-title">Quản lý tên miền</h1>
                                 <p className="page-header-subtitle">Thêm và cấu hình tên miền của bạn</p>
                             </div>
                         </div>
@@ -144,7 +144,7 @@ export function MyDomains() {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
-                            Thêm domain
+                            Thêm tên miền
                         </button>
                     </div>
                 </div>
@@ -165,7 +165,7 @@ export function MyDomains() {
                                                 Đã thêm tên miền!
                                             </span>
                                         ) : (
-                                            "Thêm domain mới"
+                                            "Thêm tên miền mới"
                                         )}
                                     </h2>
                                     <button onClick={() => { setShowAddForm(false); setAddedDomain(null); }} className="btn-nebula btn-nebula-ghost btn-nebula-icon">
@@ -192,7 +192,7 @@ export function MyDomains() {
                                             <div className="flex justify-end gap-3">
                                                 <button onClick={() => setShowAddForm(false)} className="btn-nebula btn-nebula-secondary">Hủy</button>
                                                 <button onClick={handleAddDomain} disabled={busy} className="btn-nebula btn-nebula-primary">
-                                                    {busy ? "Đang thêm..." : "Thêm domain"}
+                                                    {busy ? "Đang thêm..." : "Thêm tên miền"}
                                                 </button>
                                             </div>
                                         </>
@@ -206,8 +206,8 @@ export function MyDomains() {
                                                 <table className="w-full text-sm">
                                                     <thead style={{ background: 'var(--nebula-elevated)' }}>
                                                         <tr>
-                                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Type</th>
-                                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Value</th>
+                                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Loại</th>
+                                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Giá trị</th>
                                                             <th className="px-3 py-2 w-10"></th>
                                                         </tr>
                                                     </thead>
@@ -282,12 +282,12 @@ export function MyDomains() {
                                         <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
                                             <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-error)' }}>MX</td>
                                             <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>@</td>
-                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>mail.[your-server] (priority 10)</td>
+                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>mail.[máy-chủ-của-bạn] (độ ưu tiên 10)</td>
                                         </tr>
                                         <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
                                             <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-success)' }}>TXT</td>
                                             <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>@</td>
-                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>[verification token]</td>
+                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>[mã xác thực]</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -304,7 +304,7 @@ export function MyDomains() {
                                     <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                                 </svg>
                             </div>
-                            <h3 className="empty-state-nebula-title">Chưa có domain nào</h3>
+                            <h3 className="empty-state-nebula-title">Chưa có tên miền nào</h3>
                             <p className="empty-state-nebula-description">
                                 Thêm tên miền đầu tiên để bắt đầu nhận email.
                             </p>
@@ -312,7 +312,7 @@ export function MyDomains() {
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Thêm domain đầu tiên
+                                Thêm tên miền đầu tiên
                             </button>
                         </div>
                     ) : (
@@ -412,7 +412,7 @@ export function MyDomains() {
                                         {domain.isPublic && domain.status === "VERIFIED" && (
                                             <div className="mt-4 p-4 rounded-xl" style={{ background: 'var(--nebula-glow-violet)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
                                                 <p className="text-sm" style={{ color: 'var(--nebula-violet)' }}>
-                                                    <strong>Domain công khai.</strong> Người dùng khác có thể tạo email trên domain này.
+                                                    <strong>Tên miền công khai.</strong> Người dùng khác có thể tạo email trên domain này.
                                                 </p>
                                             </div>
                                         )}
@@ -434,6 +434,6 @@ export function MyDomains() {
                 onConfirm={confirmDelete}
                 onCancel={() => setDeleteTarget(null)}
             />
-        </SecondaryLayout>
+        </div>
     );
 }

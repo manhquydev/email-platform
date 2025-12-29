@@ -56,6 +56,17 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
         return { plans: packages, stripeEnabled };
     });
 
+    // Get payment history
+    app.get('/billing/payments', { preHandler: app.authenticate }, async (req: FastifyRequest) => {
+        const user = req.user as { userId: string };
+        const payments = await prisma.payment.findMany({
+            where: { userId: user.userId },
+            orderBy: { createdAt: 'desc' },
+            take: 20
+        });
+        return { payments };
+    });
+
     // Create checkout session
     app.post('/billing/checkout', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         if (!stripeEnabled) {

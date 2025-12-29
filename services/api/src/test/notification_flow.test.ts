@@ -48,8 +48,9 @@ describe("Notification System Integration (Mocked)", () => {
         vi.clearAllMocks();
 
         // Setup App
+        // Setup App
         app = await buildServer();
-        // Skip .ready() which might try to connect to DB/Redis if configured in specific plugins
+        await app.ready(); // Ensure plugins like jwt are registered
         // But buildServer usually just registers plugins.
         // We mocked prisma so it should be fine.
 
@@ -90,6 +91,7 @@ describe("Notification System Integration (Mocked)", () => {
             }
         });
 
+        console.log("Admin Send Response:", response.statusCode, response.body);
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ success: true, count: 1 });
 

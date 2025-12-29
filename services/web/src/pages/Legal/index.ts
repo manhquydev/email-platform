@@ -1,3 +1,4 @@
-export { TermsOfService } from './TermsOfService';
-export { PrivacyPolicy } from './PrivacyPolicy';
-export { AcceptableUse } from './AcceptableUse';
+export * from "./TermsOfService";
+export * from "./PrivacyPolicy";
+export * from "./AcceptableUse";
+export * from "./GDPR";

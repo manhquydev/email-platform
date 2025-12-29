@@ -1,13 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import DOMPurify from "dompurify";
 import toast from "react-hot-toast";
 import type { Message } from "../types";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { API_BASE, formatBytes } from "../utils/api";
 import { extractOTP } from "../utils/otpExtractor";
 import { useCopyOTP } from "../hooks/useCopyToClipboard";
-
 
 interface MessageDetailProps {
     message: Message | null;
@@ -19,6 +18,29 @@ interface MessageDetailProps {
 export function MessageDetail({ message, onComposeReply, onForward, onBack }: MessageDetailProps) {
     const [viewMode, setViewMode] = useState<"html" | "text">("html");
     const { copy: copyOTP, copied: otpCopied } = useCopyOTP();
+    const [timeLeft, setTimeLeft] = useState<string>("59:59");
+
+    // Mock Timer Logic
+    useEffect(() => {
+        if (!message) return;
+        // Simulate a countdown based on message ID hash or random
+        const duration = 60 * 60 * 1000; // 1 hour
+        const endTime = new Date(message.receivedAt).getTime() + duration;
+
+        const timer = setInterval(() => {
+            const now = Date.now();
+            const diff = endTime - now;
+            if (diff <= 0) {
+                setTimeLeft("Expired");
+                clearInterval(timer);
+            } else {
+                const m = Math.floor(diff / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                setTimeLeft(`${m}:${s.toString().padStart(2, '0')}`);
+            }
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [message]);
 
     // Extract OTP from email content
     const detectedOTP = useMemo(() => {
@@ -29,23 +51,18 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
 
     if (!message) {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 animate-fade-in text-center">
+            <div className="h-full flex flex-col items-center justify-center p-8 animate-fade-in text-center text-[var(--nebula-text-muted)]">
                 {/* Mobile empty state */}
                 <div className="md:hidden w-full h-full flex items-center justify-center">
-                    <p className="text-sm text-[var(--nebula-text-muted)]">Chạm vào một email để xem nội dung</p>
+                    <p className="text-sm">Chạm vào một email để xem nội dung</p>
                 </div>
 
                 <div className="hidden md:flex flex-col items-center">
-                    <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center shadow-md mb-4 hover-glow">
-                        <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                            {/* Broken Infinity Logo */}
-                            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
-                            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
-                            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
-                        </svg>
+                    <div className="w-24 h-24 bg-surface-elevated rounded-3xl flex items-center justify-center shadow-2xl mb-6 hover-glow transition-all">
+                        <span className="material-symbols-outlined text-5xl text-[var(--nebula-text-muted)] opacity-50">mail</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-text-main mb-1">Chưa chọn email</h3>
-                    <p className="text-sm">Vui lòng chọn một email từ danh sách để xem nội dung.</p>
+                    <h3 className="text-xl font-bold text-white mb-2">Chưa chọn email</h3>
+                    <p className="text-sm max-w-xs mx-auto opacity-70">Chọn một email từ danh sách để xem nội dung được bảo mật.</p>
                 </div>
             </div>
         );
@@ -76,196 +93,190 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
 
     return (
         <div className="h-full flex flex-col bg-surface overflow-hidden">
-            {/* Header */}
-            <div className="p-6 border-b border-border flex-shrink-0">
-                <div className="flex justify-between items-start mb-4 gap-2">
+            {/* Top Security Bar */}
+            <div className="h-14 px-6 border-b border-border bg-surface-elevated/50 flex items-center justify-between shrink-0 backdrop-blur-xl">
+                <div className="flex items-center gap-4">
                     {onBack && (
-                        <button onClick={onBack} className="md:hidden mt-0.5 text-muted hover:text-text-main flex-shrink-0">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        <button onClick={onBack} className="md:hidden text-muted hover:text-white">
+                            <span className="material-symbols-outlined">arrow_back</span>
                         </button>
                     )}
-                    <h1 className="text-xl font-bold text-text-main leading-snug flex-1">{message.subject || "(Không có tiêu đề)"}</h1>
-                    <div className="flex gap-1.5">
-                        {/* Reply */}
-                        <button
-                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
-                            title="Trả lời"
-                            data-tooltip="Trả lời"
-                            onClick={onComposeReply}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            <span className="hidden sm:inline">Trả lời</span>
-                        </button>
-                        {/* Forward */}
-                        <button
-                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
-                            title="Chuyển tiếp"
-                            data-tooltip="Chuyển tiếp"
-                            onClick={onForward}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </button>
-                        {/* Export */}
-                        <button
-                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
-                            title="Tải xuống (.eml)"
-                            data-tooltip="Tải xuống"
-                            onClick={handleExport}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </button>
-                        {/* Copy */}
-                        <button
-                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
-                            title="Sao chép nội dung"
-                            data-tooltip="Sao chép"
-                            onClick={handleCopyContent}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </button>
-                        {/* Print */}
-                        <button
-                            className="btn btn-secondary text-sm h-8 tooltip transition-colors hover-lift"
-                            title="In email"
-                            data-tooltip="In"
-                            onClick={handlePrint}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </button>
-                        {/* Delete */}
-                        <button className="btn btn-secondary text-sm h-8 text-danger hover:bg-danger-bg hover:border-danger tooltip transition-colors" title="Xóa" data-tooltip="Xóa">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </button>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/20 border border-white/5 group cursor-pointer hover:border-primary/50 transition-colors">
+                        <span className="material-symbols-outlined text-gray-400 text-[18px]">alternate_email</span>
+                        <span className="text-xs text-white font-mono tracking-wide">{message.toAddress}</span>
+                        <span className="material-symbols-outlined text-gray-500 text-[14px] group-hover:text-white transition-colors ml-2">content_copy</span>
+                    </div>
+                    <div className="h-4 w-px bg-white/10 hidden sm:block"></div>
+                    <div className="hidden sm:flex items-center gap-1 text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
+                        <span className="material-symbols-outlined text-[14px]">timer</span>
+                        <span className="font-mono">{timeLeft} remaining</span>
                     </div>
                 </div>
 
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                            {(message.fromAddress?.charAt(0) || "?").toUpperCase()}
-                        </div>
-                        <div>
-                            <div className="font-semibold text-text-main">
-                                {message.fromAddress}
-                            </div>
-                            <div className="text-xs text-muted">
-                                đến <span className="text-text-main">{message.toAddress}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-sm font-medium text-text-main">
-                            {format(new Date(message.receivedAt), "p, dd/MM/yyyy", { locale: vi })}
-                        </div>
-                        <div className="text-xs text-muted">
-                            {formatDistanceToNow(new Date(message.receivedAt), { addSuffix: true, locale: vi })}
-                        </div>
-                    </div>
+                <div className="flex items-center gap-1">
+                    <button onClick={handleCopyContent} className="p-2 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors" title="Sao chép nội dung">
+                        <span className="material-symbols-outlined text-[20px]">content_copy</span>
+                    </button>
+                    <button onClick={handlePrint} className="p-2 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors" title="In email">
+                        <span className="material-symbols-outlined text-[20px]">print</span>
+                    </button>
+                    <button onClick={handleExport} className="p-2 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors" title="Download Source">
+                        <span className="material-symbols-outlined text-[20px]">code</span>
+                    </button>
+                    <button className="p-2 hover:bg-red-500/20 rounded text-gray-400 hover:text-red-400 transition-colors" title="Delete">
+                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
                 </div>
             </div>
 
-            {/* OTP Detection Banner */}
-            {detectedOTP && (
-                <div className="px-6 py-3 border-b border-border bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
-                                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
+            {/* Email Content Scroll Area */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10">
+                <div className="max-w-4xl mx-auto flex flex-col gap-8 pb-20">
+
+                    {/* Header Info */}
+                    <div className="flex flex-col gap-6">
+                        <div className="flex justify-between items-start">
+                            <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight">{message.subject || "(Không có tiêu đề)"}</h1>
+                            <div className="flex gap-2 shrink-0">
+                                <button onClick={onComposeReply} className="size-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-primary/20 hover:border-primary/50 transition-all" title="Trả lời">
+                                    <span className="material-symbols-outlined">reply</span>
+                                </button>
+                                <button onClick={onForward} className="size-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-primary/20 hover:border-primary/50 transition-all" title="Chuyển tiếp">
+                                    <span className="material-symbols-outlined">forward</span>
+                                </button>
+                                <button className="size-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-yellow-500/20 hover:border-yellow-500/50 transition-all text-yellow-500" title="Đánh dấu sao">
+                                    <span className="material-symbols-outlined filled">star</span>
+                                </button>
                             </div>
-                            <div>
-                                <div className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider">
-                                    Mã xác thực được phát hiện
+                        </div>
+
+                        <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-elevated border border-border">
+                            <div className="size-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-lg">
+                                {(message.fromAddress?.charAt(0) || "?").toUpperCase()}
+                            </div>
+                            <div className="flex flex-col">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-bold text-white text-lg">{message.fromAddress}</span>
+                                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/20 uppercase tracking-wider flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[10px]">verified</span> Verified
+                                    </span>
                                 </div>
-                                <div className="text-2xl font-mono font-bold text-green-800 dark:text-green-300 tracking-widest">
-                                    {detectedOTP.code}
+                                <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                                    <span>To: <span className="text-gray-300">Me</span></span>
+                                    <span className="size-1 rounded-full bg-gray-600"></span>
+                                    <span>{format(new Date(message.receivedAt), "PPP p", { locale: vi })}</span>
+                                    <span className="size-1 rounded-full bg-gray-600"></span>
+                                    <span className="flex items-center gap-1 text-gray-500"><span className="material-symbols-outlined text-[12px]">lock</span> TLS 1.3 Encrypted</span>
                                 </div>
                             </div>
                         </div>
-                        <button
-                            onClick={() => copyOTP(detectedOTP.code)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${otpCopied
-                                ? 'bg-green-600 text-white'
-                                : 'bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-800 dark:hover:bg-green-700 dark:text-green-300'
-                                }`}
-                        >
-                            {otpCopied ? (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Đã copy!
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                    Copy OTP
-                                </>
-                            )}
-                        </button>
                     </div>
-                    {detectedOTP.confidence !== 'high' && (
-                        <div className="mt-2 text-xs text-green-600 dark:text-green-500">
-                            * Xin kiểm tra lại mã trước khi sử dụng
+
+                    {/* OTP Banner */}
+                    {detectedOTP && (
+                        <div className="p-1 rounded-2xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                            <div className="bg-background-dark/80 backdrop-blur rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="size-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                                        <span className="material-symbols-outlined">key</span>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-green-500 uppercase tracking-wider">Mã xác thực</div>
+                                        <div className="text-3xl font-mono font-bold text-white tracking-widest">{detectedOTP.code}</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => copyOTP(detectedOTP.code)}
+                                    className="px-6 py-2 rounded-lg bg-green-500 text-black font-bold hover:bg-green-400 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
+                                >
+                                    {otpCopied ? <span className="material-symbols-outlined text-[20px]">check</span> : <span className="material-symbols-outlined text-[20px]">content_copy</span>}
+                                    {otpCopied ? "Đã chép" : "Sao chép"}
+                                </button>
+                            </div>
                         </div>
                     )}
-                </div>
-            )}
 
-            {/* Attachments Area */}
-            {message.attachments && message.attachments.length > 0 && (
-                <div className="px-6 py-3 border-b border-border bg-bg/50">
-                    <div className="text-xs font-semibold uppercase text-muted mb-2 tracking-wider">Tệp đính kèm ({message.attachments.length})</div>
-                    <div className="flex flex-wrap gap-2">
-                        {message.attachments.map((a: any) => (
-                            <a
-                                key={a.id}
-                                href={`${API_BASE}/attachments/${a.id}/download`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-lg hover:border-primary hover:shadow-sm transition-all text-sm group no-underline"
-                            >
-                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                <div>
-                                    <div className="font-medium text-text-main group-hover:text-primary leading-tight">{a.filename}</div>
-                                    <div className="text-[10px] text-muted">{formatBytes(a.size)}</div>
-                                </div>
-                            </a>
-                        ))}
+                    {/* Security Grid (Mock Data from Wireframe) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 rounded-xl bg-black/20 border border-white/5 flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                                <span className="material-symbols-outlined">vpn_key</span>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Encryption Standard</div>
+                                <div className="text-sm font-medium text-white">AES-256-GCM</div>
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-black/20 border border-white/5 flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                                <span className="material-symbols-outlined">dns</span>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Server Region</div>
+                                <div className="text-sm font-medium text-white">Zurich, CH (Protected)</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            )}
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-6 relative">
-                <div className="absolute top-4 right-6 bg-surface border border-border rounded-lg flex p-0.5 shadow-sm z-10">
-                    <button
-                        onClick={() => setViewMode("html")}
-                        className={`text-xs px-2 py-1 rounded ${viewMode === 'html' ? 'bg-primary-light text-primary font-bold' : 'text-muted hover:text-text-main'}`}
-                    >
-                        HTML
-                    </button>
-                    <button
-                        onClick={() => setViewMode("text")}
-                        className={`text-xs px-2 py-1 rounded ${viewMode === 'text' ? 'bg-primary-light text-primary font-bold' : 'text-muted hover:text-text-main'}`}
-                    >
-                        Text
-                    </button>
-                </div>
+                    {/* Email Body */}
+                    <div className="relative group min-h-[200px]">
+                        <div className="absolute top-0 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button
+                                onClick={() => setViewMode("html")}
+                                className={`text-xs px-3 py-1.5 rounded-full border backdrop-blur-md ${viewMode === 'html' ? 'bg-primary/20 border-primary text-primary' : 'bg-black/40 border-white/10 text-gray-400'}`}
+                            >
+                                HTML
+                            </button>
+                            <button
+                                onClick={() => setViewMode("text")}
+                                className={`text-xs px-3 py-1.5 rounded-full border backdrop-blur-md ${viewMode === 'text' ? 'bg-primary/20 border-primary text-primary' : 'bg-black/40 border-white/10 text-gray-400'}`}
+                            >
+                                Text
+                            </button>
+                        </div>
 
-                <div className="prose prose-sm max-w-none mt-2">
-                    {viewMode === "text" || !message.htmlBody ? (
-                        <pre className="whitespace-pre-wrap font-mono text-sm text-text-main bg-bg p-4 rounded-lg border border-border">
-                            {message.textBody || "(Không có nội dung văn bản)"}
-                        </pre>
-                    ) : (
-                        <div
-                            className="email-content"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.htmlBody) }}
-                        />
+                        <div className="prose prose-invert max-w-none text-gray-300">
+                            {viewMode === "text" || !message.htmlBody ? (
+                                <pre className="whitespace-pre-wrap font-mono text-sm bg-black/20 p-6 rounded-xl border border-white/5">
+                                    {message.textBody || "(Không có nội dung văn bản)"}
+                                </pre>
+                            ) : (
+                                <div
+                                    className="email-content"
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.htmlBody) }}
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Attachments */}
+                    {message.attachments && message.attachments.length > 0 && (
+                        <div className="pt-8 border-t border-white/5">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[16px]">attachment</span>
+                                Tệp đính kèm ({message.attachments.length})
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {message.attachments.map((att: any, idx: number) => (
+                                    <a
+                                        key={idx}
+                                        href={`${API_BASE}/attachments/${att.storageKey}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-3 rounded-xl bg-surface-elevated border border-white/5 hover:border-primary/50 hover:bg-white/5 transition-all group no-underline"
+                                    >
+                                        <div className="p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 group-hover:text-primary transition-colors text-gray-400">
+                                            <span className="material-symbols-outlined">description</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium text-white truncate">{att.filename || `Tệp ${idx + 1}`}</div>
+                                            <div className="text-[10px] text-gray-500">{formatBytes(att.size)}</div>
+                                        </div>
+                                        <span className="material-symbols-outlined text-gray-600 group-hover:text-primary">download</span>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

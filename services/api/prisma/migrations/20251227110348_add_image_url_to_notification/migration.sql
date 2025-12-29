@@ -17,16 +17,16 @@ CREATE TYPE "FilterConditionOperator" AS ENUM ('CONTAINS', 'NOT_CONTAINS', 'EQUA
 CREATE TYPE "FilterActionType" AS ENUM ('MOVE_TO_FOLDER', 'ADD_LABEL', 'REMOVE_LABEL', 'MARK_READ', 'MARK_SPAM', 'DELETE', 'FORWARD');
 
 -- DropIndex
-DROP INDEX "idx_message_subject_trgm";
+-- DROP INDEX IF EXISTS "idx_message_subject_trgm";
 
 -- DropIndex
-DROP INDEX "idx_message_textbody_trgm";
+-- DROP INDEX IF EXISTS "idx_message_textbody_trgm";
 
 -- AlterTable
 ALTER TABLE "Inbox" ALTER COLUMN "claimedAt" SET NOT NULL;
 
 -- AlterTable
-ALTER TABLE "Notification" ADD COLUMN     "imageUrl" TEXT;
+-- ALTER TABLE "Notification" ADD COLUMN     "imageUrl" TEXT;
 
 -- AlterTable
 ALTER TABLE "User" ADD COLUMN     "isDisabled" BOOLEAN NOT NULL DEFAULT false,

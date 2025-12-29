@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ephemera - Login</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1919e6",
+              "primary-glow": "#4d4dff",
+              "background-light": "#f6f6f8",
+              "background-dark": "#050510", // Deeper black for the void feel
+              "glass-border": "rgba(255, 255, 255, 0.08)",
+              "glass-bg": "rgba(17, 17, 34, 0.6)",
+              "surface-dark": "#12122b",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"],
+            },
+            backgroundImage: {
+                'nebula-gradient': 'radial-gradient(circle at 50% 50%, rgba(25, 25, 230, 0.15) 0%, rgba(5, 5, 16, 0) 50%)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom Utilities for Nebula Glass Theme */
+        .glass-card {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: linear-gradient(180deg, rgba(30, 30, 50, 0.4) 0%, rgba(20, 20, 40, 0.2) 100%);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .nebula-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            z-index: 0;
+            animation: pulse-glow 8s infinite alternate;
+        }
+
+        .nebula-blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #1919e6 0%, transparent 70%);
+        }
+
+        .nebula-blob-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #6d28d9 0%, transparent 70%); /* Purple hint */
+            animation-delay: 2s;
+        }
+
+        .nebula-blob-3 {
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #0e7490 0%, transparent 70%); /* Cyan hint */
+            opacity: 0.3;
+            animation-delay: 4s;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        .input-glow:focus-within {
+            box-shadow: 0 0 15px rgba(25, 25, 230, 0.3);
+            border-color: #1919e6;
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(25, 25, 230, 0.6);
+        }
+    </style>
+</head>
+<body class="font-display antialiased text-white bg-background-light dark:bg-background-dark min-h-screen flex flex-col relative overflow-hidden">
+<!-- Nebula Background Effects -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+<div class="nebula-blob nebula-blob-1"></div>
+<div class="nebula-blob nebula-blob-2"></div>
+<div class="nebula-blob nebula-blob-3"></div>
+<!-- Grid overlay for tech feel -->
+<div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+</div>
+<!-- Minimal Header -->
+<header class="relative z-10 w-full px-8 py-6 flex justify-between items-center max-w-7xl mx-auto">
+<div class="flex items-center gap-3 text-white">
+<div class="size-8 text-primary animate-pulse">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_6_543)">
+<path d="M42.1739 20.1739L27.8261 5.82609C29.1366 7.13663 28.3989 10.1876 26.2002 13.7654C24.8538 15.9564 22.9595 18.3449 20.6522 20.6522C18.3449 22.9595 15.9564 24.8538 13.7654 26.2002C10.1876 28.3989 7.13663 29.1366 5.82609 27.8261L20.1739 42.1739C21.4845 43.4845 24.5355 42.7467 28.1133 40.548C30.3042 39.2016 32.6927 37.3073 35 35C37.3073 32.6927 39.2016 30.3042 40.548 28.1133C42.7467 24.5355 43.4845 21.4845 42.1739 20.1739Z" fill="currentColor"></path>
+<path clip-rule="evenodd" d="M7.24189 26.4066C7.31369 26.4411 7.64204 26.5637 8.52504 26.3738C9.59462 26.1438 11.0343 25.5311 12.7183 24.4963C14.7583 23.2426 17.0256 21.4503 19.238 19.238C21.4503 17.0256 23.2426 14.7583 24.4963 12.7183C25.5311 11.0343 26.1438 9.59463 26.3738 8.52504C26.5637 7.64204 26.4411 7.31369 26.4066 7.24189C26.345 7.21246 26.143 7.14535 25.6664 7.1918C24.9745 7.25925 23.9954 7.5498 22.7699 8.14278C20.3369 9.32007 17.3369 11.4915 14.4142 14.4142C11.4915 17.3369 9.32007 20.3369 8.14278 22.7699C7.5498 23.9954 7.25925 24.9745 7.1918 25.6664C7.14534 26.143 7.21246 26.345 7.24189 26.4066ZM29.9001 10.7285C29.4519 12.0322 28.7617 13.4172 27.9042 14.8126C26.465 17.1544 24.4686 19.6641 22.0664 22.0664C19.6641 24.4686 17.1544 26.465 14.8126 27.9042C13.4172 28.7617 12.0322 29.4519 10.7285 29.9001L21.5754 40.747C21.6001 40.7606 21.8995 40.931 22.8729 40.7217C23.9424 40.4916 25.3821 39.879 27.0661 38.8441C29.1062 37.5904 31.3734 35.7982 33.5858 33.5858C35.7982 31.3734 37.5904 29.1062 38.8441 27.0661C39.879 25.3821 40.4916 23.9425 40.7216 22.8729C40.931 21.8995 40.7606 21.6001 40.747 21.5754L29.9001 10.7285ZM29.2403 4.41187L43.5881 18.7597C44.9757 20.1473 44.9743 22.1235 44.6322 23.7139C44.2714 25.3919 43.4158 27.2666 42.252 29.1604C40.8128 31.5022 38.8165 34.012 36.4142 36.4142C34.012 38.8165 31.5022 40.8128 29.1604 42.252C27.2666 43.4158 25.3919 44.2714 23.7139 44.6322C22.1235 44.9743 20.1473 44.9757 18.7597 43.5881L4.41187 29.2403C3.29027 28.1187 3.08209 26.5973 3.21067 25.2783C3.34099 23.9415 3.8369 22.4852 4.54214 21.0277C5.96129 18.0948 8.43335 14.7382 11.5858 11.5858C14.7382 8.43335 18.0948 5.9613 21.0277 4.54214C22.4852 3.8369 23.9415 3.34099 25.2783 3.21067C26.5973 3.08209 28.1187 3.29028 29.2403 4.41187Z" fill="currentColor" fill-rule="evenodd"></path>
+</g>
+<defs>
+<clippath id="clip0_6_543"><rect fill="white" height="48" width="48"></rect></clippath>
+</defs>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Ephemera</h2>
+</div>
+<a class="text-sm text-gray-400 hover:text-primary transition-colors font-medium hidden sm:block" href="#">
+            Need help?
+        </a>
+</header>
+<!-- Main Content -->
+<main class="relative z-10 flex-1 flex items-center justify-center p-4">
+<div class="glass-card w-full max-w-[480px] rounded-2xl border border-glass-border p-1 sm:p-2 shadow-2xl animate-fade-in-up">
+<div class="bg-[#12122b]/40 rounded-xl p-6 sm:p-8 flex flex-col gap-6 backdrop-blur-sm">
+<!-- Heading -->
+<div class="flex flex-col gap-2 text-center pb-2">
+<h1 class="text-white text-3xl sm:text-4xl font-bold leading-tight tracking-tight">
+                        Enter the void
+                    </h1>
+<p class="text-[#9393c8] text-sm sm:text-base font-normal">
+                        Secure access to your ephemeral workspace.
+                    </p>
+</div>
+<!-- Form -->
+<form class="flex flex-col gap-5">
+<!-- Email Field -->
+<div class="flex flex-col gap-2">
+<label class="text-gray-300 text-sm font-medium ml-1" for="email">Email Address</label>
+<div class="relative group input-glow rounded-lg transition-all duration-300">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#9393c8]">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<input class="w-full bg-[#0d0d1f]/60 border border-[#343465] text-white text-base rounded-lg focus:ring-0 focus:border-primary block pl-11 p-3.5 placeholder-[#5e5e8a] transition-colors" id="email" placeholder="user@ephemera.io" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center ml-1">
+<label class="text-gray-300 text-sm font-medium" for="password">Password</label>
+<a class="text-xs text-primary hover:text-primary-glow transition-colors" href="#">Forgot password?</a>
+</div>
+<div class="relative group input-glow rounded-lg transition-all duration-300">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#9393c8]">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<input class="w-full bg-[#0d0d1f]/60 border border-[#343465] text-white text-base rounded-lg focus:ring-0 focus:border-primary block pl-11 pr-12 p-3.5 placeholder-[#5e5e8a] transition-colors" id="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#9393c8] hover:text-white transition-colors cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="mt-2 w-full bg-primary hover:bg-[#1515c2] text-white font-bold py-3.5 px-4 rounded-lg transition-all duration-300 transform active:scale-[0.98] btn-glow flex items-center justify-center gap-2 group" type="submit">
+<span>Sign In</span>
+<span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<!-- Divider -->
+<div class="relative py-2">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-[#343465]"></div>
+</div>
+<div class="relative flex justify-center text-sm">
+<span class="px-2 bg-[#0e0e24] text-[#9393c8] rounded text-xs uppercase tracking-wider">Secure Protocol</span>
+</div>
+</div>
+<!-- Secondary Action (Passkey) -->
+<button class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 group" type="button">
+<span class="material-symbols-outlined text-[20px] text-primary group-hover:text-white transition-colors">fingerprint</span>
+<span>Sign in with Passkey</span>
+</button>
+</form>
+<!-- Footer Link -->
+<div class="text-center pt-2">
+<p class="text-[#9393c8] text-sm">
+                        New to Ephemera? 
+                        <a class="text-white hover:text-primary font-semibold transition-colors ml-1 border-b border-transparent hover:border-primary pb-0.5" href="#">Initialize Protocol</a>
+</p>
+</div>
+</div>
+<!-- Security Badge -->
+<div class="py-3 px-6 flex items-center justify-center gap-2 text-xs text-[#5e5e8a] border-t border-white/5">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>End-to-end encrypted session</span>
+</div>
+</div>
+</main>
+<!-- Footer decoration -->
+<div class="relative z-10 w-full p-4 text-center">
+<p class="text-[#343465] text-xs font-mono">
+            ID: EPH-8821-X9 • v2.4.0
+        </p>
+</div>
+<style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+    </style>
+</body></html>

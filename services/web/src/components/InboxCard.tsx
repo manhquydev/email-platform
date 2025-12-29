@@ -1,5 +1,7 @@
 import toast from "react-hot-toast";
 import type { Inbox } from "../types";
+import { GlassCard } from "./ui/GlassCard";
+import { cn } from "../utils/cn";
 
 interface InboxCardProps {
     inbox: Inbox;
@@ -27,23 +29,23 @@ export function InboxCard({
     // Calculate TTL status
     const getTTLInfo = () => {
         if (!inbox.expiresAt) {
-            return { label: "Vĩnh viễn", status: "permanent" as const, icon: "⚪" };
+            return { label: "Vĩnh viễn", status: "permanent" as const, icon: "text-purple-400 bg-purple-500/10" };
         }
         const expires = new Date(inbox.expiresAt);
         const now = new Date();
         const diffMs = expires.getTime() - now.getTime();
 
         if (diffMs <= 0) {
-            return { label: "Đã hết hạn", status: "expired" as const, icon: "🔴" };
+            return { label: "Expired", status: "expired" as const, icon: "text-red-400 bg-red-500/10" };
         }
 
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffDays = Math.floor(diffHours / 24);
 
         if (diffHours < 24) {
-            return { label: `Còn ${diffHours} giờ`, status: "expiring" as const, icon: "🟡" };
+            return { label: `${diffHours}h left`, status: "expiring" as const, icon: "text-amber-400 bg-amber-500/10" };
         }
-        return { label: `Còn ${diffDays} ngày`, status: "active" as const, icon: "🟢" };
+        return { label: `${diffDays}d left`, status: "active" as const, icon: "text-emerald-400 bg-emerald-500/10" };
     };
 
     const ttl = getTTLInfo();
@@ -54,7 +56,7 @@ export function InboxCard({
     const handleCopy = (e: React.MouseEvent) => {
         e.stopPropagation();
         navigator.clipboard.writeText(email);
-        toast.success(`Đã sao chép: ${email}`, { icon: "📋" });
+        toast.success(`Copied: ${email}`, { icon: "📋" });
         onCopy();
     };
 
@@ -69,8 +71,12 @@ export function InboxCard({
     };
 
     return (
-        <div
-            className={`inbox-card ${isSelected ? 'selected' : ''} ${isActive ? 'active' : ''} ${ttl.status}`}
+        <GlassCard
+            className={cn(
+                "group relative p-4 mb-3 cursor-pointer transition-all duration-300 border border-white/5 hover:border-white/10",
+                isActive && "ring-2 ring-primary/50 bg-primary/5",
+                isSelected && "bg-primary/10 border-primary/20"
+            )}
             onClick={onSelect}
             role="button"
             tabIndex={0}
@@ -79,79 +85,75 @@ export function InboxCard({
                 if (e.key === ' ') { e.preventDefault(); onToggleSelect(); }
             }}
         >
-            {/* Checkbox for batch selection */}
-            <div className="inbox-card-checkbox" onClick={handleCheckbox}>
-                <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => { }}
-                    tabIndex={-1}
-                />
-                <span className="inbox-card-checkbox-custom" />
-            </div>
-
-            {/* Main content */}
-            <div className="inbox-card-content" onClick={onViewMessages}>
-                <div className="inbox-card-header">
-                    <span className="inbox-card-email">{email}</span>
-                    <span className={`inbox-card-status inbox-card-status--${ttl.status}`}>
-                        <span className="inbox-card-status-icon">{ttl.icon}</span>
-                        <span className="inbox-card-status-label">{ttl.label}</span>
-                    </span>
+            <div className="flex items-start gap-4">
+                {/* Checkbox */}
+                <div className="pt-1">
+                    <button
+                        onClick={handleCheckbox}
+                        className={cn(
+                            "w-5 h-5 rounded-md border border-white/20 flex items-center justify-center transition-colors",
+                            isSelected ? "bg-primary border-primary" : "hover:border-primary/50"
+                        )}
+                    >
+                        {isSelected && (
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        )}
+                    </button>
                 </div>
 
-                <div className="inbox-card-meta">
-                    <span className="inbox-card-count">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                {/* Main Content */}
+                <div className="flex-1 min-w-0" onClick={onViewMessages}>
+                    <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-base font-semibold text-text-main truncate pr-2">{email}</h3>
+                        <div className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider", ttl.icon)}>
+                            {ttl.label}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-text-secondary mt-2">
+                        <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            {messageCount}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {new Date(inbox.createdAt).toLocaleDateString()}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Actions (visible on hover/focus/active) */}
+                <div className={cn(
+                    "flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
+                    (isActive || isSelected) && "opacity-100"
+                )}>
+                    <button
+                        onClick={handleCopy}
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-primary/10 transition-colors"
+                        title="Copy Address"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                         </svg>
-                        {messageCount} email{messageCount !== 1 ? 's' : ''}
-                    </span>
-                    <span className="inbox-card-domain">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        title="Delete Inbox"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        {inbox.domain?.name}
-                    </span>
-                    <span className="inbox-card-created">
-                        Tạo {new Date(inbox.createdAt).toLocaleDateString('vi-VN')}
-                    </span>
+                    </button>
                 </div>
             </div>
-
-            {/* Actions */}
-            <div className="inbox-card-actions">
-                <button
-                    className="inbox-card-action inbox-card-action--copy"
-                    onClick={handleCopy}
-                    title="Sao chép địa chỉ"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                    </svg>
-                </button>
-                <button
-                    className="inbox-card-action inbox-card-action--view"
-                    onClick={(e) => { e.stopPropagation(); onViewMessages(); }}
-                    title="Xem tin nhắn"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </button>
-                <button
-                    className="inbox-card-action inbox-card-action--delete"
-                    onClick={handleDelete}
-                    title="Xóa hộp thư"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                </button>
-            </div>
-        </div>
+        </GlassCard>
     );
 }

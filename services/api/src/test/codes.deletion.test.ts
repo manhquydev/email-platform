@@ -1,27 +1,11 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
-import request from "supertest";
-import { PrismaClient } from "@prisma/client";
-import { buildServer } from "../server";
+import { app, prisma } from "./setup";
 import { hashPassword } from "../utils/password";
 
-// Use the main test DB from .env or default to 5432 if 5434 is missing/not migrated
-const TEST_DB_URL = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/email_service";
-
 describe("Admin Code Deletion (Direct Integration)", () => {
-    const prisma = new PrismaClient({
-        datasources: { db: { url: TEST_DB_URL } },
-    });
-    const app = buildServer();
     let token: string;
 
-    beforeAll(async () => {
-        await app.ready();
-    });
-
-    afterAll(async () => {
-        await prisma.$disconnect();
-        await app.close();
-    });
+    // app and prisma are already set up by setup.ts hooks
 
     beforeEach(async () => {
         // Cleanup specific to this test
@@ -42,10 +26,13 @@ describe("Admin Code Deletion (Direct Integration)", () => {
         });
 
         // Login to get token
-        const login = await request(app.server)
-            .post("/auth/login")
-            .send({ email: "admin-codes-fix@test.local", password: "changeme" });
-        token = login.body.token;
+        // Login to get token
+        const login = await app.inject({
+            method: "POST",
+            url: "/auth/login",
+            payload: { email: "admin-codes-fix@test.local", password: "changeme" }
+        });
+        token = login.json().token;
     });
 
     it("should successfully delete a code even if it has redemptions", async () => {
@@ -78,13 +65,17 @@ describe("Admin Code Deletion (Direct Integration)", () => {
         });
 
         // 4. Delete Code via API
-        const response = await request(app.server)
-            .delete(`/admin/codes/${code.id}`)
-            .set("Authorization", `Bearer ${token}`);
+        // 4. Delete Code via API
+        const response = await app.inject({
+            method: "DELETE",
+            url: `/admin/codes/${code.id}`,
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
         // 5. Assertions
-        expect(response.status).toBe(200);
-        expect(response.body.success).toBe(true);
+        // 5. Assertions
+        expect(response.statusCode).toBe(200);
+        expect(response.json().success).toBe(true);
 
         // Verify records are gone
         const deletedCode = await prisma.redemptionCode.findUnique({ where: { id: code.id } });

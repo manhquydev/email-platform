@@ -1,8 +1,13 @@
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import type { Domain, Inbox } from '../types';
 import { api } from '../utils/api';
+import { GlassCard } from './ui/GlassCard';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { cn } from '../utils/cn';
 
 interface CreateInboxModalProps {
     domains: Domain[];
@@ -55,121 +60,142 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
     return (
         <AnimatePresence>
             <motion.div
-                className="modal-overlay"
-                onClick={onClose}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-            />
-            <motion.div
-                className="create-inbox-modal"
-                initial={{ opacity: 0, x: "-50%", y: "0%" }}
-                animate={{ opacity: 1, x: "-50%", y: "-50%" }}
-                exit={{ opacity: 0, x: "-50%", y: "0%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                onClick={onClose}
             >
-                <div className="create-inbox-header">
-                    <h2>Tạo địa chỉ email mới</h2>
-                    <button onClick={onClose} className="modal-close" title="Đóng">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div className="create-inbox-content">
-                    {verifiedDomains.length === 0 ? (
-                        <div className="create-inbox-empty">
-                            <div className="empty-icon">📧</div>
-                            <h4>Chưa có domain khả dụng</h4>
-                            <p>Tài khoản của bạn chưa có domain nào được xác thực.</p>
-                            <button onClick={() => window.location.href = '/app?tab=domains'} className="btn-primary">
-                                + Quản lý Domain
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                    className="w-full max-w-md"
+                >
+                    <GlassCard
+                        variant="elevated"
+                        className="p-6 sm:p-8 relative overflow-hidden h-full"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-white">Tạo email mới</h2>
+                            <button
+                                onClick={onClose}
+                                className="p-2 rounded-lg hover:bg-white/10 text-text-secondary transition-colors"
+                                title="Đóng"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
-                    ) : (
-                        <>
-                            {/* Email Preview */}
-                            <div className="email-preview">
-                                <span className="email-preview-label">Địa chỉ email:</span>
-                                <span className="email-preview-value">{previewEmail || 'chọn domain...'}</span>
-                            </div>
 
-                            {/* Local Part Input */}
-                            <div className="form-group">
-                                <label htmlFor="localPart">Tên email</label>
-                                <div className="input-with-button">
-                                    <input
-                                        id="localPart"
-                                        type="text"
-                                        value={localPart}
-                                        onChange={(e) => setLocalPart(e.target.value.toLowerCase())}
-                                        placeholder="vd: contact, info, hello"
-                                        className="form-input"
-                                        autoFocus
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleRandomize}
-                                        className="btn-secondary btn-icon"
-                                        title="Tạo ngẫu nhiên"
+                        <div className="space-y-6">
+                            {verifiedDomains.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-8 text-center text-text-secondary">
+                                    <div className="text-4xl mb-4">📧</div>
+                                    <h4 className="text-lg font-medium text-white mb-2">Chưa có domain khả dụng</h4>
+                                    <p className="mb-6">Tài khoản của bạn chưa có domain nào được xác thực.</p>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => window.location.href = '/app?tab=domains'}
                                     >
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 18, height: 18 }}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                        </svg>
-                                    </button>
+                                        + Quản lý Domain
+                                    </Button>
                                 </div>
-                            </div>
-
-                            {/* Domain Select */}
-                            <div className="form-group">
-                                <label htmlFor="domain">Domain</label>
-                                <select
-                                    id="domain"
-                                    value={selectedDomainId}
-                                    onChange={(e) => setSelectedDomainId(e.target.value)}
-                                    className="form-select"
-                                >
-                                    {verifiedDomains.map(d => (
-                                        <option key={d.id} value={d.id}>
-                                            @{d.name} {d.isPublic ? '(Shared)' : '(Private)'}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                {verifiedDomains.length > 0 && (
-                    <div className="create-inbox-footer">
-                        <button onClick={onClose} className="btn-secondary" disabled={loading}>
-                            Hủy
-                        </button>
-                        <button
-                            onClick={handleCreate}
-                            disabled={loading || !activeDomain || !localPart.trim()}
-                            className="btn-primary"
-                        >
-                            {loading ? (
-                                <>
-                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                    Đang tạo...
-                                </>
                             ) : (
                                 <>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                    </svg>
-                                    Tạo Email
+                                    {/* Email Preview */}
+                                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center text-center">
+                                        <span className="text-xs font-medium text-primary/80 uppercase tracking-widest mb-1">Địa chỉ email của bạn</span>
+                                        <span className="text-lg sm:text-xl font-bold text-white break-all">
+                                            {previewEmail || 'chọn domain...'}
+                                        </span>
+                                    </div>
+
+                                    {/* Local Part Input */}
+                                    <div className="space-y-4">
+                                        <div className="flex gap-2 items-end">
+                                            <div className="flex-1">
+                                                <Input
+                                                    label="Tên email"
+                                                    id="localPart"
+                                                    value={localPart}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalPart(e.target.value.toLowerCase())}
+                                                    placeholder="vd: contact, info, hello"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                onClick={handleRandomize}
+                                                title="Tạo ngẫu nhiên"
+                                                className="mb-[2px] h-[46px] w-[46px]"
+                                            >
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                                </svg>
+                                            </Button>
+                                        </div>
+
+                                        {/* Domain Select */}
+                                        <div className="space-y-2">
+                                            <label htmlFor="domain" className="text-sm font-medium text-text-secondary ml-1">Domain</label>
+                                            <div className="relative">
+                                                <select
+                                                    id="domain"
+                                                    value={selectedDomainId}
+                                                    onChange={(e) => setSelectedDomainId(e.target.value)}
+                                                    className={cn(
+                                                        "w-full h-[46px] px-4 bg-surface-glass border border-white/10 rounded-xl",
+                                                        "text-text-primary outline-none transition-all duration-200",
+                                                        "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
+                                                        "appearance-none cursor-pointer"
+                                                    )}
+                                                >
+                                                    {verifiedDomains.map(d => (
+                                                        <option key={d.id} value={d.id} className="bg-gray-900 text-text-primary">
+                                                            @{d.name} {d.isPublic ? '(Shared)' : '(Private)'}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-tertiary">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </>
                             )}
-                        </button>
-                    </div>
-                )}
+                        </div>
+
+                        {verifiedDomains.length > 0 && (
+                            <div className="flex gap-3 justify-end mt-8">
+                                <Button variant="ghost" onClick={onClose} disabled={loading}>
+                                    Hủy
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    onClick={handleCreate}
+                                    disabled={loading || !activeDomain || !localPart.trim()}
+                                    isLoading={loading}
+                                    icon={
+                                        !loading && (
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                            </svg>
+                                        )
+                                    }
+                                >
+                                    Tạo Email
+                                </Button>
+                            </div>
+                        )}
+                    </GlassCard>
+                </motion.div>
             </motion.div>
         </AnimatePresence>
     );

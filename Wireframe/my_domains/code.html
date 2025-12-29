@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Domains - Ephemera</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1919e6",
+                        "primary-glow": "#4d4dff",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#05050A", // Deep space black
+                        "surface-glass": "rgba(30, 30, 45, 0.4)",
+                        "surface-border": "rgba(255, 255, 255, 0.08)",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar for the glass look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2); 
+        }
+
+        /* Nebula Gradient Animation */
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .nebula-blob {
+            animation: float 20s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display overflow-hidden selection:bg-primary selection:text-white">
+<!-- Nebula Background Effects -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+<div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-primary/20 rounded-full blur-[120px] nebula-blob mix-blend-screen"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-purple-600/20 rounded-full blur-[120px] nebula-blob mix-blend-screen" style="animation-delay: -5s;"></div>
+<div class="absolute top-[20%] right-[20%] w-[30vw] h-[30vw] bg-cyan-500/10 rounded-full blur-[100px] nebula-blob mix-blend-screen" style="animation-delay: -10s;"></div>
+</div>
+<div class="relative z-10 flex h-screen w-full flex-row">
+<!-- Side Navigation -->
+<aside class="w-72 h-full flex flex-col border-r border-surface-border bg-surface-glass backdrop-blur-xl">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-xl size-10 shadow-[0_0_15px_rgba(25,25,230,0.5)]" data-alt="Abstract geometric purple and blue gradient logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBlyOTOzDpEiFTlbbU5Tok_IA8z6rBAgHzj6cuIhus4oIsJY67rj1jp66ztX1N53NdbYQoitxY0q8vxCY41Dt-an-ILLj4fseUTpNAKs_KAAoJZ3bhc7yeEW7bwrJj_FScgchleW27tfotQfZPoxQbIcQysu69Zm-wazNCe8263w3pb78o7VMGrTuBJWXAFanjarccwYkuAjTVi_MW0NWb6aC90HrpcXE_TWOdwaBfbWmFHw8j_mpsxk-KLB9Xzm9Qcfy2y03FVhjkl");'>
+</div>
+<div class="flex flex-col">
+<h1 class="text-white text-lg font-bold tracking-tight">Ephemera</h1>
+<p class="text-white/50 text-xs font-normal">Pro Plan</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-white shadow-[0_0_20px_rgba(25,25,230,0.15)] relative overflow-hidden" href="#">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent opacity-50"></div>
+<span class="material-symbols-outlined text-primary relative z-10">globe</span>
+<span class="text-sm font-medium relative z-10">My Domains</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">alternate_email</span>
+<span class="text-sm font-medium">Aliases</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">api</span>
+<span class="text-sm font-medium">Developer API</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/5 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-surface-border">
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-br from-white/5 to-transparent border border-white/5">
+<div class="size-8 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-xs font-bold shadow-lg">JD</div>
+<div class="flex flex-col">
+<p class="text-sm font-medium text-white">John Doe</p>
+<p class="text-xs text-white/50">john@ephemera.io</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Header Area -->
+<div class="p-8 pb-4 flex flex-col gap-6">
+<!-- Heading -->
+<div class="flex flex-wrap justify-between items-end gap-4">
+<div class="flex flex-col gap-2 max-w-2xl">
+<h2 class="text-4xl font-bold text-white tracking-tight drop-shadow-sm">Custom Domains</h2>
+<p class="text-white/60 text-base font-normal leading-relaxed">Connect your own domain to generate unlimited private aliases. Verify ownership via DNS records to enable secure routing.</p>
+</div>
+<button class="group flex items-center gap-2 h-12 px-6 bg-primary hover:bg-primary-glow text-white text-sm font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(25,25,230,0.3)] hover:shadow-[0_0_30px_rgba(25,25,230,0.5)] border border-white/10">
+<span class="material-symbols-outlined text-lg transition-transform group-hover:rotate-90">add</span>
+<span>Add New Domain</span>
+</button>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="relative overflow-hidden flex flex-col gap-1 rounded-2xl p-6 bg-surface-glass backdrop-blur-md border border-surface-border group hover:border-white/20 transition-all">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">dns</span>
+</div>
+<p class="text-white/60 text-sm font-medium uppercase tracking-wider">Total Domains</p>
+<p class="text-white text-3xl font-bold tracking-tight">3</p>
+</div>
+<div class="relative overflow-hidden flex flex-col gap-1 rounded-2xl p-6 bg-surface-glass backdrop-blur-md border border-surface-border group hover:border-white/20 transition-all">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">alternate_email</span>
+</div>
+<p class="text-white/60 text-sm font-medium uppercase tracking-wider">Active Aliases</p>
+<p class="text-white text-3xl font-bold tracking-tight">124</p>
+</div>
+<div class="relative overflow-hidden flex flex-col gap-1 rounded-2xl p-6 bg-surface-glass backdrop-blur-md border border-surface-border group hover:border-white/20 transition-all">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">network_check</span>
+</div>
+<p class="text-white/60 text-sm font-medium uppercase tracking-wider">Bandwidth Used</p>
+<p class="text-white text-3xl font-bold tracking-tight">1.2 GB</p>
+</div>
+</div>
+<!-- Search & Filters -->
+<div class="relative w-full z-20">
+<div class="flex items-center w-full h-14 rounded-xl bg-surface-glass backdrop-blur-md border border-surface-border focus-within:border-primary/50 focus-within:shadow-[0_0_15px_rgba(25,25,230,0.1)] transition-all">
+<div class="pl-4 pr-3 text-white/40">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full bg-transparent border-none text-white placeholder-white/40 focus:ring-0 h-full text-base font-normal" placeholder="Search your domains..." value=""/>
+<div class="pr-2 flex gap-2">
+<button class="p-2 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors" title="Filter">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Scrollable List Area -->
+<div class="flex-1 overflow-y-auto px-8 pb-10 flex flex-col gap-4">
+<!-- Domain Item 1: Verified & Public -->
+<div class="group flex flex-col rounded-2xl bg-surface-glass backdrop-blur-md border border-surface-border hover:border-white/10 transition-all">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-900/20 border border-green-500/30 flex items-center justify-center text-green-400 shadow-[0_0_15px_rgba(74,222,128,0.1)]">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-white text-lg font-medium leading-none mb-1">userdomain.com</h3>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-green-400 text-xs font-bold uppercase tracking-wider bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                                        Verified
+                                    </span>
+<span class="text-white/40 text-xs">•</span>
+<span class="text-white/60 text-xs">Updated 2 days ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<span class="text-sm text-white/60 font-medium">Public</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-checked:shadow-[0_0_10px_rgba(25,25,230,0.4)]"></div>
+</label>
+</div>
+<button class="p-2 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Domain Item 2: Pending DNS (Expanded) -->
+<div class="group flex flex-col rounded-2xl bg-surface-glass backdrop-blur-md border border-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.05)] transition-all">
+<!-- Main Row -->
+<div class="flex items-center justify-between p-4 border-b border-white/5">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-900/20 border border-orange-500/30 flex items-center justify-center text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.1)] animate-pulse">
+<span class="material-symbols-outlined">gpp_maybe</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-white text-lg font-medium leading-none mb-1">privacy-shield.net</h3>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-orange-400 text-xs font-bold uppercase tracking-wider bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">
+                                        Pending DNS
+                                    </span>
+<span class="text-white/40 text-xs">•</span>
+<span class="text-white/60 text-xs">Added just now</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-white font-medium border border-white/10 transition-colors">
+<span class="material-symbols-outlined text-lg">refresh</span>
+                                Verify Records
+                            </button>
+<button class="p-2 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- DNS Records Area -->
+<div class="p-6 bg-black/20 rounded-b-2xl">
+<div class="flex items-start gap-3 mb-4">
+<span class="material-symbols-outlined text-orange-400 mt-0.5 text-lg">info</span>
+<p class="text-sm text-white/80 leading-relaxed">
+                                Add the following records to your DNS provider (e.g., GoDaddy, Namecheap, Cloudflare) to verify ownership.
+                            </p>
+</div>
+<div class="w-full overflow-hidden rounded-xl border border-white/10">
+<table class="w-full text-left text-sm text-white/70">
+<thead class="bg-white/5 text-xs uppercase text-white/50 font-medium">
+<tr>
+<th class="px-4 py-3">Type</th>
+<th class="px-4 py-3">Name / Host</th>
+<th class="px-4 py-3">Value</th>
+<th class="px-4 py-3 w-10"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5 bg-white/[0.02]">
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-4 py-3 font-mono text-purple-300">TXT</td>
+<td class="px-4 py-3 font-mono">@</td>
+<td class="px-4 py-3 font-mono text-white break-all">ephemera-verification=82jka9s8d902jd902j9d02j</td>
+<td class="px-4 py-3 text-right">
+<button class="text-white/40 hover:text-primary transition-colors" title="Copy">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-4 py-3 font-mono text-purple-300">MX</td>
+<td class="px-4 py-3 font-mono">@</td>
+<td class="px-4 py-3 font-mono text-white break-all">10 mx1.ephemera.io</td>
+<td class="px-4 py-3 text-right">
+<button class="text-white/40 hover:text-primary transition-colors" title="Copy">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-4 py-3 font-mono text-purple-300">MX</td>
+<td class="px-4 py-3 font-mono">@</td>
+<td class="px-4 py-3 font-mono text-white break-all">20 mx2.ephemera.io</td>
+<td class="px-4 py-3 text-right">
+<button class="text-white/40 hover:text-primary transition-colors" title="Copy">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Domain Item 3: Private & Verified -->
+<div class="group flex flex-col rounded-2xl bg-surface-glass backdrop-blur-md border border-surface-border hover:border-white/10 transition-all">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-900/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-white text-lg font-medium leading-none mb-1">anon-mail.io</h3>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-green-400 text-xs font-bold uppercase tracking-wider bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                                        Verified
+                                    </span>
+<span class="text-white/40 text-xs">•</span>
+<span class="text-white/60 text-xs">Updated 1 week ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<span class="text-sm text-white/60 font-medium">Private</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-checked:shadow-[0_0_10px_rgba(25,25,230,0.4)]"></div>
+</label>
+</div>
+<button class="p-2 text-white/40 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer / Help -->
+<div class="flex justify-center pt-6 pb-2">
+<p class="text-white/30 text-sm">Need help with DNS configuration? <a class="text-primary hover:text-primary-glow underline decoration-1 underline-offset-4" href="#">Read Documentation</a></p>
+</div>
+</div>
+</main>
+</div>
+</body></html>

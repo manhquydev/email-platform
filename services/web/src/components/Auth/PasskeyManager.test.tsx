@@ -13,10 +13,17 @@ vi.mock('@simplewebauthn/browser', () => ({
     startRegistration: vi.fn(),
 }));
 
+vi.mock('../../context/AuthContext', () => ({
+    useAuth: () => ({
+        user: { id: '1', email: 'test@example.com' },
+        token: 'test-token',
+    }),
+}));
+
 describe('PasskeyManager', () => {
     it('renders without crashing', () => {
         (api as any).mockResolvedValue([]);
         render(<PasskeyManager />);
-        expect(screen.getByText(/Passkeys/)).toBeInTheDocument();
+        expect(screen.getByText('Thêm Passkey mới')).toBeInTheDocument();
     });
 });

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import type { Inbox } from "../types";
 import { api } from "../utils/api";
 import { Editor } from "./Editor";
@@ -59,8 +60,19 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-card-elevated w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[var(--nebula-border)]">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+        >
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+                className="glass-card-elevated w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[var(--nebula-border)]"
+            >
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--nebula-border)] bg-[var(--nebula-surface-elevated)]/50 backdrop-blur-md">
                     <div className="flex items-center gap-3">
@@ -140,7 +152,12 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                         </div>
 
                         {showCcBcc && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-down">
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden"
+                            >
                                 <div className="space-y-1.5">
                                     <label className="text-[11px] font-bold text-[var(--nebula-text-muted)] uppercase tracking-widest ml-1">Sao chép (Cc)</label>
                                     <input
@@ -159,7 +176,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                                         className="input-nebula w-full text-sm py-2"
                                     />
                                 </div>
-                            </div>
+                            </motion.div>
                         )}
                     </div>
 
@@ -298,7 +315,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 }

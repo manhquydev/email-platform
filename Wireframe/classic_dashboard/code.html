@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ephemera - Classic Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2525f4",
+                        "primary-glow": "#4d4dff",
+                        "background-light": "#f5f5f8",
+                        "background-dark": "#101022",
+                        "glass-border": "rgba(255, 255, 255, 0.08)",
+                        "glass-bg": "rgba(255, 255, 255, 0.03)",
+                        "glass-bg-hover": "rgba(255, 255, 255, 0.06)",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", // rounded-md matches user request
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2); 
+        }
+        
+        .glass-panel {
+            background: rgba(16, 16, 34, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .nebula-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(37, 37, 244, 0.15) 0%, rgba(16, 16, 34, 0) 70%);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display overflow-hidden h-screen w-screen selection:bg-primary selection:text-white">
+<!-- Nebula Background Effects -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[150px] opacity-60"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] opacity-50"></div>
+<div class="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-cyan-500/10 rounded-full blur-[100px] opacity-30"></div>
+</div>
+<!-- App Layout -->
+<div class="relative z-10 flex h-full w-full">
+<!-- Sidebar Navigation (Left Column) -->
+<aside class="w-20 lg:w-64 flex flex-col justify-between glass-panel border-r-0 border-r-glass-border h-full shrink-0 transition-all duration-300">
+<div class="flex flex-col gap-6 p-4">
+<!-- Brand -->
+<div class="flex items-center gap-3 px-2">
+<div class="size-8 text-primary shrink-0">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 4L6 14V34L24 44L42 34V14L24 4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="4"></path>
+<path d="M24 14L24 34" stroke="currentColor" stroke-linecap="round" stroke-width="4"></path>
+<path d="M15 24L33 24" stroke="currentColor" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+</div>
+<span class="text-xl font-bold tracking-tight hidden lg:block text-white">Ephemera</span>
+</div>
+<!-- Nav Items -->
+<nav class="flex flex-col gap-2 mt-4">
+<button class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/20 text-white border border-primary/30 shadow-[0_0_15px_rgba(37,37,244,0.3)] group transition-all">
+<span class="material-symbols-outlined text-[24px]">inbox</span>
+<span class="text-sm font-medium hidden lg:block">Inbox</span>
+<div class="ml-auto size-2 rounded-full bg-primary animate-pulse hidden lg:block"></div>
+</button>
+<button class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-glass-bg-hover transition-colors group">
+<span class="material-symbols-outlined text-[24px]">globe</span>
+<span class="text-sm font-medium hidden lg:block">Domains</span>
+</button>
+<button class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-glass-bg-hover transition-colors group">
+<span class="material-symbols-outlined text-[24px]">key</span>
+<span class="text-sm font-medium hidden lg:block">API Keys</span>
+</button>
+<button class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-glass-bg-hover transition-colors group">
+<span class="material-symbols-outlined text-[24px]">shield</span>
+<span class="text-sm font-medium hidden lg:block">Security</span>
+</button>
+</nav>
+</div>
+<!-- Bottom Actions -->
+<div class="p-4 flex flex-col gap-4 border-t border-glass-border bg-black/20">
+<div class="flex flex-col gap-2 hidden lg:flex">
+<div class="flex justify-between text-xs text-gray-400">
+<span>Daily Quota</span>
+<span>85%</span>
+</div>
+<div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+<div class="bg-gradient-to-r from-primary to-purple-500 h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<button class="flex items-center gap-3 px-2 py-2 rounded-lg text-gray-400 hover:text-white transition-colors">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 ring-2 ring-white/10" data-alt="User avatar with geometric pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC3bvfOcY9DOYtUOu3WUnML1PyBAG87hSqMaFh2Q2UZgX1CyEqZkANqK4nFLmmwGjZitOiEE9CZ4bCngDRj7Y35rs7IPtEWsAEC861BQV5db5V1ouTkUjr86kgioOgtv2MJKGkdAA79XGwIEP2ehipAbKJe3cI2hYpX_UA_ENMPq0WO91CF-MTNFF_pQ7E6x23TESWHtrdauknyyGXvi_XgdxbwH6MdB5oKEEVm-_zADR0xNJvxB_rstd54QJt345YF3FFVBiRXbVKj");'></div>
+<div class="flex flex-col items-start hidden lg:flex">
+<span class="text-sm font-medium text-white">Dev Team</span>
+<span class="text-xs text-gray-500">Pro Plan</span>
+</div>
+<span class="material-symbols-outlined ml-auto text-[20px] hidden lg:block">settings</span>
+</button>
+</div>
+</aside>
+<!-- Inbox List (Middle Column) -->
+<div class="w-full md:w-[400px] flex flex-col glass-panel border-r border-r-glass-border border-l-0 h-full shrink-0 z-20">
+<!-- Search & Header -->
+<div class="p-4 border-b border-glass-border flex flex-col gap-4 bg-background-dark/30">
+<div class="flex items-center justify-between">
+<h2 class="text-lg font-bold">Inbox</h2>
+<span class="text-xs px-2 py-1 rounded bg-white/10 text-gray-300">12 Unread</span>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2.5 bg-background-dark/50 border border-glass-border rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all" placeholder="Search logs..." type="text"/>
+</div>
+<div class="flex gap-2 text-xs font-medium">
+<button class="px-3 py-1.5 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors">All</button>
+<button class="px-3 py-1.5 rounded-md text-gray-500 hover:bg-white/5 hover:text-gray-300 transition-colors">Encrypted</button>
+<button class="px-3 py-1.5 rounded-md text-gray-500 hover:bg-white/5 hover:text-gray-300 transition-colors">Flagged</button>
+</div>
+</div>
+<!-- List -->
+<div class="flex-1 overflow-y-auto">
+<div class="flex flex-col">
+<!-- Item 1 (Active) -->
+<div class="relative p-4 border-b border-glass-border bg-primary/10 cursor-pointer group hover:bg-primary/20 transition-all">
+<div class="absolute left-0 top-0 bottom-0 w-[3px] bg-primary shadow-[0_0_10px_rgba(37,37,244,0.5)]"></div>
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div>
+<h3 class="font-semibold text-white truncate">Ephemera Support</h3>
+</div>
+<span class="text-xs text-primary-glow font-medium">Now</span>
+</div>
+<p class="text-sm text-gray-200 font-medium truncate mb-1">Welcome to your secure inbox</p>
+<p class="text-xs text-gray-500 line-clamp-2">Your temporary secure environment is ready. Keys have been rotated.</p>
+</div>
+<!-- Item 2 -->
+<div class="p-4 border-b border-glass-border hover:bg-glass-bg-hover cursor-pointer transition-all group">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-gray-200 group-hover:text-white truncate">GitHub</h3>
+</div>
+<span class="text-xs text-gray-500">12m</span>
+</div>
+<p class="text-sm text-gray-400 group-hover:text-gray-300 truncate mb-1">[GitHub] Please verify your device</p>
+<p class="text-xs text-gray-600 group-hover:text-gray-500 line-clamp-2">A sign-in attempt was made to your account from a new device.</p>
+</div>
+<!-- Item 3 -->
+<div class="p-4 border-b border-glass-border hover:bg-glass-bg-hover cursor-pointer transition-all group">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-gray-200 group-hover:text-white truncate">AWS Notifications</h3>
+</div>
+<span class="text-xs text-gray-500">1h</span>
+</div>
+<p class="text-sm text-gray-400 group-hover:text-gray-300 truncate mb-1">AWS Budget Alert: Threshold exceeded</p>
+<p class="text-xs text-gray-600 group-hover:text-gray-500 line-clamp-2">Your account 1234-5678-9012 has exceeded 85% of your usage budget.</p>
+</div>
+<!-- Item 4 -->
+<div class="p-4 border-b border-glass-border hover:bg-glass-bg-hover cursor-pointer transition-all group">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-gray-200 group-hover:text-white truncate">Stripe</h3>
+</div>
+<span class="text-xs text-gray-500">3h</span>
+</div>
+<p class="text-sm text-gray-400 group-hover:text-gray-300 truncate mb-1">Invoice receipt #1029-3844</p>
+<p class="text-xs text-gray-600 group-hover:text-gray-500 line-clamp-2">Your payment for $29.00 USD has been successfully processed.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Reading Pane (Right Column) -->
+<main class="hidden md:flex flex-1 flex-col h-full overflow-hidden bg-transparent relative z-10">
+<!-- Top Action Bar -->
+<header class="h-16 border-b border-glass-border bg-glass-panel flex items-center justify-between px-6 backdrop-blur-xl shrink-0">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background-dark border border-glass-border group cursor-pointer hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-gray-400 text-[18px]">alternate_email</span>
+<span class="text-sm text-white font-mono tracking-wide">x9z-secure@ephemera.io</span>
+<span class="material-symbols-outlined text-gray-500 text-[16px] group-hover:text-white transition-colors ml-2">content_copy</span>
+</div>
+<div class="h-4 w-px bg-white/10"></div>
+<div class="flex items-center gap-1 text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+<span>59:21 remaining</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="size-8 flex items-center justify-center rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors" title="Regenerate">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors" title="Download Source">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</header>
+<!-- Email Content Scroll Area -->
+<div class="flex-1 overflow-y-auto p-8 lg:px-12">
+<div class="max-w-4xl mx-auto flex flex-col gap-8 pb-20">
+<!-- Email Header Info -->
+<div class="flex flex-col gap-6">
+<div class="flex justify-between items-start">
+<h1 class="text-3xl font-bold text-white leading-tight">Welcome to your secure inbox</h1>
+<div class="flex gap-2">
+<span class="size-8 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">star</span>
+</span>
+<span class="size-8 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">reply</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-glass-border">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shadow-lg" data-alt="Ephemera Support Avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC09HFIT8k-3Pf_U6YE428ne3oQK0BP4e_LZC2a_-jMg_u-RPIlCI1RnzRoh7879lffvi2d5Y0y-QnXw1-DBVL0SXzb4xP4pQnKV3rBD4fhmyCqPw5zr7mQSXzUftZO9pu2564PWyRw82_tQo-UqaKO1ls7QZy8dOP8dcXC6AuqczeblPGgH9eopXjKvGLteYeJ2ccwfK4fdYrGzV_ag-1zXN4s6LUMr1-0AsbkJm9_KGkT-jybomeNry9L7gQyQG3m_EObhSNf1RHn");'></div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-bold text-white">Ephemera Support</span>
+<span class="text-gray-500 text-sm">&lt;support@ephemera.io&gt;</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/20 uppercase tracking-wider ml-2">Verified</span>
+</div>
+<div class="flex items-center gap-3 text-xs text-gray-400 mt-1">
+<span>To: <span class="text-gray-300">Me</span></span>
+<span class="size-1 rounded-full bg-gray-600"></span>
+<span>Today at 9:41 AM</span>
+<span class="size-1 rounded-full bg-gray-600"></span>
+<span class="flex items-center gap-1 text-gray-500"><span class="material-symbols-outlined text-[12px]">lock</span> TLS 1.3 Encrypted</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Email Body -->
+<div class="text-gray-300 leading-relaxed space-y-4 font-normal text-lg bg-transparent">
+<p>Hi there,</p>
+<p>Your temporary secure environment is successfully initialized. This inbox is ephemeral and will self-destruct in 60 minutes unless extended.</p>
+<p>Here are your active security parameters:</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+<div class="p-4 rounded-lg bg-black/40 border border-glass-border flex items-center gap-3">
+<div class="p-2 rounded bg-primary/10 text-primary">
+<span class="material-symbols-outlined">vpn_key</span>
+</div>
+<div>
+<div class="text-xs text-gray-500 uppercase tracking-wider font-bold">Encryption</div>
+<div class="text-sm text-white">AES-256-GCM</div>
+</div>
+</div>
+<div class="p-4 rounded-lg bg-black/40 border border-glass-border flex items-center gap-3">
+<div class="p-2 rounded bg-purple-500/10 text-purple-400">
+<span class="material-symbols-outlined">dns</span>
+</div>
+<div>
+<div class="text-xs text-gray-500 uppercase tracking-wider font-bold">Server Region</div>
+<div class="text-sm text-white">Zurich, CH</div>
+</div>
+</div>
+</div>
+<p>You can use the API keys in your settings panel to programmatically access this inbox. Do not share your private keys with anyone.</p>
+<p>Stay secure,<br/><span class="text-primary font-medium">The Ephemera Team</span></p>
+</div>
+<!-- Action Buttons in Body -->
+<div class="flex gap-4 pt-6 border-t border-glass-border">
+<button class="px-6 py-2.5 rounded-lg bg-white text-black font-bold hover:bg-gray-200 transition-colors shadow-lg shadow-white/5 flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">book</span>
+                            View Documentation
+                        </button>
+<button class="px-6 py-2.5 rounded-lg bg-transparent border border-glass-border text-white font-medium hover:bg-white/5 transition-colors">
+                            Manage Keys
+                        </button>
+</div>
+</div>
+</div>
+<!-- Bottom decorative fade -->
+<div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background-dark to-transparent pointer-events-none"></div>
+</main>
+</div>
+</body></html>

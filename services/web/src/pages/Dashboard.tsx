@@ -283,7 +283,7 @@ export function Dashboard() {
             const newExpiresAt = new Date(currentExpiresAt + 10 * 60 * 1000).toISOString();
             await api(`/inboxes/${inboxId}`, { method: "PATCH", body: JSON.stringify({ expiresAt: newExpiresAt }), token });
             toast.success("Đã gia hạn thêm 10 phút!");
-            if (selectedDomain) loadInboxes(selectedDomain);
+            if (selectedDomain) loadInboxes();
         } catch (e) { toast.error("Lỗi gia hạn inbox"); } finally { setBusy(false); }
     };
 

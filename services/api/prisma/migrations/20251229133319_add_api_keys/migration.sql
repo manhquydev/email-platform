@@ -1,8 +1,8 @@
 -- DropIndex
-DROP INDEX "idx_message_subject_trgm";
+DROP INDEX IF EXISTS "idx_message_subject_trgm";
 
 -- DropIndex
-DROP INDEX "idx_message_textbody_trgm";
+DROP INDEX IF EXISTS "idx_message_textbody_trgm";
 
 -- CreateTable
 CREATE TABLE "ApiKey" (

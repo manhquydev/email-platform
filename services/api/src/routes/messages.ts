@@ -363,7 +363,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
     });
     if (!attachment) return reply.status(404).send("Not found");
     const userId = (request.user as any)?.userId ?? null;
-    if (attachment.message.inbox.localPart !== userId) return reply.status(403).send("Unauthorized");
+    if (attachment.message.inbox.ownerId !== userId) return reply.status(403).send("Unauthorized");
 
     try {
       const stream = await storageService.getReadStream(attachment.storageKey);

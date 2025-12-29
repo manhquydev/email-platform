@@ -182,21 +182,26 @@ export async function authRoutes(app: FastifyInstance) {
     const { email, password } = parsed.data;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
+      // Log failed attempt for unknown user (prevent enumeration, but log for security analysis)
+      await recordAudit(null, "LOGIN_FAILED", { email, ip: request.ip, reason: "user_not_found" });
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
     const ok = await verifyPassword(password, user.passwordHash);
     if (!ok) {
+      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "invalid_password" });
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
     // Check email verification (skip if verification is disabled)
     if (appConfig.requireEmailVerification && !user.emailVerified) {
+      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "email_not_verified" });
       return reply.status(403).send({ error: "Email not verified. Please check your email." });
     }
 
     // Check if account is disabled
     if (user.isDisabled) {
+      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "account_disabled" });
       return reply.status(403).send({ error: "Account is disabled. Contact administrator." });
     }
 

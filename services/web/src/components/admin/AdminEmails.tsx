@@ -4,6 +4,8 @@ import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import DOMPurify from "dompurify";
+
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, PremiumButton, PremiumInput,
@@ -238,7 +240,7 @@ export function AdminEmails({ token }: { token: string }) {
                                 </div>
                                 <div className="p-5 overflow-y-auto flex-1 bg-white dark:bg-slate-800/50">
                                     {selectedEmail.htmlBody ? (
-                                        <div dangerouslySetInnerHTML={{ __html: selectedEmail.htmlBody }} className="prose prose-sm dark:prose-invert max-w-none" />
+                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedEmail.htmlBody) }} className="prose prose-sm dark:prose-invert max-w-none" />
                                     ) : selectedEmail.textBody ? (
                                         <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{selectedEmail.textBody}</pre>
                                     ) : (

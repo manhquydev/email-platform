@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "../utils/cn";
 import { useAuth } from "../context/AuthContext";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface NavigationSidebarProps {
     isExpanded: boolean;
@@ -26,12 +27,12 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                     onClick={onNavToggle}
                     title={isExpanded ? "Thu gọn" : "Mở rộng"}
                 >
-                    <div className="size-8 text-primary shrink-0 relative">
-                        {/* Wireframe Logo SVG */}
-                        <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M24 4L6 14V34L24 44L42 34V14L24 4Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="4"></path>
-                            <path d="M24 14L24 34" stroke="currentColor" strokeLinecap="round" strokeWidth="4"></path>
-                            <path d="M15 24L33 24" stroke="currentColor" strokeLinecap="round" strokeWidth="4"></path>
+                    <div className="size-8 text-primary shrink-0 relative flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
+                            {/* Broken Infinity Logo */}
+                            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+                            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+                            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
                         </svg>
                     </div>
                     {isExpanded && (
@@ -86,7 +87,12 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
             </div>
 
             {/* Bottom Actions - User Profile */}
-            <div className="p-4 flex flex-col gap-4 border-t border-glass-border bg-black/20 overflow-hidden">
+            <div className="p-4 flex flex-col gap-4 border-t border-glass-border bg-black/20 overflow-hidden mt-auto">
+                {/* Theme Toggle - Only visible when expanded or just icon if collapsed */}
+                <div className={cn("flex items-center justify-center", isExpanded ? "w-full" : "w-full")}>
+                    <ThemeToggle />
+                </div>
+
                 <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-gray-400 hover:text-white transition-colors w-full text-left overflow-hidden">
                     <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-white/10 bg-primary/20 text-primary font-bold text-sm">
                         {user?.email?.charAt(0).toUpperCase() || "U"}

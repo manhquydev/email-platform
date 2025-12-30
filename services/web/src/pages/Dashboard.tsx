@@ -382,6 +382,19 @@ export function Dashboard() {
                                 user={user}
                                 token={token}
                             />
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                className="hidden md:flex shrink-0 gap-2 ml-2"
+                                onClick={async () => {
+                                    if (!selectedDomain) return toast.error("Chưa chọn tên miền");
+                                    const randomName = Math.random().toString(36).substring(2, 10);
+                                    await createInbox(selectedDomain, randomName);
+                                }}
+                                icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>}
+                            >
+                                Tạo Inbox
+                            </Button>
                         </div>
                         <div className="flex items-center gap-1">
                             <Button

@@ -9,10 +9,10 @@
 
 /* Wireframe Exact Matches */
 .glass-panel {
-  background: rgba(16, 16, 34, 0.6);
+  background: var(--glass-panel-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-panel-border);
 }
 
 .glass-bg-hover:hover {
@@ -127,6 +127,10 @@
   --glass-blur: blur(16px);
   --glass-blur-light: blur(8px);
 
+  /* Glass Panel - Light Mode Default */
+  --glass-panel-bg: rgba(255, 255, 255, 0.7);
+  --glass-panel-border: rgba(0, 0, 0, 0.1);
+
   /* Focus Ring - Electric Blue */
   --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.25);
   --focus-ring-offset: 0 0 0 2px var(--color-surface), 0 0 0 4px rgba(59, 130, 246, 0.25);
@@ -203,6 +207,10 @@
   /* Focus ring for dark mode - Violet */
   --focus-ring: 0 0 0 3px rgba(167, 139, 250, 0.40);
   --focus-ring-offset: 0 0 0 2px var(--color-surface), 0 0 0 4px rgba(167, 139, 250, 0.40);
+
+  /* Glass Panel - Dark Mode */
+  --glass-panel-bg: rgba(16, 16, 34, 0.6);
+  --glass-panel-border: rgba(255, 255, 255, 0.08);
 }
 
 *,

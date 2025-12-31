@@ -86,28 +86,28 @@ export function NotificationsSettings() {
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Thông báo</h2>
-                <p className="text-gray-400 font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
+                <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Thông báo</h2>
+                <p className="text-slate-500 dark:text-gray-400 font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
             </div>
 
-            <GlassCard className="p-6">
+            <GlassCard className="p-6 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                 <div className="flex items-center gap-2 mb-6">
                     <span className="material-symbols-outlined text-[#0088cc]">send</span>
-                    <h3 className="text-lg font-semibold text-white">Thông báo Telegram</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Thông báo Telegram</h3>
                 </div>
 
                 <div>
                     {telegramStatus?.linked ? (
                         <div className="space-y-4">
                             {/* Linked Status Banner */}
-                            <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-green-500/20">
-                                    <span className="material-symbols-outlined text-green-400">check_circle</span>
+                            <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30">
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-500/20">
+                                    <span className="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span>
                                 </div>
                                 <div>
-                                    <p className="font-medium text-green-400">Đã liên kết Telegram</p>
+                                    <p className="font-medium text-green-700 dark:text-green-400">Đã liên kết Telegram</p>
                                     {telegramStatus.linkedAt && (
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-xs text-slate-500 dark:text-gray-400">
                                             Liên kết vào ngày: {new Date(telegramStatus.linkedAt).toLocaleDateString("vi-VN")}
                                         </p>
                                     )}
@@ -115,14 +115,14 @@ export function NotificationsSettings() {
                             </div>
 
                             {/* Notification Toggle */}
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-surface border border-white/10">
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/10">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-500/10">
-                                        <span className="material-symbols-outlined text-cyan-400 text-sm">notifications</span>
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100 dark:bg-cyan-500/10">
+                                        <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-sm">notifications</span>
                                     </div>
                                     <div>
-                                        <span className="text-sm font-medium text-white">Thông báo email mới</span>
-                                        <p className="text-xs text-gray-400">
+                                        <span className="text-sm font-medium text-slate-900 dark:text-white">Thông báo email mới</span>
+                                        <p className="text-xs text-slate-500 dark:text-gray-400">
                                             {telegramStatus.notifyOnEmail ? 'Bật' : 'Tắt'}
                                         </p>
                                     </div>
@@ -130,7 +130,7 @@ export function NotificationsSettings() {
                                 <button
                                     onClick={toggleTelegramNotify}
                                     disabled={telegramBusy}
-                                    className={`relative w-11 h-6 rounded-full transition-colors ${telegramStatus.notifyOnEmail ? 'bg-green-500' : 'bg-gray-700'}`}
+                                    className={`relative w-11 h-6 rounded-full transition-colors ${telegramStatus.notifyOnEmail ? 'bg-green-500' : 'bg-slate-300 dark:bg-gray-700'}`}
                                 >
                                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow ${telegramStatus.notifyOnEmail ? 'translate-x-5' : ''}`} />
                                 </button>
@@ -138,8 +138,8 @@ export function NotificationsSettings() {
 
                             {/* Unlink Button */}
                             {showUnlinkConfirm ? (
-                                <div className="p-4 border border-red-500/30 rounded-xl bg-red-500/5">
-                                    <p className="text-sm text-red-400 mb-3">Bạn có chắc chắn muốn hủy liên kết Telegram không?</p>
+                                <div className="p-4 border border-red-200 dark:border-red-500/30 rounded-xl bg-red-50 dark:bg-red-500/5">
+                                    <p className="text-sm text-red-600 dark:text-red-400 mb-3">Bạn có chắc chắn muốn hủy liên kết Telegram không?</p>
                                     <div className="flex gap-3">
                                         <Button onClick={confirmUnlinkTelegram} variant="danger" disabled={telegramBusy}>Xác nhận hủy</Button>
                                         <Button onClick={() => setShowUnlinkConfirm(false)} variant="secondary">Hủy</Button>
@@ -150,7 +150,7 @@ export function NotificationsSettings() {
                                     onClick={() => setShowUnlinkConfirm(true)}
                                     disabled={telegramBusy}
                                     variant="secondary"
-                                    className="w-full flex items-center justify-center gap-2 text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                                    className="w-full flex items-center justify-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-100 dark:hover:text-red-500 dark:hover:bg-red-500/10"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">link_off</span>
                                     {telegramBusy ? "Đang xử lý..." : "Hủy liên kết Telegram"}
@@ -159,19 +159,19 @@ export function NotificationsSettings() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-surface border border-white/10">
-                                <p className="text-sm font-medium mb-1 text-white">Nhận cảnh báo tức thì</p>
-                                <p className="text-xs text-gray-400">
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/10">
+                                <p className="text-sm font-medium mb-1 text-slate-900 dark:text-white">Nhận cảnh báo tức thì</p>
+                                <p className="text-xs text-slate-500 dark:text-gray-400">
                                     Nhận email mới, OTP và các thông báo quan trọng trực tiếp qua Telegram của bạn.
                                 </p>
                             </div>
 
                             {telegramLinkToken ? (
                                 <div className="space-y-4">
-                                    <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
-                                        <p className="text-sm mb-2 text-cyan-400">Mã liên kết của bạn:</p>
+                                    <div className="p-4 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/30">
+                                        <p className="text-sm mb-2 text-cyan-700 dark:text-cyan-400">Mã liên kết của bạn:</p>
                                         <div className="flex items-center gap-3">
-                                            <code className="text-2xl font-mono font-bold tracking-widest text-cyan-400">
+                                            <code className="text-2xl font-mono font-bold tracking-widest text-cyan-600 dark:text-cyan-400">
                                                 {telegramLinkToken}
                                             </code>
                                             <button
@@ -179,7 +179,7 @@ export function NotificationsSettings() {
                                                     navigator.clipboard.writeText(telegramLinkToken);
                                                     toast.success("Đã sao chép!");
                                                 }}
-                                                className="p-2 hover:bg-white/10 rounded-lg text-cyan-400 transition-colors"
+                                                className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-cyan-600 dark:text-cyan-400 transition-colors"
                                             >
                                                 <span className="material-symbols-outlined">content_copy</span>
                                             </button>

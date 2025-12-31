@@ -45,7 +45,7 @@ export function ConfirmationModal({
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
                 <div className="create-inbox-header">
-                    <h2 className={isDestructive ? "text-red-500" : ""}>{title}</h2>
+                    <h2 className={`font-semibold text-lg ${isDestructive ? "text-red-600 dark:text-red-500" : "text-slate-900 dark:text-white"}`}>{title}</h2>
                     <button onClick={onCancel} className="modal-close" title="Đóng" disabled={isLoading}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -54,7 +54,7 @@ export function ConfirmationModal({
                 </div>
 
                 <div className="p-6">
-                    <p className="text-gray-300 mb-4">{message}</p>
+                    <p className="text-slate-600 dark:text-gray-300 mb-6">{message}</p>
 
                     {children && (
                         <div className="mb-6">
@@ -65,7 +65,7 @@ export function ConfirmationModal({
                     <div className="flex justify-end gap-3">
                         <button
                             onClick={onCancel}
-                            className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                            className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white transition-colors font-medium"
                             disabled={isLoading}
                         >
                             {cancelLabel}

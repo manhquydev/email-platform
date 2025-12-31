@@ -173,31 +173,31 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Cài đặt cho nhà phát triển</h2>
-                <p className="text-gray-400 font-body">Quản lý API key và Webhook để tích hợp hệ thống.</p>
+                <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Cài đặt cho nhà phát triển</h2>
+                <p className="text-slate-500 dark:text-gray-400 font-body">Quản lý API key và Webhook để tích hợp hệ thống.</p>
             </div>
 
             {/* API Keys Section */}
-            <section className="glass-panel rounded-xl p-6 bg-glass-gradient border-l-4 border-l-primary/70">
+            <section className="glass-panel rounded-xl p-6 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/5 border-l-4 border-l-primary/70 dark:border-l-primary/70 shadow-sm dark:shadow-none">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">api</span>
                             API Key
                         </h3>
-                        <p className="text-sm text-gray-400 font-body">Sử dụng API Key để truy cập Ephemera từ ứng dụng của bạn.</p>
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-body">Sử dụng API Key để truy cập Ephemera từ ứng dụng của bạn.</p>
                     </div>
                 </div>
 
                 {newKey && (
-                    <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg animate-pulse-once">
-                        <p className="text-yellow-400 text-sm mb-2 font-bold flex items-center gap-2">
+                    <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/30 rounded-lg animate-pulse-once">
+                        <p className="text-yellow-700 dark:text-yellow-400 text-sm mb-2 font-bold flex items-center gap-2">
                             <span className="material-symbols-outlined text-sm">warning</span>
                             Đã tạo API Key mới
                         </p>
-                        <p className="text-xs text-gray-400 mb-3">Sao chép key này ngay bây giờ. Vì lý do bảo mật, bạn sẽ không thể thấy lại nó lần nữa!</p>
+                        <p className="text-xs text-yellow-600 dark:text-gray-400 mb-3">Sao chép key này ngay bây giờ. Vì lý do bảo mật, bạn sẽ không thể thấy lại nó lần nữa!</p>
                         <div className="flex items-center gap-2">
-                            <code className="flex-1 bg-black/50 p-2 rounded text-sm font-mono text-white break-all border border-white/10">
+                            <code className="flex-1 bg-slate-100 dark:bg-black/50 p-2 rounded text-sm font-mono text-slate-800 dark:text-white break-all border border-slate-200 dark:border-white/10">
                                 {newKey}
                             </code>
                             <Button size="sm" onClick={() => copyToClipboard(newKey)}>Sao chép</Button>
@@ -207,24 +207,24 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
 
                 <div className="space-y-3">
                     {keysLoading ? (
-                        <div className="text-center py-4 text-gray-500 italic">Đang tải danh sách key...</div>
+                        <div className="text-center py-4 text-slate-500 dark:text-gray-500 italic">Đang tải danh sách key...</div>
                     ) : keys.length === 0 ? (
-                        <div className="text-center py-8 bg-black/20 rounded-lg border border-white/5 border-dashed">
-                            <span className="material-symbols-outlined text-gray-600 text-3xl mb-2">key_off</span>
-                            <p className="text-gray-500 text-sm">Chưa có API key nào. Hãy tạo một cái để bắt đầu.</p>
+                        <div className="text-center py-8 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/5 border-dashed">
+                            <span className="material-symbols-outlined text-state-400 dark:text-gray-600 text-3xl mb-2">key_off</span>
+                            <p className="text-slate-500 dark:text-gray-500 text-sm">Chưa có API key nào. Hãy tạo một cái để bắt đầu.</p>
                         </div>
                     ) : (
                         keys.map(key => (
-                            <div key={key.id} className="bg-black/30 rounded-lg p-4 border border-white/10 flex items-center justify-between gap-4 group hover:border-white/20 transition-colors">
+                            <div key={key.id} className="bg-slate-50 dark:bg-black/30 rounded-lg p-4 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 group hover:border-slate-300 dark:hover:border-white/20 transition-colors">
                                 <div className="flex flex-col gap-1 overflow-hidden">
-                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">{key.name}</span>
-                                    <code className="text-sm text-green-400 font-mono truncate bg-green-900/10 px-1.5 py-0.5 rounded w-fit">{key.prefix}****************</code>
-                                    <span className="text-[10px] text-gray-600">Ngày tạo: {new Date(key.createdAt).toLocaleDateString("vi-VN")}</span>
+                                    <span className="text-xs text-slate-500 dark:text-gray-400 uppercase font-bold tracking-wider">{key.name}</span>
+                                    <code className="text-sm text-green-600 dark:text-green-400 font-mono truncate bg-green-50 dark:bg-green-900/10 px-1.5 py-0.5 rounded w-fit">{key.prefix}****************</code>
+                                    <span className="text-[10px] text-slate-400 dark:text-gray-600">Ngày tạo: {new Date(key.createdAt).toLocaleDateString("vi-VN")}</span>
                                 </div>
                                 <div className="flex gap-2 shrink-0">
                                     <button
                                         onClick={() => handleDeleteKey(key.id)}
-                                        className="p-2 hover:bg-white/10 rounded-md text-gray-400 hover:text-red-400 transition-colors"
+                                        className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                         title="Thu hồi Key"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">block</span>
@@ -243,14 +243,14 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             </section>
 
             {/* Webhooks Section */}
-            <section className="glass-panel rounded-xl p-6 bg-glass-gradient border-l-4 border-l-purple-500/70">
+            <section className="glass-panel rounded-xl p-6 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/5 border-l-4 border-l-purple-500/70 dark:border-l-purple-500/70 shadow-sm dark:shadow-none">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-purple-400">webhook</span>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-purple-500 dark:text-purple-400">webhook</span>
                             Webhooks
                         </h3>
-                        <p className="text-sm text-gray-400 font-body">Nhận thông báo HTTP POST khi có sự kiện (ví dụ: email đến).</p>
+                        <p className="text-sm text-slate-500 dark:text-gray-400 font-body">Nhận thông báo HTTP POST khi có sự kiện (ví dụ: email đến).</p>
                     </div>
                     <Button size="sm" variant="secondary" onClick={() => setIsWebhookModalOpen(true)}>
                         + Thêm Webhook
@@ -259,24 +259,24 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
 
                 <div className="space-y-3">
                     {webhooksLoading ? (
-                        <div className="text-center py-4 text-gray-500 italic">Đang tải webhooks...</div>
+                        <div className="text-center py-4 text-slate-500 dark:text-gray-500 italic">Đang tải webhooks...</div>
                     ) : webhooks.length === 0 ? (
-                        <div className="text-center py-8 bg-black/20 rounded-lg border border-white/5 border-dashed">
-                            <span className="material-symbols-outlined text-gray-600 text-3xl mb-2">device_hub</span>
-                            <p className="text-gray-500 text-sm">Chưa cấu hình Webhook nào.</p>
+                        <div className="text-center py-8 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/5 border-dashed">
+                            <span className="material-symbols-outlined text-slate-400 dark:text-gray-600 text-3xl mb-2">device_hub</span>
+                            <p className="text-slate-500 dark:text-gray-500 text-sm">Chưa cấu hình Webhook nào.</p>
                         </div>
                     ) : (
                         webhooks.map(hook => (
-                            <div key={hook.id} className="bg-black/30 rounded-lg p-4 border border-white/10 flex flex-col gap-3 group hover:border-white/20 transition-colors">
+                            <div key={hook.id} className="bg-slate-50 dark:bg-black/30 rounded-lg p-4 border border-slate-200 dark:border-white/10 flex flex-col gap-3 group hover:border-slate-300 dark:hover:border-white/20 transition-colors">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1 overflow-hidden">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-white text-sm">{hook.name}</span>
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border ${hook.isActive ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
+                                            <span className="font-semibold text-slate-900 dark:text-white text-sm">{hook.name}</span>
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border ${hook.isActive ? 'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 border-green-200 dark:border-green-500/20' : 'bg-slate-100 dark:bg-gray-500/10 text-slate-500 dark:text-gray-400 border-slate-200 dark:border-gray-500/20'}`}>
                                                 {hook.isActive ? 'ACTIVE' : 'INACTIVE'}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-xs text-gray-400 truncate">
+                                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400 truncate">
                                             <span className="material-symbols-outlined text-[14px]">link</span>
                                             <span className="truncate">{hook.url}</span>
                                         </div>
@@ -287,7 +287,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
                                         </Button>
                                         <button
                                             onClick={() => handleDeleteWebhook(hook.id)}
-                                            className="p-1.5 hover:bg-white/10 rounded-md text-gray-400 hover:text-red-400 transition-colors"
+                                            className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                             title="Xóa Webhook"
                                         >
                                             <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -295,9 +295,9 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2 flex-wrap border-t border-white/5 pt-2 mt-1">
+                                <div className="flex gap-2 flex-wrap border-t border-slate-200 dark:border-white/5 pt-2 mt-1">
                                     {hook.events.map(evt => (
-                                        <span key={evt} className="text-[10px] bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded border border-purple-500/20">
+                                        <span key={evt} className="text-[10px] bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-500/20">
                                             {evt}
                                         </span>
                                     ))}

@@ -192,7 +192,7 @@ export function AdminDomains({ token }: { token: string }) {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        <span className={`text-xs px-2 py-1 rounded-lg ${domain.isPublic ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40" : "bg-slate-100 text-slate-600"}`}>
+                                        <span className={`text-xs px-2 py-1 rounded-lg ${domain.isPublic ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"}`}>
                                             {domain.isPublic ? "Public" : "Private"}
                                         </span>
                                     </TableCell>

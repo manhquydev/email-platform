@@ -81,9 +81,9 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
 
         return (
             <div className="mb-6 last:mb-0" key={groupKey}>
-                <div className="flex items-center gap-2 mb-2 px-4 sticky top-0 bg-background/80 backdrop-blur-md z-10 py-2 border-b border-white/5">
-                    <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{label}</span>
-                    <span className="text-xs text-text-tertiary">({groupMessages.length})</span>
+                <div className="flex items-center gap-2 mb-2 px-4 sticky top-0 bg-white/80 dark:bg-background/80 backdrop-blur-md z-10 py-2 border-b border-slate-200 dark:border-white/5">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-text-secondary uppercase tracking-wider">{label}</span>
+                    <span className="text-xs text-slate-400 dark:text-text-tertiary">({groupMessages.length})</span>
                 </div>
 
                 <div className="flex flex-col">
@@ -97,9 +97,9 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                             <div
                                 key={message.id}
                                 className={cn(
-                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-white/5 last:border-0 hover:bg-white/5",
+                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5",
                                     isUnread && "bg-primary/5",
-                                    isSelected && "bg-white/10 shadow-[inset_3px_0_0_0_#9333EA] z-10" // Using Tailwind colors or your primary color
+                                    isSelected && "bg-primary/5 dark:bg-white/10 shadow-[inset_3px_0_0_0_#9333EA] z-10"
                                 )}
                                 onClick={() => onSelectMessage(message)}
                                 role="button"
@@ -115,23 +115,23 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                                     <div className="flex items-center justify-between gap-2">
                                         <span className={cn(
                                             "text-sm truncate max-w-[70%]",
-                                            isUnread || isSelected ? "text-text-primary font-medium" : "text-text-secondary"
+                                            isUnread || isSelected ? "text-slate-900 dark:text-text-primary font-medium" : "text-slate-600 dark:text-text-secondary"
                                         )}>
                                             {message.fromAddress}
                                         </span>
-                                        <span className="text-xs text-text-tertiary whitespace-nowrap">
+                                        <span className="text-xs text-slate-400 dark:text-text-tertiary whitespace-nowrap">
                                             {formatRelativeTime(new Date(message.receivedAt))}
                                         </span>
                                     </div>
 
                                     <div className={cn(
                                         "text-sm truncate",
-                                        isUnread || isSelected ? "text-text-primary font-medium" : "text-text-secondary"
+                                        isUnread || isSelected ? "text-slate-900 dark:text-text-primary font-medium" : "text-slate-600 dark:text-text-secondary"
                                     )}>
                                         {message.subject || '(Không có tiêu đề)'}
                                     </div>
 
-                                    <div className="text-xs text-text-tertiary line-clamp-2">
+                                    <div className="text-xs text-slate-500 dark:text-text-tertiary line-clamp-2">
                                         {message.textBody?.substring(0, 100) || 'Không có nội dung xem trước'}
                                     </div>
 
@@ -159,16 +159,16 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
 
     if (messages.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-8 text-center h-64 text-text-secondary">
-                <div className="w-16 h-16 rounded-2xl bg-surface-glass border border-white/10 flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <div className="flex flex-col items-center justify-center p-8 text-center h-64 text-slate-500 dark:text-text-secondary">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-surface-glass border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 opacity-50 text-slate-400 dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                     </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-text-primary mb-2">Chưa có email</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-text-primary mb-2">Chưa có email</h3>
                 <p className="text-sm max-w-[200px]">Chọn một hộp thư từ thanh bên hoặc tạo mới để bắt đầu.</p>
                 <p className="mt-4 text-xs">
-                    <span className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-text-primary border border-white/10">⌘K</span> để tìm kiếm hoặc tạo mới
+                    <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono text-slate-700 dark:text-text-primary border border-slate-300 dark:border-white/10">⌘K</span> để tìm kiếm hoặc tạo mới
                 </p>
             </div>
         );

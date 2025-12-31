@@ -33,7 +33,7 @@
   /* Primary Colors (Action/Interactive) */
   --color-primary: var(--nebula-violet);
   --color-primary-hover: var(--nebula-violet-dark);
-  --color-primary-light: var(--nebula-violet-light);
+  --color-primary-light: #eff6ff;
   --color-primary-border: var(--nebula-violet-light);
   --color-primary-50: #eff6ff;
   /* Keep primitives or map if available */

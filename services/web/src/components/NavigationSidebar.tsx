@@ -11,12 +11,18 @@ interface NavigationSidebarProps {
 export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebarProps) {
     const location = useLocation();
     const { user } = useAuth();
+    // Helper check active
+    const isActive = (path: string) => {
+        if (path === "/app") return location.pathname === "/app";
+        return location.pathname.startsWith(path);
+    };
+
 
     return (
         <aside
             className={cn(
                 "hidden md:flex flex-col h-full shrink-0 transition-all duration-300",
-                "glass-panel border-r-0 border-r-glass-border",
+                "glass-panel border-r border-slate-200 dark:border-white/10", // Fixed border contrast
                 isExpanded ? "w-64" : "w-20"
             )}
         >
@@ -36,7 +42,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         </svg>
                     </div>
                     {isExpanded && (
-                        <span className="text-xl font-bold tracking-tight text-white animate-in fade-in duration-300 whitespace-nowrap overflow-hidden">
+                        <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white animate-in fade-in duration-300 whitespace-nowrap overflow-hidden">
                             Ephemera
                         </span>
                     )}
@@ -48,38 +54,66 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         to="/app"
                         className={cn(
                             "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
-                            location.pathname === "/app" || location.search
-                                ? "bg-primary/20 text-white border border-primary/30 shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                : "text-gray-400 hover:text-white hover:bg-glass-bg-hover"
+                            isActive("/app") && !location.search.includes("tab=")
+                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-glass-bg-hover"
                         )}
                     >
                         <span className="material-symbols-outlined text-[24px] shrink-0">inbox</span>
                         {isExpanded && (
                             <>
                                 <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Hộp thư</span>
-                                {(location.pathname === "/app" || location.search) && (
+                                {(isActive("/app") && !location.search.includes("tab=")) && (
                                     <div className="ml-auto size-2 rounded-full bg-primary animate-pulse"></div>
                                 )}
                             </>
                         )}
                     </Link>
 
-                    <Link to="/my-domains" title="Tên miền" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-glass-bg-hover transition-colors group w-full text-left whitespace-nowrap overflow-hidden">
+                    <Link to="/my-domains"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
+                            isActive("/my-domains")
+                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-glass-bg-hover"
+                        )}
+                        title="Tên miền">
                         <span className="material-symbols-outlined text-[24px] shrink-0">globe</span>
                         {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Tên miền</span>}
                     </Link>
 
-                    <Link to="/settings?tab=developer" title="Khóa API" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-glass-bg-hover transition-colors group w-full text-left whitespace-nowrap overflow-hidden">
+                    <Link to="/settings?tab=developer"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
+                            location.search.includes("tab=developer")
+                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-glass-bg-hover"
+                        )}
+                        title="Khóa API">
                         <span className="material-symbols-outlined text-[24px] shrink-0">key</span>
                         {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Khóa API</span>}
                     </Link>
 
-                    <Link to="/settings?tab=security" title="Bảo mật" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-glass-bg-hover transition-colors group w-full text-left whitespace-nowrap overflow-hidden">
+                    <Link to="/settings?tab=security"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
+                            location.search.includes("tab=security")
+                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-glass-bg-hover"
+                        )}
+                        title="Bảo mật">
                         <span className="material-symbols-outlined text-[24px] shrink-0">shield</span>
                         {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Bảo mật</span>}
                     </Link>
 
-                    <Link to="/settings" title="Cài đặt" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-glass-bg-hover transition-colors group w-full text-left whitespace-nowrap overflow-hidden mt-auto">
+                    <Link to="/settings"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden mt-auto",
+                            (isActive("/settings") && !location.search)
+                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-glass-bg-hover"
+                        )}
+                        title="Cài đặt">
                         <span className="material-symbols-outlined text-[24px] shrink-0">settings</span>
                         {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Cài đặt</span>}
                     </Link>
@@ -87,20 +121,20 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
             </div>
 
             {/* Bottom Actions - User Profile */}
-            <div className="p-4 flex flex-col gap-4 border-t border-glass-border bg-black/20 overflow-hidden mt-auto">
+            <div className="p-4 flex flex-col gap-4 border-t border-slate-200 dark:border-glass-border bg-slate-50/50 dark:bg-black/20 overflow-hidden mt-auto">
                 {/* Theme Toggle - Only visible when expanded or just icon if collapsed */}
                 <div className={cn("flex items-center justify-center", isExpanded ? "w-full" : "w-full")}>
                     <ThemeToggle />
                 </div>
 
-                <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-gray-400 hover:text-white transition-colors w-full text-left overflow-hidden">
-                    <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-white/10 bg-primary/20 text-primary font-bold text-sm">
+                <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 transition-colors w-full text-left overflow-hidden">
+                    <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-slate-200 dark:ring-white/10 bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm">
                         {user?.email?.charAt(0).toUpperCase() || "U"}
                     </div>
                     {isExpanded && (
                         <div className="flex flex-col items-start animate-in fade-in duration-300 overflow-hidden">
-                            <span className="text-sm font-medium text-white truncate w-full">{user?.email?.split('@')[0] || "Người dùng"}</span>
-                            <span className="text-xs text-gray-500 truncate w-full uppercase">Gói {
+                            <span className="text-sm font-medium text-slate-900 dark:text-white truncate w-full">{user?.email?.split('@')[0] || "Người dùng"}</span>
+                            <span className="text-xs text-slate-500 dark:text-gray-500 truncate w-full uppercase">Gói {
                                 user?.tier === 'FREE' ? 'MIỄN PHÍ' :
                                     user?.tier === 'STARTER' ? 'KHỞI ĐẦU' :
                                         user?.tier === 'PROFESSIONAL' ? 'CHUYÊN NGHIỆP' :

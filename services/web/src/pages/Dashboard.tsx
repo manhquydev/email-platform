@@ -356,17 +356,17 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
                     className={cn(
-                        "flex flex-col h-full bg-background/50 border-r border-white/5",
+                        "flex flex-col h-full bg-white/50 dark:bg-background/50 border-r border-slate-200 dark:border-white/5",
                         // On mobile: show if no message selected, otherwise hide
                         selectedMessage ? "hidden md:flex md:w-[400px]" : "w-full md:w-[400px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
-                    <div className="h-16 px-4 border-b border-white/5 flex items-center justify-between shrink-0 bg-background/80 backdrop-blur-md">
+                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-background/80 backdrop-blur-md">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="md:hidden shrink-0"
+                                className="md:hidden shrink-0 text-slate-700 dark:text-white"
                                 onClick={() => setShowMobileSidebar(true)}
                                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>}
                             />
@@ -402,6 +402,7 @@ export function Dashboard() {
                                 size="icon"
                                 onClick={() => selectedInbox && loadMessages(selectedInbox)}
                                 disabled={busy}
+                                className="text-slate-500 dark:text-text-primary hover:text-primary"
                                 icon={<svg className={cn("w-5 h-5", busy && "animate-spin")} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>}
                             />
                             {canSendOutbound && (
@@ -418,13 +419,13 @@ export function Dashboard() {
                     </div>
 
                     {/* Search */}
-                    <div className="p-3 border-b border-white/5 shrink-0">
+                    <div className="p-3 border-b border-slate-200 dark:border-white/5 shrink-0">
                         <div className="relative">
-                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                className="w-full bg-surface-glass border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary/50 transition-colors"
+                                className="w-full bg-slate-100 dark:bg-surface-glass border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-text-primary placeholder:text-slate-500 dark:placeholder-text-tertiary focus:outline-none focus:border-primary/50 transition-colors"
                                 placeholder="Tìm kiếm... (từ:, là:chưa đọc)"
                                 value={messageSearch}
                                 onChange={(e) => setMessageSearch(e.target.value)}
@@ -435,7 +436,7 @@ export function Dashboard() {
                     {/* List Content */}
                     <div className="flex-1 overflow-hidden relative">
                         {!selectedInbox ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-text-tertiary">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-400 dark:text-text-tertiary">
                                 <span className="material-symbols-outlined text-4xl mb-2 opacity-50">inbox</span>
                                 <p className="text-sm">Chọn một hộp thư để xem tin nhắn</p>
                             </div>
@@ -451,7 +452,7 @@ export function Dashboard() {
                                     />
                                     {/* Load More Button */}
                                     {messages.length < messageTotal && (
-                                        <div className="p-4 flex justify-center border-t border-white/5">
+                                        <div className="p-4 flex justify-center border-t border-slate-200 dark:border-white/5">
                                             <Button
                                                 variant="secondary"
                                                 size="sm"
@@ -473,38 +474,38 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className={cn(
-                        "flex-1 bg-surface-elevated flex flex-col h-full overflow-hidden border-l border-white/5",
+                        "flex-1 bg-white dark:bg-surface-elevated flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/5",
                         // Mobile: show only if message selected
-                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-background md:bg-transparent"
+                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-background"
                     )}>
                     {selectedMessage ? (
                         <>
                             {/* Detail Header */}
-                            <div className="h-16 px-6 border-b border-white/5 flex items-center justify-between shrink-0 bg-background/80 backdrop-blur-md">
+                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-background/80 backdrop-blur-md">
                                 <div className="flex items-center gap-3">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="md:hidden" // Back button only on mobile
+                                        className="md:hidden text-slate-700 dark:text-white" // Back button only on mobile
                                         onClick={() => setSelectedMessage(null)}
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>}
                                     />
                                     <div className="flex flex-col">
-                                        <h3 className="text-base font-semibold text-white max-w-[200px] md:max-w-md truncate">
+                                        <h3 className="text-base font-semibold text-slate-900 dark:text-white max-w-[200px] md:max-w-md truncate">
                                             {selectedMessage.fromAddress}
                                         </h3>
-                                        <span className="text-xs text-text-tertiary">
+                                        <span className="text-xs text-slate-500 dark:text-text-tertiary">
                                             {new Date(selectedMessage.receivedAt).toLocaleString("vi-VN")}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 bg-surface-elevated/50 rounded-lg p-1 border border-white/10 shadow-lg backdrop-blur-md">
+                                <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated/50 rounded-lg p-1 border border-slate-200 dark:border-white/10 shadow-lg backdrop-blur-md">
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => setShowCompose(true)}
                                         title="Trả lời"
-                                        className="text-text-secondary hover:text-white"
+                                        className="text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>}
                                     />
                                     <Button
@@ -512,25 +513,25 @@ export function Dashboard() {
                                         size="icon"
                                         onClick={() => handleMarkUnread(selectedMessage.id)}
                                         title="Đánh dấu chưa đọc"
-                                        className="text-text-secondary hover:text-white"
+                                        className="text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
                                     />
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleTogglePin(selectedMessage.id, !selectedMessage.isPinned)}
-                                        className={selectedMessage.isPinned ? "text-warning" : "text-text-secondary hover:text-white"}
+                                        className={selectedMessage.isPinned ? "text-warning" : "text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"}
                                         title={selectedMessage.isPinned ? "Bỏ ghim" : "Ghim"}
                                         icon={<svg className="w-5 h-5" fill={selectedMessage.isPinned ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>}
                                     />
 
-                                    <div className="w-px h-5 bg-white/10 mx-1"></div>
+                                    <div className="w-px h-5 bg-slate-300 dark:bg-white/10 mx-1"></div>
 
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleDeleteMessage(selectedMessage.id)}
-                                        className="text-text-secondary hover:text-red-400 hover:bg-danger/10"
+                                        className="text-slate-500 hover:text-red-500 dark:text-text-secondary dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-danger/10"
                                         title="Xóa"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
                                     />
@@ -538,7 +539,7 @@ export function Dashboard() {
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => copyOTP(selectedMessage.textBody || selectedMessage.htmlBody || "")} // Re-using copyOTP for now as a functional placeholder for 'View Source' action
-                                        className="text-text-secondary hover:text-white"
+                                        className="text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"
                                         title="Sao chép nội dung"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>}
                                     />
@@ -548,7 +549,7 @@ export function Dashboard() {
                             {/* Detail Content */}
                             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pb-24 md:pb-6">
                                 {/* Subject */}
-                                <h1 className="text-2xl font-bold text-white mb-6 leading-tight">
+                                <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
                                     {selectedMessage.subject || "(Không có chủ đề)"}
                                 </h1>
 
@@ -564,7 +565,7 @@ export function Dashboard() {
                                                 </div>
                                                 <div>
                                                     <div className="text-sm text-primary font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
-                                                    <div className="text-3xl font-bold text-white font-mono tracking-widest">{otp}</div>
+                                                    <div className="text-3xl font-bold text-slate-800 dark:text-white font-mono tracking-widest">{otp}</div>
                                                 </div>
                                             </div>
                                             <Button
@@ -580,7 +581,7 @@ export function Dashboard() {
                                 })()}
 
                                 {/* Email Body */}
-                                <GlassCard className="p-6 md:p-8 rounded-2xl bg-white/5 overflow-hidden">
+                                <GlassCard className="p-6 md:p-8 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                                     {selectedMessage.htmlBody ? (
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe
@@ -591,7 +592,7 @@ export function Dashboard() {
                                             />
                                         </div>
                                     ) : (
-                                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-text-secondary">
+                                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-slate-700 dark:text-text-secondary">
                                             {selectedMessage.textBody || "Không có nội dung"}
                                         </pre>
                                     )}

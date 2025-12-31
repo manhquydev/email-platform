@@ -50,7 +50,7 @@ export function FocusStreamLayout({
             case 'STARTER':
                 return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]">Starter</span>;
             default:
-                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">Free</span>;
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">Free</span>;
         }
     };
 
@@ -87,13 +87,13 @@ export function FocusStreamLayout({
     }, [handleKeyDown]);
 
     return (
-        <div className={`min-h-screen w-full relative overflow-hidden bg-bg-primary text-text-main font-sans selection:bg-primary/30 ${isNavExpanded ? 'nav-expanded' : ''}`}>
+        <div className={`min-h-screen w-full relative overflow-hidden bg-bg text-text-main font-sans selection:bg-primary/30 ${isNavExpanded ? 'nav-expanded' : ''}`}>
 
             {/* Background Effects */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-br from-bg-primary via-[#0f1016] to-[#0a0b0e]" />
-                <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[100px]" />
-                <div className="absolute bottom-[10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-blue-600/10 blur-[80px]" />
+                <div className="absolute inset-0 bg-gradient-to-br from-bg via-slate-100 to-slate-200 dark:from-bg dark:via-[#0f1016] dark:to-[#0a0b0e]" />
+                <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary/5 dark:bg-primary/10 blur-[100px]" />
+                <div className="absolute bottom-[10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-blue-400/10 dark:bg-blue-600/10 blur-[80px]" />
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
             </div>
 
@@ -118,16 +118,16 @@ export function FocusStreamLayout({
             {/* User Menu Dropdown */}
             {showUserMenu && (
                 <div className="fixed bottom-20 left-4 md:left-20 z-50 min-w-[200px] animate-fade-in-up">
-                    <div className="bg-surface/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden p-1">
-                        <div className="px-3 py-2 border-b border-white/5 mb-1">
+                    <div className="bg-white/80 dark:bg-surface/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden p-1">
+                        <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
                             <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-sm font-medium text-text-main truncate max-w-[150px]">{user?.email}</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-text-main truncate max-w-[150px]">{user?.email}</span>
                                 {getTierBadge(user?.tier)}
                             </div>
-                            <div className="text-[10px] text-muted uppercase tracking-wider font-semibold">{user?.role === 'ADMIN' ? 'Administrator' : 'User'}</div>
+                            <div className="text-[10px] text-slate-500 dark:text-muted uppercase tracking-wider font-semibold">{user?.role === 'ADMIN' ? 'Administrator' : 'User'}</div>
                         </div>
                         <button
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
                             onClick={() => {
                                 setShowUserMenu(false);
                                 navigate('/settings');
@@ -139,7 +139,7 @@ export function FocusStreamLayout({
                             </svg>
                             <span>Cài đặt</span>
                         </button>
-                        <div className="h-px bg-white/5 my-1" />
+                        <div className="h-px bg-slate-100 dark:bg-white/5 my-1" />
                         <button
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                             onClick={() => {

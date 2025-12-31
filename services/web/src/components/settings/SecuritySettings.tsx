@@ -148,7 +148,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                 <div className="absolute -right-6 -top-6 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 relative z-10">Trạng thái bảo mật</h3>
                 <div className="space-y-4 relative z-10">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-surface-dark/40 border border-slate-200 dark:border-white/10">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-full bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400">
                                 <span className="material-symbols-outlined text-[18px]">lock</span>
@@ -160,7 +160,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                         </div>
                         <button className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-colors">Cập nhật</button>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-surface-dark/40 border border-slate-200 dark:border-white/10">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
                         <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${profile?.twoFactorEnabled ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-slate-200 dark:bg-gray-700/50 text-slate-400 dark:text-gray-400'}`}>
                                 <span className="material-symbols-outlined text-[18px]">phonelink_lock</span>

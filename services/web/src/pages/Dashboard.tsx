@@ -356,12 +356,12 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
                     className={cn(
-                        "flex flex-col h-full bg-white/50 dark:bg-[#0f1016]/80 border-r border-slate-200 dark:border-white/5",
+                        "flex flex-col h-full bg-slate-50/50 dark:bg-bg/80 border-r border-slate-200 dark:border-white/5",
                         // On mobile: show if no message selected, otherwise hide
                         selectedMessage ? "hidden md:flex md:w-[400px]" : "w-full md:w-[400px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
-                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-background/80 backdrop-blur-md">
+                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-bg/80 backdrop-blur-md">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <Button
                                 variant="ghost"
@@ -474,14 +474,14 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className={cn(
-                        "flex-1 bg-white dark:bg-[#0f1016] flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/5",
+                        "flex-1 bg-white dark:bg-bg flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/5",
                         // Mobile: show only if message selected
-                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-[#0f1016]"
+                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-bg"
                     )}>
                     {selectedMessage ? (
                         <>
                             {/* Detail Header */}
-                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-background/80 backdrop-blur-md">
+                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-bg/80 backdrop-blur-md">
                                 <div className="flex items-center gap-3">
                                     <Button
                                         variant="ghost"
@@ -581,14 +581,14 @@ export function Dashboard() {
                                 })()}
 
                                 {/* Email Body */}
-                                <GlassCard className="p-6 md:p-8 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
+                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                                     {selectedMessage.htmlBody ? (
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe
                                                 srcDoc={selectedMessage.htmlBody}
                                                 sandbox="allow-same-origin allow-scripts"
                                                 title="Email content"
-                                                className="w-full min-h-[400px] border-none bg-white rounded-lg"
+                                                className="w-full min-h-[400px] border-none bg-white rounded-lg invert-0 dark:invert-[0.05]"
                                             />
                                         </div>
                                     ) : (

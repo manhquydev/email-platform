@@ -90,7 +90,7 @@ export function NotificationsSettings() {
                 <p className="text-slate-500 dark:text-gray-400 font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
             </div>
 
-            <GlassCard className="p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <GlassCard className="p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                 <div className="flex items-center gap-2 mb-6">
                     <span className="material-symbols-outlined text-[#0088cc]">send</span>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Thông báo Telegram</h3>

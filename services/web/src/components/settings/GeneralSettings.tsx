@@ -62,7 +62,7 @@ export function GeneralSettings({ profile }: { profile: UserProfile | null; load
                 {/* Left Column: Form Fields */}
                 <div className="lg:col-span-2 flex flex-col gap-8">
                     {/* Identity Form */}
-                    <GlassCard className="p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">badge</span>
                             Danh tính

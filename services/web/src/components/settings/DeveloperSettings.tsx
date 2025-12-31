@@ -178,7 +178,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             </div>
 
             {/* API Keys Section */}
-            <section className="glass-panel rounded-xl p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 border-l-4 border-l-primary/70 dark:border-l-primary/70 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/5 border-l-4 border-l-primary/70 dark:border-l-primary/70 shadow-sm dark:shadow-none">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
@@ -243,7 +243,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             </section>
 
             {/* Webhooks Section */}
-            <section className="glass-panel rounded-xl p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 border-l-4 border-l-purple-500/70 dark:border-l-purple-500/70 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/5 border-l-4 border-l-purple-500/70 dark:border-l-purple-500/70 shadow-sm dark:shadow-none">
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">

@@ -258,7 +258,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                     </GlassCard>
 
                     {/* Starter Tier */}
-                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('STARTER') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
+                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('STARTER') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
                         {isPlanActive('STARTER') && (
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-primary/40">
                                 Gói hiện tại

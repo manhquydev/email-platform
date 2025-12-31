@@ -144,7 +144,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             </div>
 
             {/* Security Status Summary */}
-            <section className="glass-panel rounded-xl p-6 bg-gradient-to-br from-primary/10 to-transparent border-t-2 border-t-primary/50 relative overflow-hidden bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 bg-gradient-to-br from-primary/10 to-transparent border-t-2 border-t-primary/50 relative overflow-hidden bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                 <div className="absolute -right-6 -top-6 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 relative z-10">Trạng thái bảo mật</h3>
                 <div className="space-y-4 relative z-10">
@@ -184,7 +184,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             </section>
 
             {/* Change Password */}
-            <GlassCard className="p-6 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <GlassCard className="p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                 <div className="flex items-center gap-2 mb-6">
                     <span className="material-symbols-outlined text-slate-400 dark:text-gray-400">key</span>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Đổi mật khẩu</h3>
@@ -223,7 +223,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
 
             {/* 2FA Section Detailed */}
             {twoFAStep !== 'idle' && (
-                <GlassCard className="p-6 border-primary/30 bg-white dark:bg-glass-gradient shadow-sm dark:shadow-none">
+                <GlassCard className="p-6 border-primary/30 bg-white dark:bg-white/5 shadow-sm dark:shadow-none">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Cài đặt xác thực 2 yếu tố</h3>
 
                     {twoFAError && <p className="text-sm mb-3 text-red-500 dark:text-red-400">{twoFAError}</p>}
@@ -279,7 +279,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             )}
 
             {showDisable2FAConfirm && (
-                <GlassCard className="p-6 border-red-500/30 bg-white dark:bg-glass-gradient shadow-sm dark:shadow-none">
+                <GlassCard className="p-6 border-red-500/30 bg-white dark:bg-white/5 shadow-sm dark:shadow-none">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Tắt 2FA</h3>
                     <p className="text-slate-500 dark:text-gray-400 text-sm mb-4">Nhập mật khẩu của bạn để xác nhận tắt 2FA.</p>
                     <div className="flex gap-3">

@@ -111,7 +111,7 @@ export function Settings() {
     return (
         <div className="flex h-full w-full relative bg-transparent text-white font-display overflow-hidden">
             {/* Sidebar Navigation */}
-            <aside className="w-64 flex-shrink-0 h-full border-r border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0a0a14]/50 backdrop-blur-xl flex flex-col z-10 relative text-slate-900 dark:text-white">
+            <aside className="w-64 flex-shrink-0 h-full border-r border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0a0a14] backdrop-blur-xl flex flex-col z-10 relative text-slate-900 dark:text-white">
                 <div className="p-6 pb-2">
                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Cài đặt</h2>
                 </div>

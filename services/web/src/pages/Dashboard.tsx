@@ -356,7 +356,7 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
                     className={cn(
-                        "flex flex-col h-full bg-white/50 dark:bg-background/50 border-r border-slate-200 dark:border-white/5",
+                        "flex flex-col h-full bg-white/50 dark:bg-[#0f1016]/80 border-r border-slate-200 dark:border-white/5",
                         // On mobile: show if no message selected, otherwise hide
                         selectedMessage ? "hidden md:flex md:w-[400px]" : "w-full md:w-[400px] flex-shrink-0"
                     )}>
@@ -474,9 +474,9 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className={cn(
-                        "flex-1 bg-white dark:bg-surface-elevated flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/5",
+                        "flex-1 bg-white dark:bg-[#0f1016] flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/5",
                         // Mobile: show only if message selected
-                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-background"
+                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-[#0f1016]"
                     )}>
                     {selectedMessage ? (
                         <>

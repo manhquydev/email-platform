@@ -122,7 +122,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Usage Stats (Spans 2 cols on large screens) */}
                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <span className="material-symbols-outlined text-6xl text-slate-900 dark:text-white">diamond</span>
                         </div>
@@ -140,7 +140,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                         </p>
                     </GlassCard>
 
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <span className="material-symbols-outlined text-6xl text-slate-900 dark:text-white">account_balance_wallet</span>
                         </div>
@@ -153,7 +153,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                         </p>
                     </GlassCard>
 
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Tên miền riêng</p>
@@ -166,7 +166,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                         </div>
                     </GlassCard>
 
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Băng thông</p>
@@ -181,7 +181,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                 </div>
 
                 {/* Payment Method Card */}
-                <GlassCard className="p-6 rounded-xl flex flex-col gap-6 relative overflow-hidden bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                <GlassCard className="p-6 rounded-xl flex flex-col gap-6 relative overflow-hidden bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
                     <div className="flex items-center justify-between relative z-10">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Phương thức thanh toán</h3>
@@ -238,7 +238,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                 {/* Pricing Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                     {/* Free Tier */}
-                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('FREE') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
+                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('FREE') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
                         <div>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Miễn phí</h3>
                             <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Cơ bản ẩn danh</p>
@@ -258,7 +258,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                     </GlassCard>
 
                     {/* Starter Tier */}
-                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('STARTER') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
+                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('STARTER') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
                         {isPlanActive('STARTER') && (
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-primary/40">
                                 Gói hiện tại
@@ -283,7 +283,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                     </GlassCard>
 
                     {/* Pro Tier (Best Value) */}
-                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative bg-white dark:bg-glass-gradient shadow-[0_0_40px_-10px_rgba(25,25,230,0.15)] border ${isPlanActive('PRO') ? 'border-primary ring-2 ring-primary/20' : 'border-primary/50 dark:border-primary/30'}`}>
+                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative bg-white dark:bg-white/5 shadow-[0_0_40px_-10px_rgba(25,25,230,0.15)] border ${isPlanActive('PRO') ? 'border-primary ring-2 ring-primary/20' : 'border-primary/50 dark:border-primary/30'}`}>
                         <div className="absolute top-0 right-0 p-3">
                             <span className="flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -313,7 +313,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                     </GlassCard>
 
                     {/* Enterprise Tier */}
-                    <GlassCard className="p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                         <div>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Doanh nghiệp</h3>
                             <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Truy cập API & lưu lượng lớn</p>
@@ -336,7 +336,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
             {/* Billing History Table */}
             <div className="flex flex-col gap-4 mt-6">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Lịch sử thanh toán</h2>
-                <GlassCard className="rounded-xl overflow-hidden overflow-x-auto p-0 bg-white dark:bg-glass-gradient border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                <GlassCard className="rounded-xl overflow-hidden overflow-x-auto p-0 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                     <table className="w-full text-left text-sm border-collapse">
                         <thead className="bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-gray-400 uppercase text-xs font-semibold tracking-wider">
                             <tr>

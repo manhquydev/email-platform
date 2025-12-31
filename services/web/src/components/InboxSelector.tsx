@@ -55,7 +55,7 @@ export function InboxSelector({
             {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group max-w-[200px] md:max-w-[300px]"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all group max-w-[200px] md:max-w-[300px]"
             >
                 <div className="flex flex-col items-start overflow-hidden">
                     <span className="text-xs text-text-tertiary">
@@ -148,7 +148,7 @@ export function InboxSelector({
                         {/* Footer Actions */}
                         <div className="p-2 border-t border-white/5 bg-surface-elevated/50 flex justify-between items-center">
                             <ThemeToggle />
-                            <a href="/settings" className="p-2 rounded-lg hover:bg-white/5 text-xs text-text-tertiary hover:text-white flex items-center gap-1">
+                            <a href="/settings" className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-xs text-text-tertiary hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
                                 <span className="material-symbols-outlined text-[16px]">settings</span>
                                 Cài đặt
                             </a>

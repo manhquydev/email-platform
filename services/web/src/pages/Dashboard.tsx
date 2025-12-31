@@ -356,12 +356,11 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
                     className={cn(
-                        "flex flex-col h-full bg-slate-50/50 dark:bg-bg/80 border-r border-slate-200 dark:border-white/5",
-                        // On mobile: show if no message selected, otherwise hide
+                        "flex flex-col h-full bg-slate-50/50 dark:bg-bg border-r border-slate-200 dark:border-white/5",
                         selectedMessage ? "hidden md:flex md:w-[400px]" : "w-full md:w-[400px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
-                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-bg/80 backdrop-blur-md">
+                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <Button
                                 variant="ghost"
@@ -481,7 +480,7 @@ export function Dashboard() {
                     {selectedMessage ? (
                         <>
                             {/* Detail Header */}
-                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-bg/80 backdrop-blur-md">
+                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
                                 <div className="flex items-center gap-3">
                                     <Button
                                         variant="ghost"

@@ -82,6 +82,20 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Tên miền</span>}
                     </Link>
 
+                    {user?.role === 'ADMIN' && (
+                        <Link to="/admin"
+                            className={cn(
+                                "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
+                                isActive("/admin")
+                                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
+                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                            )}
+                            title="Quản trị">
+                            <span className="material-symbols-outlined text-[24px] shrink-0">admin_panel_settings</span>
+                            {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Quản trị</span>}
+                        </Link>
+                    )}
+
 
 
 

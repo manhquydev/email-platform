@@ -81,19 +81,51 @@ export function InboxSelector({
                         {/* Header / Domain Switcher */}
                         <div className="p-3 bg-surface-elevated/50 border-b border-white/5 space-y-3">
                             <label className="text-xs font-bold text-text-tertiary uppercase tracking-wider block">Tên miền</label>
-                            <select
-                                className="w-full bg-surface border border-white/10 rounded-lg px-2 py-1.5 text-sm text-text-main focus:ring-1 focus:ring-primary/50 outline-none"
-                                value={selectedDomainId}
-                                onChange={(e) => onSelectDomain(e.target.value)}
-                            >
-                                <option value="">-- Chọn tên miền --</option>
-                                <optgroup label="Tên miền của tôi">
-                                    {myDomains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                                </optgroup>
-                                <optgroup label="Công khai / Chia sẻ">
-                                    {sharedDomains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                                </optgroup>
-                            </select>
+
+                            {/* Domain List (Replaces invalid Select) */}
+                            <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1 small-scrollbar">
+                                {myDomains.length > 0 && (
+                                    <div className="space-y-1">
+                                        <div className="text-[10px] font-semibold text-text-tertiary px-2">Của tôi</div>
+                                        {myDomains.map(d => (
+                                            <button
+                                                key={d.id}
+                                                onClick={() => onSelectDomain(d.id)}
+                                                className={cn(
+                                                    "w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors flex items-center justify-between group/item",
+                                                    selectedDomainId === d.id
+                                                        ? "bg-primary/10 text-primary font-medium"
+                                                        : "text-text-secondary hover:bg-white/5 hover:text-white"
+                                                )}
+                                            >
+                                                <span className="truncate">{d.name}</span>
+                                                {selectedDomainId === d.id && <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {sharedDomains.length > 0 && (
+                                    <div className="space-y-1">
+                                        <div className="text-[10px] font-semibold text-text-tertiary px-2">Công khai</div>
+                                        {sharedDomains.map(d => (
+                                            <button
+                                                key={d.id}
+                                                onClick={() => onSelectDomain(d.id)}
+                                                className={cn(
+                                                    "w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors flex items-center justify-between group/item",
+                                                    selectedDomainId === d.id
+                                                        ? "bg-primary/10 text-primary font-medium"
+                                                        : "text-text-secondary hover:bg-white/5 hover:text-white"
+                                                )}
+                                            >
+                                                <span className="truncate">{d.name}</span>
+                                                {selectedDomainId === d.id && <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Quick Generate */}
                             <QuickGenerateCard
@@ -111,6 +143,10 @@ export function InboxSelector({
                         <div className="flex-1 overflow-y-auto p-2 space-y-1 bg-surface-glass">
                             <div className="flex items-center justify-between px-2 py-1">
                                 <span className="text-xs font-bold text-text-tertiary uppercase">Hộp thư ({inboxes.length})</span>
+                                <a href="/app/manager" target="_blank" className="text-[10px] text-primary hover:underline flex items-center gap-1">
+                                    Quản lý
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                </a>
                             </div>
 
                             {inboxes.length === 0 && (
@@ -122,7 +158,7 @@ export function InboxSelector({
                                     key={inbox.id}
                                     onClick={() => { onSelectInbox(inbox.id); setIsOpen(false); }}
                                     className={cn(
-                                        "w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors text-sm",
+                                        "w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors text-sm group",
                                         selectedInboxId === inbox.id ? "bg-primary/10 text-primary" : "hover:bg-white/5 text-text-secondary hover:text-white"
                                     )}
                                 >

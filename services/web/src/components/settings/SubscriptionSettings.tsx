@@ -109,6 +109,82 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     };
 
+    // Export subscription report as CSV
+    const handleExportReport = () => {
+        if (payments.length === 0) {
+            toast.error("Không có dữ liệu để xuất báo cáo");
+            return;
+        }
+
+        try {
+            // Create CSV content
+            const headers = ["Ngày", "Số tiền", "Tiền tệ", "Trạng thái", "Mã giao dịch"];
+            const rows = payments.map(p => [
+                new Date(p.createdAt).toLocaleDateString("vi-VN"),
+                (p.amount / 100).toLocaleString("vi-VN"), // Convert cents to actual amount
+                p.currency.toUpperCase(),
+                p.status === "succeeded" ? "Thành công" : p.status,
+                p.stripePaymentId || "-"
+            ]);
+
+            const csvContent = [
+                headers.join(","),
+                ...rows.map(row => row.join(","))
+            ].join("\n");
+
+            // Add BOM for Excel UTF-8 compatibility
+            const BOM = "\uFEFF";
+            const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            // Download file
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `subscription-report-${new Date().toISOString().split("T")[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            toast.success("Đã xuất báo cáo thành công");
+        } catch (error) {
+            toast.error("Lỗi khi xuất báo cáo");
+        }
+    };
+
+    // Download individual invoice
+    const handleDownloadInvoice = async (payment: Payment) => {
+        try {
+            // Generate invoice text content
+            const invoiceContent = `
+HÓA ĐƠN THANH TOÁN
+==========================================
+Mã giao dịch: #${payment.id.slice(0, 8).toUpperCase()}
+Mã Stripe: ${payment.stripePaymentId || "N/A"}
+Ngày: ${new Date(payment.createdAt).toLocaleDateString("vi-VN")}
+Số tiền: ${(payment.amount / 100).toLocaleString("vi-VN")} ${payment.currency.toUpperCase()}
+Trạng thái: ${payment.status === "succeeded" || payment.status === "COMPLETED" || payment.status === "PAID" ? "Thành công" : payment.status}
+==========================================
+Cảm ơn bạn đã sử dụng dịch vụ!
+            `.trim();
+
+            const blob = new Blob([invoiceContent], { type: "text/plain;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `invoice-${payment.id.slice(0, 8)}-${new Date(payment.createdAt).toISOString().split("T")[0]}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            toast.success("Đã tải hóa đơn");
+        } catch (error) {
+            toast.error("Lỗi khi tải hóa đơn");
+        }
+    };
+
 
 
     return (
@@ -119,7 +195,10 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                     <p className="text-slate-500 dark:text-gray-400 font-body">Quản lý đăng ký, số dư và hóa đơn của bạn.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="glass-panel px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex items-center gap-2 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300">
+                    <button
+                        onClick={handleExportReport}
+                        className="glass-panel px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex items-center gap-2 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300"
+                    >
                         <span className="material-symbols-outlined text-[18px]">download</span>
                         Xuất báo cáo
                     </button>
@@ -397,7 +476,11 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button aria-label="Download invoice" className="text-slate-400 hover:text-slate-900 dark:text-gray-500 dark:hover:text-white transition-colors group-hover:scale-110">
+                                            <button
+                                                aria-label="Download invoice"
+                                                onClick={() => handleDownloadInvoice(payment)}
+                                                className="text-slate-400 hover:text-slate-900 dark:text-gray-500 dark:hover:text-white transition-colors group-hover:scale-110"
+                                            >
                                                 <span className="material-symbols-outlined">download</span>
                                             </button>
                                         </td>

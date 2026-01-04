@@ -230,6 +230,22 @@ export function FocusDashboard() {
         }
     }, [currentInbox]);
 
+    // Handler to create inbox from InboxSelector
+    const handleCreateInboxFromSelector = async (domainId: string, localPart: string, expiresAt?: number) => {
+        try {
+            const body: { domainId: string; localPart: string; expiresAt?: number } = { domainId, localPart };
+            if (expiresAt) body.expiresAt = expiresAt;
+            const newInbox = await api<Inbox>("/inboxes", { method: "POST", token, body });
+            if (newInbox) {
+                setInboxes(prev => [newInbox, ...prev]);
+                setSelectedInbox(newInbox.id);
+                toast.success("Đã tạo hộp thư mới");
+            }
+        } catch (e) {
+            toast.error("Không thể tạo hộp thư");
+        }
+    };
+
     // Keyboard shortcut for copy
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -249,8 +265,15 @@ export function FocusDashboard() {
         <FocusStreamLayout
             domains={domains}
             inboxes={inboxes}
-            onSelectInbox={handleSelectInbox}
-            onCreateInbox={handleCreateInbox}
+            selectedDomainId={selectedDomain}
+            selectedInboxId={selectedInbox}
+            onSelectDomain={setSelectedDomain}
+            onSelectInbox={(id) => {
+                const inbox = inboxes.find(i => i.id === id);
+                if (inbox) handleSelectInbox(inbox);
+            }}
+            onCreateInbox={handleCreateInboxFromSelector}
+            onDeleteInbox={handleDeleteInbox}
             onSearch={handleSearch}
             unreadCount={unreadCount}
         >

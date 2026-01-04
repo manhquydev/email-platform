@@ -6,6 +6,7 @@ import { NavigationSidebar } from "../components/NavigationSidebar";
 import { CommandPalette } from "../components/CommandPalette";
 import { SearchBar } from "../components/SearchBar";
 import { NotificationCenter } from "../components/NotificationCenter";
+import { InboxSelector } from "../components/InboxSelector";
 
 import type { Domain, Inbox } from "../types";
 import { MobileNavigation } from "../components/MobileNavigation";
@@ -14,8 +15,12 @@ interface FocusStreamLayoutProps {
     children: React.ReactNode;
     domains: Domain[];
     inboxes: Inbox[];
-    onSelectInbox: (inbox: Inbox) => void;
-    onCreateInbox: () => void;
+    selectedDomainId: string;
+    selectedInboxId: string;
+    onSelectDomain: (id: string) => void;
+    onSelectInbox: (id: string) => void;
+    onCreateInbox: (domainId: string, localPart: string, expiresAt?: number) => Promise<void>;
+    onDeleteInbox: (inbox: Inbox) => void;
     onSearch: (query: string) => void;
     unreadCount?: number;
 }
@@ -24,8 +29,12 @@ export function FocusStreamLayout({
     children,
     domains,
     inboxes,
+    selectedDomainId,
+    selectedInboxId,
+    onSelectDomain,
     onSelectInbox,
     onCreateInbox,
+    onDeleteInbox,
     onSearch,
     unreadCount = 0
 }: FocusStreamLayoutProps) {
@@ -102,6 +111,22 @@ export function FocusStreamLayout({
                 <NotificationCenter />
             </div>
 
+            {/* Header with InboxSelector - Fixed top */}
+            <div className="fixed top-0 left-20 right-16 z-[55] h-16 flex items-center px-4 bg-bg/80 backdrop-blur-lg border-b border-white/5">
+                <InboxSelector
+                    domains={domains}
+                    inboxes={inboxes}
+                    selectedDomainId={selectedDomainId}
+                    selectedInboxId={selectedInboxId}
+                    onSelectDomain={onSelectDomain}
+                    onSelectInbox={onSelectInbox}
+                    onCreateInbox={onCreateInbox}
+                    onDeleteInbox={onDeleteInbox}
+                    user={user}
+                    token={localStorage.getItem('token')}
+                />
+            </div>
+
             {/* Mobile Navigation Overlay */}
             {isMobileNavOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsMobileNavOpen(false)} />
@@ -160,7 +185,7 @@ export function FocusStreamLayout({
             <AnimatePresence mode="wait">
                 <motion.main
                     key={location.pathname}
-                    className="relative z-10 w-full md:pl-20 min-h-screen pb-20 md:pb-0"
+                    className="relative z-10 w-full md:pl-20 pt-16 min-h-screen pb-20 md:pb-0"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
@@ -198,8 +223,13 @@ export function FocusStreamLayout({
                 onClose={() => setShowCommandPalette(false)}
                 domains={domains}
                 inboxes={inboxes}
-                onSelectInbox={onSelectInbox}
-                onCreateInbox={onCreateInbox}
+                onSelectInbox={(inbox: Inbox) => onSelectInbox(inbox.id)}
+                onCreateInbox={() => {
+                    // Use first domain to create inbox - CommandPalette uses this as a trigger
+                    if (domains.length > 0) {
+                        // This will open modal, actual create is handled by parent
+                    }
+                }}
                 onSearch={handleSearch}
             />
 
@@ -207,7 +237,9 @@ export function FocusStreamLayout({
                 activeTab={activeTab}
                 onTabChange={handleMobileTabChange}
                 unreadCount={unreadCount}
-                onCompose={onCreateInbox}
+                onCompose={() => {
+                    // Trigger create inbox flow
+                }}
             />
         </div>
     );

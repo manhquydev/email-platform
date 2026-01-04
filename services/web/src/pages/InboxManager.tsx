@@ -369,18 +369,34 @@ export function InboxManager() {
 
     const unreadCount = messages.filter(m => !m.isRead).length;
 
-
-
-
-
-    // ... (imports remain)
+    // Handler to create inbox from InboxSelector
+    const handleCreateInboxFromSelector = async (domainId: string, localPart: string, expiresAt?: number) => {
+        try {
+            const body: { domainId: string; localPart: string; expiresAt?: number } = { domainId, localPart };
+            if (expiresAt) body.expiresAt = expiresAt;
+            const newInbox = await api<Inbox>("/inboxes", { method: "POST", token, body });
+            if (newInbox) {
+                setInboxes(prev => [newInbox, ...prev]);
+                toast.success("Đã tạo hộp thư mới");
+            }
+        } catch (e) {
+            toast.error("Không thể tạo hộp thư");
+        }
+    };
 
     return (
         <FocusStreamLayout
             domains={domains}
             inboxes={inboxes}
-            onSelectInbox={handleSelectInbox}
-            onCreateInbox={() => setShowCreateModal(true)}
+            selectedDomainId={selectedDomain}
+            selectedInboxId={activeInbox?.id || ""}
+            onSelectDomain={setSelectedDomain}
+            onSelectInbox={(id) => {
+                const inbox = inboxes.find(i => i.id === id);
+                if (inbox) handleSelectInbox(inbox);
+            }}
+            onCreateInbox={handleCreateInboxFromSelector}
+            onDeleteInbox={handleDeleteInbox}
             onSearch={handleSearch}
             unreadCount={unreadCount}
         >

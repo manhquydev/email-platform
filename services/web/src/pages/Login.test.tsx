@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { ThemeProvider } from "../context/ThemeContext";
 import { Login } from "./Login";
 import { vi, describe, it, expect } from "vitest";
 
@@ -10,7 +9,7 @@ vi.mock("react-router-dom", async () => {
     return {
         ...actual,
         useNavigate: () => vi.fn(),
-        Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+        Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
     };
 });
 
@@ -24,32 +23,94 @@ vi.mock("../context/AuthContext", () => ({
     }),
 }));
 
-// Mock Navigation component since it might use Router hooks
-vi.mock("../components/Navigation", () => ({
-    Navigation: () => <div data-testid="navigation">Navigation</div>,
+// Mock API
+vi.mock("../utils/api", () => ({
+    api: vi.fn(),
+}));
+
+// Mock PasskeyLogin
+vi.mock("../components/Auth/PasskeyLogin", () => ({
+    PasskeyLogin: () => <div data-testid="passkey-login">Passkey Login</div>,
+}));
+
+// Mock UI components
+vi.mock("../components/ui/GlassCard", () => ({
+    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <div className={className} data-testid="glass-card">
+            {children}
+        </div>
+    ),
+}));
+
+vi.mock("../components/ui/Button", () => ({
+    Button: ({ children, type, className, isLoading, disabled, onClick }: {
+        children: React.ReactNode;
+        type?: string;
+        className?: string;
+        isLoading?: boolean;
+        disabled?: boolean;
+        onClick?: () => void;
+    }) => (
+        <button
+            type={type as "button" | "submit" | "reset" | undefined}
+            className={className}
+            disabled={disabled || isLoading}
+            onClick={onClick}
+        >
+            {isLoading ? "Loading..." : children}
+        </button>
+    ),
+}));
+
+vi.mock("../components/ui/Input", () => ({
+    Input: ({ label, type, value, onChange, placeholder, disabled, required, autoFocus, className, icon }: {
+        label?: string;
+        type?: string;
+        value?: string;
+        onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        placeholder?: string;
+        disabled?: boolean;
+        required?: boolean;
+        autoFocus?: boolean;
+        className?: string;
+        icon?: React.ReactNode;
+    }) => (
+        <div>
+            {label && <label>{label}</label>}
+            <input
+                type={type}
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+                disabled={disabled}
+                required={required}
+                autoFocus={autoFocus}
+            />
+        </div>
+    ),
 }));
 
 describe("Login Page", () => {
     it("renders login form correctly", () => {
         render(
             <MemoryRouter>
-                <ThemeProvider>
-                    <Login />
-                </ThemeProvider>
+                <Login />
             </MemoryRouter>
         );
 
         // Check for main title
         expect(screen.getByText("Chào mừng trở lại")).toBeInTheDocument();
 
-        // Check for inputs
+        // Check for login mode tabs (new feature) - use getAllByText since "Mật khẩu" appears in tab and label
+        const matKhauElements = screen.getAllByText("Mật khẩu");
+        expect(matKhauElements.length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText("Link email")).toBeInTheDocument();
+
+        // Check for inputs in password mode (default)
         expect(screen.getByText("Email")).toBeInTheDocument();
         expect(screen.getByPlaceholderText("name@example.com")).toBeInTheDocument();
-
-        expect(screen.getByText("Mật khẩu")).toBeInTheDocument();
         expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();
 
-        // Check for button
         // Check for button
         expect(screen.getByText("Đăng nhập")).toBeInTheDocument();
     });

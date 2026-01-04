@@ -49,6 +49,7 @@ export type Message = {
     isPinned: boolean;
     snoozedUntil?: string | null;
     attachments: Attachment[];
+    labels?: Label[];
 };
 
 export type PaginatedResponse<T> = {

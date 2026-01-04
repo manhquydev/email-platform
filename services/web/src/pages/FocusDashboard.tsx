@@ -55,13 +55,14 @@ export function FocusDashboard() {
         }
     }, [domains, selectedDomain]);
 
-    const loadInboxes = useCallback(async (domainId: string) => {
+    const loadInboxes = useCallback(async () => {
         if (!token) return;
         setBusy(true);
         try {
-            const domain = domains.find(d => d.id === domainId);
-            if (!domain) return;
-            const params = new URLSearchParams({ domain: domain.name, limit: "100", personal: "true" });
+            const params = new URLSearchParams({
+                limit: "100",
+                personal: "true" // Fetch all personal inboxes across all domains
+            });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
         } catch (e) {
@@ -69,7 +70,7 @@ export function FocusDashboard() {
         } finally {
             setBusy(false);
         }
-    }, [token, domains]);
+    }, [token]);
 
     // Auto-select first inbox
     useEffect(() => {
@@ -103,7 +104,7 @@ export function FocusDashboard() {
 
     // --- Effects ---
     useEffect(() => { loadDomains(); }, [token]);
-    useEffect(() => { if (selectedDomain) loadInboxes(selectedDomain); }, [selectedDomain, loadInboxes]);
+    useEffect(() => { loadInboxes(); }, [loadInboxes]);
     useEffect(() => {
         if (selectedInbox) {
             loadMessages(selectedInbox);
@@ -327,7 +328,7 @@ export function FocusDashboard() {
                                         domains={domains}
                                         token={token}
                                         onInboxCreated={(id, email) => {
-                                            loadInboxes(selectedDomain);
+                                            loadInboxes();
                                             setSelectedInbox(id);
                                             toast.success(`Đã tạo: ${email}`);
                                         }}
@@ -451,7 +452,7 @@ export function FocusDashboard() {
                         inboxes={inboxes}
                         onClose={() => {
                             setShowCompose(false);
-                            if (selectedDomain) loadInboxes(selectedDomain);
+                            loadInboxes();
                         }}
                     />
                 )}
@@ -465,7 +466,7 @@ export function FocusDashboard() {
                         token={token}
                         onClose={() => setShowCreateInbox(false)}
                         onInboxCreated={(inbox) => {
-                            if (selectedDomain) loadInboxes(selectedDomain);
+                            loadInboxes();
                             setSelectedInbox(inbox.id);
                             setShowCreateInbox(false);
                             toast.success(`Đã tạo: ${inbox.localPart}@${inbox.domain?.name}`);

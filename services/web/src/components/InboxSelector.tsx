@@ -164,7 +164,7 @@ export function InboxSelector({
                                 >
                                     <div className={`w-2 h-2 rounded-full ${selectedInboxId === inbox.id ? 'bg-primary animate-pulse' : 'bg-white/20'}`}></div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="truncate font-medium">{inbox.localPart}@{activeDomain?.name}</div>
+                                        <div className="truncate font-medium">{inbox.localPart}@{inbox.domain?.name}</div>
                                         {inbox.expiresAt && <CountdownTimer expiresAt={inbox.expiresAt} className="text-[10px] opacity-70" />}
                                     </div>
                                     <div className="flex items-center gap-2 ml-auto">

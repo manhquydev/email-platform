@@ -42,6 +42,12 @@ export function InboxManager() {
     const [showDetail, setShowDetail] = useState(false);
     const [focusedIndex, setFocusedIndex] = useState(0);
 
+    // Search States
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [searchResults, setSearchResults] = useState<Message[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [isSearchMode, setIsSearchMode] = useState(false);
+
     const [inboxToDelete, setInboxToDelete] = useState<Inbox | null>(null);
     const [isBatchDeleting, setIsBatchDeleting] = useState(false);
     const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
@@ -311,9 +317,54 @@ export function InboxManager() {
         }
     };
 
-    const handleSearch = (_query: string) => {
+    const handleSearch = async (query: string) => {
+        if (!query.trim()) {
+            // Clear search mode
+            setIsSearchMode(false);
+            setSearchQuery("");
+            setSearchResults([]);
+            return;
+        }
 
-        // TODO: Implement search
+        setSearchQuery(query);
+        setIsSearchMode(true);
+        setIsSearching(true);
+        setActiveTab('messages'); // Switch to messages tab to show results
+
+        try {
+            // Parse special search operators
+            let searchUrl = `/messages/search?q=${encodeURIComponent(query)}`;
+
+            // Support special search syntax
+            if (query.startsWith('from:')) {
+                const fromAddress = query.replace('from:', '').trim();
+                searchUrl = `/messages/search?from=${encodeURIComponent(fromAddress)}`;
+            } else if (query.startsWith('has:attachment')) {
+                searchUrl = `/messages/search?hasAttachment=true`;
+            } else if (query.startsWith('is:unread')) {
+                searchUrl = `/messages/search?isRead=false`;
+            }
+
+            const res = await api<PaginatedResponse<Message>>(searchUrl, { token });
+            setSearchResults(res?.data || []);
+
+            if ((res?.data || []).length === 0) {
+                toast("Không tìm thấy kết quả nào", { icon: "🔍" });
+            } else {
+                toast.success(`Tìm thấy ${res?.data?.length || 0} kết quả`);
+            }
+        } catch (error) {
+            toast.error("Lỗi khi tìm kiếm");
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const clearSearch = () => {
+        setIsSearchMode(false);
+        setSearchQuery("");
+        setSearchResults([]);
     };
 
     const unreadCount = messages.filter(m => !m.isRead).length;
@@ -472,7 +523,66 @@ export function InboxManager() {
                 ) : (
                     /* Messages Tab */
                     <div className="flex flex-col h-[calc(100vh-140px)]">
-                        {activeInbox ? (
+                        {/* Search Mode Header */}
+                        {isSearchMode && (
+                            <GlassCard className="mb-4 p-4 flex items-center justify-between rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 className="font-bold text-lg text-text-main">Kết quả tìm kiếm</h2>
+                                        <p className="text-xs text-text-secondary">
+                                            {isSearching ? "Đang tìm kiếm..." : `"${searchQuery}" - ${searchResults.length} kết quả`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-main transition-colors text-sm font-medium flex items-center gap-2"
+                                    onClick={clearSearch}
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Xóa tìm kiếm
+                                </button>
+                            </GlassCard>
+                        )}
+
+                        {/* Search Results */}
+                        {isSearchMode ? (
+                            <div className="flex-1 overflow-y-auto min-h-0 rounded-2xl bg-surface/20 border border-white/5 backdrop-blur-sm">
+                                {isSearching ? (
+                                    <div className="p-4 space-y-3">
+                                        {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                                    </div>
+                                ) : searchResults.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-center opacity-60 py-20">
+                                        <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
+                                            <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-text-main mb-2">Không tìm thấy kết quả</h3>
+                                        <p className="text-text-secondary max-w-sm mb-6">Thử tìm kiếm với từ khóa khác</p>
+                                        <button
+                                            onClick={clearSearch}
+                                            className="px-6 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                                        >
+                                            Quay lại
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <EmailStream
+                                        messages={searchResults}
+                                        selectedMessageId={selectedMessage?.id || null}
+                                        onSelectMessage={handleSelectMessage}
+                                    />
+                                )}
+                            </div>
+                        ) : activeInbox ? (
                             <div className="flex flex-col h-full">
                                 <GlassCard className="mb-4 p-4 flex items-center justify-between rounded-xl">
                                     <div className="flex items-center gap-3">

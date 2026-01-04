@@ -21,6 +21,7 @@ import { VersionCheck } from "./components/VersionCheck";
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const Register = lazy(() => import("./pages/Register").then(m => ({ default: m.Register })));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail").then(m => ({ default: m.VerifyEmail })));
+const MagicLinkVerify = lazy(() => import("./pages/MagicLinkVerify").then(m => ({ default: m.MagicLinkVerify })));
 const InboxManager = lazy(() => import("./pages/InboxManager").then(m => ({ default: m.InboxManager })));
 const FocusDashboard = lazy(() => import("./pages/FocusDashboard").then(m => ({ default: m.FocusDashboard })));
 const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
@@ -59,6 +60,7 @@ function App() {
                   <Route path="/sales" element={<Sales />} />
                   <Route path="/docs" element={<Docs />} />
                   <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route path="/auth/magic-link/verify" element={<MagicLinkVerify />} />
                 </Route>
 
                 {/* Auth pages with minimal footer */}

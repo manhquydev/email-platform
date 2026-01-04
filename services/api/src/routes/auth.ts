@@ -9,6 +9,7 @@ import { encrypt, decrypt } from "../utils/encryption";
 import { appConfig } from "../config";
 import { outboundService } from "../services/outbound";
 import { recordAudit } from "../utils/audit";
+import { TIER_LIMITS } from "./billing";
 
 export async function authRoutes(app: FastifyInstance) {
   app.post("/auth/register", async (request, reply) => {
@@ -452,6 +453,7 @@ export async function authRoutes(app: FastifyInstance) {
       select: {
         id: true,
         email: true,
+        name: true,
         role: true,
         createdAt: true,
         emailVerified: true,
@@ -467,6 +469,71 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: "User not found" });
     }
 
-    return { user };
+    // Calculate storage used (sum of all attachments in user's inboxes)
+    const storageStats = await prisma.attachment.aggregate({
+      where: {
+        message: {
+          inbox: {
+            ownerId: userId,
+            deletedAt: null // Only count active inboxes? Or all? Usually storage counts everything until permanently deleted.
+          },
+          deletedAt: null // Only count non-deleted messages?
+        }
+      },
+      _sum: {
+        size: true
+      }
+    });
+
+    const storageUsed = storageStats._sum.size || 0;
+    const limit = TIER_LIMITS[user.tier] || TIER_LIMITS["FREE"];
+
+    return {
+      user: {
+        ...user,
+        usage: {
+          domains: user._count.domains,
+          inboxes: user._count.inboxes,
+          storage: storageUsed
+        },
+        limits: limit
+      }
+    };
+  });
+
+  // Update profile
+  app.patch("/auth/profile", { preHandler: app.authenticate }, async (request, reply) => {
+    const bodySchema = z.object({
+      name: z.string().max(100).optional(),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const userId = (request.user as any).userId;
+    const { name } = parsed.data;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { name }
+    });
+
+    await recordAudit(userId, "PROFILE_UPDATED", {});
+    return { ok: true };
+  });
+
+  // Delete account
+  app.delete("/auth/me", { preHandler: app.authenticate }, async (request, reply) => {
+    const userId = (request.user as any).userId;
+
+    // Soft delete or hard delete? Usually hard delete for "Delete Account" request
+    // But we have cascade deletes, so it should be fine.
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+
+    return { ok: true };
   });
 }

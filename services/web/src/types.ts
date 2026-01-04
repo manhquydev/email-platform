@@ -1,6 +1,7 @@
 export type User = {
     id: string;
     email: string;
+    name?: string;
     role: string;
     tier?: string;
     credits?: number;
@@ -118,6 +119,7 @@ export interface WebhookLog {
     id: string;
     webhookId: string;
     eventType: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payload: any;
     statusCode?: number;
     responseBody?: string;

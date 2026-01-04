@@ -12,6 +12,8 @@ interface UserProfile {
     tier: string;
     credits: number;
     subscriptionEndsAt?: string | null;
+    usage?: { domains: number; inboxes: number; storage: number };
+    limits?: { domains: number; inboxes: number; storageGB: number; dailyEmails: number };
 }
 
 interface SubscriptionSettingsProps {
@@ -87,6 +89,28 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
         return profile?.tier === planName;
     };
 
+    // Calculate usage percentages
+    const domainUsage = profile?.usage?.domains || 0;
+    const domainLimit = profile?.limits?.domains || 1; // Avoid divide by zero, default to 1 (Free)
+    const domainLimitDisplay = domainLimit === -1 ? "Vô hạn" : domainLimit;
+    const domainPercent = domainLimit === -1 ? 0 : Math.min(100, (domainUsage / domainLimit) * 100);
+
+    const storageUsage = profile?.usage?.storage || 0;
+    const storageLimitGB = profile?.limits?.storageGB || 0.1;
+    const storageLimitBytes = storageLimitGB * 1024 * 1024 * 1024;
+    const storagePercent = storageLimitGB === -1 ? 0 : Math.min(100, (storageUsage / storageLimitBytes) * 100);
+
+    // Helper to format bytes
+    const formatBytes = (bytes: number) => {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    };
+
+
+
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -157,25 +181,25 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Tên miền riêng</p>
-                                <p className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">0 <span className="text-lg text-slate-400 dark:text-gray-500 font-normal">/ 10</span></p>
+                                <p className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">{domainUsage} <span className="text-lg text-slate-400 dark:text-gray-500 font-normal">/ {domainLimitDisplay}</span></p>
                             </div>
                             <span className="material-symbols-outlined text-slate-400 dark:text-gray-500">dns</span>
                         </div>
                         <div className="w-full bg-slate-100 dark:bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div className="bg-emerald-500 h-full rounded-full w-[0%]"></div>
+                            <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${domainPercent}%` }}></div>
                         </div>
                     </GlassCard>
 
                     <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Băng thông</p>
-                                <p className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">5% <span className="text-lg text-slate-400 dark:text-gray-500 font-normal">Đã dùng</span></p>
+                                <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Dung lượng</p>
+                                <p className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">{Math.round((storageUsage / storageLimitBytes) * 100)}% <span className="text-lg text-slate-400 dark:text-gray-500 font-normal">({formatBytes(storageUsage)})</span></p>
                             </div>
-                            <span className="material-symbols-outlined text-slate-400 dark:text-gray-500">network_check</span>
+                            <span className="material-symbols-outlined text-slate-400 dark:text-gray-500">cloud_done</span>
                         </div>
                         <div className="w-full bg-slate-100 dark:bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div className="bg-orange-500 h-full rounded-full w-[5%]"></div>
+                            <div className="bg-orange-500 h-full rounded-full" style={{ width: `${storagePercent}%` }}></div>
                         </div>
                     </GlassCard>
                 </div>

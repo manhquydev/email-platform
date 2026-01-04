@@ -15,6 +15,7 @@ import type { Inbox } from "../types";
 interface UserProfile {
     id: string;
     email: string;
+    name?: string;
     role: string;
     createdAt: string;
     tier: string;
@@ -23,6 +24,8 @@ interface UserProfile {
     emailVerified: string | null;
     twoFactorEnabled: boolean;
     _count: { domains: number; inboxes: number };
+    usage: { domains: number; inboxes: number; storage: number };
+    limits: { domains: number; inboxes: number; storageGB: number; dailyEmails: number };
 }
 
 type SettingsTab = 'general' | 'security' | 'subscription' | 'developer' | 'notifications' | 'filters' | 'labels' | 'domains';
@@ -67,6 +70,7 @@ export function Settings() {
             setProfile({
                 id: user?.id || "",
                 email: user?.email || "",
+                name: user?.name || "",
                 role: user?.role || "USER",
                 createdAt: new Date().toISOString(),
                 tier: "FREE",
@@ -74,12 +78,14 @@ export function Settings() {
                 emailVerified: null,
                 twoFactorEnabled: false,
                 subscriptionEndsAt: null,
-                _count: { domains: 0, inboxes: 0 }
+                _count: { domains: 0, inboxes: 0 },
+                usage: { domains: 0, inboxes: 0, storage: 0 },
+                limits: { domains: 1, inboxes: 3, storageGB: 0.1, dailyEmails: 50 },
             });
         } finally {
             setLoading(false);
         }
-    }, [token, user?.id, user?.email, user?.role]); // Use primitives
+    }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadInboxes = useCallback(async () => {
         if (!token) return;
@@ -158,7 +164,7 @@ export function Settings() {
             {/* Main Content Area */}
             <main className="flex-1 h-full overflow-y-auto relative z-0 scrollbar-hide">
                 <div className="max-w-5xl mx-auto px-8 py-10 pb-24">
-                    {activeTab === 'general' && <GeneralSettings profile={profile} loading={loading} />}
+                    {activeTab === 'general' && <GeneralSettings profile={profile} loadProfile={loadProfile} loading={loading} />}
                     {activeTab === 'security' && <SecuritySettings profile={profile} loadProfile={loadProfile} />}
                     {activeTab === 'subscription' && <SubscriptionSettings profile={profile} loadProfile={loadProfile} />}
                     {activeTab === 'developer' && <DeveloperSettings />}

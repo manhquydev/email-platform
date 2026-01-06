@@ -12,6 +12,7 @@ interface InboxCardProps {
     onCopy: () => void;
     onDelete: () => void;
     onViewMessages: () => void;
+    onTransfer?: () => void;
 }
 
 export function InboxCard({
@@ -22,7 +23,8 @@ export function InboxCard({
     onToggleSelect,
     onCopy,
     onDelete,
-    onViewMessages
+    onViewMessages,
+    onTransfer
 }: InboxCardProps) {
     const email = `${inbox.localPart}@${inbox.domain?.name || 'domain'}`;
 
@@ -143,6 +145,17 @@ export function InboxCard({
                             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                         </svg>
                     </button>
+                    {onTransfer && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onTransfer(); }}
+                            className="p-1.5 rounded-lg text-text-secondary hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                            title="Transfer Ownership"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                        </button>
+                    )}
                     <button
                         onClick={handleDelete}
                         className="p-1.5 rounded-lg text-text-secondary hover:text-red-400 hover:bg-red-500/10 transition-colors"

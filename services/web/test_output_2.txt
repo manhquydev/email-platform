@@ -1,0 +1,1337 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.15 [39m[90mD:/project/Clone/email-platform/services/web[39m
+
+ [31m❯[39m src/__tests__/InboxManager.management.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 3165[2mms[22m[39m
+     [32m✓[39m should display the list of inboxes[32m 54[2mms[22m[39m
+[31m     [31m×[31m should switch to messages tab when inbox is selected[39m[33m 1044[2mms[22m[39m
+[31m     [31m×[31m should handle single inbox deletion[39m[33m 1024[2mms[22m[39m
+[31m     [31m×[31m should handle batch inbox deletion[39m[33m 1019[2mms[22m[39m
+[31m     [31m×[31m should handle inbox ownership transfer[39m[32m 22[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/InboxManager.management.test.tsx[2m > [22mInboxManager - Management Functionality[2m > [22mshould switch to messages tab when inbox is selected
+[31m[1mError[22m[39m: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  messages[39m
+Received:
+[31m  inboxes[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mdata-testid[39m=[32m"focus-layout"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sticky top-0 z-30"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"tab-navigation"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mdata-testid[39m=[32m"tab-inboxes"[39m
+            [36m>[39m
+              [0mInboxes[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mdata-testid[39m=[32m"tab-messages"[39m
+            [36m>[39m
+              [0mMessages[0m
+            [36m</button>[39m
+            [36m<span[39m
+              [33mdata-testid[39m=[32m"active-tab"[39m
+            [36m>[39m
+              [0minboxes[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-4 md:p-6 w-full max-w-7xl mx-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl"[39m
+              [33mdata-testid[39m=[32m"glass-card"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4 w-full md:w-auto"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"flex items-center gap-3 cursor-pointer group"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative"[39m
+                  [36m>[39m
+                    [36m<input[39m
+                      [33mclass[39m=[32m"peer sr-only"[39m
+                      [33mtype[39m=[32m"checkbox"[39m
+                    [36m/>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33mclass[39m=[32m"w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-width[39m=[32m"3"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M5 13l4 4L19 7"[39m
+                          [33mstroke-linecap[39m=[32m"round"[39m
+                          [33mstroke-linejoin[39m=[32m"round"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors"[39m
+                  [36m>[39m
+                    [0mSelect all[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5"[39m
+                [36m>[39m
+                  [36m<select[39m
+                    [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                  [36m>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"all"[39m
+                    [36m>[39m
+                      [0mAll Status[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"active"[39m
+                    [36m>[39m
+                      [0mActive[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"expiring"[39m
+                    [36m>[39m
+                      [0mExpiring Soon[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"expired"[39m
+                    [36m>[39m
+                      [0mExpired[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"w-px h-4 bg-white/10"[39m
+                  [36m/>[39m
+                  [36m<select[39m
+                    [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                  [36m>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"created"[39m
+                    [36m>[39m
+                      [0mNewest[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"name"[39m
+                    [36m>[39m
+                      [0mName A-Z[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"ttl"[39m
+                    [36m>[39m
+                      [0mTime Left[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</div>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mclass[39m=[32m"w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 4.5v15m7.5-7.5h-15"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [0mCreate New[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m""[39m
+                [33mdata-testid[39m=[32m"inbox-card-inbox-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mdata-testid[39m=[32m"inbox-email-inbox-2"[39m
+                [36m>[39m
+                  [0muser2[0m
+                  [0m@[0m
+                  [0mtest.com[0m
+                [36m</span>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"select-btn-inbox-2"[39m
+                [36m>[39m
+                  [0mSelect[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"toggle-select-btn-inbox-2"[39m
+                [36m>[39m
+                  [0mToggle Select[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"delete-btn-inbox-2"[39m
+                [36m>[39m
+                  [0mDelete[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"transfer-btn-inbox-2"[39m
+                [36m>[39m
+                  [0mTransfer[0m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m""[39m
+                [33mdata-testid[39m=[32m"inbox-card-inbox-1"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mdata-testid[39m=[32m"inbox-email-inbox-1"[39m
+                [36m>[39m
+                  [0muser1[0m
+                  [0m@[0m
+                  [0mtest.com[0m
+                [36m</span>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"select-btn-inbox-1"[39m
+                [36m>[39m
+                  [0mSelect[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"toggle-select-btn-inbox-1"[39m
+                [36m>[39m
+                  [0mToggle Select[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"delete-btn-inbox-1"[39m
+                [36m>[39m
+                  [0mDelete[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"transfer-btn-inbox-1"[39m
+                [36m>[39m
+                  [0mTransfer[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-center text-xs text-text-secondary py-4"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m2[0m
+                [0m inboxes[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[36m [2m❯[22m src/__tests__/InboxManager.management.test.tsx:[2m138:54[22m[39m
+    [90m136| [39m
+    [90m137| [39m        [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m138| [39m            expect(screen.getByTestId("active-tab")).toHaveTextContent…
+    [90m   | [39m                                                     [31m^[39m
+    [90m139| [39m        })[33m;[39m
+    [90m140| [39m    })[33m;[39m
+[90m [2m❯[22m runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:[2m47:12[22m[39m
+[90m [2m❯[22m checkCallback node_modules/@testing-library/dom/dist/wait-for.js:[2m124:77[22m[39m
+[90m [2m❯[22m Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:[2m118:16[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/InboxManager.management.test.tsx[2m > [22mInboxManager - Management Functionality[2m > [22mshould handle single inbox deletion
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element by: [data-testid="inbox-card-inbox-1"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"focus-layout"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-30"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mdata-testid[39m=[32m"tab-navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"tab-inboxes"[39m
+          [36m>[39m
+            [0mInboxes[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"tab-messages"[39m
+          [36m>[39m
+            [0mMessages[0m
+          [36m</button>[39m
+          [36m<span[39m
+            [33mdata-testid[39m=[32m"active-tab"[39m
+          [36m>[39m
+            [0minboxes[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-4 md:p-6 w-full max-w-7xl mx-auto"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl"[39m
+            [33mdata-testid[39m=[32m"glass-card"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4 w-full md:w-auto"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"flex items-center gap-3 cursor-pointer group"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"peer sr-only"[39m
+                    [33mtype[39m=[32m"checkbox"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mclass[39m=[32m"w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-width[39m=[32m"3"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M5 13l4 4L19 7"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors"[39m
+                [36m>[39m
+                  [0mSelect all[0m
+                [36m</span>[39m
+              [36m</label>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"all"[39m
+                  [36m>[39m
+                    [0mAll Status[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"active"[39m
+                  [36m>[39m
+                    [0mActive[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"expiring"[39m
+                  [36m>[39m
+                    [0mExpiring Soon[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"expired"[39m
+                  [36m>[39m
+                    [0mExpired[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"w-px h-4 bg-white/10"[39m
+                [36m/>[39m
+                [36m<select[39m
+                  [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"created"[39m
+                  [36m>[39m
+                    [0mNewest[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"name"[39m
+                  [36m>[39m
+                    [0mName A-Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"ttl"[39m
+                  [36m>[39m
+                    [0mTime Left[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"w-4 h-4"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 4.5v15m7.5-7.5h-15"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [0mCreate New[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"w-10 h-10 text-muted"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-width[39m=[32m"1.5"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2"[39m
+              [36m>[39m
+                [0mNo inboxes found[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-text-secondary max-w-sm mx-auto mb-6"[39m
+              [36m>[39m
+                [0mStart by creating your first temporary email inbox to receive messages.[0m
+              [36m</p>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"[39m
+              [36m>[39m
+                [0mCreate your first inbox[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mdata-testid[39m=[32m"focus-layout"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sticky top-0 z-30"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"tab-navigation"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mdata-testid[39m=[32m"tab-inboxes"[39m
+            [36m>[39m
+              [0mInboxes[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mdata-testid[39m=[32m"tab-messages"[39m
+            [36m>[39m
+              [0mMessages[0m
+            [36m</button>[39m
+            [36m<span[39m
+              [33mdata-testid[39m=[32m"active-tab"[39m
+            [36m>[39m
+              [0minboxes[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-4 md:p-6 w-full max-w-7xl mx-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl"[39m
+              [33mdata-testid[39m=[32m"glass-card"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4 w-full md:w-auto"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"flex items-center gap-3 cursor-pointer group"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative"[39m
+                  [36m>[39m
+                    [36m<input[39m
+                      [33mclass[39m=[32m"peer sr-only"[39m
+                      [33mtype[39m=[32m"checkbox"[39m
+                    [36m/>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33mclass[39m=[32m"w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-width[39m=[32m"3"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M5 13l4 4L19 7"[39m
+                          [33mstroke-linecap[39m=[32m"round"[39m
+                          [33mstroke-linejoin[39m=[32m"round"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors"[39m
+                  [36m>[39m
+                    [0mSelect all[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5"[39m
+                [36m>[39m
+                  [36m<select[39m
+                    [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                  [36m>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"all"[39m
+                    [36m>[39m
+                      [0mAll Status[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"active"[39m
+                    [36m>[39m
+                      [0mActive[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"expiring"[39m
+                    [36m>[39m
+                      [0mExpiring Soon[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"expired"[39m
+                    [36m>[39m
+                      [0mExpired[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"w-px h-4 bg-white/10"[39m
+                  [36m/>[39m
+                  [36m<select[39m
+                    [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                  [36m>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"created"[39m
+                    [36m>[39m
+                      [0mNewest[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"name"[39m
+                    [36m>[39m
+                      [0mName A-Z[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"ttl"[39m
+                    [36m>[39m
+                      [0mTime Left[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</div>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mclass[39m=[32m"w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 4.5v15m7.5-7.5h-15"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [0mCreate New[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mclass[39m=[32m"w-10 h-10 text-muted"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-width[39m=[32m"1.5"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+                [36m<h3[39m
+                  [33mclass[39m=[32m"text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2"[39m
+                [36m>[39m
+                  [0mNo inboxes found[0m
+                [36m</h3>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-text-secondary max-w-sm mx-auto mb-6"[39m
+                [36m>[39m
+                  [0mStart by creating your first temporary email inbox to receive messages.[0m
+                [36m</p>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"[39m
+                [36m>[39m
+                  [0mCreate your first inbox[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m Proxy.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/__tests__/InboxManager.management.test.tsx:[2m153:15[22m[39m
+    [90m151| [39m
+    [90m152| [39m        [34mrender[39m([33m<[39m[33mInboxManager[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m153| [39m        await waitFor(() => expect(screen.getByTestId("inbox-card-inbo…
+    [90m   | [39m              [31m^[39m
+    [90m154| [39m
+    [90m155| [39m        [90m// Click delete on inbox-1[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/InboxManager.management.test.tsx[2m > [22mInboxManager - Management Functionality[2m > [22mshould handle batch inbox deletion
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element by: [data-testid="inbox-card-inbox-1"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"focus-layout"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-30"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mdata-testid[39m=[32m"tab-navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"tab-inboxes"[39m
+          [36m>[39m
+            [0mInboxes[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"tab-messages"[39m
+          [36m>[39m
+            [0mMessages[0m
+          [36m</button>[39m
+          [36m<span[39m
+            [33mdata-testid[39m=[32m"active-tab"[39m
+          [36m>[39m
+            [0minboxes[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-4 md:p-6 w-full max-w-7xl mx-auto"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl"[39m
+            [33mdata-testid[39m=[32m"glass-card"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4 w-full md:w-auto"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"flex items-center gap-3 cursor-pointer group"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"peer sr-only"[39m
+                    [33mtype[39m=[32m"checkbox"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mclass[39m=[32m"w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-width[39m=[32m"3"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M5 13l4 4L19 7"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors"[39m
+                [36m>[39m
+                  [0mSelect all[0m
+                [36m</span>[39m
+              [36m</label>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"all"[39m
+                  [36m>[39m
+                    [0mAll Status[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"active"[39m
+                  [36m>[39m
+                    [0mActive[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"expiring"[39m
+                  [36m>[39m
+                    [0mExpiring Soon[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"expired"[39m
+                  [36m>[39m
+                    [0mExpired[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"w-px h-4 bg-white/10"[39m
+                [36m/>[39m
+                [36m<select[39m
+                  [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"created"[39m
+                  [36m>[39m
+                    [0mNewest[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"name"[39m
+                  [36m>[39m
+                    [0mName A-Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"ttl"[39m
+                  [36m>[39m
+                    [0mTime Left[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"w-4 h-4"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 4.5v15m7.5-7.5h-15"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [0mCreate New[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"w-10 h-10 text-muted"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-width[39m=[32m"1.5"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2"[39m
+              [36m>[39m
+                [0mNo inboxes found[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-text-secondary max-w-sm mx-auto mb-6"[39m
+              [36m>[39m
+                [0mStart by creating your first temporary email inbox to receive messages.[0m
+              [36m</p>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"[39m
+              [36m>[39m
+                [0mCreate your first inbox[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mdata-testid[39m=[32m"focus-layout"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"sticky top-0 z-30"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"tab-navigation"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mdata-testid[39m=[32m"tab-inboxes"[39m
+            [36m>[39m
+              [0mInboxes[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mdata-testid[39m=[32m"tab-messages"[39m
+            [36m>[39m
+              [0mMessages[0m
+            [36m</button>[39m
+            [36m<span[39m
+              [33mdata-testid[39m=[32m"active-tab"[39m
+            [36m>[39m
+              [0minboxes[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-4 md:p-6 w-full max-w-7xl mx-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl"[39m
+              [33mdata-testid[39m=[32m"glass-card"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-4 w-full md:w-auto"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"flex items-center gap-3 cursor-pointer group"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative"[39m
+                  [36m>[39m
+                    [36m<input[39m
+                      [33mclass[39m=[32m"peer sr-only"[39m
+                      [33mtype[39m=[32m"checkbox"[39m
+                    [36m/>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33mclass[39m=[32m"w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-width[39m=[32m"3"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M5 13l4 4L19 7"[39m
+                          [33mstroke-linecap[39m=[32m"round"[39m
+                          [33mstroke-linejoin[39m=[32m"round"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors"[39m
+                  [36m>[39m
+                    [0mSelect all[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5"[39m
+                [36m>[39m
+                  [36m<select[39m
+                    [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                  [36m>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"all"[39m
+                    [36m>[39m
+                      [0mAll Status[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"active"[39m
+                    [36m>[39m
+                      [0mActive[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"expiring"[39m
+                    [36m>[39m
+                      [0mExpiring Soon[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"expired"[39m
+                    [36m>[39m
+                      [0mExpired[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"w-px h-4 bg-white/10"[39m
+                  [36m/>[39m
+                  [36m<select[39m
+                    [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                  [36m>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"created"[39m
+                    [36m>[39m
+                      [0mNewest[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"name"[39m
+                    [36m>[39m
+                      [0mName A-Z[0m
+                    [36m</option>[39m
+                    [36m<option[39m
+                      [33mvalue[39m=[32m"ttl"[39m
+                    [36m>[39m
+                      [0mTime Left[0m
+                    [36m</option>[39m
+                  [36m</select>[39m
+                [36m</div>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mclass[39m=[32m"w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M12 4.5v15m7.5-7.5h-15"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [0mCreate New[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mclass[39m=[32m"w-10 h-10 text-muted"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-width[39m=[32m"1.5"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+                [36m<h3[39m
+                  [33mclass[39m=[32m"text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2"[39m
+                [36m>[39m
+                  [0mNo inboxes found[0m
+                [36m</h3>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-text-secondary max-w-sm mx-auto mb-6"[39m
+                [36m>[39m
+                  [0mStart by creating your first temporary email inbox to receive messages.[0m
+                [36m</p>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"[39m
+                [36m>[39m
+                  [0mCreate your first inbox[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m Proxy.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/__tests__/InboxManager.management.test.tsx:[2m191:15[22m[39m
+    [90m189| [39m
+    [90m190| [39m        [34mrender[39m([33m<[39m[33mInboxManager[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m191| [39m        await waitFor(() => expect(screen.getByTestId("inbox-card-inbo…
+    [90m   | [39m              [31m^[39m
+    [90m192| [39m
+    [90m193| [39m        [90m// Select both inboxes using toggle[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/InboxManager.management.test.tsx[2m > [22mInboxManager - Management Functionality[2m > [22mshould handle inbox ownership transfer
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element by: [data-testid="transfer-inbox-modal"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"focus-layout"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"sticky top-0 z-30"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mdata-testid[39m=[32m"tab-navigation"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"tab-inboxes"[39m
+          [36m>[39m
+            [0mInboxes[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"tab-messages"[39m
+          [36m>[39m
+            [0mMessages[0m
+          [36m</button>[39m
+          [36m<span[39m
+            [33mdata-testid[39m=[32m"active-tab"[39m
+          [36m>[39m
+            [0minboxes[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-4 md:p-6 w-full max-w-7xl mx-auto"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl"[39m
+            [33mdata-testid[39m=[32m"glass-card"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4 w-full md:w-auto"[39m
+            [36m>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"flex items-center gap-3 cursor-pointer group"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mclass[39m=[32m"peer sr-only"[39m
+                    [33mtype[39m=[32m"checkbox"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mclass[39m=[32m"w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-width[39m=[32m"3"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M5 13l4 4L19 7"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors"[39m
+                [36m>[39m
+                  [0mSelect all[0m
+                [36m</span>[39m
+              [36m</label>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"all"[39m
+                  [36m>[39m
+                    [0mAll Status[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"active"[39m
+                  [36m>[39m
+                    [0mActive[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"expiring"[39m
+                  [36m>[39m
+                    [0mExpiring Soon[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"expired"[39m
+                  [36m>[39m
+                    [0mExpired[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"w-px h-4 bg-white/10"[39m
+                [36m/>[39m
+                [36m<select[39m
+                  [33mclass[39m=[32m"bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"created"[39m
+                  [36m>[39m
+                    [0mNewest[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"name"[39m
+                  [36m>[39m
+                    [0mName A-Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"ttl"[39m
+                  [36m>[39m
+                    [0mTime Left[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"w-4 h-4"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 4.5v15m7.5-7.5h-15"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [0mCreate New[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m""[39m
+              [33mdata-testid[39m=[32m"inbox-card-inbox-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mdata-testid[39m=[32m"inbox-email-inbox-2"[39m
+              [36m>[39m
+                [0muser2[0m
+                [0m@[0m
+                [0mtest.com[0m
+              [36m</span>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"select-btn-inbox-2"[39m
+              [36m>[39m
+                [0mSelect[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"toggle-select-btn-inbox-2"[39m
+              [36m>[39m
+                [0mToggle Select[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"delete-btn-inbox-2"[39m
+              [36m>[39m
+                [0mDelete[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"transfer-btn-inbox-2"[39m
+              [36m>[39m
+                [0mTransfer[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m""[39m
+              [33mdata-testid[39m=[32m"inbox-card-inbox-1"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mdata-testid[39m=[32m"inbox-email-inbox-1"[39m
+              [36m>[39m
+                [0muser1[0m
+                [0m@[0m
+                [0mtest.com[0m
+              [36m</span>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"select-btn-inbox-1"[39m
+              [36m>[39m
+                [0mSelect[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"toggle-select-btn-inbox-1"[39m
+              [36m>[39m
+                [0mToggle Select[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"delete-btn-inbox-1"[39m
+              [36m>[39m
+                [0mDelete[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"transfer-btn-inbox-1"[39m
+              [36m>[39m
+                [0mTransfer[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-center text-xs text-text-secondary py-4"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m2[0m
+              [0m inboxes[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/__tests__/InboxManager.management.test.tsx:[2m233:23[22m[39m
+    [90m231| [39m
+    [90m232| [39m        [90m// Transfer modal should appear[39m
+    [90m233| [39m        expect(screen.getByTestId("transfer-inbox-modal")).toBeInTheDo…
+    [90m   | [39m                      [31m^[39m
+    [90m234| [39m
+    [90m235| [39m        // Simulate successful transfer (mocked modal component calls …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 17:05:15
+[2m   Duration [22m 4.66s[2m (transform 205ms, setup 113ms, import 292ms, tests 3.16s, environment 911ms)[22m
+

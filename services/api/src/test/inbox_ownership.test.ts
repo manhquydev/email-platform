@@ -22,6 +22,9 @@ const prismaMock = {
     auditLog: {
         create: vi.fn(),
     },
+    user: {
+        findUnique: vi.fn(),
+    },
     $transaction: vi.fn((callback) => callback(prismaMock)),
 };
 
@@ -281,5 +284,50 @@ describe("Inbox Ownership Tests (Mocked)", () => {
         });
 
         expect(res.statusCode).toBe(200);
+    });
+    // ====================
+    // SD-06: Owner can transfer inbox ownership
+    // ====================
+    it("SD-06: Owner can transfer inbox ownership", async () => {
+        const userAToken = generateAuthToken(userA);
+
+        (prismaMock.inbox.findUnique as any).mockResolvedValue({
+            id: inboxId,
+            localPart: "myinbox",
+            ownerId: userA.userId,
+            deletedAt: null,
+            domain: {
+                id: domainId,
+                name: "test.com",
+                ownerId: userA.userId
+            }
+        });
+
+        (prismaMock.user.findUnique as any).mockResolvedValue({
+            id: userB.userId,
+            email: userB.email
+        });
+
+        (prismaMock.inbox.update as any).mockResolvedValue({
+            id: inboxId,
+            localPart: "myinbox",
+            ownerId: userB.userId
+        });
+
+        const res = await app.inject({
+            method: "PATCH",
+            url: `/inboxes/${inboxId}`,
+            headers: { Authorization: `Bearer ${userAToken}` },
+            payload: { ownerEmail: userB.email }
+        });
+
+        expect(res.statusCode).toBe(200);
+        expect(prismaMock.inbox.update).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: expect.objectContaining({
+                    ownerId: userB.userId
+                })
+            })
+        );
     });
 });

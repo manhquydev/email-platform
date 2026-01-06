@@ -14,6 +14,7 @@ import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 import { lazy, Suspense } from "react";
 
 const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").then(m => ({ default: m.CreateInboxModal })));
+const TransferInboxModal = lazy(() => import("../components/TransferInboxModal").then(m => ({ default: m.TransferInboxModal })));
 import { ConfirmationModal } from "../components/ConfirmationModal";
 
 type SortOption = 'created' | 'name' | 'ttl' | 'messages';
@@ -49,6 +50,7 @@ export function InboxManager() {
     const [isSearchMode, setIsSearchMode] = useState(false);
 
     const [inboxToDelete, setInboxToDelete] = useState<Inbox | null>(null);
+    const [inboxToTransfer, setInboxToTransfer] = useState<Inbox | null>(null);
     const [isBatchDeleting, setIsBatchDeleting] = useState(false);
     const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
 
@@ -521,6 +523,7 @@ export function InboxManager() {
                                         onCopy={() => { }}
                                         onDelete={() => handleDeleteInbox(inbox)}
                                         onViewMessages={() => handleViewMessages(inbox)}
+                                        onTransfer={() => setInboxToTransfer(inbox)}
                                     />
                                 ))
                             )}
@@ -715,6 +718,24 @@ export function InboxManager() {
                         onInboxCreated={(newInbox) => {
                             setInboxes(prev => [newInbox, ...prev]);
                             setShowCreateModal(false);
+                        }}
+                    />
+                )}
+            </Suspense>
+
+            <Suspense fallback={null}>
+                {inboxToTransfer && (
+                    <TransferInboxModal
+                        inbox={inboxToTransfer}
+                        token={token}
+                        onClose={() => setInboxToTransfer(null)}
+                        onTransferComplete={() => {
+                            setInboxes(prev => prev.filter(i => i.id !== inboxToTransfer.id));
+                            if (activeInbox?.id === inboxToTransfer.id) {
+                                setActiveInbox(null);
+                                setMessages([]);
+                            }
+                            setInboxToTransfer(null);
                         }}
                     />
                 )}

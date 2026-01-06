@@ -1,2 +1,138 @@
-'odes.deletion.test.ts' is not recognized as an internal or external command,
-operable program or batch file.
+
+> api@1.0.0 test
+> vitest run src/test/inbox_ownership.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv4.0.15 [39m[90mD:/project/Clone/email-platform/services/api[39m
+
+[90mstdout[2m | src/test/inbox_ownership.test.ts[2m > [22m[2mInbox Ownership Tests (Mocked)
+[22m[39m[dotenv@17.2.3] injecting env (37) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[90mstdout[2m | src/test/inbox_ownership.test.ts[2m > [22m[2mInbox Ownership Tests (Mocked)
+[22m[39m[OutboundService] Initializing with host: , port: 587, secure: false
+
+[90mstdout[2m | src/test/inbox_ownership.test.ts[2m > [22m[2mInbox Ownership Tests (Mocked)
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[09:56:16 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-1"
+    req: {
+      "method": "POST",
+      "url": "/inboxes",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[09:56:16 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-1"
+    res: {
+      "statusCode": 201
+    }
+    responseTime: 14.12279999256134
+[09:56:16 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-2"
+    req: {
+      "method": "GET",
+      "url": "/inboxes",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[09:56:16 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-2"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 2.2207999229431152
+[09:56:16 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-3"
+    req: {
+      "method": "GET",
+      "url": "/inboxes",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[09:56:16 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-3"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 1.3574999570846558
+[09:56:16 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-4"
+    req: {
+      "method": "DELETE",
+      "url": "/inboxes/999e4567-e89b-12d3-a456-426614174000",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[09:56:16 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-4"
+    res: {
+      "statusCode": 403
+    }
+    responseTime: 1.0938999652862549
+[09:56:16 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-5"
+    req: {
+      "method": "DELETE",
+      "url": "/inboxes/999e4567-e89b-12d3-a456-426614174000",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[09:56:16 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-5"
+    res: {
+      "statusCode": 200
+    }
+    responseTime: 1.065500020980835
+[09:56:16 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-6"
+    req: {
+      "method": "PATCH",
+      "url": "/domains/123e4567-e89b-12d3-a456-426614174000",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+[09:56:16 UTC] [32mINFO[39m: [36mrequest completed[39m
+    reqId: "req-6"
+    res: {
+      "statusCode": 400
+    }
+    responseTime: 10.776800036430359
+[09:56:16 UTC] [32mINFO[39m: [36mincoming request[39m
+    reqId: "req-7"
+    req: {
+      "method": "PATCH",
+      "url": "/domains/123e4567-e89b-12d3-a456-426614174000",
+      "host": "localhost:80",
+      "remoteAddress": "127.0.0.1"
+    }
+ [31m❯[39m src/test/inbox_ownership.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 3629[2mms[22m[39m
+     [32m✓[39m SD-01: POST /inboxes should set ownerId to current user[32m 31[2mms[22m[39m
+     [32m✓[39m SD-02: GET /inboxes should only return user's own inboxes[32m 3[2mms[22m[39m
+     [32m✓[39m SD-03: Admin GET /inboxes should see all inboxes (no owner filter)[32m 3[2mms[22m[39m
+     [32m✓[39m SD-04: User B cannot delete User A's inbox[32m 2[2mms[22m[39m
+     [32m✓[39m SD-05: Owner can delete their own inbox[32m 2[2mms[22m[39m
+     [32m✓[39m DS-03: Cannot unshare domain if other users have inboxes[32m 12[2mms[22m[39m
+     [32m✓[39m DS-02: Can unshare domain if no other users have inboxes[32m 3[2mms[22m[39m
+[31m     [31m×[31m SD-06: Owner can transfer inbox ownership[39m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/test/inbox_ownership.test.ts[2m > [22mInbox Ownership Tests (Mocked)[2m > [22mSD-06: Owner can transfer inbox ownership
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'findUnique')[39m
+[36m [2m❯[22m src/test/inbox_ownership.test.ts:[2m303:26[22m[39m
+    [90m301| [39m        })[33m;[39m
+    [90m302| [39m
+    [90m303| [39m        (prismaMock[33m.[39muser[33m.[39mfindUnique [35mas[39m any)[33m.[39m[34mmockResolvedValue[39m({
+    [90m   | [39m                         [31m^[39m
+    [90m304| [39m            id[33m:[39m userB[33m.[39muserId[33m,[39m
+    [90m305| [39m            email[33m:[39m userB[33m.[39memail
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (8)[39m
+[2m   Start at [22m 16:56:13
+[2m   Duration [22m 3.89s[2m (transform 526ms, setup 0ms, import 72ms, tests 3.63s, environment 0ms)[22m
+

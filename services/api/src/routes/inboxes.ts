@@ -165,9 +165,6 @@ export async function inboxRoutes(app: FastifyInstance) {
     }
 
     const user = request.user as { userId: string; role: string };
-    if (user.role !== "ADMIN") {
-      return reply.status(403).send({ error: "Only admin can update inboxes" });
-    }
 
     const inbox = await prisma.inbox.findUnique({
       where: { id: params.data.id },
@@ -176,6 +173,11 @@ export async function inboxRoutes(app: FastifyInstance) {
 
     if (!inbox) {
       return reply.status(404).send({ error: "Inbox not found" });
+    }
+
+    // Permission check: Admin OR Owner
+    if (user.role !== "ADMIN" && inbox.ownerId !== user.userId) {
+      return reply.status(403).send({ error: "Not authorized to update this inbox" });
     }
 
     const dataToUpdate: any = {};

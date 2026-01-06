@@ -116,13 +116,16 @@ export function Dashboard() {
     }, [domains, selectedDomain, user?.id]);
 
     const loadInboxes = useCallback(async () => {
-        if (!token || !selectedDomain) return;
+        if (!token) return;
         setBusy(true);
         try {
-            const domain = domains.find(d => d.id === selectedDomain);
-            if (!domain) return;
-            const params = new URLSearchParams({ domain: domain.name, limit: "100" });
-            if (!isAdmin) params.append("personal", "true");
+            const params = new URLSearchParams({ limit: "100" });
+            // Fetch all inboxes accessible to user (personal view)
+            // If we want to allow admins to see ALL system inboxes, check isAdmin.
+            // But for the selector context, users usually want THEIR inboxes.
+            // Aligning with FocusDashboard logic:
+            params.append("personal", "true");
+
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
         } catch (e) {
@@ -131,7 +134,7 @@ export function Dashboard() {
         } finally {
             setBusy(false);
         }
-    }, [token, selectedDomain, isAdmin, domains]);
+    }, [token]);
 
     // Auto-select inbox effect
     useEffect(() => {

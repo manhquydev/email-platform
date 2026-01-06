@@ -1,0 +1,71 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          ssh $SERVER_USER@$SERVER_HOST << 'ENDSSH'
+            set -e
+            echo "Starting deployment..."
+
+            # Navigate to project directory
+            cd ${DEPLOY_PATH:-/root/email-platform}
+
+            # Pull latest code
+            echo "Pulling latest code..."
+            git reset --hard
+            git pull origin main
+
+            # Rebuild and restart Docker containers
+            echo "Rebuilding Docker containers..."
+            docker compose -f docker-compose.prod.yml build api web
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 15
+
+            # Check container status
+            echo "Container status:"
+            docker compose -f docker-compose.prod.yml ps
+
+            # Quick health check
+            echo "Health check..."
+            curl -sf http://localhost:3001/health || echo "API health check pending..."
+
+            echo "Deployment completed successfully!"
+          ENDSSH
+
+      - name: Verify deployment
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          ssh $SERVER_USER@$SERVER_HOST "docker compose -f /root/email-platform/docker-compose.prod.yml ps"

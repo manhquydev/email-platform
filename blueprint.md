@@ -1,9 +1,9 @@
 # Tài liệu khởi tạo dự án: Nền tảng Email theo Domain (inbox tạm/alias) tự quản lý
 
-**Phiên bản:** 1.0 (Production Ready)  
-**Cập nhật:** 2025-12-17  
-**Trạng thái:** ✅ **PRODUCTION READY**  
-**Domain:** [manhquy.click](https://manhquy.click)  
+**Phiên bản:** 1.1 (Production Ready)
+**Cập nhật:** 2026-01-06
+**Trạng thái:** ✅ **PRODUCTION READY**
+**Domain:** [manhquy.click](https://manhquy.click)
 **Mục đích tài liệu:** Làm rõ ý tưởng, mức độ phức tạp, yêu cầu DNS (MX/TXT…), chi phí, và đề xuất công nghệ/kiến trúc để bắt đầu triển khai dự án.
 
 ---
@@ -15,16 +15,23 @@
 |------------|------------|----------|
 | **Backend API** | ✅ Complete | Fastify + Prisma + PostgreSQL |
 | **SMTP Inbound** | ✅ Complete | smtp-server + mailparser |
+| **SMTP Outbound** | ✅ Complete | Postfix + OpenDKIM (via docker-compose.prod.yml) |
 | **Frontend Web** | ✅ Complete | React 19 + Vite + TailwindCSS |
-| **UI/UX Overhaul** | ✅ Complete | Landing page, Auth pages, Dashboard, Admin |
+| **UI/UX Overhaul** | ✅ Complete | Nebula Design System, Landing, Auth, Dashboard, Admin |
 | **SEO Optimization** | ✅ Complete | Meta tags, Open Graph, JSON-LD, sitemap.xml |
-| **Mobile Responsive** | ✅ Complete | Hamburger menu, touch-friendly |
+| **Mobile Responsive** | ✅ Complete | Gmail-style 2-pane layout, touch-friendly |
 | **Admin Panel** | ✅ Complete | Users, Logs, Reports, Dashboard |
-| **Authentication** | ✅ Complete | JWT + Email verification |
+| **Authentication** | ✅ Complete | JWT + Email verification + 2FA ready |
 | **Bulk Actions** | ✅ Complete | Select, delete, mark read |
-| **Docker Setup** | ✅ Complete | docker-compose.yml + prod config |
+| **Email Labels/Filters** | ✅ Complete | Prisma models + API routes |
+| **Webhooks** | ✅ Complete | Full webhook management with logs |
+| **API Keys** | ✅ Complete | For programmatic access |
+| **Docker Setup** | ✅ Complete | docker-compose.yml + docker-compose.prod.yml |
+| **K8S Setup** | ✅ Complete | Full manifests in k8s/ directory |
 | **HTTPS (Caddy)** | ✅ Complete | Auto SSL với Let's Encrypt |
 | **Monitoring** | ✅ Complete | Prometheus + Grafana |
+| **Anti-Abuse** | ✅ Complete | Rspamd (spam) + ClamAV (virus) |
+| **IMAP Server** | ✅ Complete | Dovecot (docker-compose.prod.yml) |
 
 ### Cấu hình Production
 | Thông tin | Giá trị |
@@ -264,33 +271,114 @@ Ngoài ra (khuyến nghị nâng cao):
 
 ## 11) Mô hình dữ liệu đề xuất (Data Model)
 
-- `domains`
-  - id, name, status(verified/pending), verification_token, created_at
-- `inboxes`
-  - id, domain_id, address_local_part, created_at, expires_at, flags
-- `messages`
-  - id, inbox_id, message_id, from, to, subject, received_at, text_body, html_body, headers(json), spam_score, size
-- `attachments`
-  - id, message_id, filename, mime_type, size, storage_key
-- `users`
-  - id, email, password_hash / oauth_provider, role
-- `audit_logs`
-  - id, user_id, action, meta(json), created_at
+### Prisma Schema (Thực tế)
+- `User`
+  - id, email, password, name, role(USER/ADMIN), tier(FREE/STARTER/PRO/ENTERPRISE), credits, emailVerified, verificationToken, verificationExpires, twoFactorSecret, twoFactorEnabled, createdAt, updatedAt, deletedAt
+- `Domain`
+  - id, name, status(PENDING/VERIFIED), verificationToken, isPublic, contributionStatus(NONE/PENDING_REVIEW/APPROVED/REJECTED), shareNote, sharedAt, ownerId, createdAt, updatedAt, deletedAt
+- `Inbox`
+  - id, domainId, ownerId, localPart, expiresAt, claimedAt, createdAt, deletedAt
+- `Message`
+  - id, inboxId, messageId, fromAddress, toAddress, subject, headers(json), textBody, htmlBody, rawData, isRead, isPinned, snoozedUntil, receivedAt, deletedAt
+- `Attachment`
+  - id, messageId, filename, mimeType, size, storageKey, createdAt, deletedAt
+- `Label`
+  - id, inboxId, name, color, parentId, createdAt, updatedAt
+- `MessageLabel`
+  - messageId, labelId
+- `EmailFilter`
+  - id, inboxId, name, description, matchType(ALL/ANY), conditions(json), actions(json), priority, isEnabled, createdAt, updatedAt
+- `Webhook`
+  - id, userId, name, url, events[], secret, isActive, createdAt, updatedAt
+- `WebhookLog`
+  - id, webhookId, eventType, payload(json), statusCode, responseBody, duration, createdAt
+- `ApiKey`
+  - id, userId, name, keyHash, prefix, permissions[], expiresAt, lastUsedAt, createdAt, deletedAt
+- `AuditLog`
+  - id, userId, action, meta(json), ip, userAgent, createdAt
+- `Notification`
+  - id, userId, type, title, message, isRead, createdAt
+- `Payment`
+  - id, userId, amount, currency, status, stripePaymentId, stripePriceId, createdAt
 
 ---
 
-## 12) API phác thảo (cho dev bắt đầu)
+## 12) API Endpoints (Thực tế hiện có)
 
-- `POST /auth/login`
-- `GET /domains`
-- `POST /domains` (tạo domain + trả về TXT verify)
-- `POST /domains/:id/verify`
-- `GET /inboxes?domain=...`
-- `POST /inboxes` (tạo inbox thủ công hoặc cho phép auto-create)
-- `GET /inboxes/:id/messages`
-- `GET /messages/:id`
-- `DELETE /messages/:id`
-- `POST /webhooks/test-wait-email` (tuỳ chọn cho QA automation)
+### Authentication (`/auth`)
+- `POST /auth/register` - Đăng ký tài khoản mới
+- `POST /auth/login` - Đăng nhập
+- `GET /auth/me` - Lấy thông tin user hiện tại
+- `POST /auth/logout` - Đăng xuất
+- `POST /auth/verify-email` - Xác thực email
+- `POST /auth/resend-verification` - Gửi lại email xác thực
+- `POST /auth/2fa/setup` - Thiết lập 2FA
+- `POST /auth/2fa/verify` - Xác thực 2FA
+
+### Domains (`/domains`)
+- `GET /domains` - Danh sách domains
+- `POST /domains` - Tạo domain mới
+- `GET /domains/:id` - Chi tiết domain
+- `PATCH /domains/:id` - Cập nhật domain
+- `DELETE /domains/:id` - Xóa domain
+- `POST /domains/:id/verify` - Xác thực domain
+- `GET /domains/:id/dns-check` - Kiểm tra DNS
+
+### Inboxes (`/inboxes`)
+- `GET /inboxes` - Danh sách inboxes
+- `POST /inboxes` - Tạo inbox mới
+- `GET /inboxes/:id` - Chi tiết inbox
+- `PATCH /inboxes/:id` - Cập nhật inbox (expiresAt, etc.)
+- `DELETE /inboxes/:id` - Xóa inbox
+
+### Messages (`/messages`)
+- `GET /messages` - Danh sách messages (với filter/search)
+- `GET /messages/search` - Tìm kiếm messages
+- `GET /messages/search/fuzzy` - Tìm kiếm fuzzy với pg_trgm
+- `GET /messages/:id` - Chi tiết message
+- `DELETE /messages/:id` - Xóa message
+- `PATCH /messages/:id/read` - Đánh dấu đọc/chưa đọc
+- `PATCH /messages/:id/pin` - Ghim/bỏ ghim message
+- `PATCH /messages/:id/snooze` - Snooze message
+- `GET /messages/:id/export` - Export message as .eml
+
+### Attachments (`/attachments`)
+- `GET /attachments/:id/download` - Tải attachment
+
+### Labels (`/labels`)
+- `GET /labels` - Danh sách labels
+- `POST /labels` - Tạo label mới
+- `PUT /labels/:id` - Cập nhật label
+- `DELETE /labels/:id` - Xóa label
+
+### Filters (`/filters`)
+- `GET /filters` - Danh sách filters
+- `POST /filters` - Tạo filter mới
+- `PUT /filters/:id` - Cập nhật filter
+- `DELETE /filters/:id` - Xóa filter
+
+### Webhooks (`/webhooks`)
+- `GET /webhooks` - Danh sách webhooks
+- `POST /webhooks` - Tạo webhook
+- `PUT /webhooks/:id` - Cập nhật webhook
+- `DELETE /webhooks/:id` - Xóa webhook
+- `GET /webhooks/:id/logs` - Xem logs của webhook
+
+### API Keys (`/api-keys`)
+- `GET /api-keys` - Danh sách API keys
+- `POST /api-keys` - Tạo API key mới
+- `DELETE /api-keys/:id` - Xóa API key
+
+### Admin (`/admin`)
+- `GET /admin/users` - Danh sách users
+- `PATCH /admin/users/:id` - Cập nhật user
+- `DELETE /admin/users/:id` - Xóa user
+- `GET /admin/audit-logs` - Xem audit logs
+- `GET /admin/stats` - Thống kê hệ thống
+
+### Health (`/health`, `/ready`)
+- `GET /health` - Health check endpoint
+- `GET /ready` - Readiness check (bao gồm DB connection)
 
 ---
 

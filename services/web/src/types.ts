@@ -7,6 +7,8 @@ export type User = {
     credits?: number;
 };
 
+export type ContributionStatus = 'NONE' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
+
 export type Domain = {
     id: string;
     name: string;
@@ -15,6 +17,10 @@ export type Domain = {
     createdAt: string;
     ownerId?: string | null;
     isPublic: boolean;
+    contributionStatus?: ContributionStatus;
+    sharedAt?: string | null;
+    shareNote?: string | null;
+    owner?: { email: string };
 };
 
 export type Inbox = {
@@ -23,7 +29,10 @@ export type Inbox = {
     localPart: string;
     createdAt: string;
     expiresAt?: string | null;
+    claimedAt?: string;
+    ownerId?: string | null;
     domain?: Domain;
+    owner?: { email: string };
     _count?: { messages: number };
 };
 

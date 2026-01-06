@@ -353,6 +353,28 @@ export function Dashboard() {
             <div className="flex-1 flex h-full w-full">
 
 
+                {/* Pane 1: Sidebar (Desktop) */}
+                <div className="hidden md:flex w-[280px] h-full p-2 border-r border-slate-200 dark:border-white/5 flex-shrink-0 bg-slate-50/50 dark:bg-transparent">
+                    <Sidebar
+                        domains={domains}
+                        inboxes={inboxes}
+                        selectedDomainId={selectedDomain}
+                        selectedInboxId={selectedInbox}
+                        currentUserId={user?.id}
+                        onSelectDomain={setSelectedDomain}
+                        onSelectInbox={(id) => navigate(`?inboxId=${id}`)}
+                        onCreateDomain={createDomain}
+                        onCreateInbox={createInbox}
+                        onVerifyDomain={verifyDomain}
+                        onDeleteDomain={deleteDomain}
+                        onDeleteInbox={deleteInbox}
+                        onExtendInbox={handleExtendInbox}
+                        onLogout={_logout}
+                        isAdmin={isAdmin}
+                        busy={busy}
+                    />
+                </div>
+
                 {/* Pane 2: Message List */}
                 <motion.div
                     initial={{ opacity: 0 }}

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import type { Domain } from '../types';
@@ -6,22 +5,13 @@ import { api } from '../utils/api';
 import { useCopyEmail } from '../hooks/useCopyToClipboard';
 import { Button } from './ui/Button';
 import { cn } from '../utils/cn';
+import { generateRandomName } from '../utils/random';
 
 interface QuickGenerateCardProps {
     domains: Domain[];
     token: string | null;
     onInboxCreated?: (inboxId: string, email: string) => void;
 }
-
-// Generate random string for email
-const generateRandomName = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-};
 
 export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGenerateCardProps) {
     const [loading, setLoading] = useState(false);

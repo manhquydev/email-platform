@@ -36,7 +36,7 @@ jobs:
             echo "Starting deployment..."
 
             # Navigate to project directory
-            cd ${DEPLOY_PATH:-/root/email-platform}
+            cd ${DEPLOY_PATH:-/root/email-platform.}
 
             # Pull latest code
             echo "Pulling latest code..."
@@ -68,4 +68,4 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          ssh $SERVER_USER@$SERVER_HOST "docker compose -f /root/email-platform/docker-compose.prod.yml ps"
+          ssh $SERVER_USER@$SERVER_HOST "docker compose -f /root/email-platform./docker-compose.prod.yml ps"

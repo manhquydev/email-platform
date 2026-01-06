@@ -5,28 +5,33 @@ import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 
 export async function outboundRoutes(app: FastifyInstance) {
+    // Validation schema for outbound email
+    const outboundEmailSchema = z.object({
+        from: z.union([z.string().email(), z.object({ value: z.string().email() })]),
+        to: z.union([z.string().email(), z.object({ value: z.string().email() })]),
+        subject: z.union([z.string().min(1), z.object({ value: z.string().min(1) })]),
+        text: z.union([z.string(), z.object({ value: z.string() })]).optional(),
+        html: z.union([z.string(), z.object({ value: z.string() })]).optional(),
+        attachments: z.any().optional(),
+    });
+
     // Updated route: Allow authenticated users to send emails, costing credits
     app.post("/messages/outbound", { preHandler: app.authenticate }, async (request, reply) => {
         const userId = (request.user as any).userId;
         const user = await prisma.user.findUnique({ where: { id: userId } });
 
-        // Exclude ADMIN from credit check? Or treat them same? 
-        // Let's treat them same for consistency, or give Admin infinite credits.
-        // For professional realism: Admin creates "System" emails which might be free, 
-        // but if Admin uses "Send" feature for their own account usage, they should behave like a user.
-        // However, usually Admin bypasses limits. Let's keep it strict for now unless user asks.
+        // Validate request body with Zod
+        const parsed = outboundEmailSchema.safeParse(request.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
+        }
 
-        // 1. Parse body
-        const body = request.body as any;
+        const body = parsed.data;
         const from = typeof body.from === 'object' ? body.from.value : body.from;
         const to = typeof body.to === 'object' ? body.to.value : body.to;
         const subject = typeof body.subject === 'object' ? body.subject.value : body.subject;
-        const text = typeof body.text === 'object' ? body.text.value : body.text;
-        const html = typeof body.html === 'object' ? body.html.value : body.html;
-
-        if (!from || !to || !subject) {
-            return reply.status(400).send({ error: "Missing required fields (from, to, subject)" });
-        }
+        const text = body.text ? (typeof body.text === 'object' ? body.text.value : body.text) : undefined;
+        const html = body.html ? (typeof body.html === 'object' ? body.html.value : body.html) : undefined;
 
         // 2. Validate Ownership of Sender Domain/Inbox
         // Logic: 'from' must be an address owned by the user.

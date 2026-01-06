@@ -67,7 +67,11 @@ export const filterRoutes: FastifyPluginAsync = async (app) => {
     // Create a filter
     app.post('/filters', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         const user = req.user as { userId: string };
-        const body = createFilterSchema.parse(req.body);
+        const parsed = createFilterSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: parsed.error.flatten() });
+        }
+        const body = parsed.data;
 
         // Verify inbox ownership
         const inbox = await prisma.inbox.findFirst({
@@ -98,7 +102,11 @@ export const filterRoutes: FastifyPluginAsync = async (app) => {
     app.patch('/filters/:id', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         const { id } = req.params as { id: string };
         const user = req.user as { userId: string };
-        const body = updateFilterSchema.parse(req.body);
+        const parsed = updateFilterSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: parsed.error.flatten() });
+        }
+        const body = parsed.data;
 
         // Verify filter ownership
         const filter = await prisma.emailFilter.findFirst({
@@ -169,7 +177,11 @@ export const filterRoutes: FastifyPluginAsync = async (app) => {
     // Create a label
     app.post('/labels', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         const user = req.user as { userId: string };
-        const body = createLabelSchema.parse(req.body);
+        const parsed = createLabelSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: parsed.error.flatten() });
+        }
+        const body = parsed.data;
 
         // Verify inbox ownership
         const inbox = await prisma.inbox.findFirst({
@@ -205,7 +217,11 @@ export const filterRoutes: FastifyPluginAsync = async (app) => {
     app.patch('/labels/:id', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         const { id } = req.params as { id: string };
         const user = req.user as { userId: string };
-        const body = updateLabelSchema.parse(req.body);
+        const parsed = updateLabelSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: parsed.error.flatten() });
+        }
+        const body = parsed.data;
 
         // Verify label ownership
         const label = await prisma.label.findFirst({

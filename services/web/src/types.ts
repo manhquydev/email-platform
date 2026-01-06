@@ -138,10 +138,95 @@ export interface WebhookLog {
 }
 
 export interface Payment {
+    userId?: string;
     id: string;
     amount: number;
     currency: string;
     status: string;
     createdAt: string;
     stripePaymentId?: string;
+    packageId?: string;
+}
+
+// ==================
+// API KEYS
+// ==================
+
+export interface ApiKey {
+    id: string;
+    userId: string;
+    prefix: string;
+    name: string;
+    lastUsedAt?: string;
+    createdAt: string;
+}
+
+// ==================
+// NOTIFICATIONS
+// ==================
+
+export type NotificationType = 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR' | 'PROMOTION';
+
+export interface Notification {
+    id: string;
+    userId?: string;
+    type: NotificationType;
+    title: string;
+    message: string;
+    imageUrl?: string;
+    isRead: boolean;
+    createdAt: string;
+}
+
+// ==================
+// FORWARDING RULES
+// ==================
+
+export interface ForwardingRule {
+    id: string;
+    userId: string;
+    inboxId?: string;
+    name: string;
+    conditions: Record<string, unknown>;
+    forwardTo: string;
+    isActive: boolean;
+    forwardCount: number;
+    lastForwardAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// ==================
+// SUBSCRIPTION & PACKAGES
+// ==================
+
+export type PackageType = 'TIME_BASED' | 'USAGE_BASED';
+export type SubscriptionTier = 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
+export type SubscriptionStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING';
+
+export interface ServicePackage {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    currency: string;
+    type: PackageType;
+    durationDays?: number;
+    targetTier?: SubscriptionTier;
+    creditAmount?: number;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface RedemptionCode {
+    id: string;
+    code: string;
+    packageId: string;
+    maxUses: number;
+    usedCount: number;
+    status: 'ACTIVE' | 'USED' | 'EXPIRED' | 'REVOKED';
+    expiresAt?: string;
+    createdAt: string;
+    package?: ServicePackage;
 }

@@ -65,7 +65,11 @@ export async function apiKeysRoutes(app: FastifyInstance) {
     // Delete API Key
     app.delete("/api-keys/:id", { preHandler: app.authenticate }, async (req, reply) => {
         const userId = (req.user as any).userId;
-        const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+        const idResult = z.object({ id: z.string().uuid() }).safeParse(req.params);
+        if (!idResult.success) {
+            return reply.status(400).send({ error: 'Invalid params', details: idResult.error.flatten() });
+        }
+        const { id } = idResult.data;
 
         const key = await prisma.apiKey.findFirst({
             where: { id, userId }

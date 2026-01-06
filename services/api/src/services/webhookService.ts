@@ -5,7 +5,16 @@ import { webhookQueue } from '../queue/webhookQueue';
 export interface WebhookPayload {
     event: string;
     timestamp: string;
+    idempotencyKey: string;
     data: any;
+}
+
+/**
+ * Generates an idempotency key for webhook delivery.
+ * This helps receivers deduplicate webhook deliveries.
+ */
+export function generateIdempotencyKey(): string {
+    return crypto.randomUUID();
 }
 
 /**
@@ -25,9 +34,11 @@ export async function triggerWebhook(userId: string, event: string, data: any) {
 
     if (webhooks.length === 0) return;
 
+    const idempotencyKey = generateIdempotencyKey();
     const payload: WebhookPayload = {
         event,
         timestamp: new Date().toISOString(),
+        idempotencyKey,
         data
     };
 
@@ -36,6 +47,9 @@ export async function triggerWebhook(userId: string, event: string, data: any) {
         data: {
             webhookId: webhook.id,
             payload
+        },
+        opts: {
+            jobId: `${webhook.id}-${idempotencyKey}`, // Prevents duplicate jobs
         }
     }));
 

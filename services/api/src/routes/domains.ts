@@ -60,6 +60,68 @@ export async function domainRoutes(app: FastifyInstance) {
     return { data: domains, meta: { total } };
   });
 
+  // Get single domain by ID
+  app.get("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid ID" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    const isAdmin = user.role === "ADMIN";
+
+    const domain = await prisma.domain.findUnique({
+      where: { id: params.data.id },
+      include: { owner: { select: { email: true } } },
+    });
+
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    // Check access: admin, owner, or public domain
+    if (!isAdmin && domain.ownerId !== user.userId && !domain.isPublic) {
+      return reply.status(403).send({ error: "Not authorized to view this domain" });
+    }
+
+    return { domain };
+  });
+
+  // Check DNS records for a domain
+  app.get("/domains/:id/dns-check", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid ID" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    const isAdmin = user.role === "ADMIN";
+
+    const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    // Only owner or admin can check DNS
+    if (!isAdmin && domain.ownerId !== user.userId) {
+      return reply.status(403).send({ error: "Not authorized to check DNS for this domain" });
+    }
+
+    try {
+      const { checkDomainDns } = await import("../utils/dns");
+      const dnsRecords = await checkDomainDns(domain.name, domain.verificationToken);
+      return {
+        domain: domain.name,
+        verificationToken: domain.verificationToken,
+        status: domain.status,
+        dns: dnsRecords,
+      };
+    } catch (err) {
+      request.log.error(err, "DNS check error");
+      return reply.status(500).send({ error: "Failed to check DNS records" });
+    }
+  });
+
   app.post("/domains", { preHandler: app.authenticate }, async (request, reply) => {
     const bodySchema = z.object({
       name: z.string().min(3),
@@ -115,25 +177,11 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: "Not authorized to verify this domain" });
     }
 
-    // [MODIFIED] Real DNS verification
-    // 1. Check if token matches (legacy/local check or direct match in text)
-    // 2. Perform DNS lookup
-
-    // Allows admin to "force code" if they want, but usually we check DNS
-    // If the body token matches the DB token, that just means the user *knows* the token.
-    // We need to verify that the token IS ON THE DNS.
-    // However, the previous logic was `domain.verificationToken !== body.data.token`
-    // which effectively checked if the USER submitted the correct token. 
-    // But the Point is to check if the DOMAIN OWNER put it in DNS.
-
     try {
       const { verifyDomainOwnership } = await import("../utils/dns");
       const isVerified = await verifyDomainOwnership(domain.name, domain.verificationToken);
 
       if (!isVerified) {
-        // Fallback: If we are in "DEV" mode or specific env, maybe we allow strict equality?
-        // But for Production Readiness as requested, we enforce DNS.
-        // We return specific error
         return reply.status(400).send({
           error: "DNS verification failed",
           details: `Could not find TXT record containing '${domain.verificationToken}' on ${domain.name}`

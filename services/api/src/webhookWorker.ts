@@ -35,6 +35,7 @@ export const setupWebhookWorker = (logger: { info: any, error: any, warn: any })
                         'Content-Type': 'application/json',
                         'X-Ephemera-Signature': signature,
                         'X-Ephemera-Event': payload.event,
+                        'X-Ephemera-Idempotency-Key': payload.idempotencyKey,
                     },
                     body: payloadString,
                 });

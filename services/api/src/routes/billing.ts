@@ -77,7 +77,11 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
         }
 
         const user = req.user as { userId: string };
-        const { packageId } = createCheckoutSchema.parse(req.body);
+        const checkoutResult = createCheckoutSchema.safeParse(req.body);
+        if (!checkoutResult.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: checkoutResult.error.flatten() });
+        }
+        const { packageId } = checkoutResult.data;
 
         try {
             const session = await StripeService.createCheckoutSession(user.userId, packageId);
@@ -110,7 +114,11 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
         }
 
         const user = req.user as { userId: string };
-        const body = cancelSubscriptionSchema.parse(req.body);
+        const cancelResult = cancelSubscriptionSchema.safeParse(req.body);
+        if (!cancelResult.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: cancelResult.error.flatten() });
+        }
+        const body = cancelResult.data;
 
         const userData = await prisma.user.findUnique({
             where: { id: user.userId },

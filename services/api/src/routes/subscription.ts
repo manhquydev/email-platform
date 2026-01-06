@@ -50,7 +50,11 @@ export async function subscriptionRoutes(app: FastifyInstance) {
 
     // Update Package
     app.put("/admin/packages/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
-        const params = z.object({ id: z.string().uuid() }).parse(req.params);
+        const paramsResult = z.object({ id: z.string().uuid() }).safeParse(req.params);
+        if (!paramsResult.success) {
+            return reply.status(400).send({ error: 'Invalid params', details: paramsResult.error.flatten() });
+        }
+        const params = paramsResult.data;
         const schema = z.object({
             name: z.string().optional(),
             description: z.string().optional(),
@@ -59,7 +63,11 @@ export async function subscriptionRoutes(app: FastifyInstance) {
             // But for simplicity, we allow mostly cosmetic updates or disabling
         });
 
-        const body = schema.parse(req.body);
+        const bodyResult = schema.safeParse(req.body);
+        if (!bodyResult.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: bodyResult.error.flatten() });
+        }
+        const body = bodyResult.data;
 
         const pkg = await prisma.servicePackage.update({
             where: { id: params.id },
@@ -83,7 +91,11 @@ export async function subscriptionRoutes(app: FastifyInstance) {
             status: z.enum(["ACTIVE", "USED", "EXPIRED", "REVOKED"]).optional()
         });
 
-        const query = schema.parse(req.query);
+        const queryResult = schema.safeParse(req.query);
+        if (!queryResult.success) {
+            return reply.status(400).send({ error: 'Invalid query', details: queryResult.error.flatten() });
+        }
+        const query = queryResult.data;
         const where: any = {};
         if (query.packageId) where.packageId = query.packageId;
         if (query.status) where.status = query.status;
@@ -113,7 +125,11 @@ export async function subscriptionRoutes(app: FastifyInstance) {
             expiresAt: z.string().optional(), // ISO Status
         });
 
-        const body = schema.parse(req.body);
+        const bodyResult = schema.safeParse(req.body);
+        if (!bodyResult.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: bodyResult.error.flatten() });
+        }
+        const body = bodyResult.data;
 
         const pkg = await prisma.servicePackage.findUnique({ where: { id: body.packageId } });
         if (!pkg) return reply.status(404).send({ error: "Package not found" });
@@ -153,7 +169,11 @@ export async function subscriptionRoutes(app: FastifyInstance) {
 
     // Revoke Code
     app.put("/admin/codes/:id/revoke", { preHandler: app.requireAdmin }, async (req, reply) => {
-        const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+        const idResult = z.object({ id: z.string().uuid() }).safeParse(req.params);
+        if (!idResult.success) {
+            return reply.status(400).send({ error: 'Invalid params', details: idResult.error.flatten() });
+        }
+        const { id } = idResult.data;
 
         const updated = await prisma.redemptionCode.update({
             where: { id },
@@ -165,7 +185,11 @@ export async function subscriptionRoutes(app: FastifyInstance) {
 
     // Delete Code
     app.delete("/admin/codes/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
-        const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+        const idResult = z.object({ id: z.string().uuid() }).safeParse(req.params);
+        if (!idResult.success) {
+            return reply.status(400).send({ error: 'Invalid params', details: idResult.error.flatten() });
+        }
+        const { id } = idResult.data;
 
         await prisma.$transaction([
             prisma.codeRedemption.deleteMany({ where: { codeId: id } }),
@@ -195,7 +219,11 @@ export async function subscriptionRoutes(app: FastifyInstance) {
             code: z.string().min(4)
         });
 
-        const { code } = schema.parse(req.body);
+        const codeResult = schema.safeParse(req.body);
+        if (!codeResult.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: codeResult.error.flatten() });
+        }
+        const { code } = codeResult.data;
         const userId = (req.user as any).userId;
 
         // 1. Find code

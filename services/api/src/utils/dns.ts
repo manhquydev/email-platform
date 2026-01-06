@@ -35,3 +35,40 @@ export const verifyDomainOwnership = async (domain: string, token: string): Prom
         return false;
     }
 };
+
+export interface DnsCheckResult {
+    txt: string[];
+    mx: { exchange: string; priority: number }[];
+    hasVerificationRecord: boolean;
+    expectedRecord: string;
+}
+
+export const checkDomainDns = async (domain: string, verificationToken: string): Promise<DnsCheckResult> => {
+    const result: DnsCheckResult = {
+        txt: [],
+        mx: [],
+        hasVerificationRecord: false,
+        expectedRecord: `email-verification=${verificationToken}`,
+    };
+
+    try {
+        const txtRecords = await resolveTxt(domain);
+        result.txt = txtRecords.map(chunks => chunks.join(""));
+        result.hasVerificationRecord = result.txt.some(txt =>
+            txt === verificationToken ||
+            txt === `email-verification=${verificationToken}` ||
+            txt === `verification=${verificationToken}`
+        );
+    } catch (error) {
+        // Ignore TXT lookup errors
+    }
+
+    try {
+        const mxRecords = await dns.resolveMx(domain);
+        result.mx = mxRecords.map(r => ({ exchange: r.exchange, priority: r.priority }));
+    } catch (error) {
+        // Ignore MX lookup errors
+    }
+
+    return result;
+};

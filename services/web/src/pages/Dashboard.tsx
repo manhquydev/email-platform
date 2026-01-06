@@ -371,7 +371,6 @@ export function Dashboard() {
                         onDeleteDomain={deleteDomain}
                         onDeleteInbox={deleteInbox}
                         onExtendInbox={handleExtendInbox}
-                        onLogout={_logout}
                         isAdmin={isAdmin}
                         busy={busy}
                     />
@@ -746,7 +745,6 @@ export function Dashboard() {
                                     onDeleteDomain={deleteDomain}
                                     onDeleteInbox={deleteInbox}
                                     onExtendInbox={handleExtendInbox}
-                                    onLogout={_logout}
                                     isAdmin={isAdmin}
                                     busy={busy}
                                 />

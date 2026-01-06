@@ -54,11 +54,10 @@ describe("Dashboard Page", () => {
         // Verify main layout components
         expect(screen.getByTestId("app-shell")).toBeInTheDocument();
         expect(screen.getByTestId("app-header")).toBeInTheDocument();
-        // Wait for potential initial data fetch calls
+
+        // Wait for potential initial data fetch calls and verify Sidebar presence
         await waitFor(() => {
-            // Just wait for data to settle or check for inbox selector if possible, 
-            // but for now removing the failing sidebar check is sufficient to unblock.
-            expect(screen.getByTestId("app-shell")).toBeInTheDocument();
+            expect(screen.getByTestId("sidebar")).toBeInTheDocument();
         });
     });
 });

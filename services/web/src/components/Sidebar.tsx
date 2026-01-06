@@ -123,7 +123,7 @@ export function Sidebar({
     return (
         <div className="hidden md:flex flex-col h-full glass-panel rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-white/10">
             {/* 1. Domain Switcher Header */}
-            <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-[var(--nebula-surface-elevated)]/50 space-y-3">
+            <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-[var(--nebula-surface-elevated)]/50 space-y-5">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-[var(--nebula-text-muted)] uppercase tracking-wider">
                     <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
@@ -158,8 +158,11 @@ export function Sidebar({
                     </div>
                 </div>
 
+                {/* Separator */}
+                <div className="h-px bg-slate-200 dark:bg-white/10 mx-1" />
+
                 {/* Quick Generate Card - Prominent 1-click email creation */}
-                <div className="pt-2">
+                <div className="pt-1">
                     <QuickGenerateCard
                         domains={domains}
                         token={token}
@@ -298,7 +301,7 @@ export function Sidebar({
             </div>
 
             {/* 2. Inbox List - Collapsible */}
-            <div className="flex-1 overflow-y-auto p-2 bg-[var(--nebula-surface-elevated)]/30">
+            <div className="flex-1 overflow-y-auto p-4 bg-[var(--nebula-surface-elevated)]/30">
                 <button
                     onClick={() => setIsInboxCollapsed(!isInboxCollapsed)}
                     className="flex items-center justify-between w-full px-2 py-1.5 mb-1 rounded hover:bg-slate-100 dark:hover:bg-bg transition-colors"
@@ -374,7 +377,7 @@ export function Sidebar({
                 )}
 
                 {/* Collapsible content */}
-                <div className={`space-y-0.5 transition-all ${isInboxCollapsed ? 'hidden' : ''}`}>
+                <div className={`space-y-1 transition-all ${isInboxCollapsed ? 'hidden' : ''}`}>
                     {inboxes.map(inbox => {
                         const fullEmail = `${inbox.localPart}@${activeDomain?.name || ''}`;
                         return (
@@ -470,7 +473,7 @@ export function Sidebar({
             </div>
 
             {/* Inbox Manager Link */}
-            <div className="px-2 pt-2 border-t border-slate-200 dark:border-border mt-auto">
+            <div className="px-4 pt-4 border-t border-slate-200 dark:border-border mt-auto">
                 <a
                     href="/app/manager"
                     target="_blank"
@@ -484,7 +487,7 @@ export function Sidebar({
             </div>
 
             {/* Authenticator Link */}
-            <div className="px-2 py-2">
+            <div className="px-4 py-4">
                 <button
                     onClick={() => navigate("/authenticator")}
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 dark:text-text-main hover:bg-slate-100 dark:hover:bg-bg transition-colors"

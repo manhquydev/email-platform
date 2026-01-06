@@ -356,7 +356,7 @@ export function Dashboard() {
 
 
                 {/* Pane 1: Sidebar (Desktop) */}
-                <div className="hidden md:flex w-[280px] h-full p-2 border-r border-slate-200 dark:border-white/5 flex-shrink-0 bg-slate-50/50 dark:bg-transparent">
+                <div className="hidden md:flex w-[320px] h-full p-2 border-r border-slate-200 dark:border-white/5 flex-shrink-0 bg-slate-50/50 dark:bg-transparent">
                     <Sidebar
                         domains={domains}
                         inboxes={inboxes}

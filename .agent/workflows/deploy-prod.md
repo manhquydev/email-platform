@@ -21,7 +21,7 @@ This workflow pulls the latest code from `main`, rebuilds the API and Web servic
 3.  **Execute Deployment**
     ```bash
     ```bash
-    ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans web api && docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy && docker compose -f docker-compose.prod.yml restart web api"
+    ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans web api && docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy && docker compose -f docker-compose.prod.yml restart web api"
     ```
     ```
 

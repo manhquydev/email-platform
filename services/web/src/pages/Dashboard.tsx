@@ -73,6 +73,8 @@ export function Dashboard() {
     // UI States
     const [showCompose, setShowCompose] = useState(false);
     const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+    const activeDomain = domains.find(d => d.id === selectedDomain);
+    const activeInbox = inboxes.find(i => i.id === selectedInbox);
     const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
     const [composeInitialValues, setComposeInitialValues] = useState<{
         initialSubject?: string;
@@ -394,22 +396,36 @@ export function Dashboard() {
                                 onClick={() => setShowMobileSidebar(true)}
                                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>}
                             />
-                            <InboxSelector
-                                domains={domains}
-                                inboxes={inboxes}
-                                selectedDomainId={selectedDomain}
-                                selectedInboxId={selectedInbox}
-                                onSelectDomain={setSelectedDomain}
-                                onSelectInbox={(id) => navigate(`?inboxId=${id}`)}
-                                onCreateInbox={createInbox}
-                                onDeleteInbox={deleteInbox}
-                                user={user}
-                                token={token}
-                            />
+
+                            {/* Mobile: Inbox Selector */}
+                            <div className="md:hidden w-full">
+                                <InboxSelector
+                                    domains={domains}
+                                    inboxes={inboxes}
+                                    selectedDomainId={selectedDomain}
+                                    selectedInboxId={selectedInbox}
+                                    onSelectDomain={setSelectedDomain}
+                                    onSelectInbox={(id) => navigate(`?inboxId=${id}`)}
+                                    onCreateInbox={createInbox}
+                                    onDeleteInbox={deleteInbox}
+                                    user={user}
+                                    token={token}
+                                />
+                            </div>
+
+                            {/* Desktop: Static Header */}
+                            <div className="hidden md:flex flex-col">
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{activeDomain?.name}</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                        {activeInbox ? `${activeInbox.localPart}@${activeDomain?.name}` : "Chọn hộp thư"}
+                                    </span>
+                                </div>
+                            </div>
                             <Button
                                 variant="secondary"
                                 size="sm"
-                                className="hidden md:flex shrink-0 gap-2 ml-2"
+                                className="hidden shrink-0 gap-2 ml-2"
                                 onClick={async () => {
                                     if (!selectedDomain) return toast.error("Chưa chọn tên miền");
                                     const randomName = Math.random().toString(36).substring(2, 10);

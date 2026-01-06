@@ -223,21 +223,21 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
                         <div className="absolute top-0 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                             <button
                                 onClick={() => setViewMode("html")}
-                                className={`text-xs px-3 py-1.5 rounded-full border backdrop-blur-md ${viewMode === 'html' ? 'bg-primary/20 border-primary text-primary' : 'bg-black/40 border-white/10 text-gray-400'}`}
+                                className={`text-xs px-3 py-1.5 rounded-full border backdrop-blur-md ${viewMode === 'html' ? 'bg-primary/20 border-primary text-primary' : 'bg-slate-100 dark:bg-black/40 border-slate-300 dark:border-white/10 text-slate-600 dark:text-gray-400'}`}
                             >
                                 HTML
                             </button>
                             <button
                                 onClick={() => setViewMode("text")}
-                                className={`text-xs px-3 py-1.5 rounded-full border backdrop-blur-md ${viewMode === 'text' ? 'bg-primary/20 border-primary text-primary' : 'bg-black/40 border-white/10 text-gray-400'}`}
+                                className={`text-xs px-3 py-1.5 rounded-full border backdrop-blur-md ${viewMode === 'text' ? 'bg-primary/20 border-primary text-primary' : 'bg-slate-100 dark:bg-black/40 border-slate-300 dark:border-white/10 text-slate-600 dark:text-gray-400'}`}
                             >
                                 Text
                             </button>
                         </div>
 
-                        <div className="prose prose-invert max-w-none text-gray-300">
+                        <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-gray-300">
                             {viewMode === "text" || !message.htmlBody ? (
-                                <pre className="whitespace-pre-wrap font-mono text-sm bg-black/20 p-6 rounded-xl border border-white/5">
+                                <pre className="whitespace-pre-wrap font-mono text-sm bg-slate-100 dark:bg-black/20 p-6 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-gray-300">
                                     {message.textBody || "(Không có nội dung văn bản)"}
                                 </pre>
                             ) : (

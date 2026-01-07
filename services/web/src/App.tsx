@@ -31,6 +31,7 @@ const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.S
 const MyDomains = lazy(() => import("./pages/MyDomains").then(m => ({ default: m.MyDomains })));
 const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default: m.Forwarding })));
 const Plans = lazy(() => import("./pages/Plans").then(m => ({ default: m.Plans })));
+const InboxViewer = lazy(() => import("./pages/InboxViewer").then(m => ({ default: m.InboxViewer })));
 
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -77,6 +78,9 @@ function App() {
 
                 {/* Legacy Focus Stream Dashboard */}
                 <Route path="/app/stream" element={<FocusDashboard />} />
+
+                {/* Public Inbox Viewer */}
+                <Route path="/inbox-viewer" element={<InboxViewer />} />
 
                 {/* Protected app routes */}
                 <Route element={<MainLayout />}>

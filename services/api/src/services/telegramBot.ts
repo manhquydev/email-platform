@@ -44,6 +44,7 @@ export async function setupBotCommands(): Promise<boolean> {
     const commands = [
         { command: 'start', description: '🚀 Bắt đầu sử dụng bot' },
         { command: 'link', description: '🔗 Liên kết tài khoản (cần mã)' },
+        { command: 'inboxes', description: '📬 Xem hộp thư đã liên kết' },
         { command: 'settings', description: '⚙️ Xem và thay đổi cài đặt' },
         { command: 'unlink', description: '🔓 Hủy liên kết Telegram' },
         { command: 'help', description: '❓ Xem hướng dẫn sử dụng' },
@@ -729,10 +730,12 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
         const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
         await sendTelegramMessage(chatId,
             '📚 <b>Trợ giúp Ephemera Bot</b>\n\n' +
-            '<b>🔗 Liên kết:</b>\n' +
+            '<b>🔗 Liên kết tài khoản:</b>\n' +
             '/start - Bắt đầu sử dụng bot\n' +
             '/link [mã] - Liên kết với tài khoản\n' +
-            '/unlink - Hủy liên kết\n\n' +
+            '/unlink - Hủy liên kết tài khoản\n\n' +
+            '<b>📬 Hộp thư riêng lẻ:</b>\n' +
+            '/inboxes - Xem hộp thư đã liên kết\n\n' +
             '<b>⚙️ Cài đặt:</b>\n' +
             '/settings - Xem và quản lý cài đặt\n' +
             '/notify_on - Bật thông báo email\n' +
@@ -747,6 +750,48 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                 }
             }
         );
+    }
+
+    // Handle /inboxes command - show linked inboxes for this Telegram
+    else if (update.message?.text === '/inboxes') {
+        const chatId = update.message.chat.id.toString();
+        const inboxLinks = await getInboxLinksByChatId(chatId);
+        const webUrl = process.env.WEB_URL || 'https://app.manhquy.click';
+
+        if (inboxLinks.length === 0) {
+            await sendTelegramMessage(chatId,
+                '📬 <b>Hộp thư đã liên kết</b>\n\n' +
+                'Chưa có hộp thư nào được liên kết với Telegram này.\n\n' +
+                '💡 <i>Để liên kết hộp thư, truy cập Public Inbox Viewer và nhấn "Link to Telegram"</i>',
+                {
+                    parseMode: 'HTML',
+                    replyMarkup: {
+                        inline_keyboard: [
+                            [{ text: '🌐 Mở Public Inbox', url: `${webUrl}/inbox-viewer` }]
+                        ]
+                    }
+                }
+            );
+        } else {
+            // Build inline keyboard with unlink buttons for each inbox
+            const inlineKeyboard = inboxLinks.map(link => ([
+                { text: `📧 ${link.inboxEmail}`, callback_data: `noop` },
+                { text: '🔓 Hủy', callback_data: `unlink_inbox:${link.id}` }
+            ]));
+
+            await sendTelegramMessage(chatId,
+                `📬 <b>Hộp thư đã liên kết</b>\n\n` +
+                `Bạn đang nhận thông báo cho ${inboxLinks.length} hộp thư:\n\n` +
+                inboxLinks.map((l, i) => `${i + 1}. <code>${l.inboxEmail}</code>`).join('\n') +
+                '\n\n💡 <i>Nhấn "Hủy" để ngừng nhận thông báo cho hộp thư đó</i>',
+                {
+                    parseMode: 'HTML',
+                    replyMarkup: {
+                        inline_keyboard: inlineKeyboard
+                    }
+                }
+            );
+        }
     }
 
     // Handle Callback Queries (Button clicks)
@@ -853,6 +898,29 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
                     { parseMode: 'HTML' }
                 );
             }
+        }
+        // Unlink inbox - remove inbox telegram link
+        else if (callbackData?.startsWith('unlink_inbox:')) {
+            const linkId = callbackData.split(':')[1];
+            const result = await deleteInboxLinkByChatId(chatId, linkId);
+
+            if (result.success) {
+                await respondToCallbackQuery(callbackQuery.id, { text: '✅ Đã hủy liên kết!' });
+                await sendTelegramMessage(chatId,
+                    `✅ <b>Đã hủy liên kết hộp thư</b>\n\nBạn sẽ không nhận thông báo cho <code>${result.inboxEmail}</code> nữa.\n\nSử dụng /inboxes để xem các hộp thư còn lại.`,
+                    { parseMode: 'HTML' }
+                );
+            } else {
+                await respondToCallbackQuery(callbackQuery.id, { text: '❌ Thất bại!' });
+                await sendTelegramMessage(chatId,
+                    `❌ <b>Không thể hủy liên kết</b>\n\n${result.error}`,
+                    { parseMode: 'HTML' }
+                );
+            }
+        }
+        // Noop - do nothing (for display-only buttons)
+        else if (callbackData === 'noop') {
+            await respondToCallbackQuery(callbackQuery.id);
         }
         // Cancel action (generic)
         else if (callbackData === 'cancel_action') {
@@ -1068,5 +1136,41 @@ export async function deleteInboxTelegramLink(userId: string, linkId: string): P
     }
 
     return { success: true };
+}
+
+/**
+ * Get inbox telegram links by Telegram chatId
+ */
+export async function getInboxLinksByChatId(chatId: string) {
+    return prisma.inboxTelegramLink.findMany({
+        where: { telegramChatId: chatId, status: "ACTIVE" },
+        orderBy: { createdAt: 'desc' },
+    });
+}
+
+/**
+ * Delete an inbox telegram link by chatId (for bot commands)
+ * Allows deletion if the chatId matches the link's chatId
+ */
+export async function deleteInboxLinkByChatId(chatId: string, linkId: string): Promise<{ success: boolean; inboxEmail?: string; error?: string }> {
+    const link = await prisma.inboxTelegramLink.findUnique({
+        where: { id: linkId },
+    });
+
+    if (!link) {
+        return { success: false, error: "Link not found" };
+    }
+
+    // Verify the chatId matches
+    if (link.telegramChatId !== chatId) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    // Delete the link
+    await prisma.inboxTelegramLink.delete({
+        where: { id: linkId },
+    });
+
+    return { success: true, inboxEmail: link.inboxEmail };
 }
 

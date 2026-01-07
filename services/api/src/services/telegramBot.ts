@@ -990,3 +990,83 @@ export async function sendNotificationToUser(
     });
 }
 
+/**
+ * Get inbox telegram links for a user
+ * Returns all inbox telegram links where the inbox belongs to the user
+ */
+export async function getUserInboxTelegramLinks(userId: string) {
+    // Get all inboxes belonging to this user
+    const userInboxes = await prisma.inbox.findMany({
+        where: { ownerId: userId, deletedAt: null },
+        include: { domain: true },
+    });
+
+    // Build list of inbox emails
+    const inboxEmails = userInboxes.map(inbox =>
+        `${inbox.localPart}@${inbox.domain.name}`
+    );
+
+    if (inboxEmails.length === 0) {
+        return [];
+    }
+
+    // Get all inbox telegram links for these emails
+    const links = await prisma.inboxTelegramLink.findMany({
+        where: {
+            inboxEmail: { in: inboxEmails },
+            status: "ACTIVE",
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return links;
+}
+
+/**
+ * Delete an inbox telegram link
+ * Only allows deletion if the inbox belongs to the user
+ */
+export async function deleteInboxTelegramLink(userId: string, linkId: string): Promise<{ success: boolean; error?: string }> {
+    // Find the link
+    const link = await prisma.inboxTelegramLink.findUnique({
+        where: { id: linkId },
+    });
+
+    if (!link) {
+        return { success: false, error: "Link not found" };
+    }
+
+    // Check if the inbox belongs to this user
+    const [localPart, domainName] = link.inboxEmail.split("@");
+    const inbox = await prisma.inbox.findFirst({
+        where: {
+            localPart,
+            domain: { name: domainName },
+            ownerId: userId,
+            deletedAt: null,
+        },
+    });
+
+    if (!inbox) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    // Delete the link
+    await prisma.inboxTelegramLink.delete({
+        where: { id: linkId },
+    });
+
+    // Notify user on Telegram that the link was removed
+    try {
+        await sendTelegramMessage(
+            link.telegramChatId,
+            `🔓 <b>Hủy liên kết hộp thư</b>\n\nHộp thư <b>${link.inboxEmail}</b> đã được hủy liên kết với Telegram này.`,
+            { parseMode: "HTML" }
+        );
+    } catch {
+        // Ignore notification errors
+    }
+
+    return { success: true };
+}
+

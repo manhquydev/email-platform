@@ -11,6 +11,8 @@ import {
     unlinkTelegramAccount,
     updateTelegramNotifyPreference,
     handleTelegramWebhook,
+    getUserInboxTelegramLinks,
+    deleteInboxTelegramLink,
     type TelegramUpdate,
 } from "../services/telegramBot";
 
@@ -58,6 +60,31 @@ export async function telegramRoutes(app: FastifyInstance) {
 
         if (parsed.data.notifyOnEmail !== undefined) {
             await updateTelegramNotifyPreference(user.userId, parsed.data.notifyOnEmail);
+        }
+
+        return { success: true };
+    });
+
+    // Get inbox telegram links for current user (authenticated)
+    app.get("/telegram/inbox-links", { preHandler: app.authenticate }, async (request) => {
+        const user = request.user as { userId: string };
+        const links = await getUserInboxTelegramLinks(user.userId);
+        return { links };
+    });
+
+    // Delete an inbox telegram link (authenticated)
+    app.delete("/telegram/inbox-links/:id", { preHandler: app.authenticate }, async (request, reply) => {
+        const user = request.user as { userId: string };
+        const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+
+        if (!params.success) {
+            return reply.status(400).send({ error: "Invalid link ID" });
+        }
+
+        const result = await deleteInboxTelegramLink(user.userId, params.data.id);
+
+        if (!result.success) {
+            return reply.status(result.error === "Unauthorized" ? 403 : 404).send({ error: result.error });
         }
 
         return { success: true };

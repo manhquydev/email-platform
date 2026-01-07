@@ -15,7 +15,7 @@
 
 | Priority | Status | Effort |
 |----------|--------|--------|
-| P1 | pending | 4h |
+| P1 | ✅ done | 4h |
 
 Create public-facing inbox viewer page at `/inbox-viewer`. Users search by email address, view paginated messages, and read full email content with attachments.
 

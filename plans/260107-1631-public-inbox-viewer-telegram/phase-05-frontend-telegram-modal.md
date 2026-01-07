@@ -15,7 +15,7 @@
 
 | Priority | Status | Effort |
 |----------|--------|--------|
-| P2 | pending | 2h |
+| P2 | ✅ done | 2h |
 
 Create a modal component for linking inbox to Telegram. Shows QR code, deep link, countdown timer, and polls for success.
 

@@ -17,6 +17,7 @@ import { healthRoutes } from "./routes/health";
 import { abuseRoutes } from "./routes/abuse";
 import { publicRoutes } from "./routes/public";
 import { publicInboxRoutes } from "./routes/public-inbox";
+import { publicTelegramRoutes } from "./routes/public-telegram";
 import { outboundRoutes } from "./routes/outbound";
 import { adminRoutes } from "./routes/admin";
 import { billingRoutes } from "./routes/billing";
@@ -214,6 +215,7 @@ export const buildServer = () => {
   app.register(authRoutes);
   app.register(publicRoutes);
   app.register(publicInboxRoutes);
+  app.register(publicTelegramRoutes);
   app.register(domainRoutes);
   app.register(inboxRoutes);
   app.register(messageRoutes);

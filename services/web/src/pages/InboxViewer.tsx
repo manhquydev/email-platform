@@ -1,5 +1,6 @@
 // services/web/src/pages/InboxViewer.tsx
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { SearchForm } from "../components/inbox-viewer/search-form";
 import { MessageList } from "../components/inbox-viewer/message-list";
@@ -35,6 +36,7 @@ interface FullMessage {
 }
 
 export function InboxViewer() {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [total, setTotal] = useState(0);
@@ -43,6 +45,7 @@ export function InboxViewer() {
   const [selectedMessage, setSelectedMessage] = useState<FullMessage | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const fetchMessages = useCallback(async (emailAddr: string, pageNum: number) => {
     setLoading(true);
@@ -69,6 +72,16 @@ export function InboxViewer() {
       setLoading(false);
     }
   }, []);
+
+  // Auto-load inbox from URL query param
+  useEffect(() => {
+    if (initialLoadDone) return;
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setInitialLoadDone(true);
+      handleSearch(emailParam);
+    }
+  }, [searchParams, initialLoadDone]);
 
   const handleSearch = async (emailAddr: string) => {
     // First validate inbox exists

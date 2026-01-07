@@ -14,7 +14,7 @@ import { checkSpam, shouldRejectEmail, formatSpamSymbols } from './services/spam
 import { scanBuffer, hasVirus, getDetectedViruses } from './services/virusScanner';
 import { syncMessageToMaildir } from './services/maildirSync';
 import { processFiltersForMessage } from './services/emailFilters';
-import { notifyNewEmail } from './services/telegramBot';
+import { notifyNewEmail, notifyInboxTelegramSubscribers } from './services/telegramBot';
 import { forwardMessageIfMatched } from './services/emailForwarder';
 import { triggerWebhook } from './services/webhookService';
 
@@ -265,6 +265,19 @@ export const setupEmailWorker = (logger: Logger) => {
                             }
                         } catch (telegramErr) {
                             logger.warn({ err: telegramErr }, 'failed to send Telegram notification');
+                        }
+
+                        // Release 2b: Per-Inbox Telegram Notifications
+                        try {
+                            const inboxEmail = `${messageWithRelations.inbox.localPart}@${messageWithRelations.inbox.domain.name}`;
+                            await notifyInboxTelegramSubscribers(inboxEmail, {
+                                id: message.id,
+                                fromAddress: fromAddress ?? null,
+                                subject: message.subject,
+                                textBody,
+                            });
+                        } catch (inboxTelegramErr) {
+                            logger.warn({ err: inboxTelegramErr }, 'failed to send inbox Telegram notifications');
                         }
 
                         // Release 3: Email Forwarding

@@ -421,6 +421,81 @@ export async function notifyNewEmail(
 }
 
 /**
+ * Notify all Telegram subscribers for a specific inbox (per-inbox notifications)
+ */
+export async function notifyInboxTelegramSubscribers(
+    inboxEmail: string,
+    message: {
+        id: string;
+        fromAddress: string | null;
+        subject: string | null;
+        textBody: string | null;
+    }
+): Promise<void> {
+    const links = await prisma.inboxTelegramLink.findMany({
+        where: { inboxEmail, status: "ACTIVE" },
+    });
+
+    if (links.length === 0) return;
+
+    const botToken = getBotToken();
+    if (!botToken) return;
+
+    const webUrl = process.env.WEB_URL || "https://app.manhquy.click";
+    const viewUrl = `${webUrl}/inbox-viewer?email=${encodeURIComponent(inboxEmail)}`;
+
+    // Format message
+    const text = `📧 <b>New Email</b>
+
+<b>To:</b> ${inboxEmail}
+<b>From:</b> ${message.fromAddress || "(unknown)"}
+<b>Subject:</b> ${message.subject || "(no subject)"}
+
+<i>${(message.textBody || "").slice(0, 200)}${
+        (message.textBody?.length || 0) > 200 ? "..." : ""
+    }</i>`;
+
+    // Process all notifications in parallel using Promise.allSettled
+    await Promise.allSettled(
+        links.map(async (link) => {
+            let success = false;
+            let errorMessage: string | null = null;
+
+            try {
+                success = await sendTelegramMessage(link.telegramChatId, text, {
+                    parseMode: "HTML",
+                    replyMarkup: {
+                        inline_keyboard: [
+                            [{ text: "View Email", url: viewUrl }],
+                        ],
+                    },
+                });
+                if (!success) {
+                    errorMessage = "Send failed";
+                }
+            } catch (err: any) {
+                errorMessage = err.message || "Unknown error";
+            }
+
+            // Log notification - wrapped in try-catch to ensure loop continues
+            try {
+                await prisma.telegramNotificationLog.create({
+                    data: {
+                        inboxEmail,
+                        messageId: message.id,
+                        telegramChatId: link.telegramChatId,
+                        status: success ? "SENT" : "FAILED",
+                        errorMessage,
+                    },
+                });
+            } catch (logErr) {
+                console.error("[Telegram] Failed to log notification:", logErr);
+            }
+        })
+    );
+}
+
+/**
  * Handle Telegram webhook updates
  */
 export async function handleTelegramWebhook(update: TelegramUpdate): Promise<void> {
@@ -432,6 +507,35 @@ export async function handleTelegramWebhook(update: TelegramUpdate): Promise<voi
         if (args.length > 1) {
             // Link with token
             const token = args[1];
+            const from = update.message.from;
+
+            // Check for inbox linking token (prefix: inbox_)
+            if (token.startsWith("inbox_")) {
+                const { linkInboxToTelegram } = await import("./inbox-telegram-service");
+
+                const result = await linkInboxToTelegram(
+                    token,
+                    chatId,
+                    from?.username
+                );
+
+                if (result.success) {
+                    await sendTelegramMessage(
+                        chatId,
+                        `✅ <b>Liên kết thành công!</b>\n\nBạn sẽ nhận thông báo khi có email mới đến <b>${result.inboxEmail}</b>`,
+                        { parseMode: "HTML" }
+                    );
+                } else {
+                    await sendTelegramMessage(
+                        chatId,
+                        `❌ <b>Liên kết thất bại</b>\n\n${result.error || "Token không hợp lệ hoặc đã hết hạn"}`,
+                        { parseMode: "HTML" }
+                    );
+                }
+                return;
+            }
+
+            // Handle user-level token linking
             const result = await linkTelegramAccount(token, chatId);
 
             if (result.success) {

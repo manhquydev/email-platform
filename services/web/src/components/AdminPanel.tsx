@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../utils/api";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
 // Define NavItem type
 interface NavItem {
@@ -118,6 +119,7 @@ function Badge({ count, color = "red" }: { count: number; color?: "red" | "blue"
 }
 
 export function AdminPanel({ token }: { token: string }) {
+    const { setTheme, resolvedTheme } = useTheme();
     const [counts, setCounts] = useState<SidebarCounts>({ openReports: 0, totalUsers: 0, totalDomains: 0 });
     const [searchQuery, setSearchQuery] = useState("");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -143,17 +145,6 @@ export function AdminPanel({ token }: { token: string }) {
         return () => clearInterval(interval);
     }, [token]);
 
-    // Load saved theme preference
-    useEffect(() => {
-        const savedTheme = localStorage.getItem("admin-theme");
-        if (savedTheme === "dark") {
-            document.documentElement.classList.add("dark");
-            document.documentElement.setAttribute("data-theme", "dark");
-        } else if (savedTheme === "light") {
-            document.documentElement.classList.remove("dark");
-            document.documentElement.setAttribute("data-theme", "light");
-        }
-    }, []);
 
     const navItems: NavItem[] = [
         { id: "dashboard", label: "Tổng quan", path: "/admin", icon: icons.dashboard, end: true },
@@ -265,18 +256,7 @@ export function AdminPanel({ token }: { token: string }) {
                 <div className="p-3 space-y-2" style={{ borderTop: '1px solid var(--nebula-border)' }}>
                     {/* Dark Mode Toggle */}
                     <button
-                        onClick={() => {
-                            const isDark = document.documentElement.classList.contains("dark");
-                            if (isDark) {
-                                document.documentElement.classList.remove("dark");
-                                document.documentElement.setAttribute("data-theme", "light");
-                                localStorage.setItem("admin-theme", "light");
-                            } else {
-                                document.documentElement.classList.add("dark");
-                                document.documentElement.setAttribute("data-theme", "dark");
-                                localStorage.setItem("admin-theme", "dark");
-                            }
-                        }}
+                        onClick={() => {                            if (resolvedTheme === "dark") {                                setTheme("light");                            } else {                                setTheme("dark");                            }                        }}
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors hover:opacity-80 ${sidebarCollapsed ? "justify-center" : ""}`}
                         style={{ color: 'var(--nebula-text-secondary)' }}
                         title={sidebarCollapsed ? "Chế độ tối/sáng" : undefined}

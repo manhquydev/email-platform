@@ -542,3 +542,44 @@ model WebhookLog {
   @@index([webhookId])
   @@index([createdAt])
 }
+
+// Inbox-based Telegram linking models (Phase 01)
+
+model InboxTelegramLink {
+  id               String   @id @default(uuid())
+  inboxEmail       String   // "john@domain.com"
+  telegramChatId   String
+  telegramUsername String?
+  createdAt        DateTime @default(now())
+  status           String   @default("ACTIVE") // ACTIVE, PAUSED, REVOKED
+
+  @@unique([inboxEmail, telegramChatId])
+  @@index([inboxEmail])
+  @@index([telegramChatId])
+}
+
+model InboxTelegramAuthToken {
+  id         String    @id @default(uuid())
+  inboxEmail String
+  token      String    @unique // "inbox_XXXXXX" format
+  expiresAt  DateTime  // 24h from creation
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([token])
+  @@index([inboxEmail])
+}
+
+model TelegramNotificationLog {
+  id             String   @id @default(uuid())
+  inboxEmail     String
+  messageId      String   // References Message.id
+  telegramChatId String
+  status         String   // SENT, FAILED
+  errorMessage   String?
+  sentAt         DateTime @default(now())
+
+  @@index([inboxEmail])
+  @@index([telegramChatId])
+  @@index([messageId])
+}

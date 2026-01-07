@@ -15,7 +15,7 @@ interface Message {
   receivedAt: string;
   isRead: boolean;
   preview: string;
-  _count: { attachments: number };
+  attachmentCount: number;
 }
 
 interface FullMessage {

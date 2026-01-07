@@ -8,7 +8,7 @@ interface Message {
   receivedAt: string;
   isRead: boolean;
   preview: string;
-  _count: { attachments: number };
+  attachmentCount: number;
 }
 
 interface MessageListProps {
@@ -58,9 +58,9 @@ export function MessageList({
                   {msg.subject || "(no subject)"}
                 </div>
                 <div className="text-xs text-gray-500 truncate">{msg.preview}</div>
-                {msg._count.attachments > 0 && (
+                {msg.attachmentCount > 0 && (
                   <span className="text-xs text-blue-500 mt-1 inline-block">
-                    {msg._count.attachments} attachment(s)
+                    {msg.attachmentCount} attachment(s)
                   </span>
                 )}
               </li>

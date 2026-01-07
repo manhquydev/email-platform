@@ -12,6 +12,14 @@ const TELEGRAM_API_BASE = "https://api.telegram.org/bot";
 // Get bot token from environment
 const getBotToken = () => process.env.TELEGRAM_BOT_TOKEN;
 
+// Escape HTML entities for Telegram HTML parse mode
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 // Generate random 6-character alphanumeric token
 export function generateLinkToken(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No confusing chars like 0,O,1,I
@@ -444,14 +452,19 @@ export async function notifyInboxTelegramSubscribers(
     const webUrl = process.env.WEB_URL || "https://app.manhquy.click";
     const viewUrl = `${webUrl}/inbox-viewer?email=${encodeURIComponent(inboxEmail)}`;
 
+    // Escape HTML entities to prevent Telegram parse errors
+    const safeFrom = escapeHtml(message.fromAddress || "(unknown)");
+    const safeSubject = escapeHtml(message.subject || "(no subject)");
+    const safePreview = escapeHtml((message.textBody || "").slice(0, 200));
+
     // Format message
     const text = `📧 <b>New Email</b>
 
 <b>To:</b> ${inboxEmail}
-<b>From:</b> ${message.fromAddress || "(unknown)"}
-<b>Subject:</b> ${message.subject || "(no subject)"}
+<b>From:</b> ${safeFrom}
+<b>Subject:</b> ${safeSubject}
 
-<i>${(message.textBody || "").slice(0, 200)}${
+<i>${safePreview}${
         (message.textBody?.length || 0) > 200 ? "..." : ""
     }</i>`;
 

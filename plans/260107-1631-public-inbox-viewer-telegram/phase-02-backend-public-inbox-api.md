@@ -15,7 +15,7 @@
 
 | Priority | Status | Effort |
 |----------|--------|--------|
-| P1 | pending | 3h |
+| P1 | ✅ done | 3h |
 
 Create public API endpoints for viewing inbox emails without authentication. Includes rate limiting, pagination, and attachment download.
 

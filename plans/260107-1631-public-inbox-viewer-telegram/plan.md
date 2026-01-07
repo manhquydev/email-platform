@@ -43,7 +43,7 @@ Implement a public-facing email inbox viewer (no auth) with ability to link any 
 | Phase | Description | Status | Effort | Dependencies | Parallel With |
 |-------|-------------|--------|--------|--------------|---------------|
 | [01](./phase-01-database-schema.md) | Database Schema | ✅ done | 1h | - | - |
-| [02](./phase-02-backend-public-inbox-api.md) | Backend - Public Inbox API | pending | 3h | 01 | 03 |
+| [02](./phase-02-backend-public-inbox-api.md) | Backend - Public Inbox API | ✅ done | 3h | 01 | 03 |
 | [03](./phase-03-backend-telegram-linking-api.md) | Backend - Telegram Linking API | pending | 3h | 01 | 02 |
 | [04](./phase-04-frontend-inbox-viewer.md) | Frontend - Inbox Viewer Page | pending | 4h | 01, 02 | 05 |
 | [05](./phase-05-frontend-telegram-modal.md) | Frontend - Telegram Link Modal | pending | 2h | 01, 03 | 04 |

@@ -214,8 +214,8 @@ export const buildServer = () => {
 
   app.register(authRoutes);
   app.register(publicRoutes);
-  app.register(publicInboxRoutes);
-  app.register(publicTelegramRoutes);
+  app.register(publicInboxRoutes, { prefix: "/api" });
+  app.register(publicTelegramRoutes, { prefix: "/api" });
   app.register(domainRoutes);
   app.register(inboxRoutes);
   app.register(messageRoutes);

@@ -122,14 +122,14 @@ export function Settings() {
                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Cài đặt</h2>
                 </div>
 
-                <nav className="flex-1 px-4 py-2 flex flex-col gap-1 overflow-y-auto">
-                    <p className="px-4 text-xs font-medium text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Tài khoản</p>
+                <nav className="flex-1 px-2 py-2 flex flex-col gap-1 overflow-y-auto">
+                    <p className="px-2 text-xs font-medium text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2 mt-2">Tài khoản</p>
                     <NavButon active={activeTab === 'general'} icon="person" label="Chung" onClick={() => changeTab('general')} />
                     <NavButon active={activeTab === 'security'} icon="shield" label="Bảo mật" onClick={() => changeTab('security')} />
                     <NavButon active={activeTab === 'subscription'} icon="credit_card" label="Gói & Thanh toán" onClick={() => changeTab('subscription')} />
                     <NavButon active={activeTab === 'notifications'} icon="notifications" label="Thông báo" onClick={() => changeTab('notifications')} />
 
-                    <p className="px-4 text-xs font-medium text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2 mt-6">Email</p>
+                    <p className="px-2 text-xs font-medium text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2 mt-6">Email</p>
                     <NavButon active={activeTab === 'filters'} icon="filter_list" label="Bộ lọc" onClick={() => changeTab('filters')} />
                     <NavButon active={activeTab === 'labels'} icon="label" label="Nhãn" onClick={() => changeTab('labels')} />
                     <Link to="/my-domains" className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
@@ -137,7 +137,7 @@ export function Settings() {
                         <span className="text-sm font-medium">Tên miền riêng</span>
                     </Link>
 
-                    <p className="px-4 text-xs font-medium text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2 mt-6">Nhà phát triển</p>
+                    <p className="px-2 text-xs font-medium text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2 mt-6">Nhà phát triển</p>
                     <NavButon active={activeTab === 'developer'} icon="code" label="Khóa API" onClick={() => changeTab('developer')} />
                 </nav>
 

@@ -51,8 +51,8 @@ export function Settings() {
     }, [location.search, activeTab]);
 
     // Update URL when tab changes
-    const changeTab = (tab: SettingsTab) => {
-        setActiveTab(tab);
+    const changeTab = (tab: string) => {
+        setActiveTab(tab as SettingsTab);
         navigate(`?tab=${tab}`, { replace: true });
     };
 

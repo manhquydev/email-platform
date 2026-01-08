@@ -181,10 +181,10 @@ export function TelegramManagementPage() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case "ACTIVE": return <StatusBadge status="success">Hoạt động</StatusBadge>;
-            case "PAUSED": return <StatusBadge status="warning">Tạm dừng</StatusBadge>;
-            case "REVOKED": return <StatusBadge status="error">Thu hồi</StatusBadge>;
-            default: return <StatusBadge status="default">{status}</StatusBadge>;
+            case "ACTIVE": return <StatusBadge status="Hoạt động" variant="success" />;
+            case "PAUSED": return <StatusBadge status="Tạm dừng" variant="warning" />;
+            case "REVOKED": return <StatusBadge status="Thu hồi" variant="danger" />;
+            default: return <StatusBadge status={status} variant="default" />;
         }
     };
 
@@ -200,7 +200,7 @@ export function TelegramManagementPage() {
         <div className="space-y-6">
             <SectionHeader
                 title="Quản lý Telegram"
-                description="Quản lý liên kết Telegram với tài khoản và hòm thư"
+                subtitle="Quản lý liên kết Telegram với tài khoản và hòm thư"
             />
 
             {/* Tabs */}
@@ -284,7 +284,7 @@ export function TelegramManagementPage() {
                         <PremiumInput
                             placeholder="Tìm theo email hoặc Chat ID..."
                             value={userSearch}
-                            onChange={(e) => { setUserSearch(e.target.value); setUserLinksPage(0); }}
+                            onChange={(value) => { setUserSearch(value); setUserLinksPage(0); }}
                         />
                     </div>
 
@@ -306,9 +306,7 @@ export function TelegramManagementPage() {
                                         </code>
                                     </TableCell>
                                     <TableCell>
-                                        <StatusBadge status={user.tier === "FREE" ? "default" : "success"}>
-                                            {user.tier}
-                                        </StatusBadge>
+                                        <StatusBadge status={user.tier} variant={user.tier === "FREE" ? "default" : "success"} />
                                     </TableCell>
                                     <TableCell className="text-xs">
                                         {user.telegramLinkedAt ? formatDate(user.telegramLinkedAt) : "-"}
@@ -332,10 +330,9 @@ export function TelegramManagementPage() {
                     </PremiumTable>
 
                     <Pagination
-                        page={userLinksPage}
-                        pageSize={PAGE_SIZE}
-                        total={userLinksTotal}
-                        onPageChange={setUserLinksPage}
+                        currentPage={userLinksPage + 1}
+                        totalPages={Math.ceil(userLinksTotal / PAGE_SIZE) || 1}
+                        onPageChange={(page) => setUserLinksPage(page - 1)}
                     />
                 </GlassCard>
             )}
@@ -347,7 +344,7 @@ export function TelegramManagementPage() {
                             <PremiumInput
                                 placeholder="Tìm theo email, Chat ID hoặc username..."
                                 value={inboxSearch}
-                                onChange={(e) => { setInboxSearch(e.target.value); setInboxLinksPage(0); }}
+                                onChange={(value) => { setInboxSearch(value); setInboxLinksPage(0); }}
                             />
                         </div>
                         <select
@@ -401,7 +398,7 @@ export function TelegramManagementPage() {
                                                     variant="secondary"
                                                     size="sm"
                                                     onClick={() => handleReactivateInboxLink(link.id)}
-                                                    loading={actionLoading}
+                                                    isLoading={actionLoading}
                                                 >
                                                     Kích hoạt
                                                 </PremiumButton>
@@ -427,10 +424,9 @@ export function TelegramManagementPage() {
                     </PremiumTable>
 
                     <Pagination
-                        page={inboxLinksPage}
-                        pageSize={PAGE_SIZE}
-                        total={inboxLinksTotal}
-                        onPageChange={setInboxLinksPage}
+                        currentPage={inboxLinksPage + 1}
+                        totalPages={Math.ceil(inboxLinksTotal / PAGE_SIZE) || 1}
+                        onPageChange={(page) => setInboxLinksPage(page - 1)}
                     />
                 </GlassCard>
             )}
@@ -449,7 +445,7 @@ export function TelegramManagementPage() {
                 title={confirmUnlink?.type === "user" ? "Hủy liên kết Telegram" : "Thu hồi liên kết"}
                 message={`Bạn có chắc muốn ${confirmUnlink?.type === "user" ? "hủy liên kết" : "thu hồi"} Telegram cho ${confirmUnlink?.email}?`}
                 confirmText={confirmUnlink?.type === "user" ? "Hủy liên kết" : "Thu hồi"}
-                loading={actionLoading}
+                isLoading={actionLoading}
             />
         </div>
     );

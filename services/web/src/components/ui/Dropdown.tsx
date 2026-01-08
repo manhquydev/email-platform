@@ -58,7 +58,7 @@ export function Dropdown({ children }: DropdownProps) {
         return index;
     };
 
-    const unregisterItem = (index: number) => {
+    const unregisterItem = (_index: number) => {
         setItemCount(prev => prev - 1);
     };
 

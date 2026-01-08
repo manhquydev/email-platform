@@ -138,7 +138,7 @@ export function AnalyticsPage() {
         <div className="space-y-6">
             <SectionHeader
                 title="Public Inbox Viewer Analytics"
-                description="Theo dõi hoạt động truy cập công khai vào hòm thư"
+                subtitle="Theo dõi hoạt động truy cập công khai vào hòm thư"
             />
 
             {/* Time Range Filter */}
@@ -158,7 +158,7 @@ export function AnalyticsPage() {
                         </button>
                     ))}
                 </div>
-                <PremiumButton onClick={handleExport} loading={exporting} variant="secondary">
+                <PremiumButton onClick={handleExport} isLoading={exporting} variant="secondary">
                     <span className="material-symbols-outlined text-[18px] mr-2">download</span>
                     Xuất CSV
                 </PremiumButton>
@@ -289,10 +289,9 @@ export function AnalyticsPage() {
                     </PremiumTable>
 
                     <Pagination
-                        page={page}
-                        pageSize={PAGE_SIZE}
-                        total={sessionsTotal}
-                        onPageChange={setPage}
+                        currentPage={page + 1}
+                        totalPages={Math.ceil(sessionsTotal / PAGE_SIZE) || 1}
+                        onPageChange={(p) => setPage(p - 1)}
                     />
                 </GlassCard>
             )}

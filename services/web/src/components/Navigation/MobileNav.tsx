@@ -15,7 +15,8 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
     const navigate = useNavigate();
     const location = useLocation();
     const { openDrawer } = useNavigation();
-    const { user: _user } = useAuth();
+    // Auth context available if needed for user-specific nav items
+    useAuth();
     const navItems = useNavItems(context);
 
     const [isVisible, setIsVisible] = useState(true);

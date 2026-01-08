@@ -11,6 +11,15 @@ interface DesktopNavProps {
     context?: "user" | "admin";
 }
 
+// Brand logo component - defined outside render to avoid recreation
+const BrandLogo = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
+        <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+        <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+        <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
+    </svg>
+);
+
 export function DesktopNav({ context = "user" }: DesktopNavProps) {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
@@ -21,15 +30,6 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
         logout();
         navigate("/login");
     };
-
-    // Brand logo component
-    const BrandLogo = () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
-            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
-            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
-            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
-        </svg>
-    );
 
     return (
         <aside

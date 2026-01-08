@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 
 // Storage key for persistence
@@ -58,6 +59,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     // Auto-collapse on tablet
     useEffect(() => {
         if (isTablet && !isCollapsed) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsCollapsedState(true);
         }
     }, [isTablet, isCollapsed]);
@@ -80,6 +82,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     // Close drawer when switching to desktop
     useEffect(() => {
         if (isDesktop && isDrawerOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             closeDrawer();
         }
     }, [isDesktop, isDrawerOpen, closeDrawer]);

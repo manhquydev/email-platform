@@ -1,7 +1,8 @@
 
 import { execSync } from 'child_process';
 
-const TEST_DB_URL = "postgresql://postgres:postgres@localhost:5434/email_service_test";
+// Use CI DATABASE_URL if set, otherwise fallback to local dev port
+const TEST_DB_URL = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5434/email_service_test";
 
 console.log(`Migrating test database at ${TEST_DB_URL}...`);
 

@@ -1,5 +1,5 @@
-// Use port 5433 as defined in docker-compose.test.yml
-const TEST_DB_URL = "postgresql://postgres:postgres@localhost:5434/email_service_test";
+// Use CI DATABASE_URL if set, otherwise fallback to local dev port (5434 as defined in docker-compose.test.yml)
+const TEST_DB_URL = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5434/email_service_test";
 process.env.DATABASE_URL = TEST_DB_URL;
 process.env.JWT_SECRET = "test-secret";
 process.env.OUTBOUND_ENABLED = "true";
@@ -8,6 +8,9 @@ process.env.TELEGRAM_BOT_USERNAME = "TestBot";
 process.env.STORAGE_DIR = "./storage_test";
 process.env.DEFAULT_ADMIN_EMAIL = "admin@example.com";
 process.env.DEFAULT_ADMIN_PASSWORD = "changeme";
+// Add dummy Stripe keys for tests
+process.env.STRIPE_API_KEY = process.env.STRIPE_API_KEY || "sk_test_dummy_key_for_testing_only";
+process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "whsec_test_dummy_secret";
 
 import { beforeAll, afterAll, beforeEach } from "vitest";
 import { PrismaClient } from "@prisma/client";

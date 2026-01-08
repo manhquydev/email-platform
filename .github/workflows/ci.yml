@@ -81,6 +81,8 @@ jobs:
         working-directory: services/api
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/email_service_test
+          STRIPE_API_KEY: sk_test_dummy_key_for_testing_only
+          STRIPE_WEBHOOK_SECRET: whsec_test_dummy_secret
         run: npm test
 
       - name: Build API

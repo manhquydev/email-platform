@@ -52,7 +52,7 @@ export function PackagesPage() {
         try {
             const res = await api<{ packages: ServicePackage[] }>("/admin/packages", { token });
             setPackages(res.packages);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -91,7 +91,7 @@ export function PackagesPage() {
             setShowModal(false);
             resetForm();
             loadPackages();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     };
@@ -124,7 +124,7 @@ export function PackagesPage() {
             }
 
             loadPackages();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     };
@@ -138,7 +138,7 @@ export function PackagesPage() {
             });
             setPackages(packages.map(p => p.id === pkg.id ? { ...p, isActive: newStatus } : p));
             toast.success(newStatus ? "Đã kích hoạt gói" : "Đã vô hiệu hóa gói");
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     };

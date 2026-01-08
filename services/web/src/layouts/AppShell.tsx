@@ -39,7 +39,7 @@ export function AppShell({ children }: AppShellProps) {
                 // Fetch user's inboxes (limit 100)
                 const iRes = await api<PaginatedResponse<Inbox>>("/inboxes?limit=100&personal=true", { token });
                 setInboxes(iRes.data);
-            } catch {
+            } catch (e) {
                 console.error("Failed to load nav data", e);
             }
         };

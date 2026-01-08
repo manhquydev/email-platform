@@ -72,7 +72,7 @@ export function AdminSettingsPage() {
             await api("/auth/change-password", { method: "POST", token, body: { newPassword: password } });
             setMsg("Đã cập nhật mật khẩu");
             setPassword("");
-        } catch {
+        } catch (error) {
             setErr(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setBusy(false);
@@ -88,7 +88,7 @@ export function AdminSettingsPage() {
             setQrCode(res.qrCode);
             setTotpSecret(res.secret);
             setTwoFAStep("setup");
-        } catch {
+        } catch (error) {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
@@ -112,7 +112,7 @@ export function AdminSettingsPage() {
             setTwoFAStep("backup");
             toast.success("2FA đã được kích hoạt!");
             loadProfile();
-        } catch {
+        } catch (error) {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
@@ -130,7 +130,7 @@ export function AdminSettingsPage() {
             toast.success("2FA đã được tắt");
             setTwoFAStep("idle");
             loadProfile();
-        } catch {
+        } catch (error) {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);

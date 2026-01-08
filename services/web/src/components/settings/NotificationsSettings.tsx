@@ -66,7 +66,7 @@ export function NotificationsSettings() {
             await api(`/telegram/inbox-links/${linkId}`, { method: "DELETE", token });
             setInboxLinks(prev => prev.filter(l => l.id !== linkId));
             toast.success("Đã hủy liên kết hộp thư");
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setUnlinkingId(null);
@@ -83,7 +83,7 @@ export function NotificationsSettings() {
             setTelegramLinkToken(res.token);
             setTelegramBotLink(res.botLink);
             toast.success("Đã tạo mã liên kết!");
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTelegramBusy(false);
@@ -101,7 +101,7 @@ export function NotificationsSettings() {
             });
             setTelegramStatus(prev => prev ? { ...prev, notifyOnEmail: !prev.notifyOnEmail } : null);
             toast.success(telegramStatus.notifyOnEmail ? "Đã tắt thông báo" : "Đã bật thông báo");
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTelegramBusy(false);
@@ -115,7 +115,7 @@ export function NotificationsSettings() {
             setTelegramStatus({ linked: false, notifyOnEmail: true });
             toast.success("Đã hủy liên kết Telegram");
             setShowUnlinkConfirm(false);
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTelegramBusy(false);

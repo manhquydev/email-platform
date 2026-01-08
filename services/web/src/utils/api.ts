@@ -55,7 +55,7 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
         }
 
         return data as T;
-    } catch {
+    } catch (error) {
         clearTimeout(id);
         if ((error as Error).name === 'AbortError') {
             throw new Error("Yêu cầu quá hạn. Vui lòng kiểm tra kết nối mạng.");

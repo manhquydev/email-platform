@@ -27,7 +27,7 @@ export function MyDomains() {
             const res = await api<{ data: Domain[] }>("/domains?limit=100", { token });
             const ownedDomains = res.data.filter(d => d.ownerId === user?.id);
             setDomains(ownedDomains);
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setLoading(false);
@@ -51,7 +51,7 @@ export function MyDomains() {
             toast.success("Đã thêm tên miền!");
             setNewDomainName("");
             await loadDomains();
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setBusy(false);
@@ -64,7 +64,7 @@ export function MyDomains() {
             await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: tokenVal } });
             toast.success("Đã xác thực tên miền!");
             await loadDomains();
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setVerifyingId(null);
@@ -81,7 +81,7 @@ export function MyDomains() {
             });
             toast.success(currentPublic ? "Đã chuyển sang riêng tư" : "Đã chia sẻ công khai");
             await loadDomains();
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTogglingId(null);
@@ -100,7 +100,7 @@ export function MyDomains() {
             toast.success("Đã xóa tên miền");
             setDeleteTarget(null);
             await loadDomains();
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setDeletingId(null);

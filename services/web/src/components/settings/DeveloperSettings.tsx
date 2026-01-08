@@ -101,7 +101,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
         try {
             const data = await api<Webhook[]>("/webhooks", { token });
             setWebhooks(Array.isArray(data) ? data : []);
-        } catch {
+        } catch (err) {
             console.error(err);
             // Don't toast on initial load error to avoid spamming if service is down, just log
         } finally {

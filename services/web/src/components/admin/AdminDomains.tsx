@@ -43,7 +43,7 @@ export function AdminDomains({ token }: { token: string }) {
             setDomains(res.data);
             setTotal(res.meta.total);
             setSelectedIds(new Set());
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -62,7 +62,7 @@ export function AdminDomains({ token }: { token: string }) {
             });
             toast.success(status === "APPROVED" ? "Đã duyệt tên miền" : "Đã từ chối");
             await loadData();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
@@ -84,7 +84,7 @@ export function AdminDomains({ token }: { token: string }) {
             ));
             toast.success(`Đã xử lý ${ids.length} mục`);
             await loadData();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);

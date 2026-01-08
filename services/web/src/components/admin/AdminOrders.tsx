@@ -44,7 +44,7 @@ export function AdminOrders({ token }: { token: string }) {
             const res = await api<{ data: Payment[]; meta: { total: number } }>(`/admin/orders?${params}`, { token });
             setOrders(res.data);
             setTotal(res.meta.total);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -74,7 +74,7 @@ export function AdminOrders({ token }: { token: string }) {
             toast.success("Hoàn tiền thành công");
             setRefundTarget(null);
             loadData();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setRefunding(false);

@@ -78,7 +78,7 @@ export function useDashboardData({ token, userId }: UseDashboardDataOptions): Us
             const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
             const domainsData = res?.data || [];
             setDomains(domainsData);
-        } catch {
+        } catch (e) {
             console.error("Failed to load domains", e);
             toast.error("Lỗi tải danh sách tên miền");
         }
@@ -91,7 +91,7 @@ export function useDashboardData({ token, userId }: UseDashboardDataOptions): Us
             const params = new URLSearchParams({ limit: "100", personal: "true" });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
-        } catch {
+        } catch (e) {
             console.error("Failed to load inboxes", e);
             toast.error("Lỗi tải danh sách hộp thư");
         } finally {

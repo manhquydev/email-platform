@@ -100,7 +100,7 @@ export function Dashboard() {
             const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
             const domainsData = res?.data || [];
             setDomains(domainsData);
-        } catch {
+        } catch (e) {
             console.error("Failed to load domains", e);
             toast.error("Lỗi tải danh sách tên miền");
         }
@@ -131,7 +131,7 @@ export function Dashboard() {
 
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
-        } catch {
+        } catch (e) {
             console.error("Failed to load inboxes", e);
             toast.error("Lỗi tải danh sách hộp thư");
         } finally {
@@ -221,7 +221,7 @@ export function Dashboard() {
             await api("/domains", { method: "POST", token, body: { name } });
             toast.success("Đã thêm tên miền");
             await loadDomains();
-        } catch {
+        } catch (e) {
             toast.error("Lỗi thêm tên miền: " + (e as Error).message);
         } finally { setBusy(false); }
     };
@@ -232,7 +232,7 @@ export function Dashboard() {
             await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: verifyToken } });
             toast.success("Đã xác thực tên miền!");
             await loadDomains();
-        } catch { toast.error("Lỗi xác thực: " + (error as Error).message); } finally { setBusy(false); }
+        } catch (error) { toast.error("Lỗi xác thực: " + (error as Error).message); } finally { setBusy(false); }
     };
 
     const deleteDomain = async (domain: Domain) => setDomainToDelete(domain);
@@ -245,7 +245,7 @@ export function Dashboard() {
             if (selectedDomain === domainToDelete.id) setSelectedDomain("");
             setDomainToDelete(null);
             await loadDomains();
-        } catch { toast.error("Lỗi xóa tên miền: " + (error as Error).message); } finally { setIsDeleting(false); }
+        } catch (error) { toast.error("Lỗi xóa tên miền: " + (error as Error).message); } finally { setIsDeleting(false); }
     };
 
     const createInbox = async (domainId: string, localPart: string, expiresAt?: number) => {
@@ -259,7 +259,7 @@ export function Dashboard() {
             });
             toast.success("Đã tạo hộp thư mới");
             await loadInboxes();
-        } catch { toast.error("Lỗi: " + (e as Error).message); } finally { setBusy(false); }
+        } catch (e) { toast.error("Lỗi: " + (e as Error).message); } finally { setBusy(false); }
     };
 
     const deleteInbox = async (inbox: Inbox) => setInboxToDelete(inbox);
@@ -276,7 +276,7 @@ export function Dashboard() {
                 setSelectedMessage(null);
             }
             setInboxToDelete(null);
-        } catch { toast.error("Lỗi xóa hộp thư: " + (e as Error).message); } finally { setIsDeleting(false); }
+        } catch (e) { toast.error("Lỗi xóa hộp thư: " + (e as Error).message); } finally { setIsDeleting(false); }
     };
 
     const handleExtendInbox = async (inboxId: string) => {

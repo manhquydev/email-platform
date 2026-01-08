@@ -57,7 +57,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
             toast.success('Đã tạo hộp thư mới!');
             onInboxCreated?.(newInbox);
             onClose();
-        } catch {
+        } catch (e) {
             toast.error('Lỗi: ' + (e as Error).message);
         } finally {
             setLoading(false);

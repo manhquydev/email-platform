@@ -51,7 +51,7 @@ export function UsersPage() {
             setUsers(res.data);
             setTotal(res.meta.total);
             setSelectedIds(new Set());
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -67,7 +67,7 @@ export function UsersPage() {
             const res = await api<{ user: User }>(`/admin/users/${userId}`, { method: "PATCH", token, body: { role: newRole } });
             toast.success("Đã cập nhật quyền");
             setUsers(users.map(u => u.id === userId ? { ...u, ...res.user } : u));
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
@@ -84,7 +84,7 @@ export function UsersPage() {
             });
             toast.success("Đã cập nhật gói cước và gia hạn");
             setUsers(users.map(u => u.id === userId ? { ...u, ...res.user } : u));
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
@@ -103,7 +103,7 @@ export function UsersPage() {
             toast.success("Đã hủy gói cước");
             setConfirmCancelSub(null);
             await loadUsers();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
@@ -116,7 +116,7 @@ export function UsersPage() {
             const res = await api<{ user: User }>(`/admin/users/${user.id}`, { method: "PATCH", token, body: { isDisabled: !user.isDisabled } });
             toast.success(user.isDisabled ? "Đã kích hoạt tài khoản" : "Đã vô hiệu hóa tài khoản");
             setUsers(users.map(u => u.id === user.id ? { ...u, ...res.user } : u));
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
@@ -130,7 +130,7 @@ export function UsersPage() {
             toast.success(`Đã xóa ${user.email}`);
             setConfirmDelete(null);
             await loadUsers();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
@@ -143,7 +143,7 @@ export function UsersPage() {
             await api(`/admin/users/${userId}/verify`, { method: "POST", token });
             toast.success("Đã xác thực email");
             await loadUsers();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);
@@ -180,7 +180,7 @@ export function UsersPage() {
             setSelectedIds(new Set());
             setConfirmBulk(null);
             await loadUsers();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setBulkLoading(false);

@@ -55,7 +55,7 @@ export function Register() {
             });
             toast.success(res.message || "Đăng ký thành công!");
             setRegistered(true);
-        } catch {
+        } catch (e) {
             toast.error((e as Error).toString());
         } finally {
             setBusy(false);

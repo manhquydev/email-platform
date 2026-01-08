@@ -55,7 +55,7 @@ export function AnalyticsPage() {
         try {
             const res = await api<AnalyticsStats>(`/admin/analytics/public-viewer?timeRange=${timeRange}`, { token });
             setStats(res);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -74,7 +74,7 @@ export function AnalyticsPage() {
             );
             setSessions(res.sessions);
             setSessionsTotal(res.meta.total);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     }, [token, page]);

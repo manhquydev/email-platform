@@ -62,7 +62,7 @@ export function AdminNotificationPage() {
             setType("INFO");
             setTargetUserId("");
             setImageUrl("");
-        } catch {
+        } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message), { id: toastId });
         } finally {
             setBusy(false);
@@ -190,7 +190,7 @@ export function AdminNotificationPage() {
                                                     const data = await res.json();
                                                     setImageUrl(data.url);
                                                     toast.success("Tải ảnh thành công", { id: toastId });
-                                                } catch {
+                                                } catch (err) {
                                                     console.error(err);
                                                     toast.error("Tải ảnh thất bại", { id: toastId });
                                                 }

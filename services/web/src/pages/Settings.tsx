@@ -66,7 +66,7 @@ export function Settings() {
         try {
             const res = await api<{ user: UserProfile }>("/auth/me", { token });
             if (res?.user) setProfile(res.user);
-        } catch {
+        } catch (err) {
             console.error("Failed to load profile", err);
         } finally {
             setLoading(false);
@@ -84,7 +84,7 @@ export function Settings() {
             if (inboxesData && inboxesData.length > 0) {
                 setSelectedInboxId((current: string) => (current ? current : inboxesData[0].id));
             }
-        } catch {
+        } catch (err) {
             console.error("Failed to load inboxes", err);
             setInboxes([]);
         }

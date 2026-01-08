@@ -35,7 +35,7 @@ export function AdminReports({ token }: { token: string }) {
         try {
             const res = await api<{ data: AbuseReport[] }>("/abuse/reports", { token });
             setReports(res.data);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -50,7 +50,7 @@ export function AdminReports({ token }: { token: string }) {
             await api(`/abuse/reports/${reportId}`, { method: "PATCH", token, body: { status: newStatus } });
             toast.success("Đã cập nhật");
             await loadReports();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setUpdating(null);

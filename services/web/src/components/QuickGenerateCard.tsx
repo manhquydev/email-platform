@@ -55,7 +55,7 @@ export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGener
             if (onInboxCreated) {
                 onInboxCreated(response.id, email);
             }
-        } catch {
+        } catch (error) {
             toast.error('Không thể tạo email: ' + (error as Error).message);
         } finally {
             setLoading(false);

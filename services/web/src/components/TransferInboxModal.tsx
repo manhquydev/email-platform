@@ -39,7 +39,7 @@ export function TransferInboxModal({ inbox, token, onClose, onTransferComplete }
             toast.success('Đã chuyển quyền sở hữu hộp thư!');
             onTransferComplete();
             onClose();
-        } catch {
+        } catch (e) {
             toast.error('Lỗi: ' + (e as Error).message);
         } finally {
             setLoading(false);

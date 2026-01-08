@@ -250,7 +250,7 @@ export function AdminSystem({ token }: { token: string }) {
                                 try {
                                     await api("/admin/system/check-db", { method: "POST", token });
                                     toast.success("Kết nối Database: Ổn định");
-                                } catch {
+                                } catch (e) {
                                     toast.error("Lỗi kết nối DB: " + (e as Error).message);
                                 } finally {
                                     setSaving(false);

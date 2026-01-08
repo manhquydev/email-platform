@@ -67,7 +67,7 @@ export function NotificationCenter() {
             const res = await api<{ notifications: Notification[], unreadCount: number }>("/notifications", { token });
             setNotifications(res.notifications);
             setUnreadCount(res.unreadCount);
-        } catch {
+        } catch (e) {
             console.error("Failed to fetch notifications", e);
         }
     };
@@ -95,7 +95,7 @@ export function NotificationCenter() {
             await api(`/notifications/${id}/read`, { method: "PATCH", token });
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch {
+        } catch (e) {
             console.error(e);
         }
     };
@@ -105,7 +105,7 @@ export function NotificationCenter() {
             await api(`/notifications/read-all`, { method: "PATCH", token });
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             setUnreadCount(0);
-        } catch {
+        } catch (e) {
             console.error(e);
         }
     };

@@ -29,7 +29,7 @@ export function VerifyEmail() {
                     body: { token },
                 });
                 setStatus("success");
-            } catch {
+            } catch (err) {
                 setStatus("error");
                 setMessage((err as Error).toString());
             }

@@ -74,7 +74,7 @@ export function TelegramManagementPage() {
         try {
             const res = await api<TelegramOverview>("/admin/telegram/overview", { token });
             setOverview(res);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -94,7 +94,7 @@ export function TelegramManagementPage() {
             );
             setUserLinks(res.data);
             setUserLinksTotal(res.meta.total);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     }, [token, userLinksPage, userSearch]);
@@ -113,7 +113,7 @@ export function TelegramManagementPage() {
             );
             setInboxLinks(res.data);
             setInboxLinksTotal(res.meta.total);
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     }, [token, inboxLinksPage, statusFilter, inboxSearch]);
@@ -134,7 +134,7 @@ export function TelegramManagementPage() {
             setConfirmUnlink(null);
             loadUserLinks();
             loadOverview();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setActionLoading(false);
@@ -153,7 +153,7 @@ export function TelegramManagementPage() {
             setConfirmUnlink(null);
             loadInboxLinks();
             loadOverview();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setActionLoading(false);
@@ -170,7 +170,7 @@ export function TelegramManagementPage() {
             toast.success("Đã kích hoạt lại liên kết");
             loadInboxLinks();
             loadOverview();
-        } catch {
+        } catch (err) {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setActionLoading(false);

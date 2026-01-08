@@ -59,7 +59,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                 body: formData,
             });
             onClose();
-        } catch {
+        } catch (err) {
             setError((err as Error).message);
         } finally {
             setBusy(false);

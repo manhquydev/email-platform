@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 import { storageService } from "../services/storage";
+import { generateSessionId } from "../utils/session";
 
 /**
  * Public inbox viewer routes - no authentication required
@@ -51,6 +52,11 @@ export async function publicInboxRoutes(app: FastifyInstance) {
     await recordAudit(null, "PUBLIC_INBOX_SEARCHED", {
       email: body.data.email,
       ip: request.ip,
+      userAgent: request.headers["user-agent"] || "Unknown",
+      sessionId: generateSessionId(request.ip, request.headers["user-agent"] || "Unknown"),
+      searchQuery: body.data.email,
+      referer: request.headers["referer"],
+      timestamp: Date.now(),
     });
 
     return {
@@ -128,6 +134,16 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       attachmentCount: m._count.attachments,
     }));
 
+    await recordAudit(null, "PUBLIC_MESSAGES_LISTED", {
+      email: params.data.email,
+      ip: request.ip,
+      userAgent: request.headers["user-agent"] || "Unknown",
+      sessionId: generateSessionId(request.ip, request.headers["user-agent"] || "Unknown"),
+      messageCount: messagesWithPreview.length,
+      referer: request.headers["referer"],
+      timestamp: Date.now(),
+    });
+
     return { data: messagesWithPreview, meta: { total } };
   });
 
@@ -186,6 +202,11 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       email: params.data.email,
       messageId: message.id,
       ip: request.ip,
+      userAgent: request.headers["user-agent"] || "Unknown",
+      sessionId: generateSessionId(request.ip, request.headers["user-agent"] || "Unknown"),
+      hasAttachments: message.attachments.length > 0,
+      referer: request.headers["referer"],
+      timestamp: Date.now(),
     });
 
     // Exclude internal fields (sourceIp, ownerId not in message)
@@ -236,6 +257,20 @@ export async function publicInboxRoutes(app: FastifyInstance) {
     }
 
     const stream = await storageService.getReadStream(attachment.storageKey);
+
+    await recordAudit(null, "PUBLIC_ATTACHMENT_DOWNLOADED", {
+      attachmentId: params.data.id,
+      messageId: attachment.message.id,
+      inboxEmail: `${attachment.message.inbox.localPart}@${attachment.message.inbox.domain.name}`,
+      ip: request.ip,
+      userAgent: request.headers["user-agent"] || "Unknown",
+      sessionId: generateSessionId(request.ip, request.headers["user-agent"] || "Unknown"),
+      filename: attachment.filename,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+      referer: request.headers["referer"],
+      timestamp: Date.now(),
+    });
 
     reply.header("Content-Type", attachment.mimeType || "application/octet-stream");
     reply.header("Content-Disposition", `attachment; filename="${attachment.filename}"`);

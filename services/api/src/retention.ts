@@ -74,10 +74,31 @@ export const runRetentionSweep = async (log: { info: Function; error: Function; 
       }
     });
 
+    // GDPR Compliance: Cleanup old public viewer audit logs (90 days retention)
+    const auditRetentionDays = parseInt(process.env.AUDIT_RETENTION_DAYS || "90", 10);
+    const auditExpiry = new Date(now.getTime() - auditRetentionDays * 24 * 60 * 60 * 1000);
+
+    const deletedAuditLogs = await prisma.auditLog.deleteMany({
+      where: {
+        action: { startsWith: "PUBLIC_" },
+        createdAt: { lt: auditExpiry }
+      }
+    });
+
+    // Cleanup old notification logs (90 days retention)
+    const deletedNotificationLogs = await prisma.telegramNotificationLog.deleteMany({
+      where: {
+        sentAt: { lt: auditExpiry }
+      }
+    });
+
     log.info(
       {
         deletedMessages: messageIds.length,
         deletedInboxes: inboxIds.length,
+        deletedAuditLogs: deletedAuditLogs.count,
+        deletedNotificationLogs: deletedNotificationLogs.count,
+        auditRetentionDays,
       },
       "retention sweep done",
     );

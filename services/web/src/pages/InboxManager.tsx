@@ -427,7 +427,7 @@ export function InboxManager() {
                                             checked={selectedInboxIds.size === filteredInboxes.length && filteredInboxes.length > 0}
                                             onChange={handleSelectAll}
                                         />
-                                        <div className="w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50">
+                                        <div className="w-5 h-5 rounded border border-white/40 bg-white/10 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50">
                                             <svg className="w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                             </svg>
@@ -699,7 +699,7 @@ export function InboxManager() {
                                     className="w-full h-full border-0"
                                 />
                             ) : (
-                                <div className="p-6 whitespace-pre-wrap font-mono text-sm text-gray-800">
+                                <div className="p-6 whitespace-pre-wrap font-mono text-sm text-[var(--nebula-text)]">
                                     {selectedMessage.textBody || 'No content'}
                                 </div>
                             )}

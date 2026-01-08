@@ -139,7 +139,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                             {isExpanded && (
                                 <div className="flex flex-col items-start animate-in fade-in duration-300 overflow-hidden">
                                     <span className="text-sm font-medium text-slate-900 dark:text-white truncate w-full">{user?.email?.split('@')[0] || "Người dùng"}</span>
-                                    <span className="text-xs text-slate-500 dark:text-gray-500 truncate w-full uppercase">Gói {
+                                    <span className="text-xs font-semibold text-slate-600 dark:text-gray-400 truncate w-full uppercase tracking-wide">Gói {
                                         user?.tier === 'FREE' ? 'MIỄN PHÍ' :
                                             user?.tier === 'STARTER' ? 'KHỞI ĐẦU' :
                                                 user?.tier === 'PROFESSIONAL' ? 'CHUYÊN NGHIỆP' :
@@ -151,13 +151,11 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                     </DropdownTrigger>
 
                     <DropdownMenu align="left">
-                        <DropdownItem onClick={() => navigate('/settings')}>
-                            <span className="material-symbols-outlined text-[20px]">settings</span>
-                            <span>Cài đặt</span>
+                        <DropdownItem onClick={() => navigate('/settings')} icon="settings">
+                            Cài đặt
                         </DropdownItem>
-                        <DropdownItem onClick={handleLogout} variant="danger">
-                            <span className="material-symbols-outlined text-[20px]">logout</span>
-                            <span>Đăng xuất</span>
+                        <DropdownItem onClick={handleLogout} variant="danger" icon="logout">
+                            Đăng xuất
                         </DropdownItem>
                     </DropdownMenu>
                 </Dropdown>

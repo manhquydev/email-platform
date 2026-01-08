@@ -171,7 +171,7 @@ describe("Shared Domain Workflow (Mocked)", () => {
             console.log("Create Inbox failed:", res.statusCode, res.json());
         }
 
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(201);
     });
 
     it("should BLOCK User B from creating inbox on Private Domain", async () => {

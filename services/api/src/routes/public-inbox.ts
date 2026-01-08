@@ -144,7 +144,7 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       timestamp: Date.now(),
     });
 
-    return { data: messagesWithPreview, meta: { total } };
+    return { data: messagesWithPreview, meta: { total, limit: query.data.limit, offset: query.data.offset } };
   });
 
   /**

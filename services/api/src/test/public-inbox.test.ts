@@ -119,7 +119,7 @@ describe("Public Inbox API", () => {
     it("GET /api/public/inbox/:email/messages/:messageId - returns 404 for non-existent message", async () => {
         const res = await app.inject({
             method: "GET",
-            url: "/api/public/inbox/testuser@test-public.example.com/messages/non-existent-id",
+            url: "/api/public/inbox/testuser@test-public.example.com/messages/00000000-0000-0000-0000-000000000000",
         });
 
         expect(res.statusCode).toBe(404);

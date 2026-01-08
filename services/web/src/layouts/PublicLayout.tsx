@@ -9,7 +9,7 @@ export function PublicLayout() {
     return (
         <div className="public-layout h-screen overflow-y-auto overflow-x-hidden bg-[var(--color-bg)] text-[var(--color-text-main)] scroll-smooth relative" data-theme={resolvedTheme}>
             <Navigation variant="landing" />
-            <main className="public-main relative z-10">
+            <main id="main-content" className="public-main relative z-10">
                 <Outlet />
             </main>
             <SiteFooter variant="full" />

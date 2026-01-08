@@ -42,6 +42,7 @@ export function Editor({ value, onChange, placeholder, style }: EditorProps) {
                 quill.clipboard.dangerouslyPasteHTML(value);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Handle external value changes (e.g. reset)

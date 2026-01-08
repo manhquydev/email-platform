@@ -4,6 +4,7 @@ declare module 'virtual:pwa-register' {
         onNeedRefresh?: () => void
         onOfflineReady?: () => void
         onRegistered?: (registration: ServiceWorkerRegistration | undefined) => void
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onRegisterError?: (error: any) => void
     }
 

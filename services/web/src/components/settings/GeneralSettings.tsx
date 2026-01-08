@@ -38,7 +38,7 @@ export function GeneralSettings({ profile, loadProfile }: { profile: UserProfile
             });
             toast.success("Đã lưu cài đặt thành công");
             loadProfile(); // Reload to update global state
-        } catch (err) {
+        } catch {
             console.error(err);
             toast.error("Không thể lưu cài đặt");
         } finally {
@@ -53,7 +53,7 @@ export function GeneralSettings({ profile, loadProfile }: { profile: UserProfile
             await api("/auth/me", { method: "DELETE", token });
             toast.success("Đã xóa tài khoản");
             logout();
-        } catch (err) {
+        } catch {
             console.error(err);
             toast.error("Không thể xóa tài khoản");
         }

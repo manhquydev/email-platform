@@ -52,7 +52,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             setPasswordMsg("Cập nhật mật khẩu thành công!");
             setPassword("");
             toast.success("Đã đổi mật khẩu");
-        } catch (error) {
+        } catch {
             setPasswordErr(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setPasswordBusy(false);
@@ -67,7 +67,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             setQrCode(res.qrCode);
             setTotpSecret(res.secret);
             setTwoFAStep("setup");
-        } catch (error) {
+        } catch {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
@@ -91,7 +91,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             setTwoFAStep("backup");
             toast.success("Đã bật 2FA!");
             loadProfile();
-        } catch (error) {
+        } catch {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
@@ -112,7 +112,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             setShowDisable2FAConfirm(false);
             setTwoFAPassword("");
             loadProfile();
-        } catch (error) {
+        } catch {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);

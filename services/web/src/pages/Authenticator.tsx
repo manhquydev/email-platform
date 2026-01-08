@@ -63,7 +63,7 @@ export function Authenticator() {
             } else {
                 toast.error("Không thể tải tài khoản");
             }
-        } catch (err) {
+        } catch {
             toast.error("Lỗi khi tải tài khoản");
         } finally {
             setLoading(false);
@@ -88,7 +88,7 @@ export function Authenticator() {
                         if (acc.secret) {
                             newCodes[acc.id] = authenticator.generate(acc.secret);
                         }
-                    } catch (e) {
+                    } catch {
                         // Silently fail for individual accounts to not break the loop
                     }
                 });
@@ -107,7 +107,9 @@ export function Authenticator() {
                     if (acc.secret) {
                         newCodes[acc.id] = authenticator.generate(acc.secret);
                     }
-                } catch (e) { }
+                } catch {
+                    // TOTP generation failed - skip this account
+                }
             });
             setCodes(newCodes);
         }
@@ -140,7 +142,7 @@ export function Authenticator() {
                 const data = await res.json();
                 toast.error(data.error || "Không thể thêm tài khoản");
             }
-        } catch (err) {
+        } catch {
             toast.error("Lỗi khi thêm tài khoản");
         }
     };
@@ -164,7 +166,7 @@ export function Authenticator() {
             } else {
                 toast.error("Không thể xóa");
             }
-        } catch (err) {
+        } catch {
             toast.error("Lỗi khi xóa");
         } finally {
             setIsDeleting(false);

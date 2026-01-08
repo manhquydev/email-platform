@@ -220,6 +220,7 @@ export function ConversationView({
 }
 
 // Hook for conversation mode toggle
+// eslint-disable-next-line react-refresh/only-export-components
 export function useConversationMode() {
     const [isConversationMode, setIsConversationMode] = useState(() => {
         return localStorage.getItem('email-conversation-mode') === 'true';

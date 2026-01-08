@@ -24,6 +24,7 @@ const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => (
 const KeyboardShortcutsHelp = lazy(() => import("../components/KeyboardShortcutsHelp").then(m => ({ default: m.KeyboardShortcutsHelp })));
 
 export function Dashboard() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { token, user, logout: _logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -99,7 +100,7 @@ export function Dashboard() {
             const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
             const domainsData = res?.data || [];
             setDomains(domainsData);
-        } catch (e) {
+        } catch {
             console.error("Failed to load domains", e);
             toast.error("Lỗi tải danh sách tên miền");
         }
@@ -130,7 +131,7 @@ export function Dashboard() {
 
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
-        } catch (e) {
+        } catch {
             console.error("Failed to load inboxes", e);
             toast.error("Lỗi tải danh sách hộp thư");
         } finally {
@@ -183,7 +184,7 @@ export function Dashboard() {
                 if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
                 if (params.offset !== undefined) setMessageOffset(params.offset);
             }
-        } catch (e) {
+        } catch {
             if (!params.background) toast.error("Lỗi tải email");
         } finally {
             if (!params.background) setBusy(false);
@@ -220,7 +221,7 @@ export function Dashboard() {
             await api("/domains", { method: "POST", token, body: { name } });
             toast.success("Đã thêm tên miền");
             await loadDomains();
-        } catch (e) {
+        } catch {
             toast.error("Lỗi thêm tên miền: " + (e as Error).message);
         } finally { setBusy(false); }
     };
@@ -231,7 +232,7 @@ export function Dashboard() {
             await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: verifyToken } });
             toast.success("Đã xác thực tên miền!");
             await loadDomains();
-        } catch (error) { toast.error("Lỗi xác thực: " + (error as Error).message); } finally { setBusy(false); }
+        } catch { toast.error("Lỗi xác thực: " + (error as Error).message); } finally { setBusy(false); }
     };
 
     const deleteDomain = async (domain: Domain) => setDomainToDelete(domain);
@@ -244,7 +245,7 @@ export function Dashboard() {
             if (selectedDomain === domainToDelete.id) setSelectedDomain("");
             setDomainToDelete(null);
             await loadDomains();
-        } catch (error) { toast.error("Lỗi xóa tên miền: " + (error as Error).message); } finally { setIsDeleting(false); }
+        } catch { toast.error("Lỗi xóa tên miền: " + (error as Error).message); } finally { setIsDeleting(false); }
     };
 
     const createInbox = async (domainId: string, localPart: string, expiresAt?: number) => {
@@ -258,7 +259,7 @@ export function Dashboard() {
             });
             toast.success("Đã tạo hộp thư mới");
             await loadInboxes();
-        } catch (e) { toast.error("Lỗi: " + (e as Error).message); } finally { setBusy(false); }
+        } catch { toast.error("Lỗi: " + (e as Error).message); } finally { setBusy(false); }
     };
 
     const deleteInbox = async (inbox: Inbox) => setInboxToDelete(inbox);
@@ -275,7 +276,7 @@ export function Dashboard() {
                 setSelectedMessage(null);
             }
             setInboxToDelete(null);
-        } catch (e) { toast.error("Lỗi xóa hộp thư: " + (e as Error).message); } finally { setIsDeleting(false); }
+        } catch { toast.error("Lỗi xóa hộp thư: " + (e as Error).message); } finally { setIsDeleting(false); }
     };
 
     const handleExtendInbox = async (inboxId: string) => {
@@ -289,7 +290,7 @@ export function Dashboard() {
             await api(`/inboxes/${inboxId}`, { method: "PATCH", body: JSON.stringify({ expiresAt: newExpiresAt }), token });
             toast.success("Đã gia hạn thêm 10 phút!");
             if (selectedDomain) loadInboxes();
-        } catch (e) { toast.error("Lỗi gia hạn inbox"); } finally { setBusy(false); }
+        } catch { toast.error("Lỗi gia hạn inbox"); } finally { setBusy(false); }
     };
 
     const handleSelectMessage = async (msg: Message) => {
@@ -297,7 +298,7 @@ export function Dashboard() {
         if (!msg.isRead) {
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
             try { await api(`/messages/${msg.id}/read`, { method: "PATCH", token, body: { isRead: true } }); }
-            catch (e) { /* background */ }
+            catch { /* background */ }
         }
     };
 
@@ -305,7 +306,7 @@ export function Dashboard() {
         setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRead: false } : m));
         if (selectedMessage?.id === msgId) setSelectedMessage(prev => prev ? { ...prev, isRead: false } : null);
         try { await api(`/messages/${msgId}/read`, { method: "PATCH", token, body: { isRead: false } }); toast.success("Đã đánh dấu chưa đọc"); }
-        catch (e) { toast.error("Không thể cập nhật trạng thái"); }
+        catch { toast.error("Không thể cập nhật trạng thái"); }
     };
 
     const handleDeleteMessage = useCallback(async (msgId: string) => {
@@ -314,14 +315,14 @@ export function Dashboard() {
             setMessages(prev => prev.filter(m => m.id !== msgId));
             if (selectedMessage?.id === msgId) setSelectedMessage(null);
             toast.success("Đã xóa email");
-        } catch (e) { toast.error("Không thể xóa email"); } finally { setBusy(false); }
+        } catch { toast.error("Không thể xóa email"); } finally { setBusy(false); }
     }, [token, selectedMessage]);
 
     const handleTogglePin = async (msgId: string, isPinned: boolean) => {
         setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned } : m));
         if (selectedMessage?.id === msgId) setSelectedMessage(prev => prev ? { ...prev, isPinned } : null);
         try { await api(`/messages/${msgId}/pin`, { method: "PATCH", token, body: { isPinned } }); toast.success(isPinned ? "Đã ghim email" : "Đã bỏ ghim"); }
-        catch (e) { toast.error("Không thể cập nhật"); }
+        catch { toast.error("Không thể cập nhật"); }
     };
 
 

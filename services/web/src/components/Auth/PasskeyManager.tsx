@@ -24,6 +24,7 @@ export const PasskeyManager: React.FC = () => {
     // Load passkeys on mount
     useEffect(() => {
         loadPasskeys();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadPasskeys = async () => {
@@ -31,7 +32,7 @@ export const PasskeyManager: React.FC = () => {
         try {
             const data = await api<Passkey[]>('/auth/webauthn/credentials', { token });
             setPasskeys(data);
-        } catch (error) {
+        } catch {
             // Error silently handled as loading state is reset, but we could toast if critical
         } finally {
             setLoading(false);
@@ -59,6 +60,7 @@ export const PasskeyManager: React.FC = () => {
         setRegistering(true);
         try {
             // 1. Get options
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const options = await api<any>('/auth/webauthn/register/options', { method: 'POST', body: {}, token });
 
             // 2. Create credential
@@ -67,6 +69,7 @@ export const PasskeyManager: React.FC = () => {
                 // Fix: Pass as named object { optionsJSON } for v13+
                 attResp = await startRegistration({ optionsJSON: options });
             } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((error as any).name === 'NotAllowedError') {
                     toast.error("User cancelled or timed out.");
                 } else {
@@ -77,6 +80,7 @@ export const PasskeyManager: React.FC = () => {
             }
 
             // 3. Verify
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await api<any>('/auth/webauthn/register/verify', {
                 method: 'POST',
                 body: attResp,

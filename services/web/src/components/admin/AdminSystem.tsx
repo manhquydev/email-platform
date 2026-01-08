@@ -34,6 +34,7 @@ export function AdminSystem({ token }: { token: string }) {
     const [stats, setStats] = useState<SystemStats | null>(null);
     const [settings, setSettings] = useState<Setting[]>([]);
     const [loading, setLoading] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [history, setHistory] = useState<any[]>([]);
     const [saving, setSaving] = useState(false);
 
@@ -189,7 +190,7 @@ export function AdminSystem({ token }: { token: string }) {
                                     <PremiumInput
                                         type="number"
                                         value={retentionDays}
-                                        onChange={(_val) => { }} // Controlled manually via button
+                                        onChange={() => { }} // Controlled manually via button
                                         placeholder="30"
                                         id="retention-input"
                                     />
@@ -249,7 +250,7 @@ export function AdminSystem({ token }: { token: string }) {
                                 try {
                                     await api("/admin/system/check-db", { method: "POST", token });
                                     toast.success("Kết nối Database: Ổn định");
-                                } catch (e) {
+                                } catch {
                                     toast.error("Lỗi kết nối DB: " + (e as Error).message);
                                 } finally {
                                     setSaving(false);

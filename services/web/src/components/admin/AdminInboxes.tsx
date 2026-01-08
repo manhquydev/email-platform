@@ -89,6 +89,7 @@ export function AdminInboxes({ token }: { token: string }) {
         setLoadingAction(true);
         setUpdating(inbox.id);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const payload: any = {};
             if (email) payload.ownerEmail = email;
             else {

@@ -54,7 +54,7 @@ export function useCopyToClipboard(options: UseCopyToClipboardOptions = {}) {
             }, duration);
 
             return true;
-        } catch (error) {
+        } catch {
             toast.error(errorMessage);
             setState({ copied: false, value: null });
             return false;

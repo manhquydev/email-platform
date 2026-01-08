@@ -6,8 +6,10 @@ import { ConfirmationModal } from "./ConfirmationModal";
 // Mock framer-motion to avoid animation issues in jsdom
 vi.mock("framer-motion", () => ({
     motion: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 

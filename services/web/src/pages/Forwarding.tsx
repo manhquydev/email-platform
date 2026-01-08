@@ -63,7 +63,7 @@ export function Forwarding() {
             ]);
             setVerifiedEmails(emailsRes.emails);
             setRules(rulesRes.rules);
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setLoading(false);
@@ -86,7 +86,7 @@ export function Forwarding() {
             });
             setVerifyStep("code");
             toast.success("Mã xác minh đã được gửi tới email của bạn");
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setVerifyBusy(false);
@@ -107,7 +107,7 @@ export function Forwarding() {
             setVerifyEmail("");
             setVerifyCode("");
             loadData();
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setVerifyBusy(false);
@@ -129,7 +129,7 @@ export function Forwarding() {
             toast.success("Đã xóa email");
             setEmailToDelete(null);
             loadData();
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setIsDeleting(false);
@@ -192,7 +192,7 @@ export function Forwarding() {
             }
             setShowRuleModal(false);
             loadData();
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setRuleBusy(false);
@@ -207,7 +207,7 @@ export function Forwarding() {
                 body: { isActive: !rule.isActive }
             });
             loadData();
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         }
     };
@@ -224,7 +224,7 @@ export function Forwarding() {
             toast.success("Đã xóa quy tắc");
             setRuleToDelete(null);
             loadData();
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setIsDeleting(false);

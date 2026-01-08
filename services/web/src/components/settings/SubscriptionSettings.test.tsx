@@ -37,7 +37,8 @@ vi.mock("../ui/GlassCard", () => ({
 }));
 
 vi.mock("../ui/Button", () => ({
-    Button: ({ children, onClick, disabled, variant, size, className }: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Button: ({ children, onClick, disabled, variant: _variant, size: _size, className }: {
         children: React.ReactNode;
         onClick?: () => void;
         disabled?: boolean;

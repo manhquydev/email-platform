@@ -65,7 +65,8 @@ vi.mock("../components/ui/Button", () => ({
 }));
 
 vi.mock("../components/ui/Input", () => ({
-    Input: ({ label, type, value, onChange, placeholder, disabled, required, autoFocus, className, icon }: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Input: ({ label, type, value, onChange, placeholder, disabled, required, autoFocus, className, icon: _icon }: {
         label?: string;
         type?: string;
         value?: string;

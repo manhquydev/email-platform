@@ -34,6 +34,7 @@ export function AdminNotificationPage() {
         const toastId = toast.loading("Đang gửi thông báo...");
 
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const payload: any = {
                 title,
                 message,
@@ -61,7 +62,7 @@ export function AdminNotificationPage() {
             setType("INFO");
             setTargetUserId("");
             setImageUrl("");
-        } catch (error) {
+        } catch {
             toast.error(getFriendlyErrorMessage((error as Error).message), { id: toastId });
         } finally {
             setBusy(false);
@@ -189,7 +190,7 @@ export function AdminNotificationPage() {
                                                     const data = await res.json();
                                                     setImageUrl(data.url);
                                                     toast.success("Tải ảnh thành công", { id: toastId });
-                                                } catch (err) {
+                                                } catch {
                                                     console.error(err);
                                                     toast.error("Tải ảnh thất bại", { id: toastId });
                                                 }

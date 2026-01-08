@@ -7,6 +7,7 @@ import { api } from "../../utils/api";
 import { toast } from "react-hot-toast";
 import type { Webhook } from "../../types";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface DeveloperSettingsProps {
     // Props if needed
 }
@@ -20,6 +21,7 @@ interface ApiKey {
     key?: string; // Only present on creation response
 }
 
+// eslint-disable-next-line no-empty-pattern
 export function DeveloperSettings({ }: DeveloperSettingsProps) {
     const { token } = useAuth();
 
@@ -44,6 +46,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             loadKeys();
             loadWebhooks();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     // --- API KEYS LOGIC ---
@@ -53,8 +56,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
         try {
             const data = await api<{ keys: ApiKey[] }>("/api-keys", { token });
             setKeys(data?.keys || []);
-        } catch (err) {
-            console.error(err);
+        } catch {
             toast.error("Không thể tải danh sách API key");
             setKeys([]);
         } finally {
@@ -74,7 +76,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             setKeys([data.apiKey, ...keys]);
             setNewKey(data.apiKey.key || null);
             toast.success("Đã tạo API Key! Hãy sao chép ngay.");
-        } catch (err) {
+        } catch {
             toast.error("Không thể tạo API key");
         } finally {
             setCreatingKey(false);
@@ -87,7 +89,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             await api(`/api-keys/${id}`, { method: "DELETE", token });
             setKeys(keys.filter(k => k.id !== id));
             toast.success("Đã thu hồi API Key");
-        } catch (err) {
+        } catch {
             toast.error("Không thể thu hồi key");
         }
     };
@@ -99,7 +101,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
         try {
             const data = await api<Webhook[]>("/webhooks", { token });
             setWebhooks(Array.isArray(data) ? data : []);
-        } catch (err) {
+        } catch {
             console.error(err);
             // Don't toast on initial load error to avoid spamming if service is down, just log
         } finally {
@@ -137,7 +139,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             setIsWebhookModalOpen(false);
             setNewWebhookName("");
             setNewWebhookUrl("");
-        } catch (err) {
+        } catch {
             toast.error("Không thể tạo Webhook");
         } finally {
             setCreatingWebhook(false);
@@ -150,7 +152,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             await api(`/webhooks/${id}`, { method: "DELETE", token });
             setWebhooks(webhooks.filter(w => w.id !== id));
             toast.success("Đã xóa Webhook");
-        } catch (err) {
+        } catch {
             toast.error("Không thể xóa Webhook");
         }
     };
@@ -160,7 +162,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
         try {
             await api(`/webhooks/${id}/test`, { method: "POST", token });
             toast.success("Đã gửi sự kiện test thành công!", { id: toastId });
-        } catch (err) {
+        } catch {
             toast.error("Gửi test thất bại. Kiểm tra URL endpoint của bạn.", { id: toastId });
         }
     };

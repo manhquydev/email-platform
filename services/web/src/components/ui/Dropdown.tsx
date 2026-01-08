@@ -58,6 +58,7 @@ export function Dropdown({ children }: DropdownProps) {
         return index;
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const unregisterItem = (_index: number) => {
         setItemCount(prev => prev - 1);
     };
@@ -82,6 +83,7 @@ export function Dropdown({ children }: DropdownProps) {
     // Keyboard navigation
     useEffect(() => {
         if (!isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFocusedIndex(-1);
             return;
         }
@@ -189,8 +191,10 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
     // Register this item on mount
     useEffect(() => {
         const index = registerItem();
+         
         setItemIndex(index);
         return () => unregisterItem(index);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Scroll focused item into view

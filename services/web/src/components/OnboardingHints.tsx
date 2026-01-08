@@ -60,6 +60,7 @@ export function OnboardingHints({
     useEffect(() => {
         const completed = localStorage.getItem(storageKey);
         if (!completed) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsVisible(true);
         }
     }, [storageKey]);

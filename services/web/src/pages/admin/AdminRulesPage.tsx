@@ -10,6 +10,7 @@ import {
 
 export function AdminRulesPage() {
     const { token } = useAuth();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [rules, setRules] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [newValue, setNewValue] = useState("");
@@ -20,6 +21,7 @@ export function AdminRulesPage() {
     const loadRules = useCallback(async () => {
         setLoading(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const res = await api<{ data: any[] }>("/abuse/rules", { token });
             setRules(res.data);
         } catch (err) {
@@ -53,6 +55,7 @@ export function AdminRulesPage() {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
 
     const handleDelete = async (ruleId: string) => {

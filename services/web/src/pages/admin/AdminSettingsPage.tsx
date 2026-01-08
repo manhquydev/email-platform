@@ -38,7 +38,7 @@ export function AdminSettingsPage() {
         try {
             const profileRes = await api<{ user: typeof profile }>("/admin/profile", { token });
             setProfile(profileRes.user);
-        } catch (e) {
+        } catch {
             // Silent fail
         }
     }, [token]);
@@ -52,7 +52,7 @@ export function AdminSettingsPage() {
                 ]);
                 setProfile(profileRes.user);
                 setSystemInfo(systemRes.system);
-            } catch (e) {
+            } catch {
                 // Silent fail
             }
         };
@@ -72,7 +72,7 @@ export function AdminSettingsPage() {
             await api("/auth/change-password", { method: "POST", token, body: { newPassword: password } });
             setMsg("Đã cập nhật mật khẩu");
             setPassword("");
-        } catch (error) {
+        } catch {
             setErr(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setBusy(false);
@@ -88,7 +88,7 @@ export function AdminSettingsPage() {
             setQrCode(res.qrCode);
             setTotpSecret(res.secret);
             setTwoFAStep("setup");
-        } catch (error) {
+        } catch {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
@@ -112,7 +112,7 @@ export function AdminSettingsPage() {
             setTwoFAStep("backup");
             toast.success("2FA đã được kích hoạt!");
             loadProfile();
-        } catch (error) {
+        } catch {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);
@@ -130,7 +130,7 @@ export function AdminSettingsPage() {
             toast.success("2FA đã được tắt");
             setTwoFAStep("idle");
             loadProfile();
-        } catch (error) {
+        } catch {
             setTwoFAError(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setTwoFABusy(false);

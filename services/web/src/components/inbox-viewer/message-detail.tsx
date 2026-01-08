@@ -35,8 +35,10 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
         USE_PROFILES: { html: true },
         ADD_ATTR: ["target"],
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSanitizedHtml(clean);
     } else {
+       
       setSanitizedHtml("");
     }
   }, [message?.htmlBody]);

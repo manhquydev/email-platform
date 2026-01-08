@@ -55,7 +55,7 @@ export function CodesPage() {
             ]);
             setCodes(codesRes.data);
             setPackages(packagesRes.packages);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -82,7 +82,7 @@ export function CodesPage() {
             toast.success(`Đã tạo ${formData.count} mã đổi thưởng`);
             setShowModal(false);
             loadData();
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     };
@@ -94,7 +94,7 @@ export function CodesPage() {
             toast.success("Đã xóa mã đổi thưởng");
             setDeleteTarget(null);
             await loadData();
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);

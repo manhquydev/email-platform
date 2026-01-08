@@ -8,6 +8,7 @@ import { GlassCard } from './ui/GlassCard';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { cn } from '../utils/cn';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 
 interface CreateInboxModalProps {
     domains: Domain[];
@@ -27,6 +28,12 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
     const [loading, setLoading] = useState(false);
     const [localPart, setLocalPart] = useState(generateRandomName());
     const [selectedDomainId, setSelectedDomainId] = useState<string>(domains.find(d => d.isPublic)?.id || domains[0]?.id || '');
+
+    const { modalRef, modalProps } = useModalAccessibility({
+        isOpen: true,
+        onClose,
+        closeOnEsc: !loading,
+    });
 
     const verifiedDomains = domains.filter(d => d.status === 'VERIFIED');
     const activeDomain = verifiedDomains.find(d => d.id === selectedDomainId) || verifiedDomains[0];
@@ -50,7 +57,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
             toast.success('Đã tạo hộp thư mới!');
             onInboxCreated?.(newInbox);
             onClose();
-        } catch (e) {
+        } catch {
             toast.error('Lỗi: ' + (e as Error).message);
         } finally {
             setLoading(false);
@@ -67,6 +74,9 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                 onClick={onClose}
             >
                 <motion.div
+                    ref={modalRef}
+                    {...modalProps}
+                    aria-labelledby="create-inbox-modal-title"
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -78,7 +88,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                         className="p-6 sm:p-8 relative overflow-hidden h-full"
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Tạo email mới</h2>
+                            <h2 id="create-inbox-modal-title" className="text-xl font-bold text-slate-900 dark:text-white">Tạo email mới</h2>
                             <button
                                 onClick={onClose}
                                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-text-secondary transition-colors"

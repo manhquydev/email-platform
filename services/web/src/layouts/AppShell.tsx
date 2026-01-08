@@ -39,7 +39,7 @@ export function AppShell({ children }: AppShellProps) {
                 // Fetch user's inboxes (limit 100)
                 const iRes = await api<PaginatedResponse<Inbox>>("/inboxes?limit=100&personal=true", { token });
                 setInboxes(iRes.data);
-            } catch (e) {
+            } catch {
                 console.error("Failed to load nav data", e);
             }
         };
@@ -87,7 +87,7 @@ export function AppShell({ children }: AppShellProps) {
                     </div>
                 </header>
 
-                <main id="app-main-scroll" className="flex-1 relative overflow-hidden flex flex-col">
+                <main id="main-content" className="flex-1 relative overflow-hidden flex flex-col">
                     {children}
                 </main>
 

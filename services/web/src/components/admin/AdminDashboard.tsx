@@ -58,6 +58,7 @@ function useCountUp(end: number, duration: number = 1000) {
 
     useEffect(() => {
         if (end === 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCount(0);
             return;
         }

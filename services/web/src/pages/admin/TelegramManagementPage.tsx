@@ -74,7 +74,7 @@ export function TelegramManagementPage() {
         try {
             const res = await api<TelegramOverview>("/admin/telegram/overview", { token });
             setOverview(res);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -94,7 +94,7 @@ export function TelegramManagementPage() {
             );
             setUserLinks(res.data);
             setUserLinksTotal(res.meta.total);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     }, [token, userLinksPage, userSearch]);
@@ -113,7 +113,7 @@ export function TelegramManagementPage() {
             );
             setInboxLinks(res.data);
             setInboxLinksTotal(res.meta.total);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     }, [token, inboxLinksPage, statusFilter, inboxSearch]);
@@ -134,7 +134,7 @@ export function TelegramManagementPage() {
             setConfirmUnlink(null);
             loadUserLinks();
             loadOverview();
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setActionLoading(false);
@@ -153,7 +153,7 @@ export function TelegramManagementPage() {
             setConfirmUnlink(null);
             loadInboxLinks();
             loadOverview();
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setActionLoading(false);
@@ -170,7 +170,7 @@ export function TelegramManagementPage() {
             toast.success("Đã kích hoạt lại liên kết");
             loadInboxLinks();
             loadOverview();
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setActionLoading(false);
@@ -212,6 +212,7 @@ export function TelegramManagementPage() {
                 ].map((tab) => (
                     <button
                         key={tab.id}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                             activeTab === tab.id
@@ -349,6 +350,7 @@ export function TelegramManagementPage() {
                         </div>
                         <select
                             value={statusFilter}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onChange={(e) => { setStatusFilter(e.target.value as any); setInboxLinksPage(0); }}
                             className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm"
                         >

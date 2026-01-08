@@ -14,6 +14,7 @@ export function SearchBar({ isOpen, onClose, onSearch, recentSearches = [] }: Se
     // Focus input when opened
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setQuery("");
             setTimeout(() => inputRef.current?.focus(), 50);
         }

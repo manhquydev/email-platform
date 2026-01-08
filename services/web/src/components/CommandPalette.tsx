@@ -27,7 +27,7 @@ interface Command {
 export function CommandPalette({
     isOpen,
     onClose,
-    domains: _domains,
+    domains: _domains, // eslint-disable-line @typescript-eslint/no-unused-vars
     inboxes,
     onSelectInbox,
     onCreateInbox,

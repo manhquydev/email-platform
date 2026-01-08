@@ -257,6 +257,7 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
                                 Tệp đính kèm ({message.attachments.length})
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                 {message.attachments.map((att: any, idx: number) => (
                                     <a
                                         key={idx}

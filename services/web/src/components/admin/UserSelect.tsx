@@ -34,7 +34,7 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
             try {
                 const res = await api<{ data: User[] }>(`/admin/users?search=${encodeURIComponent(query)}&limit=5`, { token });
                 setUsers(res.data);
-            } catch (error) {
+            } catch {
                 console.error("Failed to search users", error);
             } finally {
                 setIsLoading(false);

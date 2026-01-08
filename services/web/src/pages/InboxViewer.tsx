@@ -66,6 +66,7 @@ export function InboxViewer() {
       setEmail(emailAddr);
       setPage(pageNum);
       setSelectedMessage(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -99,6 +100,7 @@ export function InboxViewer() {
 
       // Fetch messages
       await fetchMessages(emailAddr, 1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -117,6 +119,7 @@ export function InboxViewer() {
 
       const data = await res.json();
       setSelectedMessage(data.message);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message);
     } finally {

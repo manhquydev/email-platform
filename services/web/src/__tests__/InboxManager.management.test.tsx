@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { InboxManager } from "../pages/InboxManager";
 import toast from "react-hot-toast";
@@ -70,6 +70,7 @@ vi.mock("../components/ui/GlassCard", () => ({
 
 vi.mock("../components/InboxCard", () => ({
     // Mocking render behavior to expose internal actions for testing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     InboxCard: ({ inbox, isSelected, onSelect, onToggleSelect, onDelete, onTransfer, onViewMessages }: any) => (
         <div data-testid={`inbox-card-${inbox.id}`} className={isSelected ? "selected" : ""}>
             <span data-testid={`inbox-email-${inbox.id}`}>{inbox.localPart}@{inbox.domain.name}</span>
@@ -113,6 +114,7 @@ describe("InboxManager - Management Functionality", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Strict mock for initial load
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockApi.mockImplementation((url: string, options: any) => {
             if (url.includes("/domains")) return Promise.resolve({ data: mockDomains });
             if (url.includes("/inboxes") && (!options || !options.method || options.method === "GET")) return Promise.resolve({ data: [...mockInboxes] });
@@ -143,6 +145,7 @@ describe("InboxManager - Management Functionality", () => {
     });
 
     it("should handle single inbox deletion", async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockApi.mockImplementation((url: string, options: any) => {
             if (url.includes("/domains")) return Promise.resolve({ data: mockDomains });
             if (url.includes("/inboxes") && (!options || !options.method || options.method === "GET")) return Promise.resolve({ data: [...mockInboxes] });
@@ -179,6 +182,7 @@ describe("InboxManager - Management Functionality", () => {
     });
 
     it("should handle batch inbox deletion", async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockApi.mockImplementation((url: string, options: any) => {
             if (url.includes("/domains")) return Promise.resolve({ data: mockDomains });
             if (url.includes("/inboxes") && (!options || !options.method || options.method === "GET")) return Promise.resolve({ data: [...mockInboxes] });

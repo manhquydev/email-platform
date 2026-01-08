@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -25,6 +26,12 @@ export function ConfirmationModal({
     onConfirm,
     onCancel
 }: ConfirmationModalProps) {
+    const { modalRef, modalProps } = useModalAccessibility({
+        isOpen,
+        onClose: onCancel,
+        closeOnEsc: !isLoading,
+    });
+
     if (!isOpen) return null;
 
     return (
@@ -37,7 +44,10 @@ export function ConfirmationModal({
                 exit={{ opacity: 0 }}
             />
             <motion.div
-                className="create-inbox-modal" // Reusing similar modal styles for consistency
+                ref={modalRef}
+                {...modalProps}
+                aria-labelledby="confirmation-modal-title"
+                className="create-inbox-modal"
                 style={{ maxWidth: '400px' }}
                 initial={{ opacity: 0, scale: 0.95, x: "-50%", y: "-50%" }}
                 animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
@@ -45,7 +55,7 @@ export function ConfirmationModal({
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
                 <div className="create-inbox-header">
-                    <h2 className={`font-semibold text-lg ${isDestructive ? "text-red-600 dark:text-red-500" : "text-slate-900 dark:text-white"}`}>{title}</h2>
+                    <h2 id="confirmation-modal-title" className={`font-semibold text-lg ${isDestructive ? "text-red-600 dark:text-red-500" : "text-slate-900 dark:text-white"}`}>{title}</h2>
                     <button onClick={onCancel} className="modal-close" title="Đóng" disabled={isLoading}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

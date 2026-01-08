@@ -88,7 +88,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
             ]);
             setFilters(filterRes.filters);
             setLabels(labelRes.labels);
-        } catch (err) {
+        } catch {
             console.error("Failed to load filters data", err);
             toast.error("Không thể tải danh sách bộ lọc");
         } finally {
@@ -147,7 +147,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                 toast.success("Đã tạo bộ lọc mới");
             }
             setIsModalOpen(false);
-        } catch (err) {
+        } catch {
             console.error("Failed to save filter", err);
             toast.error("Không thể lưu bộ lọc");
         }
@@ -159,7 +159,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
             await api(`/filters/${id}`, { method: "DELETE" });
             setFilters(filters.filter(f => f.id !== id));
             toast.success("Đã xóa bộ lọc");
-        } catch (err) {
+        } catch {
             toast.error("Lỗi khi xóa bộ lọc");
         }
     };
@@ -184,7 +184,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
     const updateAction = (idx: number, field: keyof FilterAction, val: string) => {
         const newActions = [...actions];
         // If changing type, reset value potentially? For now just set.
-        // @ts-ignore
+        // @ts-expect-error dynamic field access
         newActions[idx] = { ...newActions[idx], [field]: val };
         setActions(newActions);
     };

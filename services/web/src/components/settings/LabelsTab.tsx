@@ -42,7 +42,7 @@ export function LabelsTab({ inboxId, inboxes = [], selectedInboxId, onInboxChang
         try {
             const res = await api<{ labels: Label[] }>(`/inboxes/${effectiveInboxId}/labels`);
             setLabels(res.labels);
-        } catch (err) {
+        } catch {
             console.error("Failed to load labels", err);
             toast.error("Không thể tải danh sách nhãn");
         } finally {
@@ -90,7 +90,7 @@ export function LabelsTab({ inboxId, inboxes = [], selectedInboxId, onInboxChang
                 toast.success("Đã tạo nhãn mới");
             }
             setIsCreateModalOpen(false);
-        } catch (err) {
+        } catch {
             console.error("Failed to save label", err);
             toast.error("Không thể lưu nhãn");
         }
@@ -103,7 +103,7 @@ export function LabelsTab({ inboxId, inboxes = [], selectedInboxId, onInboxChang
             await api(`/labels/${id}`, { method: "DELETE" });
             setLabels(labels.filter((l) => l.id !== id));
             toast.success("Đã xóa nhãn");
-        } catch (err) {
+        } catch {
             console.error("Failed to delete label", err);
             toast.error("Không thể xóa nhãn");
         }

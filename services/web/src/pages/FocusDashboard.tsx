@@ -18,6 +18,7 @@ const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => (
 const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").then(m => ({ default: m.CreateInboxModal })));
 
 export function FocusDashboard() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { token, user: _user } = useAuth();
     const [busy, setBusy] = useState(false);
 
@@ -43,7 +44,7 @@ export function FocusDashboard() {
         try {
             const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
             setDomains(res?.data || []);
-        } catch (e) {
+        } catch {
             toast.error("Lỗi tải danh sách domain");
         }
     }, [token]);
@@ -65,7 +66,7 @@ export function FocusDashboard() {
             });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
-        } catch (e) {
+        } catch {
             toast.error("Lỗi tải danh sách inbox");
         } finally {
             setBusy(false);
@@ -95,7 +96,7 @@ export function FocusDashboard() {
 
             const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
             setMessages(res?.data || []);
-        } catch (e) {
+        } catch {
             if (!background) toast.error("Lỗi tải email");
         } finally {
             if (!background) setBusy(false);
@@ -154,7 +155,7 @@ export function FocusDashboard() {
                     token,
                     body: { isRead: true }
                 });
-            } catch (e) {
+            } catch {
                 // background update failed
             }
         }
@@ -169,7 +170,7 @@ export function FocusDashboard() {
             setSelectedMessage(null);
             setShowDetail(false);
             toast.success("Đã xóa email");
-        } catch (e) {
+        } catch {
             toast.error("Không thể xóa email");
         } finally {
             setBusy(false);
@@ -184,7 +185,7 @@ export function FocusDashboard() {
         try {
             await api(`/messages/${selectedMessage.id}/pin`, { method: "PATCH", token, body: { isPinned: newPinned } });
             toast.success(newPinned ? "Đã ghim email" : "Đã bỏ ghim");
-        } catch (e) {
+        } catch {
             setMessages(prev => prev.map(m => m.id === selectedMessage.id ? { ...m, isPinned: !newPinned } : m));
             toast.error("Không thể cập nhật");
         }
@@ -197,7 +198,7 @@ export function FocusDashboard() {
         try {
             await api(`/messages/${selectedMessage.id}/read`, { method: "PATCH", token, body: { isRead: false } });
             toast.success("Đã đánh dấu chưa đọc");
-        } catch (e) {
+        } catch {
             toast.error("Không thể cập nhật trạng thái");
         }
     };
@@ -216,7 +217,7 @@ export function FocusDashboard() {
                 setMessages([]);
             }
             toast.success("Đã xóa hộp thư");
-        } catch (e) {
+        } catch {
             toast.error("Không thể xóa hộp thư");
         } finally {
             setBusy(false);
@@ -242,7 +243,7 @@ export function FocusDashboard() {
                 setSelectedInbox(newInbox.id);
                 toast.success("Đã tạo hộp thư mới");
             }
-        } catch (e) {
+        } catch {
             toast.error("Không thể tạo hộp thư");
         }
     };
@@ -434,7 +435,7 @@ export function FocusDashboard() {
                                         className="w-full h-full min-h-[400px] border-none block"
                                     />
                                 ) : (
-                                    <div className="p-6 whitespace-pre-wrap font-sans text-gray-900 leading-relaxed">
+                                    <div className="p-6 whitespace-pre-wrap font-sans text-[var(--nebula-text)] leading-relaxed">
                                         {selectedMessage.textBody || 'Không có nội dung'}
                                     </div>
                                 )}

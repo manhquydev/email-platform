@@ -19,7 +19,7 @@ export function AuthLayout() {
             <div className="relative z-10 min-h-full flex flex-col">
                 <Navigation variant="auth" />
 
-                <main className="flex-1 flex flex-col pt-20 md:pt-24">
+                <main id="main-content" className="flex-1 flex flex-col pt-20 md:pt-24">
                     <Outlet />
                 </main>
 

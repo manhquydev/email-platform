@@ -81,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         setUser(null);
                     } else {
                         // Initially set from token to avoid flicker
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
 
                         // Fetch fresh user data (for credits, etc.)
@@ -88,7 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             const res = await api<{ user: User }>("/auth/me", { token });
                             setUser(res.user);
                         } catch (err) {
-                            console.error("Failed to refresh user profile", err);
                             // If user not found (404) or unauthorized (401), clear invalid token
                             const msg = (err as Error).toString();
                             if (msg.includes("404") || msg.includes("401") || msg.includes("User not found")) {
@@ -133,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
     const context = useContext(AuthContext);
     if (context === undefined) {

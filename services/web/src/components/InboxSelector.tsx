@@ -15,6 +15,7 @@ interface InboxSelectorProps {
     onSelectInbox: (id: string) => void;
     onCreateInbox: (domainId: string, localPart: string, expiresAt?: number) => Promise<void>;
     onDeleteInbox: (inbox: Inbox) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user: any;
     token: string | null;
 }
@@ -26,7 +27,7 @@ export function InboxSelector({
     selectedInboxId,
     onSelectDomain,
     onSelectInbox,
-    onCreateInbox: _onCreateInbox,
+    onCreateInbox: _onCreateInbox, // eslint-disable-line @typescript-eslint/no-unused-vars
     onDeleteInbox,
     user,
     token

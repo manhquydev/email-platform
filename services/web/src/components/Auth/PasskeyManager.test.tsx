@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { PasskeyManager } from './PasskeyManager';
 import { api } from '../../utils/api';
 
@@ -22,6 +22,7 @@ vi.mock('../../context/AuthContext', () => ({
 
 describe('PasskeyManager', () => {
     it('renders without crashing', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (api as any).mockResolvedValue([]);
         render(<PasskeyManager />);
         expect(screen.getByText('Thêm Passkey mới')).toBeInTheDocument();

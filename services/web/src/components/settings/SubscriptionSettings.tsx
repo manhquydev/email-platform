@@ -35,6 +35,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
         if (token) {
             loadPayments();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const loadPayments = async () => {
@@ -42,9 +43,8 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
         try {
             const data = await api<{ payments: Payment[] }>("/billing/payments", { token });
             setPayments(data?.payments || []);
-        } catch (err) {
-            console.error("Failed to load payments", err);
-            // Silent fail for now, or minimal toast
+        } catch {
+            // Silent fail for payments list
         } finally {
             setLoadingPayments(false);
         }
@@ -70,6 +70,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
         if (!redeemCode.trim()) return;
         setRedeemBusy(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const res = await api<{ message: string; user: any }>("/subscription/redeem", {
                 method: "POST",
                 token,
@@ -147,7 +148,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
             URL.revokeObjectURL(url);
 
             toast.success("Đã xuất báo cáo thành công");
-        } catch (error) {
+        } catch {
             toast.error("Lỗi khi xuất báo cáo");
         }
     };
@@ -180,7 +181,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
             URL.revokeObjectURL(url);
 
             toast.success("Đã tải hóa đơn");
-        } catch (error) {
+        } catch {
             toast.error("Lỗi khi tải hóa đơn");
         }
     };

@@ -55,7 +55,7 @@ export function Register() {
             });
             toast.success(res.message || "Đăng ký thành công!");
             setRegistered(true);
-        } catch (e) {
+        } catch {
             toast.error((e as Error).toString());
         } finally {
             setBusy(false);
@@ -100,7 +100,7 @@ export function Register() {
                             placeholder="you@ephemera.io"
                             disabled={busy}
                             error={errors.email?.message}
-                            className="bg-input-bg border-[#313168] focus:border-primary focus:ring-primary"
+                            className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
                             icon={
                                 <span className="material-symbols-outlined text-[20px]">alternate_email</span>
                             }
@@ -118,7 +118,7 @@ export function Register() {
                                     register("password").onChange(e);
                                     setPasswordValue(e.target.value);
                                 }}
-                                className="bg-input-bg border-[#313168] focus:border-primary focus:ring-primary"
+                                className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
                                 icon={
                                     <span className="material-symbols-outlined text-[20px]">lock</span>
                                 }
@@ -127,8 +127,8 @@ export function Register() {
                             {/* Password Strength */}
                             {passwordValue && (
                                 <div className="flex items-center gap-2 mt-2 px-1">
-                                    <span className="text-xs text-[#9090cb]">Độ mạnh:</span>
-                                    <div className="flex-1 h-1.5 bg-[#313168] rounded-full overflow-hidden flex gap-1">
+                                    <span className="text-xs text-nebula-text-muted">Độ mạnh:</span>
+                                    <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden flex gap-1">
                                         <div
                                             className="h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(37,244,100,0.5)]"
                                             style={{
@@ -149,7 +149,7 @@ export function Register() {
                             placeholder="••••••••"
                             disabled={busy}
                             error={errors.confirmPassword?.message}
-                            className="bg-input-bg border-[#313168] focus:border-primary focus:ring-primary"
+                            className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
                             icon={
                                 <span className="material-symbols-outlined text-[20px]">lock_reset</span>
                             }
@@ -161,9 +161,9 @@ export function Register() {
                                 id="terms"
                                 type="checkbox"
                                 required
-                                className="mt-1 h-4 w-4 rounded border-[#313168] bg-[#181834] text-primary focus:ring-primary focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer"
+                                className="mt-1 h-4 w-4 rounded border-border bg-surface-elevated text-primary focus:ring-primary focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer"
                             />
-                            <label htmlFor="terms" className="text-xs text-[#9090cb] cursor-pointer selection:bg-none">
+                            <label htmlFor="terms" className="text-xs text-nebula-text-muted cursor-pointer selection:bg-none">
                                 Tôi đồng ý với <Link to="/terms" className="text-primary hover:text-white underline transition-colors">Điều khoản Dịch vụ</Link> và <Link to="/privacy" className="text-primary hover:text-white underline transition-colors">Chính sách Bảo mật</Link>.
                             </label>
                         </div>
@@ -180,20 +180,20 @@ export function Register() {
 
                     {/* Social Divider */}
                     <div className="relative flex py-4 items-center">
-                        <div className="flex-grow border-t border-[#313168]"></div>
-                        <span className="flex-shrink-0 mx-4 text-xs text-[#9090cb] uppercase tracking-wider">Hoặc tiếp tục với</span>
-                        <div className="flex-grow border-t border-[#313168]"></div>
+                        <div className="flex-grow border-t border-border"></div>
+                        <span className="flex-shrink-0 mx-4 text-xs text-nebula-text-muted uppercase tracking-wider">Hoặc tiếp tục với</span>
+                        <div className="flex-grow border-t border-border"></div>
                     </div>
 
                     {/* Social Buttons */}
                     <div className="grid grid-cols-2 gap-4">
-                        <button type="button" className="flex items-center justify-center gap-2 h-10 rounded-lg border border-[#313168] bg-[#181834]/50 hover:bg-[#313168] hover:text-white text-[#9090cb] transition-all text-sm font-medium">
+                        <button type="button" className="flex items-center justify-center gap-2 h-10 rounded-lg border border-border bg-surface-elevated/50 hover:bg-border hover:text-nebula-text text-nebula-text-muted transition-all text-sm font-medium">
                             <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fillRule="evenodd"></path>
                             </svg>
                             GitHub
                         </button>
-                        <button type="button" className="flex items-center justify-center gap-2 h-10 rounded-lg border border-[#313168] bg-[#181834]/50 hover:bg-[#313168] hover:text-white text-[#9090cb] transition-all text-sm font-medium">
+                        <button type="button" className="flex items-center justify-center gap-2 h-10 rounded-lg border border-border bg-surface-elevated/50 hover:bg-border hover:text-nebula-text text-nebula-text-muted transition-all text-sm font-medium">
                             <svg aria-hidden="true" className="w-5 h-5" viewBox="0 0 24 24">
                                 <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="currentColor"></path>
                             </svg>
@@ -201,7 +201,7 @@ export function Register() {
                         </button>
                     </div>
 
-                    <div className="mt-6 text-center text-sm border-t border-[#313168] pt-4">
+                    <div className="mt-6 text-center text-sm border-t border-border pt-4">
                         <p className="text-text-secondary">
                             Đã có tài khoản? <Link to="/login" className="text-primary hover:text-white font-medium transition-colors ml-1">Đăng nhập ngay</Link>
                         </p>
@@ -250,7 +250,7 @@ export function Register() {
                 </div>
 
                 {/* Floating Security Badge - Matches Wireframe Position */}
-                <div className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/5 text-xs text-[#9090cb] hover:text-white transition-colors cursor-help hidden md:flex z-50">
+                <div className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 rounded-full bg-surface/80 dark:bg-black/40 backdrop-blur-md border border-border text-xs text-text-secondary hover:text-text-main transition-colors cursor-help hidden md:flex z-50">
                     <span className="material-symbols-outlined text-sm">encrypted</span>
                     <span>Mã hóa đầu cuối</span>
                 </div>

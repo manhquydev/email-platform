@@ -4,6 +4,7 @@ import type { Inbox } from "../types";
 import { api } from "../utils/api";
 import { Editor } from "./Editor";
 import { useAuth } from "../context/AuthContext";
+import { useModalAccessibility } from "../hooks/useModalAccessibility";
 
 type Props = {
     token: string;
@@ -27,6 +28,12 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
     const [files, setFiles] = useState<File[]>([]);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
+
+    const { modalRef, modalProps } = useModalAccessibility({
+        isOpen: true,
+        onClose,
+        closeOnEsc: !busy,
+    });
 
     const handleCompose = async () => {
         if (!composeFrom || !composeTo || !composeSubject) return;
@@ -52,7 +59,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                 body: formData,
             });
             onClose();
-        } catch (err) {
+        } catch {
             setError((err as Error).message);
         } finally {
             setBusy(false);
@@ -65,13 +72,18 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={onClose}
         >
             <motion.div
+                ref={modalRef}
+                {...modalProps}
+                aria-labelledby="compose-modal-title"
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
                 className="glass-card-elevated w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[var(--nebula-border)]"
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--nebula-border)] bg-[var(--nebula-surface-elevated)]/50 backdrop-blur-md">
@@ -80,7 +92,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-[var(--nebula-text)] leading-tight">Soạn thảo Email</h3>
+                            <h3 id="compose-modal-title" className="text-lg font-bold text-[var(--nebula-text)] leading-tight">Soạn thảo Email</h3>
                             <p className="text-xs text-[var(--nebula-text-muted)] font-medium">Tạo và gửi thông điệp chuyên nghiệp</p>
                         </div>
                     </div>

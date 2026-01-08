@@ -11,7 +11,7 @@ export function Support() {
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-blue-100 to-blue-200 bg-clip-text text-transparent">
                         Trung tâm Trợ giúp
                     </h1>
-                    <p className="text-[#9090cb] text-lg max-w-2xl mx-auto">
+                    <p className="text-nebula-text-muted text-lg max-w-2xl mx-auto">
                         Chúng tôi ở đây để giúp đỡ. Tìm câu trả lời hoặc liên hệ trực tiếp với đội ngũ hỗ trợ.
                     </p>
                 </div>
@@ -21,10 +21,10 @@ export function Support() {
                     <GlassCard className="p-8 animate-fade-in-up">
                         <h2 className="text-2xl font-bold mb-6">Gửi yêu cầu</h2>
                         <form className="space-y-4">
-                            <Input label="Email của bạn" placeholder="name@example.com" type="email" className="bg-input-bg border-[#313168]" icon={<span className="material-symbols-outlined text-[20px]">alternate_email</span>} />
+                            <Input label="Email của bạn" placeholder="name@example.com" type="email" className="bg-surface-elevated border-border" icon={<span className="material-symbols-outlined text-[20px]">alternate_email</span>} />
                             <div className="space-y-2">
-                                <label className="text-gray-300 text-sm font-medium ml-1">Vấn đề cần hỗ trợ</label>
-                                <select className="w-full h-10 px-3 py-2 bg-input-bg border border-[#313168] rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm text-white placeholder-gray-500">
+                                <label className="text-text-secondary text-sm font-medium ml-1">Vấn đề cần hỗ trợ</label>
+                                <select className="w-full h-10 px-3 py-2 bg-surface-elevated border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm text-text-main placeholder-gray-500">
                                     <option>Vấn đề kỹ thuật</option>
                                     <option>Thanh toán & Gói cước</option>
                                     <option>Báo cáo lạm dụng</option>
@@ -32,8 +32,8 @@ export function Support() {
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-gray-300 text-sm font-medium ml-1">Nội dung chi tiết</label>
-                                <textarea className="w-full h-32 px-3 py-2 bg-input-bg border border-[#313168] rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm text-white placeholder-gray-500 resize-none" placeholder="Mô tả vấn đề của bạn..."></textarea>
+                                <label className="text-text-secondary text-sm font-medium ml-1">Nội dung chi tiết</label>
+                                <textarea className="w-full h-32 px-3 py-2 bg-surface-elevated border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm text-text-main placeholder-gray-500 resize-none" placeholder="Mô tả vấn đề của bạn..."></textarea>
                             </div>
                             <Button className="w-full h-12">Gửi yêu cầu</Button>
                         </form>
@@ -94,19 +94,19 @@ export function Sales() {
                     <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-200 via-white to-purple-200 bg-clip-text text-transparent">
                         Liên hệ Kinh doanh
                     </h1>
-                    <p className="text-[#9090cb] text-lg max-w-2xl mx-auto">
+                    <p className="text-nebula-text-muted text-lg max-w-2xl mx-auto">
                         Cần giải pháp tùy chỉnh, SLA cao hơn, hoặc gói doanh nghiệp? Đội ngũ của chúng tôi sẵn sàng thảo luận.
                     </p>
                 </div>
 
                 <GlassCard className="max-w-xl mx-auto p-8 md:p-12 animate-fade-in-up">
                     <form className="space-y-4 text-left">
-                        <Input label="Họ và tên" placeholder="Tên của bạn" className="bg-input-bg border-[#313168]" />
-                        <Input label="Email Công việc" placeholder="name@company.com" type="email" className="bg-input-bg border-[#313168]" />
-                        <Input label="Tên công ty" placeholder="Acme Corp" className="bg-input-bg border-[#313168]" />
+                        <Input label="Họ và tên" placeholder="Tên của bạn" className="bg-surface-elevated border-border" />
+                        <Input label="Email Công việc" placeholder="name@company.com" type="email" className="bg-surface-elevated border-border" />
+                        <Input label="Tên công ty" placeholder="Acme Corp" className="bg-surface-elevated border-border" />
 
                         <div className="space-y-2">
-                            <label className="text-gray-300 text-sm font-medium ml-1">Quy mô công ty</label>
+                            <label className="text-text-secondary text-sm font-medium ml-1">Quy mô công ty</label>
                             <select className="w-full h-10 px-3 py-2 bg-input-bg border border-[#313168] rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm text-white placeholder-gray-500">
                                 <option>1-10 nhân viên</option>
                                 <option>11-50 nhân viên</option>
@@ -116,8 +116,8 @@ export function Sales() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-gray-300 text-sm font-medium ml-1">Nhu cầu cụ thể</label>
-                            <textarea className="w-full h-32 px-3 py-2 bg-input-bg border border-[#313168] rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm text-white placeholder-gray-500 resize-none" placeholder="VD: API Rate limits, Dedicated IP, ..."></textarea>
+                            <label className="text-text-secondary text-sm font-medium ml-1">Nhu cầu cụ thể</label>
+                            <textarea className="w-full h-32 px-3 py-2 bg-surface-elevated border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm text-text-main placeholder-gray-500 resize-none" placeholder="VD: API Rate limits, Dedicated IP, ..."></textarea>
                         </div>
 
                         <Button className="w-full h-12 text-base font-bold bg-purple-600 hover:bg-purple-700 shadow-purple-500/20 shadow-lg">Liên hệ Sales Team</Button>

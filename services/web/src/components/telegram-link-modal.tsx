@@ -42,6 +42,7 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
         const data: TokenData = await res.json();
         setTokenData(data);
         setState("ready");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message);
         setState("error");

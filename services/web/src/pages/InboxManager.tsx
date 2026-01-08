@@ -66,7 +66,7 @@ export function InboxManager() {
         try {
             const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
             setDomains(res?.data || []);
-        } catch (e) {
+        } catch {
             toast.error("Lỗi tải danh sách domain");
         }
     }, [token]);
@@ -88,7 +88,7 @@ export function InboxManager() {
             });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
-        } catch (e) {
+        } catch {
             toast.error("Lỗi tải danh sách inbox");
         } finally {
             setBusy(false);
@@ -106,7 +106,7 @@ export function InboxManager() {
             });
             const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
             setMessages(res?.data || []);
-        } catch (e) {
+        } catch {
             toast.error("Lỗi tải email");
         } finally {
             setBusy(false);
@@ -221,7 +221,7 @@ export function InboxManager() {
             }
             toast.success("Đã xóa hộp thư");
             setInboxToDelete(null);
-        } catch (e) {
+        } catch {
             toast.error("Không thể xóa hộp thư");
         } finally {
             setBusy(false);
@@ -240,7 +240,7 @@ export function InboxManager() {
             try {
                 await api(`/inboxes/${id}`, { method: "DELETE", token });
                 deleted++;
-            } catch (e) {
+            } catch {
                 // Ignore individual deletion error
             }
         }
@@ -315,7 +315,7 @@ export function InboxManager() {
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
             try {
                 await api(`/messages/${msg.id}/read`, { method: "PATCH", token, body: { isRead: true } });
-            } catch (e) { /* ignore read status update error */ }
+            } catch { /* ignore read status update error */ }
         }
     };
 
@@ -355,7 +355,7 @@ export function InboxManager() {
             } else {
                 toast.success(`Tìm thấy ${res?.data?.length || 0} kết quả`);
             }
-        } catch (error) {
+        } catch {
             toast.error("Lỗi khi tìm kiếm");
             setSearchResults([]);
         } finally {
@@ -381,7 +381,7 @@ export function InboxManager() {
                 setInboxes(prev => [newInbox, ...prev]);
                 toast.success("Đã tạo hộp thư mới");
             }
-        } catch (e) {
+        } catch {
             toast.error("Không thể tạo hộp thư");
         }
     };

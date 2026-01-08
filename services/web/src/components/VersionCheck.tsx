@@ -50,7 +50,7 @@ export const VersionCheck = () => {
                     }
                 );
             }
-        } catch (error) {
+        } catch {
             // Silently fail for version check
         }
     }, []);

@@ -67,12 +67,13 @@ export function NotificationCenter() {
             const res = await api<{ notifications: Notification[], unreadCount: number }>("/notifications", { token });
             setNotifications(res.notifications);
             setUnreadCount(res.unreadCount);
-        } catch (e) {
+        } catch {
             console.error("Failed to fetch notifications", e);
         }
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
@@ -94,7 +95,7 @@ export function NotificationCenter() {
             await api(`/notifications/${id}/read`, { method: "PATCH", token });
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch (e) {
+        } catch {
             console.error(e);
         }
     };
@@ -104,7 +105,7 @@ export function NotificationCenter() {
             await api(`/notifications/read-all`, { method: "PATCH", token });
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             setUnreadCount(0);
-        } catch (e) {
+        } catch {
             console.error(e);
         }
     };

@@ -148,6 +148,7 @@ export function CategoryTabs({ messages, activeCategory, onCategoryChange }: Cat
 }
 
 // Filter messages by category
+// eslint-disable-next-line react-refresh/only-export-components
 export function filterByCategory(messages: Message[], category: EmailCategory): Message[] {
     if (category === "all") return messages;
 
@@ -155,6 +156,7 @@ export function filterByCategory(messages: Message[], category: EmailCategory): 
 }
 
 // Hook for category state
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCategoryFilter(messages: Message[]) {
     const [activeCategory, setActiveCategory] = useState<EmailCategory>("all");
 

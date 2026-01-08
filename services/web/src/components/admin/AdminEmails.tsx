@@ -58,7 +58,7 @@ export function AdminEmails({ token }: { token: string }) {
             const res = await api<{ data: Email[]; meta: { total: number } }>(`/admin/emails?${params}`, { token });
             setEmails(res.data);
             setTotal(res.meta.total);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -72,7 +72,7 @@ export function AdminEmails({ token }: { token: string }) {
         try {
             const res = await api<{ email: EmailDetail }>(`/admin/emails/${emailId}`, { token });
             setSelectedEmail(res.email);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoadingDetail(false);
@@ -91,7 +91,7 @@ export function AdminEmails({ token }: { token: string }) {
             setDeleteTarget(null);
             setSelectedEmail(null);
             loadEmails();
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setIsDeleting(false);

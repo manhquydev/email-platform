@@ -51,7 +51,7 @@ export function AdminLogs({ token }: { token: string }) {
 
             setLogs(filteredData);
             setTotal(res.meta.total);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -106,7 +106,7 @@ export function AdminLogs({ token }: { token: string }) {
             URL.revokeObjectURL(url);
 
             toast.success("Đã xuất file CSV");
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     };

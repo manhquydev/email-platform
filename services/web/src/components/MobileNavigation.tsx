@@ -119,6 +119,7 @@ export function MobileNavigation({
                         <motion.button
                             key={tab.id}
                             whileTap={{ scale: 0.95 }}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={() => onTabChange(tab.id as any)}
                             className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-[var(--nebula-primary)]' : 'text-[var(--nebula-text-muted)]'}`}
                             aria-label={tab.label}
@@ -155,6 +156,7 @@ export function MobileNavigation({
 }
 
 // Pull to refresh hook
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePullToRefresh(onRefresh: () => Promise<void>) {
     const [isPulling, setIsPulling] = useState(false);
     const [pullDistance, setPullDistance] = useState(0);

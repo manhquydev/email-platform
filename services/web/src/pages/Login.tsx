@@ -30,6 +30,7 @@ export function Login() {
 
     const [error, setError] = useState<string | null>(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleLoginSuccess = (token: string, user: any) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
@@ -79,7 +80,7 @@ export function Login() {
             });
             setMagicLinkSent(true);
             toast.success("Link đăng nhập đã được gửi tới email của bạn!");
-        } catch (err) {
+        } catch {
             toast.error("Không thể gửi link đăng nhập. Vui lòng thử lại.");
         } finally {
             setMagicLinkBusy(false);
@@ -97,7 +98,7 @@ export function Login() {
     return (
         <div className="flex-1 w-full flex flex-col p-4 py-12 relative">
             {/* Floating Security Badge - Matches Wireframe Position */}
-            <div className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/5 text-xs text-[#9090cb] hover:text-white transition-colors cursor-help hidden md:flex z-50">
+            <div className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 rounded-full bg-surface/80 dark:bg-black/40 backdrop-blur-md border border-border text-xs text-text-secondary hover:text-text-main transition-colors cursor-help hidden md:flex z-50">
                 <span className="material-symbols-outlined text-sm">encrypted</span>
                 <span>Mã hóa đầu cuối</span>
             </div>
@@ -123,14 +124,14 @@ export function Login() {
                             </div>
 
                             {/* Login Mode Tabs */}
-                            <div className="flex mb-6 p-1 bg-[#1a1a3e] rounded-xl">
+                            <div className="flex mb-6 p-1 bg-nebula-elevated rounded-xl">
                                 <button
                                     type="button"
                                     onClick={() => { setLoginMode("password"); setMagicLinkSent(false); }}
                                     className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
                                         loginMode === "password"
                                             ? "bg-primary text-white shadow-lg"
-                                            : "text-[#9090cb] hover:text-white"
+                                            : "text-nebula-text-muted hover:text-nebula-text"
                                     }`}
                                 >
                                     Mật khẩu
@@ -141,10 +142,10 @@ export function Login() {
                                     className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
                                         loginMode === "magic-link"
                                             ? "bg-primary text-white shadow-lg"
-                                            : "text-[#9090cb] hover:text-white"
+                                            : "text-nebula-text-muted hover:text-nebula-text"
                                     }`}
                                 >
-                                    Link email
+                                    Magic Link
                                 </button>
                             </div>
 
@@ -168,7 +169,7 @@ export function Login() {
                                         disabled={busy}
                                         required
                                         autoFocus
-                                        className="bg-input-bg border-[#313168] focus:border-primary focus:ring-primary"
+                                        className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
                                         icon={
                                             <span className="material-symbols-outlined text-[20px]">alternate_email</span>
                                         }
@@ -176,7 +177,7 @@ export function Login() {
 
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center ml-1">
-                                            <label className="text-gray-300 text-sm font-medium">Mật khẩu</label>
+                                            <label className="text-text-secondary text-sm font-medium">Mật khẩu</label>
                                             <a href="#" className="text-xs text-primary hover:text-primary-glow transition-colors">Quên mật khẩu?</a>
                                         </div>
                                         <Input
@@ -186,7 +187,7 @@ export function Login() {
                                             placeholder="••••••••"
                                             disabled={busy}
                                             required
-                                            className="bg-input-bg border-[#313168] focus:border-primary focus:ring-primary"
+                                            className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
                                             icon={
                                                 <span className="material-symbols-outlined text-[20px]">lock</span>
                                             }
@@ -207,9 +208,9 @@ export function Login() {
                                 <div className="space-y-6">
                                     {!magicLinkSent ? (
                                         <form onSubmit={handleMagicLinkRequest} className="space-y-6">
-                                            <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 text-sm text-purple-300">
+                                            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-primary">
                                                 <div className="flex gap-3">
-                                                    <span className="material-symbols-outlined text-purple-400 shrink-0">magic_button</span>
+                                                    <span className="material-symbols-outlined text-primary shrink-0">magic_button</span>
                                                     <p>Nhập email của bạn, chúng tôi sẽ gửi link đăng nhập không cần mật khẩu.</p>
                                                 </div>
                                             </div>
@@ -223,7 +224,7 @@ export function Login() {
                                                 disabled={magicLinkBusy}
                                                 required
                                                 autoFocus
-                                                className="bg-input-bg border-[#313168] focus:border-primary focus:ring-primary"
+                                                className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
                                                 icon={
                                                     <span className="material-symbols-outlined text-[20px]">alternate_email</span>
                                                 }
@@ -247,7 +248,7 @@ export function Login() {
                                             <p className="text-text-secondary text-sm">
                                                 Chúng tôi đã gửi link đăng nhập tới <span className="text-primary font-medium">{email}</span>
                                             </p>
-                                            <p className="text-xs text-[#9090cb]">
+                                            <p className="text-xs text-nebula-text-muted">
                                                 Không nhận được email? Kiểm tra thư mục spam hoặc
                                                 <button
                                                     onClick={() => setMagicLinkSent(false)}
@@ -264,10 +265,10 @@ export function Login() {
                             <div className="mt-8">
                                 <div className="relative py-2">
                                     <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full border-t border-[#343465]"></div>
+                                        <div className="w-full border-t border-border"></div>
                                     </div>
                                     <div className="relative flex justify-center text-sm">
-                                        <span className="px-2 bg-[#0e0e24] text-[#9393c8] rounded text-xs uppercase tracking-wider bg-opacity-80 backdrop-blur-sm">
+                                        <span className="px-2 bg-surface text-nebula-text-muted rounded text-xs uppercase tracking-wider bg-opacity-80 backdrop-blur-sm">
                                             Hoặc tiếp tục với
                                         </span>
                                     </div>
@@ -298,7 +299,7 @@ export function Login() {
                                     disabled={busy}
                                     required
                                     autoFocus
-                                    className="text-center text-2xl tracking-[0.5em] font-mono h-14 bg-input-bg border-[#313168] focus:border-primary"
+                                    className="text-center text-2xl tracking-[0.5em] font-mono h-14 bg-surface-elevated border-border focus:border-primary"
                                 />
 
                                 <Button
@@ -313,7 +314,7 @@ export function Login() {
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    className="w-full text-[#9090cb] hover:text-white"
+                                    className="w-full text-nebula-text-muted hover:text-nebula-text"
                                     onClick={() => setRequires2FA(false)}
                                     disabled={busy}
                                 >
@@ -323,7 +324,7 @@ export function Login() {
                         </>
                     )}
 
-                    <div className="mt-8 text-center text-sm border-t border-[#343465] pt-4">
+                    <div className="mt-8 text-center text-sm border-t border-border pt-4">
                         <p className="text-text-secondary">
                             Chưa có tài khoản? <Link to="/register" className="text-primary hover:text-white font-medium transition-colors ml-1">Đăng ký ngay</Link>
                         </p>

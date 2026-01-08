@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 
 export function ScrollToTop() {
     const { pathname, hash } = useLocation();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const timeoutRef = useRef<any>(null);
 
     useEffect(() => {

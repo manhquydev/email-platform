@@ -4,25 +4,24 @@ import { api } from "../utils/api";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 
+// Move BrandLogo outside component to prevent recreation on render
+const BrandLogo = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8 text-primary">
+        <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+        <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+        <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
+    </svg>
+);
+
 export function MagicLinkVerify() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [status, setStatus] = useState<"verifying" | "success" | "error">("verifying");
     const [errorMessage, setErrorMessage] = useState("");
 
-    useEffect(() => {
-        const token = searchParams.get("token");
-        if (!token) {
-            setStatus("error");
-            setErrorMessage("Link không hợp lệ. Vui lòng yêu cầu link đăng nhập mới.");
-            return;
-        }
-
-        verifyToken(token);
-    }, [searchParams]);
-
     const verifyToken = async (token: string) => {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const res = await api<{ token: string; user: any }>("/auth/magic-link/verify", {
                 method: "POST",
                 body: { token }
@@ -51,16 +50,21 @@ export function MagicLinkVerify() {
         }
     };
 
-    const BrandLogo = () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8 text-primary">
-            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
-            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
-            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
-        </svg>
-    );
+    useEffect(() => {
+        const token = searchParams.get("token");
+        if (!token) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setStatus("error");
+            setErrorMessage("Link không hợp lệ. Vui lòng yêu cầu link đăng nhập mới.");
+            return;
+        }
+
+        verifyToken(token);
+
+    }, [searchParams]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0a0a1f] via-[#0e0e24] to-[#12122e]">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-bg via-surface to-surface-elevated">
             <GlassCard className="p-8 md:p-12 rounded-3xl w-full max-w-md text-center animate-fade-in-up">
                 <Link to="/" className="inline-flex items-center gap-2 mb-8 hover:opacity-80 transition-opacity">
                     <div className="p-2 rounded-xl bg-primary/10 shadow-glow">

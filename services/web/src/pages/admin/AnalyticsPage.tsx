@@ -19,6 +19,7 @@ interface AnalyticsStats {
     recentActivity: Array<{
         id: string;
         action: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         meta: Record<string, any>;
         createdAt: string;
     }>;
@@ -54,7 +55,7 @@ export function AnalyticsPage() {
         try {
             const res = await api<AnalyticsStats>(`/admin/analytics/public-viewer?timeRange=${timeRange}`, { token });
             setStats(res);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         } finally {
             setLoading(false);
@@ -73,7 +74,7 @@ export function AnalyticsPage() {
             );
             setSessions(res.sessions);
             setSessionsTotal(res.meta.total);
-        } catch (err) {
+        } catch {
             toast.error(getFriendlyErrorMessage((err as Error).message));
         }
     }, [token, page]);
@@ -97,7 +98,7 @@ export function AnalyticsPage() {
             a.remove();
             window.URL.revokeObjectURL(url);
             toast.success("Đã xuất file CSV");
-        } catch (err) {
+        } catch {
             toast.error("Không thể xuất file");
         } finally {
             setExporting(false);

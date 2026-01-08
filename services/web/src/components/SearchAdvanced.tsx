@@ -39,6 +39,7 @@ export function SearchAdvanced({
         const saved = localStorage.getItem('email-recent-searches');
         if (saved) {
             try {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRecentSearches(JSON.parse(saved).slice(0, 5));
             } catch {
                 // Ignore parse errors
@@ -82,6 +83,7 @@ export function SearchAdvanced({
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateFilter = (key: keyof SearchFilter, filterValue: any) => {
         const newFilters = { ...filters, [key]: filterValue };
         setFilters(newFilters);

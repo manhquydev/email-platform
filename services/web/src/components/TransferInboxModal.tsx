@@ -7,6 +7,7 @@ import { GlassCard } from './ui/GlassCard';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import type { Inbox } from '../types';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 
 interface TransferInboxModalProps {
     inbox: Inbox;
@@ -18,6 +19,12 @@ interface TransferInboxModalProps {
 export function TransferInboxModal({ inbox, token, onClose, onTransferComplete }: TransferInboxModalProps) {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
+
+    const { modalRef, modalProps } = useModalAccessibility({
+        isOpen: true,
+        onClose,
+        closeOnEsc: !loading,
+    });
 
     const handleTransfer = async () => {
         if (!email.trim() || !token) return;
@@ -32,7 +39,7 @@ export function TransferInboxModal({ inbox, token, onClose, onTransferComplete }
             toast.success('Đã chuyển quyền sở hữu hộp thư!');
             onTransferComplete();
             onClose();
-        } catch (e) {
+        } catch {
             toast.error('Lỗi: ' + (e as Error).message);
         } finally {
             setLoading(false);
@@ -49,6 +56,9 @@ export function TransferInboxModal({ inbox, token, onClose, onTransferComplete }
                 onClick={onClose}
             >
                 <motion.div
+                    ref={modalRef}
+                    {...modalProps}
+                    aria-labelledby="transfer-inbox-modal-title"
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -56,7 +66,7 @@ export function TransferInboxModal({ inbox, token, onClose, onTransferComplete }
                     className="w-full max-w-md"
                 >
                     <GlassCard variant="elevated" className="p-6 relative overflow-hidden">
-                        <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Chuyển quyền sở hữu</h2>
+                        <h2 id="transfer-inbox-modal-title" className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Chuyển quyền sở hữu</h2>
                         <p className="text-sm text-text-secondary mb-6">
                             Bạn đang chuyển hộp thư <strong className="text-slate-900 dark:text-white">{inbox.localPart}@{inbox.domain?.name}</strong> cho người dùng khác.
                             Bạn sẽ mất quyền truy cập vào hộp thư này ngay lập tức.

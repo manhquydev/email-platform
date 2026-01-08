@@ -37,32 +37,36 @@ export function Plans() {
 
     const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [packages, setPackages] = useState<any[]>([]);
-
-    useEffect(() => {
-        loadUserProfile();
-        loadPackages();
-    }, [token]);
 
     const loadUserProfile = async () => {
         if (!token) return;
         try {
             const res = await api<{ user: { tier: string } }>("/auth/me", { token });
             setCurrentTier(res.user.tier);
-        } catch (error) {
+        } catch {
             // Profile load is background/secondary for tiers, ignore log
         }
     };
 
     const loadPackages = async () => {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const res = await api<{ packages: any[] }>("/billing/packages");
             setPackages(res.packages);
-        } catch (error) {
+        } catch {
             toast.error("Không thể tải danh sách gói dịch vụ");
         }
     };
 
+    useEffect(() => {
+        loadUserProfile();
+        loadPackages();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleUpgrade = async (pkg: any) => {
         if (!token) {
             toast.error("Vui lòng đăng nhập để nâng cấp");
@@ -89,9 +93,9 @@ export function Plans() {
             if (res.url) {
                 window.location.href = res.url;
             }
-        } catch (error: any) {
+        } catch (error) {
             toast.dismiss();
-            toast.error(error.message || "Không thể khởi tạo thanh toán");
+            toast.error((error as Error).message || "Không thể khởi tạo thanh toán");
         }
     };
 

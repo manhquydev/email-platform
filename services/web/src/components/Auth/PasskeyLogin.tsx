@@ -4,6 +4,7 @@ import { api } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 interface PasskeyLoginProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSuccess: (token: string, user: any) => void;
 }
 
@@ -13,6 +14,7 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
     const handlePasskeyLogin = async () => {
         setLoading(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const optionsResp = await api<any>('/auth/webauthn/login/options', { method: 'POST', body: {} });
             const options = optionsResp; // api returns T directly based on usage seen in Settings.tsx
 
@@ -21,13 +23,14 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
             try {
                 // Fix: Pass as named object { optionsJSON } for v13+
                 asseResp = await startAuthentication({ optionsJSON: options });
-            } catch (error) {
+            } catch {
                 toast.error("Passkey đã bị hủy hoặc không khả dụng.");
                 setLoading(false);
                 return;
             }
 
             // 3. Send response to server to verify
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const verifyResp = await api<any>('/auth/webauthn/login/verify', {
                 method: 'POST',
                 body: {
@@ -39,7 +42,7 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
             const { token, user } = verifyResp;
             toast.success("Đã đăng nhập bằng Passkey!");
             onSuccess(token, user);
-        } catch (error) {
+        } catch {
             toast.error("Đăng nhập Passkey thất bại. Vui lòng thử lại hoặc sử dụng mật khẩu.");
         } finally {
             setLoading(false);

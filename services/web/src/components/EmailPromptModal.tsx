@@ -1,6 +1,5 @@
 // Email Prompt Modal for Telegram Registration
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { api } from "../utils/api";
 
 interface EmailPromptModalProps {
@@ -24,26 +23,32 @@ export function EmailPromptModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const completeMutation = useMutation({
-    mutationFn: async (data: { tempToken: string; email: string; password?: string }) => {
-      const response = await api.post("/auth/telegram/complete", data);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      if (data.token) {
-        onComplete(data.token);
-      }
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    completeMutation.mutate({
-      tempToken,
-      email,
-      password: password || undefined,
-    });
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await api<{ token?: string }>("/auth/telegram/complete", {
+        method: "POST",
+        body: {
+          tempToken,
+          email,
+          password: password || undefined,
+        },
+      });
+
+      if (response.token) {
+        onComplete(response.token);
+      }
+    } catch (err) {
+      setError((err as Error).message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -109,9 +114,9 @@ export function EmailPromptModal({
             </p>
           </div>
 
-          {completeMutation.error && (
+          {error && (
             <div className="rounded-lg bg-red-500/20 p-3 text-sm text-red-400">
-              {(completeMutation.error as Error).message || "Registration failed. Please try again."}
+              {error}
             </div>
           )}
 
@@ -125,10 +130,10 @@ export function EmailPromptModal({
             </button>
             <button
               type="submit"
-              disabled={!email || completeMutation.isPending}
+              disabled={!email || isLoading}
               className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {completeMutation.isPending ? "Creating..." : "Complete Registration"}
+              {isLoading ? "Creating..." : "Complete Registration"}
             </button>
           </div>
         </form>

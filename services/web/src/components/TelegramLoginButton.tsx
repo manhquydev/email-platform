@@ -35,7 +35,7 @@ export function TelegramLoginButton({
 
     // Expose callback to window for Telegram widget
     const callbackName = `onTelegramAuth_${Date.now()}`;
-    (window as Record<string, unknown>)[callbackName] = onAuth;
+    (window as unknown as Record<string, unknown>)[callbackName] = onAuth;
 
     // Create and load Telegram widget script
     const script = document.createElement("script");
@@ -56,7 +56,7 @@ export function TelegramLoginButton({
     containerRef.current?.appendChild(script);
 
     return () => {
-      delete (window as Record<string, unknown>)[callbackName];
+      delete (window as unknown as Record<string, unknown>)[callbackName];
       if (containerRef.current) {
         const existingScript = containerRef.current.querySelector("script");
         if (existingScript) {

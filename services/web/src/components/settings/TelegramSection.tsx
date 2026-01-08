@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../utils/api";
-import { TelegramLoginButton, TelegramUser } from "../TelegramLoginButton";
+import { TelegramLoginButton, type TelegramUser } from "../TelegramLoginButton";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 

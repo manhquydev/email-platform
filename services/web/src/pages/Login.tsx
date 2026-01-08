@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { PasskeyLogin } from "../components/Auth/PasskeyLogin";
-import { TelegramLoginButton, TelegramUser } from "../components/TelegramLoginButton";
+import { TelegramLoginButton, type TelegramUser } from "../components/TelegramLoginButton";
 import { EmailPromptModal } from "../components/EmailPromptModal";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
@@ -99,15 +99,21 @@ export function Login() {
     const handleTelegramAuth = async (user: TelegramUser) => {
         setTelegramBusy(true);
         try {
-            const response = await api("/auth/telegram", {
+            const response = await api<{
+                requiresEmail?: boolean;
+                tempToken?: string;
+                telegramUser?: { id: string; username?: string; firstName?: string; photoUrl?: string };
+                token?: string;
+                user?: { id: string; email: string; role: string };
+            }>("/auth/telegram", {
                 method: "POST",
                 body: user,
             });
 
             if (response.requiresEmail) {
                 // New user - needs email
-                setTelegramTempToken(response.tempToken);
-                setTelegramUser(response.telegramUser);
+                setTelegramTempToken(response.tempToken || "");
+                setTelegramUser(response.telegramUser || null);
                 setShowTelegramEmailPrompt(true);
             } else if (response.token) {
                 // Existing user - login successful

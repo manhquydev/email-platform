@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { PasskeyLogin } from "../components/Auth/PasskeyLogin";
+import { TelegramLoginButton, TelegramUser } from "../components/TelegramLoginButton";
+import { EmailPromptModal } from "../components/EmailPromptModal";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
@@ -23,6 +25,12 @@ export function Login() {
     const [loginMode, setLoginMode] = useState<LoginMode>("password");
     const [magicLinkSent, setMagicLinkSent] = useState(false);
     const [magicLinkBusy, setMagicLinkBusy] = useState(false);
+
+    // Telegram auth states
+    const [showTelegramEmailPrompt, setShowTelegramEmailPrompt] = useState(false);
+    const [telegramTempToken, setTelegramTempToken] = useState("");
+    const [telegramUser, setTelegramUser] = useState<{ id: string; username?: string; firstName?: string; photoUrl?: string } | null>(null);
+    const [telegramBusy, setTelegramBusy] = useState(false);
 
     useEffect(() => {
         if (token) navigate("/app");
@@ -85,6 +93,40 @@ export function Login() {
         } finally {
             setMagicLinkBusy(false);
         }
+    };
+
+    // Telegram auth handler
+    const handleTelegramAuth = async (user: TelegramUser) => {
+        setTelegramBusy(true);
+        try {
+            const response = await api("/auth/telegram", {
+                method: "POST",
+                body: user,
+            });
+
+            if (response.requiresEmail) {
+                // New user - needs email
+                setTelegramTempToken(response.tempToken);
+                setTelegramUser(response.telegramUser);
+                setShowTelegramEmailPrompt(true);
+            } else if (response.token) {
+                // Existing user - login successful
+                handleLoginSuccess(response.token, response.user);
+                toast.success("Đăng nhập thành công với Telegram!");
+            }
+        } catch (err) {
+            const msg = (err as Error).message || "Đăng nhập Telegram thất bại";
+            toast.error(msg);
+        } finally {
+            setTelegramBusy(false);
+        }
+    };
+
+    const handleTelegramRegistrationComplete = (token: string) => {
+        localStorage.setItem("token", token);
+        setShowTelegramEmailPrompt(false);
+        toast.success("Đăng ký thành công!");
+        navigate("/app");
     };
 
     const BrandLogo = () => (
@@ -274,8 +316,26 @@ export function Login() {
                                     </div>
                                 </div>
 
-                                <div className="mt-4">
+                                <div className="mt-4 space-y-3">
                                     <PasskeyLogin onSuccess={handleLoginSuccess} />
+
+                                    {/* Telegram Login */}
+                                    {import.meta.env.VITE_TELEGRAM_BOT_USERNAME && (
+                                        <div className="flex justify-center">
+                                            {telegramBusy ? (
+                                                <div className="flex items-center gap-2 text-sm text-slate-400">
+                                                    <span className="animate-spin">⏳</span>
+                                                    <span>Đang xử lý...</span>
+                                                </div>
+                                            ) : (
+                                                <TelegramLoginButton
+                                                    botName={import.meta.env.VITE_TELEGRAM_BOT_USERNAME}
+                                                    onAuth={handleTelegramAuth}
+                                                    buttonSize="large"
+                                                />
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </>
@@ -373,6 +433,20 @@ export function Login() {
                     </div>
                 </div>
             </div>
+
+            {/* Telegram Email Prompt Modal */}
+            {showTelegramEmailPrompt && telegramUser && (
+                <EmailPromptModal
+                    tempToken={telegramTempToken}
+                    telegramUser={telegramUser}
+                    onComplete={handleTelegramRegistrationComplete}
+                    onCancel={() => {
+                        setShowTelegramEmailPrompt(false);
+                        setTelegramUser(null);
+                        setTelegramTempToken("");
+                    }}
+                />
+            )}
         </div>
     );
 }

@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import { PasskeyManager } from "../Auth/PasskeyManager";
+import { TelegramSection } from "./TelegramSection";
 
 interface UserProfile {
     twoFactorEnabled: boolean;
@@ -300,6 +301,9 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             )}
 
             <PasskeyManager />
+
+            {/* Telegram Account Linking */}
+            <TelegramSection />
         </div>
     );
 }

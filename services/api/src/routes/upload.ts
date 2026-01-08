@@ -9,8 +9,8 @@ import { z } from "zod";
 const pump = util.promisify(pipeline);
 
 export async function uploadRoutes(app: FastifyInstance) {
-    // Ensure storage directory exists
-    const storageDir = process.env.STORAGE_DIR || "/app/storage";
+    // Ensure storage directory exists - use relative path as default for CI compatibility
+    const storageDir = process.env.STORAGE_DIR || "./storage";
     if (!fs.existsSync(storageDir)) {
         fs.mkdirSync(storageDir, { recursive: true });
     }

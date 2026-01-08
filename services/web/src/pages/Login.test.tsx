@@ -105,7 +105,7 @@ describe("Login Page", () => {
         // Check for login mode tabs (new feature) - use getAllByText since "Mật khẩu" appears in tab and label
         const matKhauElements = screen.getAllByText("Mật khẩu");
         expect(matKhauElements.length).toBeGreaterThanOrEqual(1);
-        expect(screen.getByText("Link email")).toBeInTheDocument();
+        expect(screen.getByText("Magic Link")).toBeInTheDocument();
 
         // Check for inputs in password mode (default)
         expect(screen.getByText("Email")).toBeInTheDocument();

@@ -125,7 +125,7 @@ describe("Login - Magic Link Functionality", () => {
         // "Mật khẩu" appears in both tab button and password label
         const matKhauElements = screen.getAllByText("Mật khẩu");
         expect(matKhauElements.length).toBeGreaterThanOrEqual(1);
-        expect(screen.getByText("Link email")).toBeInTheDocument();
+        expect(screen.getByText("Magic Link")).toBeInTheDocument();
     });
 
     it("should start with password mode by default", () => {
@@ -139,7 +139,7 @@ describe("Login - Magic Link Functionality", () => {
     it("should switch to magic link mode when clicking tab", async () => {
         renderLogin();
 
-        const magicLinkTab = screen.getByText("Link email");
+        const magicLinkTab = screen.getByText("Magic Link");
 
         await act(async () => {
             fireEvent.click(magicLinkTab);
@@ -161,7 +161,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         // Submit without email - the form has required validation but our mock doesn't support it
@@ -184,7 +184,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         // Enter email
@@ -214,7 +214,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         // Enter email
@@ -246,7 +246,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         // Enter email
@@ -272,7 +272,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         // Enter email
@@ -298,7 +298,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         // Enter email
@@ -327,7 +327,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         // Enter email and submit
@@ -363,7 +363,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         expect(screen.getByText(/Nhập email của bạn/)).toBeInTheDocument();
@@ -383,7 +383,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch to magic link mode and send
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         const emailInputs = screen.getAllByTestId("input-email");
@@ -406,7 +406,7 @@ describe("Login - Magic Link Functionality", () => {
 
         // Switch back to magic link - should be in form state, not success state
         await act(async () => {
-            fireEvent.click(screen.getByText("Link email"));
+            fireEvent.click(screen.getByText("Magic Link"));
         });
 
         expect(screen.getByText("Gửi link đăng nhập")).toBeInTheDocument();

@@ -1,7 +1,7 @@
 
 import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
-import { sendTelegramMessage } from "../services/telegramBot"; // Assuming default export or part of module
+import { sendTelegramMessage } from "../services/telegram";
 import { z } from "zod";
 
 export async function notificationRoutes(app: FastifyInstance) {
@@ -107,7 +107,7 @@ export async function notificationRoutes(app: FastifyInstance) {
             });
 
             // Send via Telegram
-            const { sendNotificationToUser } = await import("../services/telegramBot");
+            const { sendNotificationToUser } = await import("../services/telegram");
             await sendNotificationToUser(targetUserId, title, message, type, imageUrl);
 
             return { success: true, count: 1 };
@@ -121,7 +121,7 @@ export async function notificationRoutes(app: FastifyInstance) {
                 select: { id: true, telegramChatId: true }
             });
 
-            const { sendNotificationToUser } = await import("../services/telegramBot");
+            const { sendNotificationToUser } = await import("../services/telegram");
 
             // Process in chunks to avoid overwhelming DB/Telegram
             const chunkSize = 50;

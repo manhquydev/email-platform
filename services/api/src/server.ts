@@ -27,7 +27,7 @@ import { telegramRoutes } from "./routes/telegram";
 import { webhookRoutes } from "./routes/webhooks";
 import { forwardingRoutes } from "./routes/forwarding";
 import { subscriptionRoutes } from "./routes/subscription";
-import { setupBotCommands } from "./services/telegramBot";
+import { setupBotCommands } from "./services/telegram";
 import { webauthnRoutes } from "./routes/webauthn";
 import { magicLinkRoutes } from "./routes/magic-link";
 import { notificationRoutes } from "./routes/notifications";

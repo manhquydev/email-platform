@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { notifyNewEmail } from "../services/telegramBot";
+import { notifyNewEmail } from "../services/telegram";
 
 // Mock prisma
 const mockFindUnique = vi.fn();

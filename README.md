@@ -146,8 +146,22 @@ npm run dev
 - Secrets: load via env files in dev; in prod prefer secret stores (Docker/K8s secrets, Vault).
 - Containers: run as non-root where possible; keep images minimal and apply regular base updates.
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Project Overview (PDR)](docs/project-overview-pdr.md) | Features, objectives, user personas |
+| [System Architecture](docs/system-architecture.md) | Service topology, data flows |
+| [Code Standards](docs/code-standards.md) | Coding conventions, patterns |
+| [Codebase Summary](docs/codebase-summary.md) | Directory structure, modules |
+| [SMTP Setup](docs/SMTP_SETUP.md) | Mail server configuration |
+
 ## Paths
-- API: `services/api/src`
-- Web UI: `services/web/src`
-- Prisma: `services/api/prisma`
-- Compose: `docker-compose.yml`
+
+| Component | Location |
+|-----------|----------|
+| API | `services/api/src` |
+| Web UI | `services/web/src` |
+| Prisma | `services/api/prisma` |
+| Docker | `docker-compose.yml` |
+| Docs | `docs/` |

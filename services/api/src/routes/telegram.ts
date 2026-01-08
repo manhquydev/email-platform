@@ -14,7 +14,7 @@ import {
     getUserInboxTelegramLinks,
     deleteInboxTelegramLink,
     type TelegramUpdate,
-} from "../services/telegramBot";
+} from "../services/telegram";
 
 export async function telegramRoutes(app: FastifyInstance) {
     // Get Telegram link status (authenticated)

@@ -14,7 +14,7 @@ import { checkSpam, shouldRejectEmail, formatSpamSymbols } from './services/spam
 import { scanBuffer, hasVirus, getDetectedViruses } from './services/virusScanner';
 import { syncMessageToMaildir } from './services/maildirSync';
 import { processFiltersForMessage } from './services/emailFilters';
-import { notifyNewEmail, notifyInboxTelegramSubscribers } from './services/telegramBot';
+import { notifyNewEmail, notifyInboxTelegramSubscribers } from './services/telegram';
 import { forwardMessageIfMatched } from './services/emailForwarder';
 import { triggerWebhook } from './services/webhookService';
 

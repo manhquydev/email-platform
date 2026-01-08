@@ -47,66 +47,67 @@ model User {
   notifications              Notification[]
   apiKeys                    ApiKey[]
   webhooks                   Webhook[]
+  outboundMsgs               OutboundMessage[]
 }
 
 model ApiKey {
-  id        String    @id @default(uuid())
-  userId    String
-  keyHash   String    @unique
-  prefix    String    // First 8 chars for display
-  name      String
+  id         String    @id @default(uuid())
+  userId     String
+  keyHash    String    @unique
+  prefix     String // First 8 chars for display
+  name       String
   lastUsedAt DateTime?
-  createdAt DateTime  @default(now())
-  
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 
 model CreditTransaction {
-  id          String   @id @default(uuid())
+  id          String                @id @default(uuid())
   userId      String
-  amount      Int      // Positive for credit, Negative for debit
+  amount      Int // Positive for credit, Negative for debit
   description String
   type        CreditTransactionType
-  createdAt   DateTime @default(now())
-  metadata    Json?    // Extra info (e.g., related paymentId, messageId)
+  createdAt   DateTime              @default(now())
+  metadata    Json? // Extra info (e.g., related paymentId, messageId)
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 enum CreditTransactionType {
-  DEPOSIT       // From Payment/Redemption
-  WITHDRAWAL    // Manual Admin Removal
-  USAGE         // Consumed for services (e.g. sending email)
-  REFUND        // Returned credits
-  ADJUSTMENT    // Admin correction
+  DEPOSIT // From Payment/Redemption
+  WITHDRAWAL // Manual Admin Removal
+  USAGE // Consumed for services (e.g. sending email)
+  REFUND // Returned credits
+  ADJUSTMENT // Admin correction
 }
 
 model PasskeyCredential {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   userId       String
-  credentialID String   @unique // Base64URL encoded
-  publicKey    String   // Base64URL encoded
+  credentialID String    @unique // Base64URL encoded
+  publicKey    String // Base64URL encoded
   counter      BigInt
   transports   String[] // e.g. ["internal", "usb"]
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
   lastUsedAt   DateTime?
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model MagicLinkToken {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
-  token     String   @unique // Hashed
+  token     String    @unique // Hashed
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
 }
@@ -124,6 +125,8 @@ model Domain {
   shareNote          String?
   owner              User?              @relation(fields: [ownerId], references: [id])
   inboxes            Inbox[]
+  dkim               DomainDkim?
+  outboundMsgs       OutboundMessage[]
 }
 
 model Inbox {
@@ -412,43 +415,44 @@ enum FilterActionType {
   DELETE
   FORWARD
 }
+
 model ServicePackage {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   name        String
   description String?
-  price       Decimal  @default(0)
-  currency    String   @default("VND")
+  price       Decimal     @default(0)
+  currency    String      @default("VND")
   type        PackageType
-  
+
   // Time based params
   durationDays Int?
   targetTier   SubscriptionTier?
-  
+
   // Usage based params
   creditAmount Int?
-  
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Stripe integration
   stripePriceId   String?
   stripeProductId String?
-  
-  codes       RedemptionCode[]
+
+  codes RedemptionCode[]
 }
 
 model RedemptionCode {
-  id          String   @id @default(uuid())
-  code        String   @unique
-  packageId   String
-  maxUses     Int      @default(1)
-  usedCount   Int      @default(0)
-  status      String   @default("ACTIVE") // ACTIVE, USED, EXPIRED, REVOKED
-  expiresAt   DateTime?
-  createdAt   DateTime @default(now())
-  
-  package     ServicePackage @relation(fields: [packageId], references: [id])
+  id        String    @id @default(uuid())
+  code      String    @unique
+  packageId String
+  maxUses   Int       @default(1)
+  usedCount Int       @default(0)
+  status    String    @default("ACTIVE") // ACTIVE, USED, EXPIRED, REVOKED
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  package     ServicePackage   @relation(fields: [packageId], references: [id])
   redemptions CodeRedemption[] @relation("CodeUsage")
 }
 
@@ -458,8 +462,8 @@ model CodeRedemption {
   userId    String
   createdAt DateTime @default(now())
 
-  code      RedemptionCode @relation("CodeUsage", fields: [codeId], references: [id])
-  user      User           @relation("UserRedemptions", fields: [userId], references: [id])
+  code RedemptionCode @relation("CodeUsage", fields: [codeId], references: [id])
+  user User           @relation("UserRedemptions", fields: [userId], references: [id])
 
   @@unique([userId, codeId])
 }
@@ -481,26 +485,26 @@ model Payment {
   userId          String
   amount          Decimal
   currency        String
-  status          String   // SUCCEEDED, FAILED, PENDING
+  status          String // SUCCEEDED, FAILED, PENDING
   stripePaymentId String?  @unique
   packageId       String?
   createdAt       DateTime @default(now())
-  
-  user            User     @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Notification {
   id        String           @id @default(uuid())
-  userId    String?          // Null if system-wide/all users (logic handled in app) or specific user
+  userId    String? // Null if system-wide/all users (logic handled in app) or specific user
   type      NotificationType @default(INFO)
   title     String
   message   String           @db.Text
   imageUrl  String?
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
-  
-  user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 
@@ -535,7 +539,7 @@ model WebhookLog {
   payload      Json
   statusCode   Int?
   responseBody String?
-  duration     Int?     // milliseconds
+  duration     Int? // milliseconds
   createdAt    DateTime @default(now())
   webhook      Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
@@ -547,7 +551,7 @@ model WebhookLog {
 
 model InboxTelegramLink {
   id               String   @id @default(uuid())
-  inboxEmail       String   // "john@domain.com"
+  inboxEmail       String // "john@domain.com"
   telegramChatId   String
   telegramUsername String?
   createdAt        DateTime @default(now())
@@ -562,7 +566,7 @@ model InboxTelegramAuthToken {
   id         String    @id @default(uuid())
   inboxEmail String
   token      String    @unique // "inbox_XXXXXX" format
-  expiresAt  DateTime  // 24h from creation
+  expiresAt  DateTime // 24h from creation
   usedAt     DateTime?
   createdAt  DateTime  @default(now())
 
@@ -573,13 +577,97 @@ model InboxTelegramAuthToken {
 model TelegramNotificationLog {
   id             String   @id @default(uuid())
   inboxEmail     String
-  messageId      String   // References Message.id
+  messageId      String // References Message.id
   telegramChatId String
-  status         String   // SENT, FAILED
+  status         String // SENT, FAILED
   errorMessage   String?
   sentAt         DateTime @default(now())
 
   @@index([inboxEmail])
   @@index([telegramChatId])
   @@index([messageId])
+}
+
+// Phase 07: Outbound Mail Support Models
+
+// Stores DKIM keypair per domain for email signing
+model DomainDkim {
+  id         String    @id @default(uuid())
+  domainId   String    @unique
+  selector   String // e.g., "ephemera2026"
+  privateKey String // Encrypted PEM (AES-256-GCM)
+  publicKey  String // For DNS TXT record display
+  algorithm  String    @default("rsa-sha256")
+  keySize    Int       @default(2048)
+  createdAt  DateTime  @default(now())
+  rotatedAt  DateTime?
+
+  domain Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  @@index([domainId])
+}
+
+// Tracks all outbound emails with delivery status
+model OutboundMessage {
+  id            String         @id @default(uuid())
+  userId        String
+  domainId      String
+  inboxId       String? // Optional: if sent from specific inbox
+  fromAddress   String
+  toAddress     String
+  subject       String?
+  messageId     String         @unique // RFC 5322 Message-ID
+  status        OutboundStatus @default(QUEUED)
+  attempts      Int            @default(0)
+  lastAttemptAt DateTime?
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  bouncedAt     DateTime?
+  bounceType    BounceType?
+  bounceSubType String? // ESP-specific code
+  bounceMessage String?
+  complaintType String? // "abuse", "fraud", etc.
+  espMessageId  String? // Provider message ID
+  espProvider   String? // "ses", "mailgun", "smtp"
+  metadata      Json?
+  createdAt     DateTime       @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  domain Domain @relation(fields: [domainId], references: [id])
+
+  @@index([userId])
+  @@index([domainId])
+  @@index([status])
+  @@index([espMessageId])
+  @@index([toAddress])
+  @@index([createdAt])
+}
+
+// Prevents sending to invalid/complaining addresses
+model BounceSuppressionList {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  reason    String // "hard_bounce", "complaint", "manual"
+  sourceId  String? // OutboundMessage.id that caused suppression
+  createdAt DateTime  @default(now())
+  expiresAt DateTime? // Soft bounces can expire (e.g., 7 days)
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+enum OutboundStatus {
+  QUEUED
+  SENDING
+  SENT
+  DELIVERED
+  BOUNCED
+  COMPLAINED
+  FAILED
+}
+
+enum BounceType {
+  HARD // Permanent - email does not exist
+  SOFT // Temporary - mailbox full, server down
+  COMPLAINT // Spam complaint
 }

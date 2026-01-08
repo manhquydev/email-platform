@@ -191,7 +191,7 @@ export function UsersPage() {
     const isAllSelected = users.length > 0 && selectedIds.size === users.length;
 
     return (
-        <div className="p-6 max-w-full">
+        <div className="p-4 md:p-6 max-w-full">
             <SectionHeader
                 title="Quản lý Người dùng"
                 subtitle={`Tổng số: ${total} người dùng`}

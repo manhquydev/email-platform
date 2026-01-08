@@ -368,7 +368,7 @@ describe("Telegram Integration", () => {
 describe("Telegram Utility Functions", () => {
     it("generateLinkToken should create 6-char alphanumeric token", async () => {
         // Import and test the function directly
-        const { generateLinkToken } = await import("../services/telegramBot");
+        const { generateLinkToken } = await import("../services/telegram");
 
         const token = generateLinkToken();
 
@@ -377,7 +377,7 @@ describe("Telegram Utility Functions", () => {
     });
 
     it("generateLinkToken should create unique tokens", async () => {
-        const { generateLinkToken } = await import("../services/telegramBot");
+        const { generateLinkToken } = await import("../services/telegram");
 
         const tokens = new Set();
         for (let i = 0; i < 100; i++) {

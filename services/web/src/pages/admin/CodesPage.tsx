@@ -114,7 +114,7 @@ export function CodesPage() {
     const [deleteTarget, setDeleteTarget] = useState<RedemptionCode | null>(null);
 
     return (
-        <div className="p-6 max-w-full space-y-6">
+        <div className="p-4 md:p-6 max-w-full space-y-6">
             <SectionHeader
                 title="Mã Đổi Thưởng"
                 subtitle="Tạo và quản lý mã khuyến mãi/kích hoạt"

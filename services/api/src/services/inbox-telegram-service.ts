@@ -1,6 +1,6 @@
 // services/api/src/services/inbox-telegram-service.ts
 import { prisma } from "../lib/prisma";
-import { generateLinkToken } from "./telegramBot";
+import { generateLinkToken } from "./telegram";
 import QRCode from "qrcode";
 
 const MAX_LINKS_PER_INBOX = 5;

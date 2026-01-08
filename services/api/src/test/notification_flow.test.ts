@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildServer } from "../server";
-import * as telegramBot from "../services/telegramBot";
+import * as telegramBot from "../services/telegram";
 
 // Mock Telegram service
-vi.mock("../services/telegramBot", async () => {
+vi.mock("../services/telegram", async () => {
     return {
         sendTelegramMessage: vi.fn().mockResolvedValue(true),
         sendNotificationToUser: vi.fn().mockResolvedValue(true),

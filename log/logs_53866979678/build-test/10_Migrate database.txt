@@ -1,0 +1,103 @@
+﻿2026-01-08T16:09:09.1147616Z ##[group]Run npm run prisma:deploy
+2026-01-08T16:09:09.1148150Z [36;1mnpm run prisma:deploy[0m
+2026-01-08T16:09:09.1185393Z shell: /usr/bin/bash -e {0}
+2026-01-08T16:09:09.1185638Z env:
+2026-01-08T16:09:09.1186480Z   DATABASE_URL: ***localhost:5432/email_service_test
+2026-01-08T16:09:09.1187040Z ##[endgroup]
+2026-01-08T16:09:09.2539104Z 
+2026-01-08T16:09:09.2539610Z > api@1.0.0 prisma:deploy
+2026-01-08T16:09:09.2540165Z > prisma migrate deploy
+2026-01-08T16:09:09.2540430Z 
+2026-01-08T16:09:09.7285117Z Prisma schema loaded from prisma/schema.prisma
+2026-01-08T16:09:09.7432996Z Datasource "db": PostgreSQL database "email_service_test", schema "public" at "localhost:5432"
+2026-01-08T16:09:09.8302608Z 
+2026-01-08T16:09:09.8303321Z 24 migrations found in prisma/migrations
+2026-01-08T16:09:09.8303727Z 
+2026-01-08T16:09:09.8877711Z Applying migration `0001_init`
+2026-01-08T16:09:09.9286318Z Applying migration `0002_abuse_controls`
+2026-01-08T16:09:09.9487461Z Applying migration `20241218_add_fulltext_search`
+2026-01-08T16:09:09.9653677Z Applying migration `20251216203044_add_domain_ownership`
+2026-01-08T16:09:09.9719955Z Applying migration `20251216203156_add_email_verification`
+2026-01-08T16:09:09.9751951Z Applying migration `20251219100000_add_subscription_fields`
+2026-01-08T16:09:09.9823656Z Applying migration `20251220031500_add_contribution_status`
+2026-01-08T16:09:09.9847735Z Applying migration `20251220034000_ensure_contribution_status`
+2026-01-08T16:09:09.9880027Z Applying migration `20251220090000_add_sharing_fields`
+2026-01-08T16:09:09.9921276Z Applying migration `20251220100000_add_inbox_owner`
+2026-01-08T16:09:09.9991400Z Applying migration `20251220110000_add_telegram_integration`
+2026-01-08T16:09:10.0130068Z Applying migration `20251220112000_add_email_forwarding`
+2026-01-08T16:09:10.0356841Z Applying migration `20251220133000_add_2fa_authenticator`
+2026-01-08T16:09:10.0506124Z Applying migration `20251225143000_add_missing_billing_tables`
+2026-01-08T16:09:10.0800597Z Applying migration `20251226091538_add_passkeys_and_magic_link`
+2026-01-08T16:09:10.0980621Z Applying migration `20251226170020_add_credit_transaction`
+2026-01-08T16:09:10.1074856Z Applying migration `20251227095500_add_message_pinned_snooze`
+2026-01-08T16:09:10.1122805Z Applying migration `20251227110348_add_image_url_to_notification`
+2026-01-08T16:09:10.1425371Z Applying migration `20251227120000_add_notification`
+2026-01-08T16:09:10.1526590Z Applying migration `20251229133319_add_api_keys`
+2026-01-08T16:09:10.1639647Z Applying migration `20251229180608_add_webhook_models`
+2026-01-08T16:09:10.1798522Z Applying migration `20251231183531_add_user_name`
+2026-01-08T16:09:10.1827758Z Applying migration `20260107132500_add_inbox_telegram_link`
+2026-01-08T16:09:10.2057329Z Applying migration `20260108060000_add_audit_analytics_indexes`
+2026-01-08T16:09:10.2168171Z 
+2026-01-08T16:09:10.2185171Z The following migration(s) have been applied:
+2026-01-08T16:09:10.2185684Z 
+2026-01-08T16:09:10.2185849Z migrations/
+2026-01-08T16:09:10.2194668Z   └─ 0001_init/
+2026-01-08T16:09:10.2195226Z     └─ migration.sql
+2026-01-08T16:09:10.2195645Z   └─ 0002_abuse_controls/
+2026-01-08T16:09:10.2196045Z     └─ migration.sql
+2026-01-08T16:09:10.2196485Z   └─ 20241218_add_fulltext_search/
+2026-01-08T16:09:10.2197315Z     └─ migration.sql
+2026-01-08T16:09:10.2197771Z   └─ 20251216203044_add_domain_ownership/
+2026-01-08T16:09:10.2198242Z     └─ migration.sql
+2026-01-08T16:09:10.2198701Z   └─ 20251216203156_add_email_verification/
+2026-01-08T16:09:10.2199165Z     └─ migration.sql
+2026-01-08T16:09:10.2199616Z   └─ 20251219100000_add_subscription_fields/
+2026-01-08T16:09:10.2200087Z     └─ migration.sql
+2026-01-08T16:09:10.2208686Z   └─ 20251220031500_add_contribution_status/
+2026-01-08T16:09:10.2209473Z     └─ migration.sql
+2026-01-08T16:09:10.2210198Z   └─ 20251220034000_ensure_contribution_status/
+2026-01-08T16:09:10.2210929Z     └─ migration.sql
+2026-01-08T16:09:10.2211514Z   └─ 20251220090000_add_sharing_fields/
+2026-01-08T16:09:10.2212014Z     └─ migration.sql
+2026-01-08T16:09:10.2212910Z   └─ 20251220100000_add_inbox_owner/
+2026-01-08T16:09:10.2213407Z     └─ migration.sql
+2026-01-08T16:09:10.2214161Z   └─ 20251220110000_add_telegram_integration/
+2026-01-08T16:09:10.2214680Z     └─ migration.sql
+2026-01-08T16:09:10.2215226Z   └─ 20251220112000_add_email_forwarding/
+2026-01-08T16:09:10.2215709Z     └─ migration.sql
+2026-01-08T16:09:10.2216245Z   └─ 20251220133000_add_2fa_authenticator/
+2026-01-08T16:09:10.2216727Z     └─ migration.sql
+2026-01-08T16:09:10.2217300Z   └─ 20251225143000_add_missing_billing_tables/
+2026-01-08T16:09:10.2217761Z     └─ migration.sql
+2026-01-08T16:09:10.2218339Z   └─ 20251226091538_add_passkeys_and_magic_link/
+2026-01-08T16:09:10.2218812Z     └─ migration.sql
+2026-01-08T16:09:10.2219353Z   └─ 20251226170020_add_credit_transaction/
+2026-01-08T16:09:10.2219826Z     └─ migration.sql
+2026-01-08T16:09:10.2220385Z   └─ 20251227095500_add_message_pinned_snooze/
+2026-01-08T16:09:10.2220854Z     └─ migration.sql
+2026-01-08T16:09:10.2221448Z   └─ 20251227110348_add_image_url_to_notification/
+2026-01-08T16:09:10.2221943Z     └─ migration.sql
+2026-01-08T16:09:10.2222465Z   └─ 20251227120000_add_notification/
+2026-01-08T16:09:10.2222931Z     └─ migration.sql
+2026-01-08T16:09:10.2223452Z   └─ 20251229133319_add_api_keys/
+2026-01-08T16:09:10.2224396Z     └─ migration.sql
+2026-01-08T16:09:10.2225008Z   └─ 20251229180608_add_webhook_models/
+2026-01-08T16:09:10.2225554Z     └─ migration.sql
+2026-01-08T16:09:10.2225830Z   └─ 20251231183531_add_user_name/
+2026-01-08T16:09:10.2226091Z     └─ migration.sql
+2026-01-08T16:09:10.2226366Z   └─ 20260107132500_add_inbox_telegram_link/
+2026-01-08T16:09:10.2226636Z     └─ migration.sql
+2026-01-08T16:09:10.2226945Z   └─ 20260108060000_add_audit_analytics_indexes/
+2026-01-08T16:09:10.2227248Z     └─ migration.sql
+2026-01-08T16:09:10.2227435Z       
+2026-01-08T16:09:10.2227699Z All migrations have been successfully applied.
+2026-01-08T16:09:10.2565669Z ┌─────────────────────────────────────────────────────────┐
+2026-01-08T16:09:10.2567105Z │  Update available 5.18.0 -> 7.2.0                       │
+2026-01-08T16:09:10.2568167Z │                                                         │
+2026-01-08T16:09:10.2569174Z │  This is a major update - please follow the guide at    │
+2026-01-08T16:09:10.2571005Z │  https://pris.ly/d/major-version-upgrade                │
+2026-01-08T16:09:10.2571895Z │                                                         │
+2026-01-08T16:09:10.2572730Z │  Run the following to update                            │
+2026-01-08T16:09:10.2578412Z │    npm i --save-dev prisma@latest                       │
+2026-01-08T16:09:10.2579309Z │    npm i @prisma/client@latest                          │
+2026-01-08T16:09:10.2580208Z └─────────────────────────────────────────────────────────┘

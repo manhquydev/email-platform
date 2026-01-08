@@ -1,21 +1,40 @@
 import "@fastify/jwt";
-import { SubscriptionTier } from "@prisma/client";
+import { SubscriptionTier, UserRole } from "@prisma/client";
 
 declare module "@fastify/jwt" {
   interface FastifyJWT {
     payload: {
       userId: string;
-      role: string;
+      role: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
-    }; // payload type is used for signing and verifying
+    };
     user: {
       userId: string;
-      role: string;
+      role: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
       iat: number;
       exp: number;
-    }; // user type is return type of `request.user` object
+    };
   }
+}
+
+// Helper types for request handlers
+export interface AuthenticatedUser {
+  userId: string;
+  role: UserRole;
+  tier?: SubscriptionTier;
+  pending2FA?: boolean;
+  iat: number;
+  exp: number;
+}
+
+export interface AdminUser extends AuthenticatedUser {
+  role: "ADMIN";
+}
+
+// Type guard for admin users
+export function isAdminUser(user: AuthenticatedUser): user is AdminUser {
+  return user.role === "ADMIN";
 }

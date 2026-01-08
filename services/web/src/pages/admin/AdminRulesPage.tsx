@@ -81,7 +81,7 @@ export function AdminRulesPage() {
     };
 
     return (
-        <div className="p-6 max-w-5xl space-y-6">
+        <div className="p-4 md:p-6 max-w-5xl space-y-6">
             <SectionHeader
                 title="Quy tắc bảo vệ"
                 subtitle="Quản lý các quy tắc chặn hoặc cho phép email"

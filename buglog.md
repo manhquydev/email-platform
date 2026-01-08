@@ -1,0 +1,93 @@
+Đã xảy ra lỗi
+Cannot read properties of undefined (reading 'attachments')
+index-DpWcelaS.js:9 TypeError: Cannot read properties of undefined (reading 'attachments')
+    at InboxViewer-D9xa_zZ5.js:1:2155
+    at Array.map (<anonymous>)
+    at P (InboxViewer-D9xa_zZ5.js:1:1520)
+    at hc (index-DpWcelaS.js:9:48073)
+    at Rc (index-DpWcelaS.js:9:70865)
+    at Km (index-DpWcelaS.js:9:81197)
+    at Np (index-DpWcelaS.js:9:116948)
+    at n1 (index-DpWcelaS.js:9:115994)
+    at eu (index-DpWcelaS.js:9:115826)
+    at gp (index-DpWcelaS.js:9:112624)
+Mm @ index-DpWcelaS.js:9
+km @ index-DpWcelaS.js:9
+x.componentDidCatch.e.callback @ index-DpWcelaS.js:9
+Bf @ index-DpWcelaS.js:9
+Uf @ index-DpWcelaS.js:9
+Fm @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cp @ index-DpWcelaS.js:9
+Tp @ index-DpWcelaS.js:9
+xp @ index-DpWcelaS.js:9
+gp @ index-DpWcelaS.js:9
+Lp @ index-DpWcelaS.js:9
+ke @ index-DpWcelaS.js:2
+index-DpWcelaS.js:196 Error caught by boundary: TypeError: Cannot read properties of undefined (reading 'attachments')
+    at InboxViewer-D9xa_zZ5.js:1:2155
+    at Array.map (<anonymous>)
+    at P (InboxViewer-D9xa_zZ5.js:1:1520)
+    at hc (index-DpWcelaS.js:9:48073)
+    at Rc (index-DpWcelaS.js:9:70865)
+    at Km (index-DpWcelaS.js:9:81197)
+    at Np (index-DpWcelaS.js:9:116948)
+    at n1 (index-DpWcelaS.js:9:115994)
+    at eu (index-DpWcelaS.js:9:115826)
+    at gp (index-DpWcelaS.js:9:112624) {componentStack: '\n    at P (https://app.manhquy.click/assets/InboxV…dex-DpWcelaS.js:188:6660)\n    at W5 (<anonymous>)'}
+componentDidCatch @ index-DpWcelaS.js:196
+x.componentDidCatch.e.callback @ index-DpWcelaS.js:9
+Bf @ index-DpWcelaS.js:9
+Uf @ index-DpWcelaS.js:9
+Fm @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cn @ index-DpWcelaS.js:9
+tp @ index-DpWcelaS.js:9
+Cp @ index-DpWcelaS.js:9
+Tp @ index-DpWcelaS.js:9
+xp @ index-DpWcelaS.js:9
+gp @ index-DpWcelaS.js:9
+Lp @ index-DpWcelaS.js:9
+ke @ index-DpWcelaS.js:2

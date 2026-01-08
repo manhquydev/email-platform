@@ -162,7 +162,7 @@ export function PackagesPage() {
     const [deleteTarget, setDeleteTarget] = useState<ServicePackage | null>(null);
 
     return (
-        <div className="p-6 max-w-full space-y-6">
+        <div className="p-4 md:p-6 max-w-full space-y-6">
             <SectionHeader
                 title="Quản lý Gói Dịch Vụ"
                 subtitle="Định nghĩa các gói cước và giá bán"

@@ -208,7 +208,7 @@ export function Register() {
                     </div>
                 </GlassCard>
 
-                {/* Right: Hero/Visuals */}
+                {/* Right: Hero/Visuals - Desktop */}
                 <div className="hidden md:flex flex-col justify-center text-white p-8 relative">
                     {/* Decorative Elements */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 blur-[120px] rounded-full pointing-events-none -z-10" />

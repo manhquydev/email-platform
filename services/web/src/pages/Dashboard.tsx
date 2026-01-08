@@ -355,8 +355,8 @@ export function Dashboard() {
             {/* 2-Pane Layout (Gmail style): Sidebar (260px) | Main Content (flex) */}
             <div className="flex-1 flex h-full w-full">
 
-                {/* Pane 1: Sidebar (Desktop) - Compact */}
-                <div className="hidden md:flex w-[260px] h-full p-2 flex-shrink-0">
+                {/* Pane 1: Sidebar (Desktop only - hidden on tablet) */}
+                <div className="hidden lg:flex w-[260px] h-full p-2 flex-shrink-0">
                     <Sidebar
                         domains={domains}
                         inboxes={inboxes}
@@ -383,7 +383,7 @@ export function Dashboard() {
                     transition={{ duration: 0.4 }}
                     className={cn(
                         "flex flex-col h-full bg-slate-50/50 dark:bg-bg border-r border-slate-200 dark:border-white/5",
-                        selectedMessage ? "hidden md:flex md:w-[360px]" : "w-full md:w-[360px] flex-shrink-0"
+                        selectedMessage ? "hidden md:flex md:w-[320px] lg:w-[360px]" : "w-full md:w-[320px] lg:w-[360px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
                     <div className="h-16 px-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
@@ -391,13 +391,13 @@ export function Dashboard() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="md:hidden shrink-0 text-slate-700 dark:text-white"
+                                className="lg:hidden shrink-0 text-slate-700 dark:text-white"
                                 onClick={() => setShowMobileSidebar(true)}
                                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>}
                             />
 
-                            {/* Mobile: Inbox Selector */}
-                            <div className="md:hidden w-full">
+                            {/* Mobile/Tablet: Inbox Selector */}
+                            <div className="lg:hidden w-full">
                                 <InboxSelector
                                     domains={domains}
                                     inboxes={inboxes}
@@ -413,7 +413,7 @@ export function Dashboard() {
                             </div>
 
                             {/* Desktop: Static Header */}
-                            <div className="hidden md:flex flex-col">
+                            <div className="hidden lg:flex flex-col">
                                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{activeDomain?.name}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
@@ -699,10 +699,10 @@ export function Dashboard() {
                     )}
                 </motion.div>
 
-                {/* Mobile Sidebar Drawer */}
+                {/* Mobile Sidebar Drawer - Also shown on tablet */}
                 <AnimatePresence>
                     {showMobileSidebar && (
-                        <div className="fixed inset-0 z-50 md:hidden flex">
+                        <div className="fixed inset-0 z-50 lg:hidden flex">
                             {/* Backdrop */}
                             <motion.div
                                 initial={{ opacity: 0 }}

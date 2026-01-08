@@ -8,6 +8,12 @@ declare module "@fastify/jwt" {
       role: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
+      // Telegram temp token fields (for registration flow)
+      telegramAuth?: boolean;
+      telegramId?: string;
+      telegramUsername?: string;
+      telegramFirstName?: string;
+      telegramPhotoUrl?: string;
     };
     user: {
       userId: string;

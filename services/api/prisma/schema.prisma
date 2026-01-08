@@ -26,6 +26,12 @@ model User {
   trialEndsAt                DateTime?
   telegramChatId             String?                @unique
   telegramLinkedAt           DateTime?
+  // Telegram Auth (Login Widget) - separate from chat notifications
+  telegramId                 String?                @unique
+  telegramUsername           String?
+  telegramFirstName          String?
+  telegramPhotoUrl           String?
+  telegramAuthDate           DateTime?
   notifyOnEmail              Boolean                @default(true)
   verifiedForwardEmails      String[]
   twoFactorEnabled           Boolean                @default(false)

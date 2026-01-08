@@ -30,6 +30,7 @@ import { subscriptionRoutes } from "./routes/subscription";
 import { setupBotCommands } from "./services/telegram";
 import { webauthnRoutes } from "./routes/webauthn";
 import { magicLinkRoutes } from "./routes/magic-link";
+import { telegramAuthRoutes } from "./routes/telegram-auth";
 import { notificationRoutes } from "./routes/notifications";
 import { uploadRoutes } from "./routes/upload";
 import { apiKeysRoutes } from "./routes/api-keys";
@@ -229,6 +230,7 @@ export const buildServer = () => {
   app.register(forwardingRoutes);
   app.register(webauthnRoutes);
   app.register(magicLinkRoutes);
+  app.register(telegramAuthRoutes);
 
   app.register(subscriptionRoutes);
   app.register(apiKeysRoutes);

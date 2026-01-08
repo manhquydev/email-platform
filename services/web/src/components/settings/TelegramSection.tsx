@@ -1,6 +1,5 @@
 // Telegram Account Linking Section for Settings
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../../utils/api";
 import { TelegramLoginButton, type TelegramUser } from "../TelegramLoginButton";
 import { useAuth } from "../../context/AuthContext";
@@ -17,51 +16,62 @@ interface TelegramStatus {
 
 export function TelegramSection() {
   const { token } = useAuth();
-  const queryClient = useQueryClient();
   const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
+  const [status, setStatus] = useState<TelegramStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLinking, setIsLinking] = useState(false);
+  const [isUnlinking, setIsUnlinking] = useState(false);
 
-  const { data: status, isLoading } = useQuery({
-    queryKey: ["telegram-auth-status"],
-    queryFn: async () => {
+  const fetchStatus = useCallback(async () => {
+    if (!token) return;
+    setIsLoading(true);
+    try {
       const res = await api<TelegramStatus>("/auth/telegram/status", { token });
-      return res;
-    },
-    enabled: !!token,
-  });
+      setStatus(res);
+    } catch {
+      // Silent fail - status will be null
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token]);
 
-  const linkMutation = useMutation({
-    mutationFn: async (userData: TelegramUser) => {
-      return api("/auth/telegram/link", {
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  const handleLink = async (userData: TelegramUser) => {
+    setIsLinking(true);
+    try {
+      await api("/auth/telegram/link", {
         method: "POST",
         token,
         body: userData,
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["telegram-auth-status"] });
       toast.success("Telegram đã được liên kết thành công!");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Không thể liên kết Telegram");
-    },
-  });
+      fetchStatus();
+    } catch (err) {
+      toast.error((err as Error).message || "Không thể liên kết Telegram");
+    } finally {
+      setIsLinking(false);
+    }
+  };
 
-  const unlinkMutation = useMutation({
-    mutationFn: async () => {
-      return api("/auth/telegram/unlink", {
+  const handleUnlink = async () => {
+    setIsUnlinking(true);
+    try {
+      await api("/auth/telegram/unlink", {
         method: "DELETE",
         token,
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["telegram-auth-status"] });
       setShowUnlinkConfirm(false);
       toast.success("Đã hủy liên kết Telegram");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Không thể hủy liên kết Telegram");
-    },
-  });
+      fetchStatus();
+    } catch (err) {
+      toast.error((err as Error).message || "Không thể hủy liên kết Telegram");
+    } finally {
+      setIsUnlinking(false);
+    }
+  };
 
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME;
 
@@ -143,11 +153,11 @@ export function TelegramSection() {
                   Hủy
                 </button>
                 <button
-                  onClick={() => unlinkMutation.mutate()}
-                  disabled={unlinkMutation.isPending}
+                  onClick={handleUnlink}
+                  disabled={isUnlinking}
                   className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 >
-                  {unlinkMutation.isPending ? "Đang xử lý..." : "Xác nhận hủy liên kết"}
+                  {isUnlinking ? "Đang xử lý..." : "Xác nhận hủy liên kết"}
                 </button>
               </div>
             </div>
@@ -167,7 +177,7 @@ export function TelegramSection() {
           </p>
 
           <div className="flex justify-center">
-            {linkMutation.isPending ? (
+            {isLinking ? (
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <span className="animate-spin">⏳</span>
                 <span>Đang liên kết...</span>
@@ -175,7 +185,7 @@ export function TelegramSection() {
             ) : (
               <TelegramLoginButton
                 botName={botUsername}
-                onAuth={(user) => linkMutation.mutate(user)}
+                onAuth={handleLink}
                 buttonSize="large"
               />
             )}

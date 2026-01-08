@@ -33,7 +33,9 @@ export async function publicTelegramRoutes(app: FastifyInstance) {
 
       return result;
     } catch (error: any) {
-      return reply.status(400).send({ error: error.message });
+      // Return 404 for "Inbox not found", 400 for other errors
+      const status = error.message === "Inbox not found" ? 404 : 400;
+      return reply.status(status).send({ error: error.message });
     }
   });
 

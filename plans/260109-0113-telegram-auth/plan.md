@@ -1,7 +1,7 @@
 ---
 title: "Telegram Authentication Integration"
 description: "Add Telegram Login Widget for user registration and login"
-status: pending
+status: completed
 priority: P2
 effort: 8h
 branch: main
@@ -34,11 +34,11 @@ Add Telegram-based authentication using Telegram Login Widget. Users can:
 
 | Phase | File | Effort | Status |
 |-------|------|--------|--------|
-| 01 | [Database Schema](./phase-01-database-schema.md) | 1h | pending |
-| 02 | [Backend Auth Routes](./phase-02-backend-auth-routes.md) | 3h | pending |
-| 03 | [Frontend Integration](./phase-03-frontend-integration.md) | 2h | pending |
-| 04 | [Account Linking](./phase-04-account-linking.md) | 1h | pending |
-| 05 | [Testing & Security](./phase-05-testing-security.md) | 1h | pending |
+| 01 | [Database Schema](./phase-01-database-schema.md) | 1h | completed |
+| 02 | [Backend Auth Routes](./phase-02-backend-auth-routes.md) | 3h | completed |
+| 03 | [Frontend Integration](./phase-03-frontend-integration.md) | 2h | completed |
+| 04 | [Account Linking](./phase-04-account-linking.md) | 1h | completed |
+| 05 | [Testing & Security](./phase-05-testing-security.md) | 1h | completed |
 
 ## Dependencies
 

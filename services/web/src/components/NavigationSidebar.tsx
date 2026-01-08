@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../utils/cn";
 import { useAuth } from "../context/AuthContext";
 import { ThemeToggle } from "./ThemeToggle";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "./ui/Dropdown";
 
 interface NavigationSidebarProps {
     isExpanded: boolean;
@@ -10,11 +11,18 @@ interface NavigationSidebarProps {
 
 export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebarProps) {
     const location = useLocation();
-    const { user } = useAuth();
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+
     // Helper check active
     const isActive = (path: string) => {
         if (path === "/app") return location.pathname === "/app";
         return location.pathname.startsWith(path);
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
     };
 
 
@@ -114,29 +122,45 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                 </nav>
             </div>
 
-            {/* Bottom Actions - User Profile */}
+            {/* Bottom Actions - User Profile with Dropdown */}
             <div className="p-4 flex flex-col gap-4 border-t border-slate-200 dark:border-glass-border bg-slate-50/50 dark:bg-black/20 overflow-hidden mt-auto">
-                {/* Theme Toggle - Only visible when expanded or just icon if collapsed */}
+                {/* Theme Toggle */}
                 <div className={cn("flex items-center justify-center", isExpanded ? "w-full" : "w-full")}>
                     <ThemeToggle />
                 </div>
 
-                <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 transition-colors w-full text-left overflow-hidden">
-                    <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-slate-200 dark:ring-white/10 bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm">
-                        {user?.email?.charAt(0).toUpperCase() || "U"}
-                    </div>
-                    {isExpanded && (
-                        <div className="flex flex-col items-start animate-in fade-in duration-300 overflow-hidden">
-                            <span className="text-sm font-medium text-slate-900 dark:text-white truncate w-full">{user?.email?.split('@')[0] || "Người dùng"}</span>
-                            <span className="text-xs text-slate-500 dark:text-gray-500 truncate w-full uppercase">Gói {
-                                user?.tier === 'FREE' ? 'MIỄN PHÍ' :
-                                    user?.tier === 'STARTER' ? 'KHỞI ĐẦU' :
-                                        user?.tier === 'PROFESSIONAL' ? 'CHUYÊN NGHIỆP' :
-                                            user?.tier === 'ENTERPRISE' ? 'DOANH NGHIỆP' : (user?.tier || "MIỄN PHÍ")
-                            }</span>
-                        </div>
-                    )}
-                </button>
+                {/* User Dropdown */}
+                <Dropdown>
+                    <DropdownTrigger>
+                        <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 transition-colors w-full text-left overflow-hidden">
+                            <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-slate-200 dark:ring-white/10 bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm">
+                                {user?.email?.charAt(0).toUpperCase() || "U"}
+                            </div>
+                            {isExpanded && (
+                                <div className="flex flex-col items-start animate-in fade-in duration-300 overflow-hidden">
+                                    <span className="text-sm font-medium text-slate-900 dark:text-white truncate w-full">{user?.email?.split('@')[0] || "Người dùng"}</span>
+                                    <span className="text-xs text-slate-500 dark:text-gray-500 truncate w-full uppercase">Gói {
+                                        user?.tier === 'FREE' ? 'MIỄN PHÍ' :
+                                            user?.tier === 'STARTER' ? 'KHỞI ĐẦU' :
+                                                user?.tier === 'PROFESSIONAL' ? 'CHUYÊN NGHIỆP' :
+                                                    user?.tier === 'ENTERPRISE' ? 'DOANH NGHIỆP' : (user?.tier || "MIỄN PHÍ")
+                                    }</span>
+                                </div>
+                            )}
+                        </button>
+                    </DropdownTrigger>
+
+                    <DropdownMenu align="left">
+                        <DropdownItem onClick={() => navigate('/settings')}>
+                            <span className="material-symbols-outlined text-[20px]">settings</span>
+                            <span>Cài đặt</span>
+                        </DropdownItem>
+                        <DropdownItem onClick={handleLogout} variant="danger">
+                            <span className="material-symbols-outlined text-[20px]">logout</span>
+                            <span>Đăng xuất</span>
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
             </div>
         </aside>
     );

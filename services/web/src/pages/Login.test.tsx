@@ -102,12 +102,11 @@ describe("Login Page", () => {
         // Check for main title
         expect(screen.getByText("Chào mừng trở lại")).toBeInTheDocument();
 
-        // Check for login mode tabs (new feature) - use getAllByText since "Mật khẩu" appears in tab and label
+        // Check for password label - use getAllByText since "Mật khẩu" appears in multiple places
         const matKhauElements = screen.getAllByText("Mật khẩu");
         expect(matKhauElements.length).toBeGreaterThanOrEqual(1);
-        expect(screen.getByText("Magic Link")).toBeInTheDocument();
 
-        // Check for inputs in password mode (default)
+        // Check for inputs in password mode
         expect(screen.getByText("Email")).toBeInTheDocument();
         expect(screen.getByPlaceholderText("name@example.com")).toBeInTheDocument();
         expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();

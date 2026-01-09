@@ -9,6 +9,7 @@ import { hashPassword } from "./utils/password";
 import { runRetentionSweep } from "./retention";
 import cron from "node-cron";
 import { runAutomatedCleanup } from "./utils/cleanup";
+import { syncPostfixRelayDomains } from "./utils/postfix-sync";
 
 const ensureStorageDir = async () => {
   await fs.mkdir(appConfig.storageDir, { recursive: true });
@@ -73,6 +74,17 @@ const main = async () => {
   outboundService.verifyConnection().catch(err => {
     app.log.error({ err }, "Initial SMTP verification failed");
   });
+
+  // Sync verified domains to Postfix on startup
+  syncPostfixRelayDomains()
+    .then(result => {
+      if (result.success && result.domains.length > 0) {
+        app.log.info({ domains: result.domains.length, method: result.method }, "Postfix relay domains synced on startup");
+      }
+    })
+    .catch(err => {
+      app.log.error({ err }, "Postfix sync failed on startup");
+    });
 
   // periodic retention sweep
   const retentionInterval = setInterval(() => {

@@ -198,7 +198,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                 <div className="flex gap-3">
                     <button
                         onClick={handleExportReport}
-                        className="glass-panel px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex items-center gap-2 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300"
+                        className="glass-panel px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex items-center gap-2 border border-slate-200 dark:border-white/15 text-slate-600 dark:text-gray-300"
                     >
                         <span className="material-symbols-outlined text-[18px]">download</span>
                         Xuất báo cáo
@@ -226,7 +226,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Usage Stats (Spans 2 cols on large screens) */}
                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <span className="material-symbols-outlined text-6xl text-slate-900 dark:text-white">diamond</span>
                         </div>
@@ -244,7 +244,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                         </p>
                     </GlassCard>
 
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <span className="material-symbols-outlined text-6xl text-slate-900 dark:text-white">account_balance_wallet</span>
                         </div>
@@ -257,7 +257,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                         </p>
                     </GlassCard>
 
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Tên miền riêng</p>
@@ -270,7 +270,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                         </div>
                     </GlassCard>
 
-                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Dung lượng</p>
@@ -285,7 +285,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                 </div>
 
                 {/* Payment Method Card */}
-                <GlassCard className="p-6 rounded-xl flex flex-col gap-6 relative overflow-hidden bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                <GlassCard className="p-6 rounded-xl flex flex-col gap-6 relative overflow-hidden bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
                     <div className="flex items-center justify-between relative z-10">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Phương thức thanh toán</h3>
@@ -323,7 +323,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                 <div className="flex flex-col items-center gap-4">
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Nâng cấp gói của bạn</h2>
                     {/* Toggle Switch */}
-                    <div className="p-1 rounded-xl inline-flex relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10">
+                    <div className="p-1 rounded-xl inline-flex relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/15">
                         <button
                             onClick={() => setBillingCycle('monthly')}
                             className={`relative z-10 px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${billingCycle === 'monthly' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'}`}
@@ -342,7 +342,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                 {/* Pricing Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                     {/* Free Tier */}
-                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('FREE') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
+                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none ${isPlanActive('FREE') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
                         <div>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Miễn phí</h3>
                             <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Cơ bản ẩn danh</p>
@@ -362,7 +362,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                     </GlassCard>
 
                     {/* Starter Tier */}
-                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none ${isPlanActive('STARTER') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
+                    <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none ${isPlanActive('STARTER') ? 'border-primary shadow-[0_0_30px_rgba(25,25,230,0.15)] ring-2 ring-primary/20' : ''}`}>
                         {isPlanActive('STARTER') && (
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-primary/40">
                                 Gói hiện tại
@@ -417,7 +417,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                     </GlassCard>
 
                     {/* Enterprise Tier */}
-                    <GlassCard className="p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                         <div>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Doanh nghiệp</h3>
                             <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Truy cập API & lưu lượng lớn</p>
@@ -440,7 +440,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
             {/* Billing History Table */}
             <div className="flex flex-col gap-4 mt-6">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Lịch sử thanh toán</h2>
-                <GlassCard className="rounded-xl overflow-hidden overflow-x-auto p-0 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                <GlassCard className="rounded-xl overflow-hidden overflow-x-auto p-0 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                     <table className="w-full text-left text-sm border-collapse">
                         <thead className="bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-gray-400 uppercase text-xs font-semibold tracking-wider">
                             <tr>

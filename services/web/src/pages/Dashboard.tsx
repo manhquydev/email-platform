@@ -386,7 +386,7 @@ export function Dashboard() {
                         selectedMessage ? "hidden md:flex md:w-[320px] lg:w-[360px]" : "w-full md:w-[320px] lg:w-[360px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
-                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
+                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/15 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <Button
                                 variant="ghost"
@@ -464,7 +464,7 @@ export function Dashboard() {
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                className="w-full bg-slate-100 dark:bg-surface-glass border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-text-primary placeholder:text-slate-500 dark:placeholder-text-tertiary focus:outline-none focus:border-primary/50 transition-colors"
+                                className="w-full bg-slate-100 dark:bg-surface-glass border border-slate-200 dark:border-white/15 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-text-primary placeholder:text-slate-500 dark:placeholder-text-tertiary focus:outline-none focus:border-primary/50 transition-colors"
                                 placeholder="Tìm kiếm... (từ:, là:chưa đọc)"
                                 value={messageSearch}
                                 onChange={(e) => setMessageSearch(e.target.value)}
@@ -520,7 +520,7 @@ export function Dashboard() {
                     {selectedMessage ? (
                         <>
                             {/* Detail Header */}
-                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
+                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/15 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
                                 <div className="flex items-center gap-3">
                                     <Button
                                         variant="ghost"
@@ -538,7 +538,7 @@ export function Dashboard() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated/50 rounded-lg p-1 border border-slate-200 dark:border-white/10 shadow-lg backdrop-blur-md">
+                                <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated/50 rounded-lg p-1 border border-slate-200 dark:border-white/15 shadow-lg backdrop-blur-md">
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -620,7 +620,7 @@ export function Dashboard() {
                                 })()}
 
                                 {/* Email Body */}
-                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
+                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 overflow-hidden shadow-sm">
                                     {selectedMessage.htmlBody ? (
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe

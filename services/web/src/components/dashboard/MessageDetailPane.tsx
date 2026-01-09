@@ -53,7 +53,7 @@ export function MessageDetailPane({
             {message ? (
                 <>
                     {/* Detail Header */}
-                    <div className="h-16 px-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
+                    <div className="h-16 px-6 border-b border-slate-200 dark:border-white/15 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
                         <div className="flex items-center gap-3">
                             <Button
                                 variant="ghost"
@@ -71,7 +71,7 @@ export function MessageDetailPane({
                                 </span>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated/50 rounded-lg p-1 border border-slate-200 dark:border-white/10 shadow-lg backdrop-blur-md">
+                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated/50 rounded-lg p-1 border border-slate-200 dark:border-white/15 shadow-lg backdrop-blur-md">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -133,7 +133,7 @@ export function MessageDetailPane({
                         })()}
 
                         {/* Email Body */}
-                        <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
+                        <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 overflow-hidden shadow-sm">
                             {message.htmlBody ? (
                                 <div className="prose dark:prose-invert max-w-none">
                                     <iframe

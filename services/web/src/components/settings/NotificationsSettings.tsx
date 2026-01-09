@@ -130,7 +130,7 @@ export function NotificationsSettings() {
             </div>
 
             {/* Account Telegram Link */}
-            <GlassCard className="p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <GlassCard className="p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                 <div className="flex items-center gap-2 mb-6">
                     <span className="material-symbols-outlined text-[#0088cc]">send</span>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Thông báo Telegram (Tài khoản)</h3>
@@ -155,7 +155,7 @@ export function NotificationsSettings() {
                             </div>
 
                             {/* Notification Toggle */}
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/10">
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/15">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100 dark:bg-cyan-500/10">
                                         <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-sm">notifications</span>
@@ -199,7 +199,7 @@ export function NotificationsSettings() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/10">
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/15">
                                 <p className="text-sm font-medium mb-1 text-slate-900 dark:text-white">Nhận cảnh báo tức thì</p>
                                 <p className="text-xs text-slate-500 dark:text-gray-400">
                                     Nhận email mới, OTP và các thông báo quan trọng trực tiếp qua Telegram của bạn.
@@ -246,7 +246,7 @@ export function NotificationsSettings() {
             </GlassCard>
 
             {/* Inbox Telegram Links */}
-            <GlassCard className="p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <GlassCard className="p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                 <div className="flex items-center gap-2 mb-6">
                     <span className="material-symbols-outlined text-[#0088cc]">inbox</span>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Liên kết Telegram theo hộp thư</h3>
@@ -273,7 +273,7 @@ export function NotificationsSettings() {
                         {inboxLinks.map(link => (
                             <div
                                 key={link.id}
-                                className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/10"
+                                className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/15"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-500/10">

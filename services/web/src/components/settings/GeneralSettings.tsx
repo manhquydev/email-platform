@@ -68,7 +68,7 @@ export function GeneralSettings({ profile, loadProfile }: { profile: UserProfile
             </div>
 
             {/* Profile Section */}
-            <section className="glass-panel rounded-xl p-6 dark:bg-white/5 relative overflow-hidden group border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 dark:bg-white/5 relative overflow-hidden group border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                 <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
                     <div className="flex items-center gap-5">
@@ -93,7 +93,7 @@ export function GeneralSettings({ profile, loadProfile }: { profile: UserProfile
                 {/* Left Column: Form Fields */}
                 <div className="lg:col-span-2 flex flex-col gap-8">
                     {/* Identity Form */}
-                    <GlassCard className="p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <GlassCard className="p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">badge</span>
                             Danh tính
@@ -133,7 +133,7 @@ export function GeneralSettings({ profile, loadProfile }: { profile: UserProfile
                             <div className="flex flex-col gap-2 opacity-50 pointer-events-none">
                                 <span className="text-sm font-medium text-slate-700 dark:text-gray-300">Email chuyển tiếp (Đã mã hóa) - Sắp ra mắt</span>
                                 <input
-                                    className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all font-body"
+                                    className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/15 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all font-body"
                                     placeholder="Tính năng đang được phát triển..."
                                     type="email"
                                     readOnly

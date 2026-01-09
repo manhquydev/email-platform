@@ -42,8 +42,8 @@ export function MessageList({
               <li
                 key={msg.id}
                 onClick={() => onSelect(msg.id)}
-                className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                  selectedId === msg.id ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.1] dark:hover:border-l-2 dark:hover:border-l-blue-400 ${
+                  selectedId === msg.id ? "bg-blue-50 dark:bg-blue-500/20 dark:border-l-2 dark:border-l-blue-400" : ""
                 }`}
               >
                 <div className="flex justify-between items-start mb-1">

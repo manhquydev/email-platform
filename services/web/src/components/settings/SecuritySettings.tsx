@@ -145,11 +145,11 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             </div>
 
             {/* Security Status Summary */}
-            <section className="glass-panel rounded-xl p-6 bg-gradient-to-br from-primary/10 to-transparent border-t-2 border-t-primary/50 relative overflow-hidden dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 bg-gradient-to-br from-primary/10 to-transparent border-t-2 border-t-primary/50 relative overflow-hidden dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                 <div className="absolute -right-6 -top-6 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 relative z-10">Trạng thái bảo mật</h3>
                 <div className="space-y-4 relative z-10">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/15">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-full bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400">
                                 <span className="material-symbols-outlined text-[18px]">lock</span>
@@ -159,9 +159,9 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                                 <span className="text-xs text-slate-500 dark:text-gray-400">An toàn</span>
                             </div>
                         </div>
-                        <button className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-colors">Cập nhật</button>
+                        <button className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/15 transition-colors">Cập nhật</button>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/15">
                         <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${profile?.twoFactorEnabled ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-slate-200 dark:bg-gray-700/50 text-slate-400 dark:text-gray-400'}`}>
                                 <span className="material-symbols-outlined text-[18px]">phonelink_lock</span>
@@ -176,7 +176,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                         </div>
                         <button
                             onClick={profile?.twoFactorEnabled ? () => setShowDisable2FAConfirm(true) : setup2FA}
-                            className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-colors"
+                            className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/15 transition-colors"
                         >
                             {profile?.twoFactorEnabled ? 'Quản lý' : 'Cài đặt'}
                         </button>
@@ -185,7 +185,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             </section>
 
             {/* Change Password */}
-            <GlassCard className="p-6 dark:!bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <GlassCard className="p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
                 <div className="flex items-center gap-2 mb-6">
                     <span className="material-symbols-outlined text-slate-400 dark:text-gray-400">key</span>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Đổi mật khẩu</h3>
@@ -224,7 +224,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
 
             {/* 2FA Section Detailed */}
             {twoFAStep !== 'idle' && (
-                <GlassCard className="p-6 border-primary/30 dark:!bg-white/5 shadow-sm dark:shadow-none">
+                <GlassCard className="p-6 border-primary/30 dark:!bg-white/[0.08] shadow-sm dark:shadow-none">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Cài đặt xác thực 2 yếu tố</h3>
 
                     {twoFAError && <p className="text-sm mb-3 text-red-500 dark:text-red-400">{twoFAError}</p>}
@@ -280,7 +280,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
             )}
 
             {showDisable2FAConfirm && (
-                <GlassCard className="p-6 border-red-500/30 dark:!bg-white/5 shadow-sm dark:shadow-none">
+                <GlassCard className="p-6 border-red-500/30 dark:!bg-white/[0.08] shadow-sm dark:shadow-none">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Tắt 2FA</h3>
                     <p className="text-slate-500 dark:text-gray-400 text-sm mb-4">Nhập mật khẩu của bạn để xác nhận tắt 2FA.</p>
                     <div className="flex gap-3">

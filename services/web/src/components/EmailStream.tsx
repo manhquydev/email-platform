@@ -97,9 +97,9 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                             <div
                                 key={message.id}
                                 className={cn(
-                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5",
+                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/[0.1]",
                                     isUnread && "bg-primary/5",
-                                    isSelected && "bg-primary/5 dark:bg-white/10 shadow-[inset_3px_0_0_0_#9333EA] z-10"
+                                    isSelected && "bg-primary/5 dark:bg-white/[0.15] shadow-[inset_3px_0_0_0_#9333EA] z-10"
                                 )}
                                 onClick={() => onSelectMessage(message)}
                                 role="button"
@@ -191,7 +191,7 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-text-primary mb-2">Chưa có email</h3>
                 <p className="text-sm max-w-[200px]">Chọn một hộp thư từ thanh bên hoặc tạo mới để bắt đầu.</p>
                 <p className="mt-4 text-xs">
-                    <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono text-slate-700 dark:text-text-primary border border-slate-300 dark:border-white/10">⌘K</span> để tìm kiếm hoặc tạo mới
+                    <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/[0.15] font-mono text-slate-700 dark:text-text-primary border border-slate-300 dark:border-white/10">⌘K</span> để tìm kiếm hoặc tạo mới
                 </p>
             </div>
         );

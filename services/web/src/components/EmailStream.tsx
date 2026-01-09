@@ -97,7 +97,7 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                             <div
                                 key={message.id}
                                 className={cn(
-                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 dark:hover:border-l-4 dark:hover:border-l-slate-500",
+                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-600 dark:hover:border-l-4 dark:hover:border-l-cyan-400",
                                     isUnread && "bg-primary/5",
                                     isSelected && "bg-primary/5 dark:bg-blue-600/25 dark:border-l-4 dark:border-l-blue-500 shadow-[inset_3px_0_0_0_#9333EA] z-10"
                                 )}

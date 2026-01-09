@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,8 +9,6 @@ import { useAuth } from "../context/AuthContext";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { TelegramLoginButton, type TelegramUser } from "../components/TelegramLoginButton";
-import { EmailPromptModal } from "../components/EmailPromptModal";
 
 const registerSchema = z.object({
     email: z.string().email("Email không hợp lệ"),
@@ -41,61 +39,12 @@ export function Register() {
     const [passwordValue, setPasswordValue] = useState('');
     const [registered, setRegistered] = useState(false);
     const { token } = useAuth();
-    const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
         resolver: zodResolver(registerSchema),
     });
 
-    // Telegram auth states
-    const [showTelegramEmailPrompt, setShowTelegramEmailPrompt] = useState(false);
-    const [telegramTempToken, setTelegramTempToken] = useState("");
-    const [telegramUser, setTelegramUser] = useState<{ id: string; username?: string; firstName?: string; photoUrl?: string } | null>(null);
-    const [telegramBusy, setTelegramBusy] = useState(false);
-
     if (token) return <Navigate to="/app" replace />;
     if (registered) return <Navigate to="/login" replace />;
-
-    // Telegram auth handler
-    const handleTelegramAuth = async (user: TelegramUser) => {
-        setTelegramBusy(true);
-        try {
-            const response = await api<{
-                requiresEmail?: boolean;
-                tempToken?: string;
-                telegramUser?: { id: string; username?: string; firstName?: string; photoUrl?: string };
-                token?: string;
-                user?: { id: string; email: string; role: string };
-            }>("/auth/telegram", {
-                method: "POST",
-                body: user,
-            });
-
-            if (response.requiresEmail) {
-                // New user - needs email
-                setTelegramTempToken(response.tempToken || "");
-                setTelegramUser(response.telegramUser || null);
-                setShowTelegramEmailPrompt(true);
-            } else if (response.token) {
-                // Existing user - login successful
-                localStorage.setItem("token", response.token);
-                localStorage.setItem("user", JSON.stringify(response.user));
-                toast.success("Đăng nhập thành công với Telegram!");
-                navigate("/app");
-            }
-        } catch (err) {
-            const msg = (err as Error).message || "Đăng ký Telegram thất bại";
-            toast.error(msg);
-        } finally {
-            setTelegramBusy(false);
-        }
-    };
-
-    const handleTelegramRegistrationComplete = (token: string) => {
-        localStorage.setItem("token", token);
-        setShowTelegramEmailPrompt(false);
-        toast.success("Đăng ký thành công!");
-        navigate("/app");
-    };
 
     const onSubmit = async (data: RegisterForm) => {
         setBusy(true);
@@ -229,28 +178,24 @@ export function Register() {
                         </Button>
                     </form>
 
-                    {/* Social Divider */}
-                    <div className="relative flex py-4 items-center">
-                        <div className="flex-grow border-t border-border"></div>
-                        <span className="flex-shrink-0 mx-4 text-xs text-nebula-text-muted uppercase tracking-wider">Hoặc tiếp tục với</span>
-                        <div className="flex-grow border-t border-border"></div>
-                    </div>
-
-                    {/* Telegram Registration */}
+                    {/* Telegram hint - Guide users to link via bot after registration */}
                     {import.meta.env.VITE_TELEGRAM_BOT_USERNAME && (
-                        <div className="flex justify-center">
-                            {telegramBusy ? (
-                                <div className="flex items-center gap-2 text-sm text-slate-400">
-                                    <span className="animate-spin">⏳</span>
-                                    <span>Đang xử lý...</span>
-                                </div>
-                            ) : (
-                                <TelegramLoginButton
-                                    botName={import.meta.env.VITE_TELEGRAM_BOT_USERNAME}
-                                    onAuth={handleTelegramAuth}
-                                    buttonSize="large"
-                                />
-                            )}
+                        <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
+                            <div className="flex items-start gap-2">
+                                <span className="text-lg">💡</span>
+                                <p>
+                                    Muốn nhận thông báo qua Telegram? Sau khi đăng ký, vào{" "}
+                                    <strong>Cài đặt → Thông báo</strong> để liên kết với bot{" "}
+                                    <a
+                                        href={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline"
+                                    >
+                                        @{import.meta.env.VITE_TELEGRAM_BOT_USERNAME}
+                                    </a>
+                                </p>
+                            </div>
                         </div>
                     )}
 
@@ -308,20 +253,6 @@ export function Register() {
                     <span>Mã hóa đầu cuối</span>
                 </div>
             </div>
-
-            {/* Telegram Email Prompt Modal */}
-            {showTelegramEmailPrompt && telegramUser && (
-                <EmailPromptModal
-                    tempToken={telegramTempToken}
-                    telegramUser={telegramUser}
-                    onComplete={handleTelegramRegistrationComplete}
-                    onCancel={() => {
-                        setShowTelegramEmailPrompt(false);
-                        setTelegramUser(null);
-                        setTelegramTempToken("");
-                    }}
-                />
-            )}
         </div>
     );
 }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { generateToken } from "../utils/token";
 import { recordAudit } from "../utils/audit";
+import { addDomainToPostfix, removeDomainFromPostfix } from "../utils/postfix-sync";
 
 export async function domainRoutes(app: FastifyInstance) {
   app.get("/domains", { preHandler: app.authenticate }, async (request, reply) => {
@@ -197,6 +198,12 @@ export async function domainRoutes(app: FastifyInstance) {
       data: { status: "VERIFIED" },
     });
 
+    // Sync to Postfix relay_domains so it accepts mail for this domain
+    const syncResult = await addDomainToPostfix(domain.name);
+    if (!syncResult.success) {
+      request.log.warn({ domain: domain.name, error: syncResult.error }, "Postfix sync failed");
+    }
+
     await recordAudit(user.userId, "DOMAIN_VERIFIED", { domainId: domain.id, name: domain.name });
 
     return { domain: updated };
@@ -219,6 +226,14 @@ export async function domainRoutes(app: FastifyInstance) {
     }
 
     await prisma.domain.delete({ where: { id: params.data.id } });
+
+    // Remove from Postfix relay_domains so it stops accepting mail for this domain
+    if (domain.status === "VERIFIED") {
+      const syncResult = await removeDomainFromPostfix(domain.name);
+      if (!syncResult.success) {
+        request.log.warn({ domain: domain.name, error: syncResult.error }, "Postfix sync failed on delete");
+      }
+    }
 
     await recordAudit(user.userId, "DOMAIN_DELETED", { domainId: params.data.id, name: domain.name });
 

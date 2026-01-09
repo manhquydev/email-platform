@@ -113,4 +113,31 @@ export async function adminSystemRoutes(app: FastifyInstance) {
             return reply.status(500).send({ error: "Database check failed: " + err.message });
         }
     });
+
+    // Sync Postfix relay_domains with verified domains from database
+    app.post("/admin/system/sync-postfix", { preHandler: app.requireAdmin }, async (req, reply) => {
+        try {
+            const { syncPostfixRelayDomains, getVerifiedDomains } = await import("../../utils/postfix-sync");
+
+            const domains = await getVerifiedDomains();
+            const result = await syncPostfixRelayDomains();
+
+            await recordAudit((req.user as any).userId, "POSTFIX_SYNC_TRIGGERED", {
+                domains: domains.length,
+                method: result.method,
+                success: result.success
+            });
+
+            return {
+                success: result.success,
+                method: result.method,
+                domains: result.domains,
+                message: result.success
+                    ? `Synced ${result.domains.length} domains to Postfix`
+                    : `Sync failed: ${result.error}`
+            };
+        } catch (err: any) {
+            return reply.status(500).send({ error: "Postfix sync failed: " + err.message });
+        }
+    });
 }

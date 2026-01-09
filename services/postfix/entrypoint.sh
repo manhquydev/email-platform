@@ -3,6 +3,7 @@ set -e
 
 DOMAIN="${MAIL_DOMAIN:-localhost}"
 HOSTNAME="${MAIL_HOSTNAME:-mail.${DOMAIN}}"
+SHARED_RELAY_DOMAINS="/app/shared/relay_domains"
 
 echo "=== Postfix + OpenDKIM Setup ==="
 echo "Domain: ${DOMAIN}"
@@ -118,7 +119,7 @@ echo "   Name: @"
 echo "   Value: v=spf1 ip4:$(curl -s ifconfig.me 2>/dev/null || echo 'YOUR_SERVER_IP') ~all"
 echo ""
 echo "2. DKIM Record:"
-echo "   Type: TXT"  
+echo "   Type: TXT"
 echo "   Name: ${DKIM_SELECTOR}._domainkey"
 echo "   Value: (see above)"
 echo ""
@@ -127,5 +128,46 @@ echo "   Type: TXT"
 echo "   Name: _dmarc"
 echo "   Value: v=DMARC1; p=quarantine; rua=mailto:admin@${DOMAIN}"
 echo ""
+
+# Function to sync relay domains from shared volume
+sync_relay_domains() {
+    if [ -f "${SHARED_RELAY_DOMAINS}" ]; then
+        echo "[$(date)] Syncing relay domains from shared volume..."
+
+        # Read domains from shared file and merge with existing
+        while IFS= read -r line || [ -n "$line" ]; do
+            domain=$(echo "$line" | cut -d' ' -f1)
+            if [ -n "$domain" ] && ! grep -q "^${domain} " "${RELAY_DOMAINS_FILE}"; then
+                echo "$line" >> "${RELAY_DOMAINS_FILE}"
+                echo "${domain} smtp:[api]:2525" >> "${TRANSPORT_FILE}"
+                echo "  Added: ${domain}"
+            fi
+        done < "${SHARED_RELAY_DOMAINS}"
+
+        # Rebuild hash maps and reload Postfix
+        postmap "${RELAY_DOMAINS_FILE}"
+        postmap "${TRANSPORT_FILE}"
+        postfix reload 2>/dev/null || true
+        echo "[$(date)] Relay domains sync complete"
+    fi
+}
+
+# Initial sync from shared volume
+sync_relay_domains
+
+# Background watcher for relay domains changes
+(
+    LAST_HASH=""
+    while true; do
+        sleep 10
+        if [ -f "${SHARED_RELAY_DOMAINS}" ]; then
+            CURRENT_HASH=$(md5sum "${SHARED_RELAY_DOMAINS}" 2>/dev/null | cut -d' ' -f1)
+            if [ -n "${CURRENT_HASH}" ] && [ "${CURRENT_HASH}" != "${LAST_HASH}" ]; then
+                sync_relay_domains
+                LAST_HASH="${CURRENT_HASH}"
+            fi
+        fi
+    done
+) &
 
 exec "$@"

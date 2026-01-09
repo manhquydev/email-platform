@@ -132,12 +132,16 @@ services:
       WEB_URL: https://app.${DOMAIN:-localhost}
       STORAGE_DIR: /app/storage
       TRUST_PROXY: "true"
+      # Postfix sync configuration
+      RELAY_DOMAINS_PATH: /app/shared/relay_domains
+      POSTFIX_CONTAINER: email-platform-postfix-1
     depends_on:
       - postgres
       - redis
       - postfix
     volumes:
       - api_storage:/app/storage
+      - postfix_shared:/app/shared
     ports:
       - "2525:2525" # SMTP Inbound (không qua Caddy)
     networks:
@@ -175,6 +179,7 @@ services:
       EXTRA_DOMAINS: manhquy.online
     volumes:
       - postfix_dkim:/etc/opendkim/keys
+      - postfix_shared:/app/shared
     networks:
       - email_network
     deploy:
@@ -395,6 +400,8 @@ volumes:
   grafana_data:
     driver: local
   postfix_dkim:
+    driver: local
+  postfix_shared:
     driver: local
   clamav_data:
     driver: local

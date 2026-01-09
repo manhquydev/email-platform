@@ -7,6 +7,15 @@ import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 
+// Brand logo component - defined outside to avoid re-creation on each render
+const BrandLogo = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8 text-primary">
+        <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
+        <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
+        <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
+    </svg>
+);
+
 export function Login() {
     const { login, verify2FA, token, busy } = useAuth();
     const navigate = useNavigate();
@@ -56,15 +65,6 @@ export function Login() {
             await verify2FA(tempToken, twoFactorCode);
         } catch { /* Error handled in AuthContext */ }
     };
-
-
-    const BrandLogo = () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8 text-primary">
-            <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
-            <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
-            <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
-        </svg>
-    );
 
     return (
         <div className="flex-1 w-full flex flex-col p-4 py-12 relative">

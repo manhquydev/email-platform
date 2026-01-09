@@ -247,11 +247,15 @@ services:
       args:
         VITE_API_BASE: https://api.${DOMAIN:-localhost}
         VITE_TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+        VITE_MAIL_HOSTNAME: mail.${DOMAIN:-localhost}
+        VITE_MAIL_SERVER_IP: ${MAIL_SERVER_IP:-165.22.48.193}
     restart: unless-stopped
     environment:
       # Runtime environment for entrypoint.sh to generate config.js
       VITE_API_BASE: https://api.${DOMAIN:-localhost}
       OUTBOUND_ENABLED: ${OUTBOUND_ENABLED:-false}
+      VITE_MAIL_HOSTNAME: mail.${DOMAIN:-localhost}
+      VITE_MAIL_SERVER_IP: ${MAIL_SERVER_IP:-165.22.48.193}
     networks:
       - email_network
     deploy:

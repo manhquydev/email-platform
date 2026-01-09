@@ -7,6 +7,10 @@ import type { Domain } from "../types";
 
 import { ConfirmationModal } from "../components/ConfirmationModal";
 
+// Mail server configuration from environment
+const MAIL_HOSTNAME = import.meta.env.VITE_MAIL_HOSTNAME || "mail.manhquy.click";
+const MAIL_SERVER_IP = import.meta.env.VITE_MAIL_SERVER_IP || "165.22.48.193";
+
 export function MyDomains() {
     const { token, user } = useAuth();
     const [domains, setDomains] = useState<Domain[]>([]);
@@ -216,10 +220,22 @@ export function MyDomains() {
                                                         <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
                                                             <td className="px-3 py-2 font-mono font-bold" style={{ color: 'var(--nebula-error)' }}>MX</td>
                                                             <td className="px-3 py-2 font-mono text-xs break-all" style={{ color: 'var(--nebula-text-secondary)' }}>
-                                                                mail.manhquy.click
+                                                                {MAIL_HOSTNAME}
                                                             </td>
                                                             <td className="px-3 py-2 text-right">
-                                                                <button onClick={() => copyToClipboard("mail.manhquy.click")} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
+                                                                <button onClick={() => copyToClipboard(MAIL_HOSTNAME)} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
+                                                                    <svg className="w-4 h-4 text-[var(--nebula-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        {/* A Record for mail subdomain */}
+                                                        <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
+                                                            <td className="px-3 py-2 font-mono font-bold" style={{ color: 'var(--nebula-warning)' }}>A</td>
+                                                            <td className="px-3 py-2 font-mono text-xs break-all" style={{ color: 'var(--nebula-text-secondary)' }}>
+                                                                mail → {MAIL_SERVER_IP}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <button onClick={() => copyToClipboard(MAIL_SERVER_IP)} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
                                                                     <svg className="w-4 h-4 text-[var(--nebula-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                                                                 </button>
                                                             </td>
@@ -282,12 +298,17 @@ export function MyDomains() {
                                         <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
                                             <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-error)' }}>MX</td>
                                             <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>@</td>
-                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>mail.[máy-chủ-của-bạn] (độ ưu tiên 10)</td>
+                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>{MAIL_HOSTNAME} (độ ưu tiên 10)</td>
+                                        </tr>
+                                        <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
+                                            <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-warning)' }}>A</td>
+                                            <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>mail</td>
+                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>{MAIL_SERVER_IP}</td>
                                         </tr>
                                         <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
                                             <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-success)' }}>TXT</td>
                                             <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>@</td>
-                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>[mã xác thực]</td>
+                                            <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>[mã xác thực từ hệ thống]</td>
                                         </tr>
                                     </tbody>
                                 </table>

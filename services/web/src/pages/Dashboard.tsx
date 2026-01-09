@@ -544,7 +544,7 @@ export function Dashboard() {
                                         size="icon"
                                         onClick={() => setShowCompose(true)}
                                         title="Trả lời"
-                                        className="text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"
+                                        className="text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>}
                                     />
                                     <Button
@@ -552,14 +552,14 @@ export function Dashboard() {
                                         size="icon"
                                         onClick={() => handleMarkUnread(selectedMessage.id)}
                                         title="Đánh dấu chưa đọc"
-                                        className="text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"
+                                        className="text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
                                     />
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleTogglePin(selectedMessage.id, !selectedMessage.isPinned)}
-                                        className={selectedMessage.isPinned ? "text-warning" : "text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"}
+                                        className={selectedMessage.isPinned ? "text-warning" : "text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"}
                                         title={selectedMessage.isPinned ? "Bỏ ghim" : "Ghim"}
                                         icon={<svg className="w-5 h-5" fill={selectedMessage.isPinned ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>}
                                     />
@@ -570,7 +570,7 @@ export function Dashboard() {
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleDeleteMessage(selectedMessage.id)}
-                                        className="text-slate-500 hover:text-red-500 dark:text-text-secondary dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-danger/10"
+                                        className="text-slate-500 hover:text-red-500 dark:text-slate-200 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-danger/10"
                                         title="Xóa"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
                                     />
@@ -578,7 +578,7 @@ export function Dashboard() {
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => copyOTP(selectedMessage.textBody || selectedMessage.htmlBody || "")} // Re-using copyOTP for now as a functional placeholder for 'View Source' action
-                                        className="text-slate-500 hover:text-slate-900 dark:text-text-secondary dark:hover:text-white"
+                                        className="text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                                         title="Sao chép nội dung"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>}
                                     />
@@ -620,7 +620,7 @@ export function Dashboard() {
                                 })()}
 
                                 {/* Email Body */}
-                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 overflow-hidden shadow-sm">
+                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-slate-800/80 border-2 border-slate-200 dark:border-slate-600 overflow-hidden shadow-sm">
                                     {selectedMessage.htmlBody ? (
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe
@@ -631,7 +631,7 @@ export function Dashboard() {
                                             />
                                         </div>
                                     ) : (
-                                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-slate-700 dark:text-text-secondary">
+                                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-slate-700 dark:text-slate-200">
                                             {selectedMessage.textBody || "Không có nội dung"}
                                         </pre>
                                     )}

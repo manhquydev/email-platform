@@ -10,8 +10,6 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { api } from "../utils/api";
 
-type LoginMode = "password" | "magic-link";
-
 export function Login() {
     const { login, verify2FA, token, busy } = useAuth();
     const navigate = useNavigate();
@@ -20,11 +18,6 @@ export function Login() {
     const [requires2FA, setRequires2FA] = useState(false);
     const [tempToken, setTempToken] = useState("");
     const [twoFactorCode, setTwoFactorCode] = useState("");
-
-    // Magic Link states
-    const [loginMode, setLoginMode] = useState<LoginMode>("password");
-    const [magicLinkSent, setMagicLinkSent] = useState(false);
-    const [magicLinkBusy, setMagicLinkBusy] = useState(false);
 
     // Telegram auth states
     const [showTelegramEmailPrompt, setShowTelegramEmailPrompt] = useState(false);
@@ -70,29 +63,6 @@ export function Login() {
         try {
             await verify2FA(tempToken, twoFactorCode);
         } catch { /* Error handled in AuthContext */ }
-    };
-
-    // Magic Link handler
-    const handleMagicLinkRequest = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) {
-            toast.error("Vui lòng nhập email");
-            return;
-        }
-
-        setMagicLinkBusy(true);
-        try {
-            await api("/auth/magic-link/request", {
-                method: "POST",
-                body: { email }
-            });
-            setMagicLinkSent(true);
-            toast.success("Link đăng nhập đã được gửi tới email của bạn!");
-        } catch {
-            toast.error("Không thể gửi link đăng nhập. Vui lòng thử lại.");
-        } finally {
-            setMagicLinkBusy(false);
-        }
     };
 
     // Telegram auth handler
@@ -171,34 +141,7 @@ export function Login() {
                                 <p className="text-text-secondary">Đăng nhập để tiếp tục quản lý email</p>
                             </div>
 
-                            {/* Login Mode Tabs */}
-                            <div className="flex mb-6 p-1 bg-nebula-elevated rounded-xl">
-                                <button
-                                    type="button"
-                                    onClick={() => { setLoginMode("password"); setMagicLinkSent(false); }}
-                                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                                        loginMode === "password"
-                                            ? "bg-primary text-white shadow-lg"
-                                            : "text-nebula-text-muted hover:text-nebula-text"
-                                    }`}
-                                >
-                                    Mật khẩu
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setLoginMode("magic-link"); setMagicLinkSent(false); }}
-                                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                                        loginMode === "magic-link"
-                                            ? "bg-primary text-white shadow-lg"
-                                            : "text-nebula-text-muted hover:text-nebula-text"
-                                    }`}
-                                >
-                                    Magic Link
-                                </button>
-                            </div>
-
-                            {loginMode === "password" ? (
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={handleSubmit} className="space-y-6">
                                     {error && (
                                         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex gap-3 text-red-500 text-sm">
                                             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -250,65 +193,7 @@ export function Login() {
                                         <span>Đăng nhập</span>
                                         <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                     </Button>
-                                </form>
-                            ) : (
-                                /* Magic Link Form */
-                                <div className="space-y-6">
-                                    {!magicLinkSent ? (
-                                        <form onSubmit={handleMagicLinkRequest} className="space-y-6">
-                                            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-primary">
-                                                <div className="flex gap-3">
-                                                    <span className="material-symbols-outlined text-primary shrink-0">magic_button</span>
-                                                    <p>Nhập email của bạn, chúng tôi sẽ gửi link đăng nhập không cần mật khẩu.</p>
-                                                </div>
-                                            </div>
-
-                                            <Input
-                                                label="Email"
-                                                type="email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="name@example.com"
-                                                disabled={magicLinkBusy}
-                                                required
-                                                autoFocus
-                                                className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
-                                                icon={
-                                                    <span className="material-symbols-outlined text-[20px]">alternate_email</span>
-                                                }
-                                            />
-
-                                            <Button
-                                                type="submit"
-                                                className="w-full h-12 text-base font-bold shadow-glow hover:shadow-[0_0_30px_rgba(37,37,244,0.5)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group bg-primary hover:bg-blue-600"
-                                                isLoading={magicLinkBusy}
-                                            >
-                                                <span className="material-symbols-outlined text-[20px]">send</span>
-                                                <span>Gửi link đăng nhập</span>
-                                            </Button>
-                                        </form>
-                                    ) : (
-                                        <div className="text-center py-8 space-y-4">
-                                            <div className="w-16 h-16 rounded-2xl bg-green-500/10 text-green-400 flex items-center justify-center mx-auto border border-green-500/20">
-                                                <span className="material-symbols-outlined text-3xl">mark_email_read</span>
-                                            </div>
-                                            <h3 className="text-xl font-bold">Kiểm tra email của bạn!</h3>
-                                            <p className="text-text-secondary text-sm">
-                                                Chúng tôi đã gửi link đăng nhập tới <span className="text-primary font-medium">{email}</span>
-                                            </p>
-                                            <p className="text-xs text-nebula-text-muted">
-                                                Không nhận được email? Kiểm tra thư mục spam hoặc
-                                                <button
-                                                    onClick={() => setMagicLinkSent(false)}
-                                                    className="text-primary hover:underline ml-1"
-                                                >
-                                                    thử lại
-                                                </button>
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            </form>
 
                             <div className="mt-8">
                                 <div className="relative py-2">

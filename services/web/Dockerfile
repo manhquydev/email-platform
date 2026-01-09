@@ -3,6 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build-time environment variables for Vite
+ARG VITE_API_BASE
+ARG VITE_TELEGRAM_BOT_USERNAME
+ENV VITE_API_BASE=${VITE_API_BASE}
+ENV VITE_TELEGRAM_BOT_USERNAME=${VITE_TELEGRAM_BOT_USERNAME}
+
 # Copy package files
 COPY package*.json ./
 

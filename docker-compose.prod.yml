@@ -241,6 +241,7 @@ services:
       context: ./services/web
       args:
         VITE_API_BASE: https://api.${DOMAIN:-localhost}
+        VITE_TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
     restart: unless-stopped
     environment:
       # Runtime environment for entrypoint.sh to generate config.js

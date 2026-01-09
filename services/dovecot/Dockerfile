@@ -20,6 +20,9 @@ RUN mkdir -p /etc/ssl/certs /etc/ssl/private && \
     -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" && \
     chmod 0600 /etc/ssl/private/dovecot.pem
 
+# Generate DH parameters for SSL (required by 10-ssl.conf)
+RUN openssl dhparam -out /etc/dovecot/dh.pem 2048
+
 # Copy configuration files
 COPY dovecot.conf /etc/dovecot/dovecot.conf
 COPY conf.d/ /etc/dovecot/conf.d/

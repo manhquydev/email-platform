@@ -43,9 +43,9 @@ jobs:
             git reset --hard
             git pull origin main
 
-            # Rebuild and restart Docker containers (including postfix for relay_domains sync)
+            # Rebuild and restart Docker containers (api, web, postfix, dovecot)
             echo "Rebuilding Docker containers..."
-            docker compose -f docker-compose.prod.yml build api web postfix
+            docker compose -f docker-compose.prod.yml build api web postfix dovecot
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
             # Wait for services to be healthy

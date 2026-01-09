@@ -1,8 +1,0 @@
-﻿2026-01-08T16:08:50.3833196Z ##[group]Run psql -h localhost -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='email_service_test'" | grep -q 1 || \
-2026-01-08T16:08:50.3835495Z [36;1mpsql -h localhost -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='email_service_test'" | grep -q 1 || \[0m
-2026-01-08T16:08:50.3836205Z [36;1m  psql -h localhost -U postgres -c "CREATE DATABASE email_service_test;"[0m
-2026-01-08T16:08:50.3869491Z shell: /usr/bin/bash -e {0}
-2026-01-08T16:08:50.3869748Z env:
-2026-01-08T16:08:50.3869935Z   PGPASSWORD: postgres
-2026-01-08T16:08:50.3870166Z ##[endgroup]
-2026-01-08T16:08:50.5574809Z CREATE DATABASE

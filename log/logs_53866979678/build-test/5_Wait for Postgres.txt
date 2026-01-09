@@ -1,9 +1,0 @@
-﻿2026-01-08T16:08:30.1478516Z ##[group]Run for i in {1..30}; do
-2026-01-08T16:08:30.1479063Z [36;1mfor i in {1..30}; do[0m
-2026-01-08T16:08:30.1479383Z [36;1m  nc -z localhost 5432 && echo "Postgres is up" && break[0m
-2026-01-08T16:08:30.1479726Z [36;1m  sleep 2[0m
-2026-01-08T16:08:30.1479909Z [36;1mdone[0m
-2026-01-08T16:08:30.1524176Z shell: /usr/bin/bash -e {0}
-2026-01-08T16:08:30.1524455Z ##[endgroup]
-2026-01-08T16:08:30.1649640Z Connection to localhost (::1) 5432 port [tcp/postgresql] succeeded!
-2026-01-08T16:08:30.1650369Z Postgres is up

@@ -163,7 +163,7 @@ export function Sidebar({
                                 className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all ${
                                     isSelected
                                         ? 'bg-primary/10 text-primary border-l-2 border-primary'
-                                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                        : 'hover:bg-slate-100 dark:hover:bg-slate-600/50 dark:hover:border-l-2 dark:hover:border-l-blue-400 text-slate-700 dark:text-slate-300'
                                 }`}
                                 onClick={() => onSelectInbox(inbox.id)}
                             >

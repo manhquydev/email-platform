@@ -91,7 +91,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                             <h2 id="create-inbox-modal-title" className="text-xl font-bold text-slate-900 dark:text-white">Tạo email mới</h2>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-text-secondary transition-colors"
+                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 text-text-secondary transition-colors"
                                 title="Đóng"
                             >
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">

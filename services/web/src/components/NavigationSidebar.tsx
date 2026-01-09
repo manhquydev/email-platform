@@ -64,7 +64,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                             "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
                             isActive("/app") && !location.search.includes("tab=")
                                 ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
                         )}
                     >
                         <span className="material-symbols-outlined text-[24px] shrink-0">inbox</span>
@@ -83,7 +83,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                             "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
                             isActive("/my-domains")
                                 ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
                         )}
                         title="Tên miền">
                         <span className="material-symbols-outlined text-[24px] shrink-0">globe</span>
@@ -96,7 +96,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                                 "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
                                 isActive("/admin")
                                     ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
                             )}
                             title="Quản trị">
                             <span className="material-symbols-outlined text-[24px] shrink-0">admin_panel_settings</span>
@@ -113,7 +113,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                             "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden mt-auto",
                             (isActive("/settings") && !location.search)
                                 ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
                         )}
                         title="Cài đặt">
                         <span className="material-symbols-outlined text-[24px] shrink-0">settings</span>
@@ -132,7 +132,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                 {/* User Dropdown */}
                 <Dropdown>
                     <DropdownTrigger>
-                        <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 transition-colors w-full text-left overflow-hidden">
+                        <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700 transition-colors w-full text-left overflow-hidden">
                             <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-slate-200 dark:ring-white/10 bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm">
                                 {user?.email?.charAt(0).toUpperCase() || "U"}
                             </div>

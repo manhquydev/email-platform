@@ -111,7 +111,7 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
                             </div>
                             <button
                                 onClick={closeDrawer}
-                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors min-h-12 min-w-12 flex items-center justify-center"
+                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors min-h-12 min-w-12 flex items-center justify-center"
                                 aria-label="Đóng menu"
                             >
                                 <span className="material-symbols-outlined text-slate-500 dark:text-slate-400">close</span>
@@ -127,7 +127,7 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
                                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-12 ${
                                         isActive(item)
                                             ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-                                            : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
+                                            : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
@@ -144,7 +144,7 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
                             {context === "admin" && (
                                 <button
                                     onClick={() => { navigate("/app"); closeDrawer(); }}
-                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-12 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5 mt-4 border-t border-slate-200 dark:border-white/10 pt-6"
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-12 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 mt-4 border-t border-slate-200 dark:border-white/10 pt-6"
                                 >
                                     <span className="material-symbols-outlined text-[22px]">arrow_back</span>
                                     <span className="text-sm font-medium">Quay lại ứng dụng</span>

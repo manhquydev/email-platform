@@ -149,7 +149,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                 <div className="absolute -right-6 -top-6 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 relative z-10">Trạng thái bảo mật</h3>
                 <div className="space-y-4 relative z-10">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/15">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/15">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-full bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400">
                                 <span className="material-symbols-outlined text-[18px]">lock</span>
@@ -159,9 +159,9 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                                 <span className="text-xs text-slate-500 dark:text-gray-400">An toàn</span>
                             </div>
                         </div>
-                        <button className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/15 transition-colors">Cập nhật</button>
+                        <button className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/15 transition-colors">Cập nhật</button>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/15">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/15">
                         <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${profile?.twoFactorEnabled ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-slate-200 dark:bg-gray-700/50 text-slate-400 dark:text-gray-400'}`}>
                                 <span className="material-symbols-outlined text-[18px]">phonelink_lock</span>
@@ -176,7 +176,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                         </div>
                         <button
                             onClick={profile?.twoFactorEnabled ? () => setShowDisable2FAConfirm(true) : setup2FA}
-                            className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/15 transition-colors"
+                            className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-white/10 px-3 py-1 rounded text-slate-900 dark:text-white border border-slate-200 dark:border-white/15 transition-colors"
                         >
                             {profile?.twoFactorEnabled ? 'Quản lý' : 'Cài đặt'}
                         </button>
@@ -203,7 +203,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                         {password && (
                             <div className="mt-2">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-white/5 overflow-hidden">
+                                    <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                                         <div
                                             className={`h-full transition-all ${passwordStrength.color}`}
                                             style={{ width: `${(passwordStrength.score / 5) * 100}%` }}

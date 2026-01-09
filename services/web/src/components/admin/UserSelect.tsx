@@ -79,7 +79,7 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
             <div className="relative">
                 <input
                     type="text"
-                    className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                    className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     placeholder={placeholder}
                     value={query}
                     onChange={(e) => {

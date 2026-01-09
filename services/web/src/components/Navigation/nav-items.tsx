@@ -74,9 +74,9 @@ export function NavLinkItem({ item, showLabel = true, variant = "sidebar", onCli
     };
 
     const inactiveClasses = {
-        sidebar: "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5",
+        sidebar: "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700",
         bottom: "text-slate-400 dark:text-slate-500",
-        drawer: "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5",
+        drawer: "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700",
     };
 
     return (

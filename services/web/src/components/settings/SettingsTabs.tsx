@@ -45,7 +45,7 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
                 <div className="md:hidden relative">
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-left"
+                        className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-left"
                     >
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-outlined text-[20px] text-primary filled">
@@ -80,7 +80,7 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
                                             "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors min-h-[48px]",
                                             activeTab === tab.id
                                                 ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-                                                : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5"
+                                                : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
                                         )}
                                     >
                                         <span className={cn(
@@ -111,7 +111,7 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
                                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                                 activeTab === tab.id
                                     ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30"
-                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
                             )}
                         >
                             <span className={cn("material-symbols-outlined text-[18px]", activeTab === tab.id && "filled")}>

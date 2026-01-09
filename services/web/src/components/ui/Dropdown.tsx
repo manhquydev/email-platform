@@ -207,7 +207,7 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
     const isFocused = itemIndex === focusedIndex;
 
     const variantClasses = {
-        default: 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5',
+        default: 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700',
         danger: 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
     };
 

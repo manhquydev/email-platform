@@ -59,7 +59,7 @@ export function FocusStreamLayout({
             case 'STARTER':
                 return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]">Starter</span>;
             default:
-                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">Free</span>;
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">Free</span>;
         }
     };
 
@@ -152,7 +152,7 @@ export function FocusStreamLayout({
                             <div className="text-[10px] text-slate-500 dark:text-muted uppercase tracking-wider font-semibold">{user?.role === 'ADMIN' ? 'Administrator' : 'User'}</div>
                         </div>
                         <button
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                             onClick={() => {
                                 setShowUserMenu(false);
                                 navigate('/settings');
@@ -164,7 +164,7 @@ export function FocusStreamLayout({
                             </svg>
                             <span>Cài đặt</span>
                         </button>
-                        <div className="h-px bg-slate-100 dark:bg-white/5 my-1" />
+                        <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
                         <button
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                             onClick={() => {

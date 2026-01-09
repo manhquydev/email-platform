@@ -103,7 +103,7 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
                         <button
                             className={cn(
                                 "flex items-center gap-3 px-2 py-2.5 rounded-xl transition-colors w-full text-left min-h-12",
-                                "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
+                                "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                             )}
                         >
                             <div className="flex items-center justify-center aspect-square rounded-full size-10 shrink-0 ring-2 ring-slate-200 dark:ring-white/10 bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm">

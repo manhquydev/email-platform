@@ -59,7 +59,7 @@ export function PremiumTable({ children, className = "" }: {
 
 export function TableHeader({ children }: { children: React.ReactNode }) {
     return (
-        <thead className="bg-gray-50 dark:bg-white/5">
+        <thead className="bg-gray-50 dark:bg-slate-800">
             {children}
         </thead>
     );
@@ -206,7 +206,7 @@ export function PremiumInput({ value, onChange, placeholder, type = "text", clas
                     required={required}
                     className={`
         w-full rounded-xl border border-gray-200 dark:border-white/10
-        bg-white dark:bg-white/5
+        bg-white dark:bg-slate-800
         text-gray-900 dark:text-white
         placeholder:text-gray-400 dark:placeholder:text-gray-500
         focus:border-primary focus:ring-2 focus:ring-primary/20
@@ -391,7 +391,7 @@ export function ConfirmModal({
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</p>
                 </div>
-                <div className="p-4 bg-gray-50/50 dark:bg-white/5 flex gap-3 justify-end items-center">
+                <div className="p-4 bg-gray-50/50 dark:bg-slate-800 flex gap-3 justify-end items-center">
                     <PremiumButton variant="ghost" onClick={onClose} disabled={isLoading}>
                         {cancelText}
                     </PremiumButton>

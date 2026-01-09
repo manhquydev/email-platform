@@ -89,7 +89,7 @@ export function MessageListPane({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
             className={cn(
-                "flex flex-col h-full bg-slate-50/50 dark:bg-bg border-r border-slate-200 dark:border-white/5",
+                "flex flex-col h-full bg-slate-50/50 dark:bg-bg border-r border-slate-200 dark:border-white/15",
                 selectedMessage ? "hidden md:flex md:w-[360px]" : "w-full md:w-[360px] flex-shrink-0"
             )}
         >
@@ -153,7 +153,7 @@ export function MessageListPane({
             </div>
 
             {/* Search */}
-            <div className="p-3 border-b border-slate-200 dark:border-white/5 shrink-0">
+            <div className="p-3 border-b border-slate-200 dark:border-white/15 shrink-0">
                 <div className="relative">
                     <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input
@@ -186,7 +186,7 @@ export function MessageListPane({
                             />
                             {/* Load More Button */}
                             {messages.length < messageTotal && (
-                                <div className="p-4 flex justify-center border-t border-slate-200 dark:border-white/5">
+                                <div className="p-4 flex justify-center border-t border-slate-200 dark:border-white/15">
                                     <Button
                                         variant="secondary"
                                         size="sm"

@@ -236,7 +236,7 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
                 "flex items-center gap-3",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 variantClasses[variant],
-                isFocused && "bg-slate-100 dark:bg-white/10 ring-2 ring-primary/50 ring-inset"
+                isFocused && "bg-slate-100 dark:bg-slate-700 ring-2 ring-primary/50 ring-inset"
             )}
         >
             {icon && (
@@ -257,6 +257,6 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
 // Divider component for visual grouping
 export function DropdownDivider() {
     return (
-        <div className="h-px bg-slate-200 dark:bg-white/10 my-1" />
+        <div className="h-px bg-slate-200 dark:bg-slate-700 my-1" />
     );
 }

@@ -113,7 +113,7 @@ export function Sidebar({
             {/* Inbox List */}
             <div className="flex-1 overflow-y-auto">
                 {/* Section Header */}
-                <div className="sticky top-0 px-3 py-2 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+                <div className="sticky top-0 px-3 py-2 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-100 dark:border-white/15 flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                         Hộp thư ({inboxes.length})
                     </span>

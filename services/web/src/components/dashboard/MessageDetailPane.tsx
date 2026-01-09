@@ -46,7 +46,7 @@ export function MessageDetailPane({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className={cn(
-                "flex-1 bg-white dark:bg-bg flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/5",
+                "flex-1 bg-white dark:bg-bg flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/15",
                 !message ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-bg"
             )}
         >

@@ -81,7 +81,7 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
 
         return (
             <div className="mb-6 last:mb-0" key={groupKey}>
-                <div className="flex items-center gap-2 mb-2 px-4 sticky top-0 bg-white/80 dark:bg-background/80 backdrop-blur-md z-10 py-2 border-b border-slate-200 dark:border-white/5">
+                <div className="flex items-center gap-2 mb-2 px-4 sticky top-0 bg-white/80 dark:bg-background/80 backdrop-blur-md z-10 py-2 border-b border-slate-200 dark:border-white/15">
                     <span className="text-xs font-semibold text-slate-500 dark:text-text-secondary uppercase tracking-wider">{label}</span>
                     <span className="text-xs text-slate-400 dark:text-text-tertiary">({groupMessages.length})</span>
                 </div>
@@ -97,7 +97,7 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                             <div
                                 key={message.id}
                                 className={cn(
-                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-slate-200 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-600 dark:hover:border-l-4 dark:hover:border-l-cyan-400",
+                                    "group relative p-4 cursor-pointer transition-all duration-200 border-b border-slate-200 dark:border-white/15 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-600 dark:hover:border-l-4 dark:hover:border-l-cyan-400",
                                     isUnread && "bg-primary/5",
                                     isSelected && "bg-primary/5 dark:bg-blue-600/25 dark:border-l-4 dark:border-l-blue-500 shadow-[inset_3px_0_0_0_#9333EA] z-10"
                                 )}

@@ -234,7 +234,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                             <p className="text-slate-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Gói hiện tại</p>
                             <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-white">{profile?.tier === 'FREE' ? 'MIỄN PHÍ' : profile?.tier || 'MIỄN PHÍ'}</p>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden">
                             <div className="bg-primary h-full rounded-full w-[40%]"></div>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-gray-500">
@@ -265,7 +265,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                             </div>
                             <span className="material-symbols-outlined text-slate-400 dark:text-gray-500">dns</span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden">
                             <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${domainPercent}%` }}></div>
                         </div>
                     </GlassCard>
@@ -278,7 +278,7 @@ Cảm ơn bạn đã sử dụng dịch vụ!
                             </div>
                             <span className="material-symbols-outlined text-slate-400 dark:text-gray-500">cloud_done</span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden">
                             <div className="bg-orange-500 h-full rounded-full" style={{ width: `${storagePercent}%` }}></div>
                         </div>
                     </GlassCard>

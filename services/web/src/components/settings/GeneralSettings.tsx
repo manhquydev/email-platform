@@ -110,7 +110,7 @@ export function GeneralSettings({ profile, loadProfile }: { profile: UserProfile
                                     <span className="text-sm font-medium text-slate-700 dark:text-gray-300">Bí danh mặc định</span>
                                     <div className="relative">
                                         <input
-                                            className="w-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 rounded-lg px-4 py-2.5 text-slate-600 dark:text-gray-300 focus:outline-none font-body cursor-not-allowed"
+                                            className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-white/20 rounded-lg px-4 py-2.5 text-slate-600 dark:text-gray-300 focus:outline-none font-body cursor-not-allowed"
                                             readOnly
                                             type="text"
                                             value={profile?.email || ""}

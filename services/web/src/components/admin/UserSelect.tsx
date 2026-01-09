@@ -101,7 +101,7 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
                     {users.map(user => (
                         <div
                             key={user.id}
-                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex flex-col border-b border-gray-100 dark:border-white/5 last:border-0 ${user.id === value ? "bg-primary/5 dark:bg-primary/10" : ""}`}
+                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer flex flex-col border-b border-gray-100 dark:border-white/15 last:border-0 ${user.id === value ? "bg-primary/5 dark:bg-primary/10" : ""}`}
                             onClick={() => handleSelect(user)}
                         >
                             <span className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</span>

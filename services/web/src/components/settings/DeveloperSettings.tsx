@@ -180,7 +180,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             </div>
 
             {/* API Keys Section */}
-            <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/5 border-l-4 border-l-primary/70 dark:border-l-primary/70 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 border-l-4 border-l-primary/70 dark:border-l-primary/70 shadow-sm dark:shadow-none">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
@@ -211,7 +211,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
                     {keysLoading ? (
                         <div className="text-center py-4 text-slate-500 dark:text-gray-500 italic">Đang tải danh sách key...</div>
                     ) : keys.length === 0 ? (
-                        <div className="text-center py-8 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/5 border-dashed">
+                        <div className="text-center py-8 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/15 border-dashed">
                             <span className="material-symbols-outlined text-state-400 dark:text-gray-600 text-3xl mb-2">key_off</span>
                             <p className="text-slate-500 dark:text-gray-500 text-sm">Chưa có API key nào. Hãy tạo một cái để bắt đầu.</p>
                         </div>
@@ -245,7 +245,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
             </section>
 
             {/* Webhooks Section */}
-            <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/5 border-l-4 border-l-purple-500/70 dark:border-l-purple-500/70 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 border-l-4 border-l-purple-500/70 dark:border-l-purple-500/70 shadow-sm dark:shadow-none">
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
@@ -263,7 +263,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
                     {webhooksLoading ? (
                         <div className="text-center py-4 text-slate-500 dark:text-gray-500 italic">Đang tải webhooks...</div>
                     ) : webhooks.length === 0 ? (
-                        <div className="text-center py-8 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/5 border-dashed">
+                        <div className="text-center py-8 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/15 border-dashed">
                             <span className="material-symbols-outlined text-slate-400 dark:text-gray-600 text-3xl mb-2">device_hub</span>
                             <p className="text-slate-500 dark:text-gray-500 text-sm">Chưa cấu hình Webhook nào.</p>
                         </div>
@@ -297,7 +297,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2 flex-wrap border-t border-slate-200 dark:border-white/5 pt-2 mt-1">
+                                <div className="flex gap-2 flex-wrap border-t border-slate-200 dark:border-white/15 pt-2 mt-1">
                                     {hook.events.map(evt => (
                                         <span key={evt} className="text-[10px] bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-500/20">
                                             {evt}

@@ -237,7 +237,7 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
 
                         <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-gray-300">
                             {viewMode === "text" || !message.htmlBody ? (
-                                <pre className="whitespace-pre-wrap font-mono text-sm bg-slate-100 dark:bg-black/20 p-6 rounded-xl border border-slate-200 dark:border-white/5 text-slate-800 dark:text-gray-300">
+                                <pre className="whitespace-pre-wrap font-mono text-sm bg-slate-100 dark:bg-black/20 p-6 rounded-xl border border-slate-200 dark:border-white/15 text-slate-800 dark:text-gray-300">
                                     {message.textBody || "(Không có nội dung văn bản)"}
                                 </pre>
                             ) : (

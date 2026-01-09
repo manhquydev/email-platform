@@ -236,7 +236,7 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                                 <img src={qrCode} alt="2FA QR Code" className="w-48 h-48" />
                             </div>
                             <p className="text-xs text-slate-500 dark:text-gray-400">
-                                Khóa thủ công: <code className="px-2 py-1 rounded bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white">{totpSecret}</code>
+                                Khóa thủ công: <code className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white">{totpSecret}</code>
                             </p>
                             <div className="flex items-center gap-3">
                                 <Input

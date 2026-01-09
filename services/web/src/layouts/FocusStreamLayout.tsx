@@ -144,7 +144,7 @@ export function FocusStreamLayout({
             {showUserMenu && (
                 <div className="fixed bottom-20 left-4 md:left-20 z-50 min-w-[200px] animate-fade-in-up">
                     <div className="bg-white/80 dark:bg-surface/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden p-1">
-                        <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
+                        <div className="px-3 py-2 border-b border-slate-100 dark:border-white/15 mb-1">
                             <div className="flex items-center gap-2 mb-0.5">
                                 <span className="text-sm font-medium text-slate-900 dark:text-text-main truncate max-w-[150px]">{user?.email}</span>
                                 {getTierBadge(user?.tier)}

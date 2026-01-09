@@ -382,7 +382,7 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
                     className={cn(
-                        "flex flex-col h-full bg-slate-50/50 dark:bg-bg border-r border-slate-200 dark:border-white/5",
+                        "flex flex-col h-full bg-slate-50/50 dark:bg-bg border-r border-slate-200 dark:border-white/15",
                         selectedMessage ? "hidden md:flex md:w-[320px] lg:w-[360px]" : "w-full md:w-[320px] lg:w-[360px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
@@ -458,7 +458,7 @@ export function Dashboard() {
                     </div>
 
                     {/* Search */}
-                    <div className="p-3 border-b border-slate-200 dark:border-white/5 shrink-0">
+                    <div className="p-3 border-b border-slate-200 dark:border-white/15 shrink-0">
                         <div className="relative">
                             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             <input
@@ -491,7 +491,7 @@ export function Dashboard() {
                                     />
                                     {/* Load More Button */}
                                     {messages.length < messageTotal && (
-                                        <div className="p-4 flex justify-center border-t border-slate-200 dark:border-white/5">
+                                        <div className="p-4 flex justify-center border-t border-slate-200 dark:border-white/15">
                                             <Button
                                                 variant="secondary"
                                                 size="sm"
@@ -513,7 +513,7 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className={cn(
-                        "flex-1 bg-white dark:bg-bg flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/5",
+                        "flex-1 bg-white dark:bg-bg flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/15",
                         // Mobile: show only if message selected
                         !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-bg"
                     )}>

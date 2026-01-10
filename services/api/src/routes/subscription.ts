@@ -8,78 +8,9 @@ const generateCode = customAlphabet("2346789ABCDEFGHJKLMNPQRTUVWXYZ", 12); // re
 
 export async function subscriptionRoutes(app: FastifyInstance) {
     // ==========================================
-    // Admin: Service Packages Management
-    // ==========================================
-
-    // List Packages
-    app.get("/admin/packages", { preHandler: app.requireAdmin }, async () => {
-        const packages = await prisma.servicePackage.findMany({
-            orderBy: { createdAt: "desc" },
-            include: {
-                _count: { select: { codes: true } }
-            }
-        });
-        return { packages };
-    });
-
-    // Create Package
-    app.post("/admin/packages", { preHandler: app.requireAdmin }, async (req, reply) => {
-        const schema = z.object({
-            name: z.string().min(1),
-            description: z.string().optional(),
-            price: z.coerce.number().min(0).default(0),
-            currency: z.string().default("VND"),
-            type: z.enum(["TIME_BASED", "USAGE_BASED"]),
-            durationDays: z.coerce.number().optional(),
-            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
-            creditAmount: z.coerce.number().optional(),
-            isActive: z.boolean().default(true),
-        });
-
-        const result = schema.safeParse(req.body);
-        if (!result.success) return reply.status(400).send({ error: "Invalid payload", details: result.error.flatten() });
-
-        const pkg = await prisma.servicePackage.create({
-            data: result.data
-        });
-
-        await recordAudit((req.user as any).userId, "CREATE_PACKAGE", { packageId: pkg.id, name: pkg.name });
-
-        return { package: pkg };
-    });
-
-    // Update Package
-    app.put("/admin/packages/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
-        const paramsResult = z.object({ id: z.string().uuid() }).safeParse(req.params);
-        if (!paramsResult.success) {
-            return reply.status(400).send({ error: 'Invalid params', details: paramsResult.error.flatten() });
-        }
-        const params = paramsResult.data;
-        const schema = z.object({
-            name: z.string().optional(),
-            description: z.string().optional(),
-            isActive: z.boolean().optional(),
-            // Usually we don't allow changing core logic (type, duration) to avoid inconsistencies with existing codes
-            // But for simplicity, we allow mostly cosmetic updates or disabling
-        });
-
-        const bodyResult = schema.safeParse(req.body);
-        if (!bodyResult.success) {
-            return reply.status(400).send({ error: 'Invalid payload', details: bodyResult.error.flatten() });
-        }
-        const body = bodyResult.data;
-
-        const pkg = await prisma.servicePackage.update({
-            where: { id: params.id },
-            data: body
-        });
-
-        return { package: pkg };
-    });
-
-    // ==========================================
     // Admin: Redemption Codes Management
     // ==========================================
+    // NOTE: Package CRUD routes are now in admin/packages.ts
 
     // List Codes (Paginated)
     app.get("/admin/codes", { preHandler: app.requireAdmin }, async (req, reply) => {

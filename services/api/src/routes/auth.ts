@@ -524,6 +524,46 @@ export async function authRoutes(app: FastifyInstance) {
     return { ok: true };
   });
 
+
+  // Update user settings (PATCH /auth/me)
+  app.patch("/auth/me", { preHandler: app.authenticate }, async (request, reply) => {
+    const bodySchema = z.object({
+      name: z.string().max(100).optional(),
+      retentionDays: z.number().int().min(1).max(365).nullable().optional(),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
+    }
+
+    const userId = (request.user as any).userId;
+    const { name, retentionDays } = parsed.data;
+
+    // Build update data - only include fields that are explicitly provided
+    const updateData: { name?: string; retentionDays?: number | null } = {};
+    if (name !== undefined) updateData.name = name;
+    if (retentionDays !== undefined) updateData.retentionDays = retentionDays;
+
+    if (Object.keys(updateData).length === 0) {
+      return reply.status(400).send({ error: "No fields to update" });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        retentionDays: true,
+      }
+    });
+
+    await recordAudit(userId, "PROFILE_UPDATED", { fields: Object.keys(updateData) });
+    return { ok: true, user };
+  });
+
   // Delete account
   app.delete("/auth/me", { preHandler: app.authenticate }, async (request, reply) => {
     const userId = (request.user as any).userId;

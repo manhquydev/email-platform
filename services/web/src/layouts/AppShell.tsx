@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { NavigationProvider, DesktopNav, MobileNav, HamburgerMenu } from "../components/Navigation/index";
+import { NavigationProvider, DesktopNav, MobileNav, HamburgerMenu, useNavigation } from "../components/Navigation/index";
 import { CommandPalette } from "../components/CommandPalette";
 import { SearchAdvanced } from "../components/SearchAdvanced";
 import { api } from "../utils/api";
@@ -11,9 +11,11 @@ interface AppShellProps {
     children: React.ReactNode;
 }
 
-export function AppShell({ children }: AppShellProps) {
+// Inner component to access NavigationContext
+function AppShellInner({ children }: AppShellProps) {
     const { user, token } = useAuth();
     const navigate = useNavigate();
+    const { openDrawer } = useNavigation();
 
     // UI States
     const [showSearch, setShowSearch] = useState(false);
@@ -55,7 +57,7 @@ export function AppShell({ children }: AppShellProps) {
     };
 
     return (
-        <NavigationProvider>
+        <>
             <div className="app-shell flex flex-row h-screen w-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans relative">
                 {/* Background Effects */}
                 <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -71,9 +73,13 @@ export function AppShell({ children }: AppShellProps) {
                         <div className="font-bold text-lg bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                             Ephemera
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                        <button
+                            onClick={openDrawer}
+                            className="w-10 h-10 rounded-full bg-gradient-to-br from-nebula-violet to-nebula-violet-dark flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-nebula-violet/20 active:scale-95 transition-transform"
+                            aria-label="Mở menu"
+                        >
                             {user?.email?.charAt(0).toUpperCase() || "U"}
-                        </div>
+                        </button>
                     </header>
 
                     <main id="main-content" className="flex-1 relative overflow-hidden flex flex-col">
@@ -120,6 +126,15 @@ export function AppShell({ children }: AppShellProps) {
                     />
                 )}
             </div>
+        </>
+    );
+}
+
+// Wrapper component that provides NavigationContext
+export function AppShell({ children }: AppShellProps) {
+    return (
+        <NavigationProvider>
+            <AppShellInner>{children}</AppShellInner>
         </NavigationProvider>
     );
 }

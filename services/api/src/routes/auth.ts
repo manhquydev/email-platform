@@ -461,6 +461,7 @@ export async function authRoutes(app: FastifyInstance) {
         tier: true,
         subscriptionEndsAt: true,
         credits: true,
+        retentionDays: true,
         _count: { select: { domains: true, inboxes: true } }
       }
     });

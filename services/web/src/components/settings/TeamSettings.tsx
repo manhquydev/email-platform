@@ -110,8 +110,8 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
             setMemberEmail("");
             setMemberRole("MEMBER");
             loadTeamDetails(selectedTeam.id);
-        } catch (err: any) {
-            toast.error(err?.message || "Không thể thêm thành viên");
+        } catch (err: unknown) {
+            toast.error((err as Error)?.message || "Không thể thêm thành viên");
         } finally {
             setAddingMember(false);
         }
@@ -141,8 +141,8 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
             setIsShareInboxOpen(false);
             setSelectedInboxId("");
             loadTeamDetails(selectedTeam.id);
-        } catch (err: any) {
-            toast.error(err?.message || "Không thể chia sẻ inbox");
+        } catch (err: unknown) {
+            toast.error((err as Error)?.message || "Không thể chia sẻ inbox");
         } finally {
             setSharingInbox(false);
         }

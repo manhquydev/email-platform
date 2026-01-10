@@ -40,7 +40,7 @@ export function RetentionSettings({
 
     const handleInboxSelect = (inbox: Inbox) => {
         setSelectedInbox(inbox);
-        setInboxRetention((inbox as any).retentionDays ?? null);
+        setInboxRetention((inbox as Inbox & { retentionDays?: number }).retentionDays ?? null);
     };
 
     const handleSaveInboxRetention = async () => {
@@ -54,9 +54,9 @@ export function RetentionSettings({
             });
             toast.success("Đã cập nhật thời gian lưu trữ cho inbox");
             // Update local state
-            setSelectedInbox({ ...selectedInbox, retentionDays: inboxRetention } as any);
-        } catch (err: any) {
-            toast.error(err?.message || "Không thể cập nhật");
+            setSelectedInbox({ ...selectedInbox, retentionDays: inboxRetention } as Inbox & { retentionDays?: number | null });
+        } catch (err: unknown) {
+            toast.error((err as Error)?.message || "Không thể cập nhật");
         } finally {
             setSaving(false);
         }
@@ -72,8 +72,8 @@ export function RetentionSettings({
             });
             toast.success("Đã cập nhật thời gian lưu trữ mặc định");
             onUserRetentionChange?.(defaultRetention);
-        } catch (err: any) {
-            toast.error(err?.message || "Không thể cập nhật");
+        } catch (err: unknown) {
+            toast.error((err as Error)?.message || "Không thể cập nhật");
         } finally {
             setSaving(false);
         }
@@ -197,8 +197,8 @@ export function RetentionSettings({
                                         </span>
                                     </div>
                                     <span className="text-xs text-slate-400 dark:text-gray-500">
-                                        {(inbox as any).retentionDays
-                                            ? `${(inbox as any).retentionDays} ngày`
+                                        {(inbox as Inbox & { retentionDays?: number }).retentionDays
+                                            ? `${(inbox as Inbox & { retentionDays?: number }).retentionDays} ngày`
                                             : "Mặc định"
                                         }
                                     </span>

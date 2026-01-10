@@ -625,10 +625,25 @@ export function Dashboard() {
                                     {selectedMessage.htmlBody ? (
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe
-                                                srcDoc={selectedMessage.htmlBody}
+                                                srcDoc={`
+                                                    <style>
+                                                        @media (prefers-color-scheme: dark) {
+                                                            html, body { background: #1A2340 !important; color: #E2E8F0 !important; }
+                                                        }
+                                                        html.dark, body.dark { background: #1A2340 !important; color: #E2E8F0 !important; }
+                                                    </style>
+                                                    <script>
+                                                        if (window.matchMedia('(prefers-color-scheme: dark)').matches ||
+                                                            document.documentElement.getAttribute('data-theme') === 'dark') {
+                                                            document.documentElement.classList.add('dark');
+                                                            document.body?.classList.add('dark');
+                                                        }
+                                                    </script>
+                                                    ${selectedMessage.htmlBody}
+                                                `}
                                                 sandbox="allow-same-origin allow-scripts"
                                                 title="Email content"
-                                                className="w-full min-h-[400px] border-none bg-white rounded-lg"
+                                                className="w-full min-h-[400px] border-none bg-white dark:bg-[#1A2340] rounded-lg"
                                             />
                                         </div>
                                     ) : (

@@ -628,7 +628,7 @@ export function Dashboard() {
                                                 srcDoc={selectedMessage.htmlBody}
                                                 sandbox="allow-same-origin allow-scripts"
                                                 title="Email content"
-                                                className="w-full min-h-[400px] border-none bg-white rounded-lg dark:invert dark:hue-rotate-180 dark:contrast-90"
+                                                className="w-full min-h-[400px] border-none bg-white rounded-lg"
                                             />
                                         </div>
                                     ) : (

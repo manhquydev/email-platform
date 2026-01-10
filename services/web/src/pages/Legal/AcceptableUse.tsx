@@ -19,7 +19,7 @@ export function AcceptableUse() {
                     <p className="text-[var(--nebula-text-muted)] text-lg">Cập nhật lần cuối: Tháng 12, 2025</p>
                 </div>
 
-                <div className="prose prose-invert prose-lg max-w-none prose-headings:text-[var(--nebula-text)] prose-p:text-[var(--nebula-text-secondary)] prose-li:text-[var(--nebula-text-secondary)] prose-strong:text-[var(--nebula-text)]">
+                <div className="prose prose-slate dark:prose-invert prose-lg max-w-none prose-headings:text-slate-900 dark:prose-headings:text-[var(--nebula-text)] prose-p:text-slate-600 dark:prose-p:text-[var(--nebula-text-secondary)] prose-li:text-slate-600 dark:prose-li:text-[var(--nebula-text-secondary)] prose-strong:text-slate-900 dark:prose-strong:text-[var(--nebula-text)] prose-a:text-nebula-violet dark:prose-a:text-nebula-violet-light prose-a:no-underline hover:prose-a:underline">
                     <section className="mb-8">
                         <h2>1. Tổng quan</h2>
                         <p>

@@ -28,7 +28,7 @@ export function PrivacyPolicy() {
                     </div>
                 </div>
 
-                <div className="prose prose-invert prose-lg max-w-none prose-headings:text-[var(--nebula-text)] prose-p:text-[var(--nebula-text-secondary)] prose-li:text-[var(--nebula-text-secondary)] prose-strong:text-[var(--nebula-text)]">
+                <div className="prose prose-slate dark:prose-invert prose-lg max-w-none prose-headings:text-slate-900 dark:prose-headings:text-[var(--nebula-text)] prose-p:text-slate-600 dark:prose-p:text-[var(--nebula-text-secondary)] prose-li:text-slate-600 dark:prose-li:text-[var(--nebula-text-secondary)] prose-strong:text-slate-900 dark:prose-strong:text-[var(--nebula-text)] prose-a:text-nebula-violet dark:prose-a:text-nebula-violet-light prose-a:no-underline hover:prose-a:underline">
                     {/* Zero-Log Commitment Section */}
                     <section className="mb-8 p-6 rounded-xl bg-green-500/5 border border-green-500/20">
                         <h2 className="flex items-center gap-2 !text-green-400">
@@ -136,7 +136,7 @@ export function PrivacyPolicy() {
                             <li><strong>Từ chối:</strong> Từ chối một số hoạt động xử lý dữ liệu nhất định</li>
                         </ul>
                         <p className="mt-4">
-                            Để thực hiện các quyền này, hãy liên hệ với chúng tôi tại <a href="mailto:privacy@manhquy.click" className="text-[var(--nebula-primary)] hover:underline">privacy@manhquy.click</a>.
+                            Để thực hiện các quyền này, hãy liên hệ với chúng tôi tại <a href="mailto:privacy@manhquy.click" className="text-nebula-violet dark:text-nebula-violet-light hover:underline">privacy@manhquy.click</a>.
                         </p>
                     </section>
 
@@ -168,14 +168,14 @@ export function PrivacyPolicy() {
                         <h2>10. Liên hệ với chúng tôi</h2>
                         <p>
                             Đối với các thắc mắc liên quan đến quyền riêng tư, hãy liên hệ với đội ngũ Bảo vệ Dữ liệu của chúng tôi tại
-                            <a href="mailto:privacy@manhquy.click" className="ml-1 text-[var(--nebula-primary)] hover:underline">privacy@manhquy.click</a>.
+                            <a href="mailto:privacy@manhquy.click" className="ml-1 text-nebula-violet dark:text-nebula-violet-light hover:underline">privacy@manhquy.click</a>.
                         </p>
                     </section>
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-[var(--nebula-border)] flex flex-wrap justify-center gap-6">
-                    <Link to="/terms" className="text-[var(--nebula-text-muted)] hover:text-[var(--nebula-primary)] transition-colors">Điều khoản dịch vụ</Link>
-                    <Link to="/acceptable-use" className="text-[var(--nebula-text-muted)] hover:text-[var(--nebula-primary)] transition-colors">Chính sách sử dụng</Link>
+                <div className="mt-12 pt-8 border-t border-slate-200 dark:border-[var(--nebula-border)] flex flex-wrap justify-center gap-6">
+                    <Link to="/terms" className="text-slate-500 dark:text-[var(--nebula-text-muted)] hover:text-nebula-violet dark:hover:text-nebula-violet-light transition-colors">Điều khoản dịch vụ</Link>
+                    <Link to="/acceptable-use" className="text-slate-500 dark:text-[var(--nebula-text-muted)] hover:text-nebula-violet dark:hover:text-nebula-violet-light transition-colors">Chính sách sử dụng</Link>
                 </div>
             </div>
         </div>

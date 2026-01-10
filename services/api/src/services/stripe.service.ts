@@ -306,4 +306,81 @@ export class StripeService {
 
         return session;
     }
+
+    /**
+     * Get user's default payment method
+     */
+    static async getPaymentMethod(userId: string) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.stripeCustomerId) {
+            return null;
+        }
+
+        try {
+            const customer = await stripe.customers.retrieve(user.stripeCustomerId, {
+                expand: ['invoice_settings.default_payment_method'],
+            });
+
+            if ('deleted' in customer && customer.deleted) {
+                return null;
+            }
+
+            const defaultPM = (customer as any).invoice_settings?.default_payment_method;
+            if (!defaultPM || typeof defaultPM === 'string') {
+                // Try to get from payment methods list
+                const paymentMethods = await stripe.paymentMethods.list({
+                    customer: user.stripeCustomerId,
+                    type: 'card',
+                    limit: 1,
+                });
+                if (paymentMethods.data.length === 0) return null;
+                const pm = paymentMethods.data[0];
+                return {
+                    id: pm.id,
+                    brand: pm.card?.brand || 'unknown',
+                    last4: pm.card?.last4 || '****',
+                    expMonth: pm.card?.exp_month,
+                    expYear: pm.card?.exp_year,
+                    billingEmail: (customer as any).email || null,
+                };
+            }
+
+            return {
+                id: defaultPM.id,
+                brand: defaultPM.card?.brand || 'unknown',
+                last4: defaultPM.card?.last4 || '****',
+                expMonth: defaultPM.card?.exp_month,
+                expYear: defaultPM.card?.exp_year,
+                billingEmail: (customer as any).email || null,
+            };
+        } catch (err) {
+            console.error('Failed to get payment method:', err);
+            return null;
+        }
+    }
+
+    /**
+     * Get user's subscription details
+     */
+    static async getSubscription(userId: string) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.stripeSubscriptionId) {
+            return null;
+        }
+
+        try {
+            const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+                expand: ['items.data.price.product'],
+            }) as any;
+            return {
+                id: subscription.id,
+                status: subscription.status,
+                currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+                cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            };
+        } catch (err) {
+            console.error('Failed to get subscription:', err);
+            return null;
+        }
+    }
 }

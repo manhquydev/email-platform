@@ -1,6 +1,6 @@
 /**
  * Admin Packages Routes
- * Service package management (update, delete)
+ * Service package management (CRUD operations)
  */
 
 import { FastifyInstance } from "fastify";
@@ -9,6 +9,64 @@ import { prisma } from "../../lib/prisma";
 import { recordAudit } from "../../utils/audit";
 
 export async function adminPackagesRoutes(app: FastifyInstance) {
+    // List all packages (admin view - includes inactive)
+    app.get("/admin/packages", { preHandler: app.requireAdmin }, async () => {
+        const packages = await prisma.servicePackage.findMany({
+            orderBy: [
+                { isActive: 'desc' },
+                { createdAt: 'desc' }
+            ],
+            include: {
+                _count: {
+                    select: { codes: true }
+                }
+            }
+        });
+        return { packages };
+    });
+
+    // Create new package
+    app.post("/admin/packages", { preHandler: app.requireAdmin }, async (request, reply) => {
+        const body = z.object({
+            name: z.string().min(1),
+            description: z.string().optional(),
+            price: z.number().min(0),
+            type: z.enum(["TIME_BASED", "USAGE_BASED"]),
+            durationDays: z.number().optional(),
+            creditAmount: z.number().optional(),
+            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
+            stripePriceId: z.string().optional(),
+            stripeProductId: z.string().optional(),
+            isActive: z.boolean().optional().default(true),
+            // Package features for display
+            features: z.array(z.object({
+                text: z.string(),
+                included: z.boolean()
+            })).optional(),
+            displayOrder: z.number().optional(),
+            recommended: z.boolean().optional(),
+            badge: z.string().optional(),
+        }).safeParse(request.body);
+
+        if (!body.success) {
+            return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+        }
+
+        const pkg = await prisma.servicePackage.create({
+            data: {
+                ...body.data,
+                currency: "VND",
+            }
+        });
+
+        await recordAudit((request.user as any).userId, "ADMIN_PACKAGE_CREATED", {
+            packageId: pkg.id,
+            name: pkg.name
+        });
+
+        return { package: pkg };
+    });
+
     // Update Service Package
     app.patch("/admin/packages/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
         const params = z.object({ id: z.string() }).safeParse(request.params);
@@ -23,6 +81,14 @@ export async function adminPackagesRoutes(app: FastifyInstance) {
             stripePriceId: z.string().optional(),
             stripeProductId: z.string().optional(),
             isActive: z.boolean().optional(),
+            // Display configuration
+            features: z.array(z.object({
+                text: z.string(),
+                included: z.boolean()
+            })).optional(),
+            displayOrder: z.number().optional(),
+            recommended: z.boolean().optional(),
+            badge: z.string().nullable().optional(),
         }).safeParse(request.body);
 
         if (!params.success || !body.success) return reply.status(400).send({ error: "Invalid payload" });

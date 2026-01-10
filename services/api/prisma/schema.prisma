@@ -450,6 +450,12 @@ model ServicePackage {
   stripePriceId   String?
   stripeProductId String?
 
+  // Display configuration for pricing page
+  features     Json?    // Array of { text: string, included: boolean }
+  displayOrder Int      @default(0)
+  recommended  Boolean  @default(false)
+  badge        String?  // e.g. "KHUYÊN DÙNG", "PHỔ BIẾN"
+
   codes RedemptionCode[]
 }
 

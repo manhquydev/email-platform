@@ -67,6 +67,28 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
         return { payments };
     });
 
+    // Get user's payment method
+    app.get('/billing/payment-method', { preHandler: app.authenticate }, async (req: FastifyRequest) => {
+        const user = req.user as { userId: string };
+        try {
+            const paymentMethod = await StripeService.getPaymentMethod(user.userId);
+            return { paymentMethod };
+        } catch {
+            return { paymentMethod: null };
+        }
+    });
+
+    // Get user's subscription details
+    app.get('/billing/subscription', { preHandler: app.authenticate }, async (req: FastifyRequest) => {
+        const user = req.user as { userId: string };
+        try {
+            const subscription = await StripeService.getSubscription(user.userId);
+            return { subscription };
+        } catch {
+            return { subscription: null };
+        }
+    });
+
     // Create checkout session
     app.post('/billing/checkout', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         if (!stripeEnabled) {

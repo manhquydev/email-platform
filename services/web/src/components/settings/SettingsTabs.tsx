@@ -37,28 +37,28 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
     const activeTabConfig = tabs.find(t => t.id === activeTab) || tabs[0];
 
     return (
-        <div className="border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0a0a14]/80 backdrop-blur-xl sticky top-0 z-10">
+        <div className="border-b border-nebula-border bg-nebula-surface/80 backdrop-blur-xl sticky top-0 z-10">
             <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
                 {/* Header */}
                 <div className="mb-4">
-                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Cài đặt</h1>
-                    <p className="text-sm text-slate-500 dark:text-gray-400 mt-1 hidden sm:block">Quản lý tài khoản, bảo mật và tùy chọn ứng dụng</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-nebula-text tracking-tight">Cài đặt</h1>
+                    <p className="text-sm text-nebula-text-muted mt-1 hidden sm:block">Quản lý tài khoản, bảo mật và tùy chọn ứng dụng</p>
                 </div>
 
                 {/* Mobile: Dropdown selector */}
                 <div className="md:hidden relative">
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-left"
+                        className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-nebula-elevated border border-nebula-border text-left"
                     >
                         <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-[20px] text-primary filled">
+                            <span className="material-symbols-outlined text-[20px] text-nebula-violet filled">
                                 {activeTabConfig.icon}
                             </span>
-                            <span className="font-medium text-slate-900 dark:text-white">{activeTabConfig.label}</span>
+                            <span className="font-medium text-nebula-text">{activeTabConfig.label}</span>
                         </div>
                         <span className={cn(
-                            "material-symbols-outlined text-[20px] text-slate-400 transition-transform",
+                            "material-symbols-outlined text-[20px] text-nebula-text-muted transition-transform",
                             isDropdownOpen && "rotate-180"
                         )}>
                             expand_more
@@ -72,7 +72,7 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
                                 className="fixed inset-0 z-10"
                                 onClick={() => setIsDropdownOpen(false)}
                             />
-                            <div className="absolute top-full left-0 right-0 mt-2 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-20 max-h-[60vh] overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-2 py-2 bg-nebula-surface border border-nebula-border rounded-xl shadow-xl z-20 max-h-[60vh] overflow-y-auto">
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
@@ -83,8 +83,8 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
                                         className={cn(
                                             "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors min-h-[48px]",
                                             activeTab === tab.id
-                                                ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-                                                : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+                                                ? "bg-nebula-violet/10 text-nebula-violet"
+                                                : "text-nebula-text-secondary hover:bg-nebula-elevated"
                                         )}
                                     >
                                         <span className={cn(
@@ -112,10 +112,10 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
                             onClick={() => onTabChange(tab.id)}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all whitespace-nowrap text-sm font-medium min-h-[44px]",
-                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-nebula-violet focus-visible:ring-offset-2",
                                 activeTab === tab.id
-                                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30"
-                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
+                                    ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                    : "text-nebula-text-secondary hover:text-nebula-text hover:bg-nebula-elevated"
                             )}
                         >
                             <span className={cn("material-symbols-outlined text-[18px]", activeTab === tab.id && "filled")}>

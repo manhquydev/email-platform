@@ -74,12 +74,12 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
 
     return (
         <div className="relative" ref={wrapperRef}>
-            {label && <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>}
+            {label && <label className="block text-sm font-medium text-nebula-text-secondary mb-1.5">{label}</label>}
 
             <div className="relative">
                 <input
                     type="text"
-                    className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                    className="w-full rounded-xl border border-nebula-border bg-nebula-elevated text-nebula-text px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     placeholder={placeholder}
                     value={query}
                     onChange={(e) => {
@@ -97,22 +97,22 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
             </div>
 
             {isOpen && users.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1f1f23] rounded-xl shadow-xl border border-gray-200 dark:border-white/10 max-h-60 overflow-auto">
+                <div className="absolute z-50 w-full mt-1 bg-nebula-surface rounded-xl shadow-xl border border-nebula-border max-h-60 overflow-auto">
                     {users.map(user => (
                         <div
                             key={user.id}
-                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer flex flex-col border-b border-gray-100 dark:border-white/15 last:border-0 ${user.id === value ? "bg-primary/5 dark:bg-primary/10" : ""}`}
+                            className={`px-4 py-3 hover:bg-nebula-elevated cursor-pointer flex flex-col border-b border-nebula-border last:border-0 ${user.id === value ? "bg-primary/5" : ""}`}
                             onClick={() => handleSelect(user)}
                         >
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">ID: {user.id} • Role: {user.role}</span>
+                            <span className="text-sm font-medium text-nebula-text">{user.email}</span>
+                            <span className="text-xs text-nebula-text-muted">ID: {user.id} • Role: {user.role}</span>
                         </div>
                     ))}
                 </div>
             )}
 
             {isOpen && !isLoading && users.length === 0 && query && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1f1f23] rounded-xl shadow-xl border border-gray-200 dark:border-white/10 p-4 text-center text-sm text-gray-500">
+                <div className="absolute z-50 w-full mt-1 bg-nebula-surface rounded-xl shadow-xl border border-nebula-border p-4 text-center text-sm text-nebula-text-muted">
                     No users found
                 </div>
             )}

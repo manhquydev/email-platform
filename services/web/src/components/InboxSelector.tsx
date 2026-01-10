@@ -56,7 +56,7 @@ export function InboxSelector({
             {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all group max-w-[200px] md:max-w-[300px]"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-nebula-elevated border border-transparent hover:border-nebula-border transition-all group max-w-[200px] md:max-w-[300px]"
             >
                 <div className="flex flex-col items-start overflow-hidden">
                     <span className="text-xs text-text-tertiary">
@@ -172,7 +172,7 @@ export function InboxSelector({
                                         {selectedInboxId === inbox.id && <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>}
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onDeleteInbox(inbox); }}
-                                            className="p-1 rounded-md text-text-tertiary hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                                            className="p-1 rounded-md text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors opacity-0 group-hover:opacity-100"
                                             title="Xóa hộp thư"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -185,7 +185,7 @@ export function InboxSelector({
                         {/* Footer Actions */}
                         <div className="p-2 border-t border-white/5 bg-surface-elevated/50 flex justify-between items-center">
                             <ThemeToggle />
-                            <a href="/settings" className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-xs text-text-tertiary hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
+                            <a href="/settings" className="p-2 rounded-lg hover:bg-nebula-elevated text-xs text-text-tertiary hover:text-nebula-text flex items-center gap-1 transition-colors">
                                 <span className="material-symbols-outlined text-[16px]">settings</span>
                                 Cài đặt
                             </a>

@@ -19,7 +19,7 @@ export function OTPHighlight({ otp, onCopy }: OTPHighlightProps) {
                 </div>
                 <div>
                     <div className="text-sm text-primary font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
-                    <div className="text-3xl font-bold text-slate-800 dark:text-white font-mono tracking-widest">{otp}</div>
+                    <div className="text-3xl font-bold text-nebula-text font-mono tracking-widest">{otp}</div>
                 </div>
             </div>
             <Button

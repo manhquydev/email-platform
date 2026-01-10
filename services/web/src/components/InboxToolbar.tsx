@@ -112,7 +112,7 @@ export function InboxToolbar({
                 </button>
 
                 {showDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-full min-w-[300px] max-h-[400px] overflow-y-auto bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 flex flex-col p-1 animate-fade-in-up">
+                    <div className="absolute top-full left-0 mt-2 w-full min-w-[300px] max-h-[400px] overflow-y-auto bg-nebula-surface/95 backdrop-blur-xl border border-nebula-border rounded-xl shadow-2xl z-50 flex flex-col p-1 animate-fade-in-up">
                         <div className="flex items-center justify-between px-3 py-2 mb-1 border-b border-white/5">
                             <span className="text-xs font-semibold uppercase text-text-secondary tracking-wider">Hộp thư của bạn</span>
                             <span className="text-xs px-1.5 py-0.5 rounded-full bg-white/10 text-text-primary">{inboxes.length}</span>
@@ -175,8 +175,8 @@ export function InboxToolbar({
             {/* TTL Indicator */}
             {ttlRemaining && (
                 <div className={cn(
-                    "hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-black/40 border border-white/5 ml-2",
-                    ttlRemaining.includes('hết hạn') ? "text-red-400" : "text-text-secondary"
+                    "hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-nebula-elevated border border-nebula-border ml-2",
+                    ttlRemaining.includes('hết hạn') ? "text-danger" : "text-text-secondary"
                 )}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -205,13 +205,13 @@ export function InboxToolbar({
                             size="icon"
                             onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
                             title="Xóa hộp thư này"
-                            className="text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                            className="text-danger hover:text-danger hover:bg-danger/10"
                             icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>}
                         />
 
                         {/* Delete Confirmation Popup */}
                         {showDeleteConfirm && (
-                            <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 border border-white/10 rounded-xl shadow-xl p-4 z-50 animate-fade-in-up">
+                            <div className="absolute right-0 top-full mt-2 w-64 bg-nebula-surface border border-nebula-border rounded-xl shadow-xl p-4 z-50 animate-fade-in-up">
                                 <p className="text-sm font-medium text-white mb-3">Xóa hộp thư này? Hành động không thể hoàn tác.</p>
                                 <div className="flex items-center justify-end gap-2">
                                     <Button size="sm" variant="ghost" onClick={() => setShowDeleteConfirm(false)}>Hủy</Button>

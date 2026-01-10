@@ -172,8 +172,8 @@ export function DropdownMenu({ children, align = 'left' }: DropdownMenuProps) {
         <div
             className={cn(
                 "absolute bottom-full mb-2 min-w-[200px] z-50",
-                "bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10",
-                "rounded-xl shadow-xl dark:shadow-[0_0_30px_rgba(0,0,0,0.5)]",
+                "bg-nebula-surface border border-nebula-border",
+                "rounded-xl shadow-nebula-xl",
                 "py-2 animate-in fade-in slide-in-from-bottom-2 duration-200",
                 alignmentClasses[align]
             )}
@@ -207,8 +207,8 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
     const isFocused = itemIndex === focusedIndex;
 
     const variantClasses = {
-        default: 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700',
-        danger: 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
+        default: 'text-nebula-text hover:bg-nebula-elevated',
+        danger: 'text-danger hover:bg-danger/10'
     };
 
     const handleClick = () => {
@@ -236,7 +236,7 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
                 "flex items-center gap-3",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 variantClasses[variant],
-                isFocused && "bg-slate-100 dark:bg-slate-700 ring-2 ring-primary/50 ring-inset"
+                isFocused && "bg-nebula-elevated ring-2 ring-nebula-violet/50 ring-inset"
             )}
         >
             {icon && (
@@ -246,7 +246,7 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
             )}
             {typeof children === 'string' ? <span className="flex-1">{children}</span> : children}
             {shortcut && (
-                <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">
+                <span className="text-xs text-nebula-text-muted font-mono">
                     {shortcut}
                 </span>
             )}
@@ -257,6 +257,6 @@ export function DropdownItem({ children, onClick, variant = 'default', disabled 
 // Divider component for visual grouping
 export function DropdownDivider() {
     return (
-        <div className="h-px bg-slate-200 dark:bg-slate-700 my-1" />
+        <div className="h-px bg-nebula-border-subtle my-1" />
     );
 }

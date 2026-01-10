@@ -35,8 +35,8 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
         <aside
             className={cn(
                 "hidden md:flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out",
-                "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl",
-                "border-l border-slate-200 dark:border-white/10",
+                "bg-nebula-surface/80 backdrop-blur-xl",
+                "border-l border-nebula-border",
                 "order-last", // Right side positioning
                 isCollapsed ? "w-20" : "w-64"
             )}
@@ -57,7 +57,7 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -10 }}
-                            className="text-xl font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap"
+                            className="text-xl font-bold tracking-tight text-nebula-text whitespace-nowrap"
                         >
                             Ephemera
                         </motion.span>
@@ -65,7 +65,7 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
                     {/* Collapse indicator */}
                     <motion.span
                         className={cn(
-                            "material-symbols-outlined text-slate-400 dark:text-slate-500 ml-auto transition-transform duration-300",
+                            "material-symbols-outlined text-nebula-text-muted ml-auto transition-transform duration-300",
                             isCollapsed ? "rotate-180" : ""
                         )}
                         style={{ display: isCollapsed ? "none" : "block" }}
@@ -91,7 +91,7 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
             <div className="flex-1" />
 
             {/* Footer - Theme Toggle & User Profile */}
-            <div className="p-4 flex flex-col gap-3 border-t border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-black/20">
+            <div className="p-4 flex flex-col gap-3 border-t border-nebula-border bg-nebula-elevated/50">
                 {/* Theme Toggle */}
                 <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-start px-2")}>
                     <ThemeToggle />
@@ -103,10 +103,10 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
                         <button
                             className={cn(
                                 "flex items-center gap-3 px-2 py-2.5 rounded-xl transition-colors w-full text-left min-h-12",
-                                "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                                "text-nebula-text-secondary hover:bg-nebula-elevated"
                             )}
                         >
-                            <div className="flex items-center justify-center aspect-square rounded-full size-10 shrink-0 ring-2 ring-slate-200 dark:ring-white/10 bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm">
+                            <div className="flex items-center justify-center aspect-square rounded-full size-10 shrink-0 ring-2 ring-nebula-border bg-nebula-violet/10 text-nebula-violet font-bold text-sm">
                                 {user?.email?.charAt(0).toUpperCase() || "U"}
                             </div>
                             {!isCollapsed && (
@@ -115,10 +115,10 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
                                     animate={{ opacity: 1 }}
                                     className="flex flex-col items-start overflow-hidden"
                                 >
-                                    <span className="text-sm font-medium text-slate-900 dark:text-white truncate w-full">
+                                    <span className="text-sm font-medium text-nebula-text truncate w-full">
                                         {user?.email?.split("@")[0] || "Người dùng"}
                                     </span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400 truncate w-full uppercase tracking-wide">
+                                    <span className="text-xs text-nebula-text-muted truncate w-full uppercase tracking-wide">
                                         Gói{" "}
                                         {user?.tier === "FREE"
                                             ? "MIỄN PHÍ"

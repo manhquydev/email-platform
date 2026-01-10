@@ -30,9 +30,9 @@ export function CountdownTimer({ expiresAt, className }: CountdownTimerProps) {
             if (hours < 1 && minutes < 10) {
                 setColorClass('text-danger font-semibold animate-pulse');
             } else if (hours < 1) {
-                setColorClass('text-yellow-500 font-medium');
+                setColorClass('text-warning font-medium');
             } else {
-                setColorClass('text-green-600');
+                setColorClass('text-success');
             }
 
             // Format time string

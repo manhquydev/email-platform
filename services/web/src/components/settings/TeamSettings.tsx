@@ -161,10 +161,10 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
 
     const getRoleBadge = (role: TeamRole) => {
         const styles: Record<TeamRole, string> = {
-            OWNER: "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30",
-            ADMIN: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/30",
-            MEMBER: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",
-            VIEWER: "bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-500/30"
+            OWNER: "bg-warning/10 text-warning border-warning/30",
+            ADMIN: "bg-nebula-violet/10 text-nebula-violet border-nebula-violet/20",
+            MEMBER: "bg-info/10 text-info border-info/30",
+            VIEWER: "bg-nebula-elevated text-nebula-text-muted border-nebula-border"
         };
         return (
             <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${styles[role]}`}>
@@ -181,19 +181,19 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Nhóm làm việc</h2>
-                <p className="text-slate-500 dark:text-gray-400 font-body">Tạo nhóm và chia sẻ inbox với đồng nghiệp.</p>
+                <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Nhóm làm việc</h2>
+                <p className="text-nebula-text-muted font-body">Tạo nhóm và chia sẻ inbox với đồng nghiệp.</p>
             </div>
 
             {/* Teams List */}
-            <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 border-l-4 border-l-cyan-500/70 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border border-l-4 border-l-info/70 shadow-sm">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-cyan-500">groups</span>
+                        <h3 className="text-lg font-bold text-nebula-text mb-1 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-info">groups</span>
                             Nhóm của bạn
                         </h3>
-                        <p className="text-sm text-slate-500 dark:text-gray-400">Quản lý các nhóm bạn sở hữu hoặc tham gia.</p>
+                        <p className="text-sm text-nebula-text-muted">Quản lý các nhóm bạn sở hữu hoặc tham gia.</p>
                     </div>
                     <Button size="sm" onClick={() => setIsCreateModalOpen(true)}>
                         + Tạo nhóm
@@ -201,11 +201,11 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-8 text-slate-500 dark:text-gray-500">Đang tải...</div>
+                    <div className="text-center py-8 text-nebula-text-muted">Đang tải...</div>
                 ) : teams.length === 0 ? (
-                    <div className="text-center py-12 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/15 border-dashed">
-                        <span className="material-symbols-outlined text-slate-400 dark:text-gray-600 text-4xl mb-2">group_off</span>
-                        <p className="text-slate-500 dark:text-gray-500">Chưa có nhóm nào. Tạo nhóm để bắt đầu chia sẻ inbox.</p>
+                    <div className="text-center py-12 bg-nebula-elevated/50 rounded-lg border border-nebula-border border-dashed">
+                        <span className="material-symbols-outlined text-nebula-text-muted text-4xl mb-2">group_off</span>
+                        <p className="text-nebula-text-muted">Chưa có nhóm nào. Tạo nhóm để bắt đầu chia sẻ inbox.</p>
                     </div>
                 ) : (
                     <div className="grid gap-3">
@@ -213,22 +213,22 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                             <div
                                 key={team.id}
                                 onClick={() => loadTeamDetails(team.id)}
-                                className={`bg-slate-50 dark:bg-black/30 rounded-lg p-4 border cursor-pointer transition-all ${
+                                className={`bg-nebula-elevated/50 rounded-lg p-4 border cursor-pointer transition-all ${
                                     selectedTeam?.id === team.id
-                                        ? "border-cyan-500 dark:border-cyan-400 ring-1 ring-cyan-500/20"
-                                        : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+                                        ? "border-info ring-1 ring-info/20"
+                                        : "border-nebula-border hover:border-nebula-border-highlight"
                                 }`}
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h4 className="font-semibold text-slate-900 dark:text-white truncate">{team.name}</h4>
+                                            <h4 className="font-semibold text-nebula-text truncate">{team.name}</h4>
                                             {team.ownerId === user?.id && getRoleBadge("OWNER")}
                                         </div>
                                         {team.description && (
-                                            <p className="text-sm text-slate-500 dark:text-gray-400 truncate">{team.description}</p>
+                                            <p className="text-sm text-nebula-text-muted truncate">{team.description}</p>
                                         )}
-                                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-400 dark:text-gray-500">
+                                        <div className="flex items-center gap-4 mt-2 text-xs text-nebula-text-muted">
                                             <span className="flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-[14px]">person</span>
                                                 {team._count?.members || 0} thành viên
@@ -242,7 +242,7 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                                     {team.ownerId === user?.id && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDeleteTeam(team.id); }}
-                                            className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                            className="p-2 hover:bg-nebula-elevated rounded-md text-nebula-text-muted hover:text-danger transition-colors"
                                             title="Xóa nhóm"
                                         >
                                             <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -257,21 +257,21 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
 
             {/* Team Details Panel */}
             {selectedTeam && (
-                <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
+                <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border shadow-sm">
                     <div className="flex justify-between items-start mb-6">
                         <div>
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{selectedTeam.name}</h3>
-                            <p className="text-sm text-slate-500 dark:text-gray-400">{selectedTeam.description || "Không có mô tả"}</p>
+                            <h3 className="text-lg font-bold text-nebula-text mb-1">{selectedTeam.name}</h3>
+                            <p className="text-sm text-nebula-text-muted">{selectedTeam.description || "Không có mô tả"}</p>
                         </div>
-                        <button onClick={() => setSelectedTeam(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg">
-                            <span className="material-symbols-outlined text-slate-400">close</span>
+                        <button onClick={() => setSelectedTeam(null)} className="p-2 hover:bg-nebula-elevated rounded-lg">
+                            <span className="material-symbols-outlined text-nebula-text-muted">close</span>
                         </button>
                     </div>
 
                     {/* Members */}
                     <div className="mb-6">
                         <div className="flex justify-between items-center mb-3">
-                            <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                            <h4 className="font-medium text-nebula-text flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[18px]">group</span>
                                 Thành viên
                             </h4>
@@ -283,20 +283,20 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                         </div>
                         <div className="space-y-2">
                             {selectedTeam.members?.map(member => (
-                                <div key={member.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-black/30 rounded-lg border border-slate-200 dark:border-white/10">
+                                <div key={member.id} className="flex items-center justify-between p-3 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-info/80 to-nebula-violet flex items-center justify-center text-white text-sm font-medium">
                                             {(member.user?.email || "?")[0].toUpperCase()}
                                         </div>
                                         <div>
-                                            <span className="text-sm text-slate-900 dark:text-white">{member.user?.email || "Unknown"}</span>
+                                            <span className="text-sm text-nebula-text">{member.user?.email || "Unknown"}</span>
                                             <div className="mt-0.5">{getRoleBadge(member.role)}</div>
                                         </div>
                                     </div>
                                     {isOwnerOrAdmin(selectedTeam) && member.role !== "OWNER" && (
                                         <button
                                             onClick={() => handleRemoveMember(member.id)}
-                                            className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/10 rounded text-slate-400 hover:text-red-500 transition-colors"
+                                            className="p-1.5 hover:bg-nebula-elevated rounded text-nebula-text-muted hover:text-danger transition-colors"
                                         >
                                             <span className="material-symbols-outlined text-[18px]">person_remove</span>
                                         </button>
@@ -309,7 +309,7 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                     {/* Shared Inboxes */}
                     <div>
                         <div className="flex justify-between items-center mb-3">
-                            <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                            <h4 className="font-medium text-nebula-text flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[18px]">inbox</span>
                                 Inbox được chia sẻ
                             </h4>
@@ -320,21 +320,21 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                             )}
                         </div>
                         {selectedTeam.sharedInboxes?.length === 0 ? (
-                            <p className="text-sm text-slate-500 dark:text-gray-500 italic">Chưa có inbox nào được chia sẻ.</p>
+                            <p className="text-sm text-nebula-text-muted italic">Chưa có inbox nào được chia sẻ.</p>
                         ) : (
                             <div className="space-y-2">
                                 {selectedTeam.sharedInboxes?.map(si => (
-                                    <div key={si.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-black/30 rounded-lg border border-slate-200 dark:border-white/10">
+                                    <div key={si.id} className="flex items-center justify-between p-3 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
                                         <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-cyan-500 text-[18px]">mail</span>
-                                            <span className="text-sm text-slate-900 dark:text-white font-mono">
+                                            <span className="material-symbols-outlined text-info text-[18px]">mail</span>
+                                            <span className="text-sm text-nebula-text font-mono">
                                                 {si.inbox?.localPart}@{si.inbox?.domain?.name}
                                             </span>
                                         </div>
                                         {isOwnerOrAdmin(selectedTeam) && (
                                             <button
                                                 onClick={() => handleUnshareInbox(si.inboxId)}
-                                                className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/10 rounded text-slate-400 hover:text-red-500 transition-colors"
+                                                className="p-1.5 hover:bg-nebula-elevated rounded text-nebula-text-muted hover:text-danger transition-colors"
                                                 title="Hủy chia sẻ"
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">link_off</span>
@@ -351,11 +351,11 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
             {/* Create Team Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-white/10 shadow-xl">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Tạo nhóm mới</h3>
+                    <div className="w-full max-w-md bg-nebula-surface rounded-xl p-6 border border-nebula-border shadow-xl">
+                        <h3 className="text-xl font-bold text-nebula-text mb-4">Tạo nhóm mới</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">Tên nhóm *</label>
+                                <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Tên nhóm *</label>
                                 <Input
                                     value={newTeamName}
                                     onChange={e => setNewTeamName(e.target.value)}
@@ -364,7 +364,7 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">Mô tả</label>
+                                <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Mô tả</label>
                                 <Input
                                     value={newTeamDescription}
                                     onChange={e => setNewTeamDescription(e.target.value)}
@@ -385,11 +385,11 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
             {/* Add Member Modal */}
             {isAddMemberOpen && selectedTeam && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-white/10 shadow-xl">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Thêm thành viên</h3>
+                    <div className="w-full max-w-md bg-nebula-surface rounded-xl p-6 border border-nebula-border shadow-xl">
+                        <h3 className="text-xl font-bold text-nebula-text mb-4">Thêm thành viên</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">Email *</label>
+                                <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Email *</label>
                                 <Input
                                     type="email"
                                     value={memberEmail}
@@ -399,11 +399,11 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">Vai trò</label>
+                                <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Vai trò</label>
                                 <select
                                     value={memberRole}
                                     onChange={e => setMemberRole(e.target.value as TeamRole)}
-                                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-white/20 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                    className="w-full px-3 py-2 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text"
                                 >
                                     <option value="VIEWER">Viewer - Chỉ xem</option>
                                     <option value="MEMBER">Member - Xem và trả lời</option>
@@ -424,14 +424,14 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
             {/* Share Inbox Modal */}
             {isShareInboxOpen && selectedTeam && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-white/10 shadow-xl">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Chia sẻ inbox</h3>
+                    <div className="w-full max-w-md bg-nebula-surface rounded-xl p-6 border border-nebula-border shadow-xl">
+                        <h3 className="text-xl font-bold text-nebula-text mb-4">Chia sẻ inbox</h3>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">Chọn inbox</label>
+                            <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Chọn inbox</label>
                             <select
                                 value={selectedInboxId}
                                 onChange={e => setSelectedInboxId(e.target.value)}
-                                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-white/20 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                className="w-full px-3 py-2 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text"
                             >
                                 <option value="">-- Chọn inbox --</option>
                                 {userInboxes.map(inbox => (

@@ -106,9 +106,9 @@ function Badge({ count, color = "red" }: { count: number; color?: "red" | "blue"
     if (!count || count === 0) return null;
 
     const colorClasses = {
-        red: "bg-red-500 text-white",
-        blue: "bg-blue-500 text-white",
-        green: "bg-green-500 text-white",
+        red: "bg-danger text-white",
+        blue: "bg-info text-white",
+        green: "bg-success text-white",
     };
 
     return (

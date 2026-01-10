@@ -68,22 +68,22 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
         switch (status) {
             case "SUCCESS":
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-success/10 text-success rounded-full">
+                        <span className="w-1.5 h-1.5 bg-success rounded-full"></span>
                         {statusCode || "OK"}
                     </span>
                 );
             case "FAILED":
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-danger/10 text-danger rounded-full">
+                        <span className="w-1.5 h-1.5 bg-danger rounded-full"></span>
                         {statusCode || "Failed"}
                     </span>
                 );
             case "PENDING":
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-warning/10 text-warning rounded-full">
+                        <span className="w-1.5 h-1.5 bg-warning rounded-full animate-pulse"></span>
                         Pending
                     </span>
                 );
@@ -94,13 +94,13 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <GlassCard className="w-full max-w-4xl max-h-[80vh] flex flex-col animate-fade-in-up">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-white/10">
+                <div className="flex items-center justify-between p-4 border-b border-nebula-border">
                     <div>
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-purple-400">history</span>
+                        <h3 className="text-lg font-bold text-nebula-text flex items-center gap-2">
+                            <span className="material-symbols-outlined text-nebula-violet">history</span>
                             Lịch sử Webhook
                         </h3>
-                        <p className="text-sm text-gray-400">{webhookName}</p>
+                        <p className="text-sm text-nebula-text-muted">{webhookName}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button size="sm" variant="ghost" onClick={loadLogs} disabled={loading}>
@@ -108,7 +108,7 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                         </Button>
                         <button
                             onClick={onClose}
-                            className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                            className="p-2 hover:bg-nebula-elevated rounded-lg text-nebula-text-muted hover:text-nebula-text transition-colors"
                         >
                             <span className="material-symbols-outlined">close</span>
                         </button>
@@ -116,25 +116,25 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                 </div>
 
                 {/* Stats Summary */}
-                <div className="grid grid-cols-4 gap-4 p-4 bg-black/20">
+                <div className="grid grid-cols-4 gap-4 p-4 bg-nebula-elevated">
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-white">{logs.length}</div>
-                        <div className="text-xs text-gray-400">Tổng số</div>
+                        <div className="text-2xl font-bold text-nebula-text">{logs.length}</div>
+                        <div className="text-xs text-nebula-text-muted">Tổng số</div>
                     </div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-green-400">
+                        <div className="text-2xl font-bold text-success">
                             {logs.filter(l => l.status === "SUCCESS").length}
                         </div>
-                        <div className="text-xs text-gray-400">Thành công</div>
+                        <div className="text-xs text-nebula-text-muted">Thành công</div>
                     </div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-red-400">
+                        <div className="text-2xl font-bold text-danger">
                             {logs.filter(l => l.status === "FAILED").length}
                         </div>
-                        <div className="text-xs text-gray-400">Thất bại</div>
+                        <div className="text-xs text-nebula-text-muted">Thất bại</div>
                     </div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-400">
+                        <div className="text-2xl font-bold text-info">
                             {logs.length > 0
                                 ? Math.round(
                                     logs.filter(l => l.responseTime).reduce((sum, l) => sum + (l.responseTime || 0), 0) /
@@ -142,7 +142,7 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                                 ) || 0
                                 : 0}ms
                         </div>
-                        <div className="text-xs text-gray-400">Thời gian TB</div>
+                        <div className="text-xs text-nebula-text-muted">Thời gian TB</div>
                     </div>
                 </div>
 
@@ -150,17 +150,17 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                 <div className="flex-1 overflow-auto">
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-nebula-violet"></div>
                         </div>
                     ) : logs.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500">
+                        <div className="text-center py-12 text-nebula-text-muted">
                             <span className="material-symbols-outlined text-4xl mb-2">inbox</span>
                             <p>Chưa có lịch sử webhook nào</p>
                         </div>
                     ) : (
                         <table className="w-full">
-                            <thead className="bg-black/30 sticky top-0">
-                                <tr className="text-left text-xs text-gray-400 uppercase">
+                            <thead className="bg-nebula-elevated sticky top-0">
+                                <tr className="text-left text-xs text-nebula-text-muted uppercase">
                                     <th className="px-4 py-3">Trạng thái</th>
                                     <th className="px-4 py-3">Sự kiện</th>
                                     <th className="px-4 py-3">Thời gian</th>
@@ -169,30 +169,30 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                                     <th className="px-4 py-3"></th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/5">
+                            <tbody className="divide-y divide-nebula-border">
                                 {logs.map(log => (
                                     <tr
                                         key={log.id}
-                                        className="hover:bg-white/5 transition-colors cursor-pointer"
+                                        className="hover:bg-nebula-elevated transition-colors cursor-pointer"
                                         onClick={() => setSelectedLog(log)}
                                     >
                                         <td className="px-4 py-3">
                                             {getStatusBadge(log.status, log.statusCode)}
                                         </td>
                                         <td className="px-4 py-3">
-                                            <span className="text-sm text-purple-400 font-mono">
+                                            <span className="text-sm text-nebula-violet font-mono">
                                                 {log.event}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-400">
+                                        <td className="px-4 py-3 text-sm text-nebula-text-muted">
                                             {new Date(log.createdAt).toLocaleString("vi-VN")}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-400">
+                                        <td className="px-4 py-3 text-sm text-nebula-text-muted">
                                             {log.responseTime ? `${log.responseTime}ms` : "-"}
                                         </td>
                                         <td className="px-4 py-3">
                                             {log.retryCount > 0 && (
-                                                <span className="text-xs text-yellow-400">
+                                                <span className="text-xs text-warning">
                                                     {log.retryCount}x
                                                 </span>
                                             )}
@@ -222,15 +222,15 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                 {/* Log Detail Modal */}
                 {selectedLog && (
                     <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4">
-                        <div className="bg-slate-900 rounded-xl w-full max-w-2xl max-h-[70vh] flex flex-col border border-white/10">
-                            <div className="flex items-center justify-between p-4 border-b border-white/10">
+                        <div className="bg-nebula-surface rounded-xl w-full max-w-2xl max-h-[70vh] flex flex-col border border-nebula-border">
+                            <div className="flex items-center justify-between p-4 border-b border-nebula-border">
                                 <div className="flex items-center gap-3">
                                     {getStatusBadge(selectedLog.status, selectedLog.statusCode)}
-                                    <span className="text-white font-medium">{selectedLog.event}</span>
+                                    <span className="text-nebula-text font-medium">{selectedLog.event}</span>
                                 </div>
                                 <button
                                     onClick={() => setSelectedLog(null)}
-                                    className="p-1 hover:bg-white/10 rounded text-gray-400"
+                                    className="p-1 hover:bg-nebula-elevated rounded text-nebula-text-muted"
                                 >
                                     <span className="material-symbols-outlined text-sm">close</span>
                                 </button>
@@ -238,49 +238,49 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
 
                             <div className="flex-1 overflow-auto p-4 space-y-4">
                                 <div>
-                                    <h4 className="text-xs text-gray-400 uppercase mb-2">Thông tin</h4>
+                                    <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Thông tin</h4>
                                     <div className="grid grid-cols-2 gap-2 text-sm">
                                         <div>
-                                            <span className="text-gray-500">Thời gian:</span>
-                                            <span className="text-white ml-2">
+                                            <span className="text-nebula-text-muted">Thời gian:</span>
+                                            <span className="text-nebula-text ml-2">
                                                 {new Date(selectedLog.createdAt).toLocaleString("vi-VN")}
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500">Response time:</span>
-                                            <span className="text-white ml-2">
+                                            <span className="text-nebula-text-muted">Response time:</span>
+                                            <span className="text-nebula-text ml-2">
                                                 {selectedLog.responseTime ? `${selectedLog.responseTime}ms` : "N/A"}
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500">Status code:</span>
-                                            <span className="text-white ml-2">{selectedLog.statusCode || "N/A"}</span>
+                                            <span className="text-nebula-text-muted">Status code:</span>
+                                            <span className="text-nebula-text ml-2">{selectedLog.statusCode || "N/A"}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500">Retry count:</span>
-                                            <span className="text-white ml-2">{selectedLog.retryCount}</span>
+                                            <span className="text-nebula-text-muted">Retry count:</span>
+                                            <span className="text-nebula-text ml-2">{selectedLog.retryCount}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {selectedLog.errorMessage && (
                                     <div>
-                                        <h4 className="text-xs text-gray-400 uppercase mb-2">Lỗi</h4>
-                                        <pre className="bg-red-500/10 border border-red-500/20 rounded p-3 text-sm text-red-400 overflow-auto">
+                                        <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Lỗi</h4>
+                                        <pre className="bg-danger/10 border border-danger/20 rounded p-3 text-sm text-danger overflow-auto">
                                             {selectedLog.errorMessage}
                                         </pre>
                                     </div>
                                 )}
 
                                 <div>
-                                    <h4 className="text-xs text-gray-400 uppercase mb-2">Payload</h4>
-                                    <pre className="bg-black/50 rounded p-3 text-sm text-gray-300 overflow-auto max-h-[200px] font-mono">
+                                    <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Payload</h4>
+                                    <pre className="bg-nebula-elevated rounded p-3 text-sm text-nebula-text-secondary overflow-auto max-h-[200px] font-mono">
                                         {JSON.stringify(selectedLog.payload, null, 2)}
                                     </pre>
                                 </div>
                             </div>
 
-                            <div className="p-4 border-t border-white/10 flex justify-end gap-2">
+                            <div className="p-4 border-t border-nebula-border flex justify-end gap-2">
                                 {selectedLog.status === "FAILED" && (
                                     <Button
                                         size="sm"

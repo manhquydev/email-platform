@@ -35,31 +35,31 @@ export function MessageList({
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-auto">
         {messages.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">No messages found</div>
+          <div className="p-4 text-center text-nebula-text-muted">No messages found</div>
         ) : (
-          <ul className="divide-y dark:divide-gray-700">
+          <ul className="divide-y divide-nebula-border">
             {messages.map((msg) => (
               <li
                 key={msg.id}
                 onClick={() => onSelect(msg.id)}
-                className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.1] dark:hover:border-l-2 dark:hover:border-l-blue-400 ${
-                  selectedId === msg.id ? "bg-blue-50 dark:bg-blue-500/20 dark:border-l-2 dark:border-l-blue-400" : ""
+                className={`p-4 cursor-pointer hover:bg-nebula-elevated hover:border-l-2 hover:border-l-nebula-violet ${
+                  selectedId === msg.id ? "bg-nebula-violet/10 border-l-2 border-l-nebula-violet" : ""
                 }`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className="font-medium text-sm truncate max-w-[200px]">
                     {msg.fromAddress || "(unknown)"}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-nebula-text-muted">
                     {formatDistanceToNow(new Date(msg.receivedAt), { addSuffix: true })}
                   </span>
                 </div>
                 <div className="text-sm font-medium mb-1 truncate">
                   {msg.subject || "(no subject)"}
                 </div>
-                <div className="text-xs text-gray-500 truncate">{msg.preview}</div>
+                <div className="text-xs text-nebula-text-muted truncate">{msg.preview}</div>
                 {msg.attachmentCount > 0 && (
-                  <span className="text-xs text-blue-500 mt-1 inline-block">
+                  <span className="text-xs text-info mt-1 inline-block">
                     {msg.attachmentCount} attachment(s)
                   </span>
                 )}
@@ -71,7 +71,7 @@ export function MessageList({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 p-4 border-t dark:border-gray-700">
+        <div className="flex justify-center gap-2 p-4 border-t border-nebula-border">
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}

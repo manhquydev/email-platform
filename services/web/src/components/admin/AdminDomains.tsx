@@ -103,7 +103,7 @@ export function AdminDomains({ token }: { token: string }) {
                         <select
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
-                            className="text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800"
+                            className="text-xs py-2 px-3 rounded-xl border border-nebula-border bg-nebula-elevated text-nebula-text"
                         >
                             <option value="ALL">Tất cả</option>
                             <option value="PENDING">Chờ duyệt</option>
@@ -143,7 +143,7 @@ export function AdminDomains({ token }: { token: string }) {
                                             else setSelectedIds(new Set());
                                         }}
                                         checked={selectedIds.size === domains.length && domains.length > 0}
-                                        className="rounded border-slate-300 dark:border-slate-600"
+                                        className="rounded border-nebula-border"
                                     />
                                 </TableHeaderCell>
                                 <TableHeaderCell>Tên miền</TableHeaderCell>
@@ -167,12 +167,12 @@ export function AdminDomains({ token }: { token: string }) {
                                                 else newSet.add(domain.id);
                                                 setSelectedIds(newSet);
                                             }}
-                                            className="rounded border-slate-300 dark:border-slate-600"
+                                            className="rounded border-nebula-border"
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        <div className="font-medium text-slate-900 dark:text-white">{domain.name}</div>
-                                        <div className="text-xs text-slate-500">{new Date(domain.createdAt).toLocaleDateString()}</div>
+                                        <div className="font-medium text-nebula-text">{domain.name}</div>
+                                        <div className="text-xs text-nebula-text-muted">{new Date(domain.createdAt).toLocaleDateString()}</div>
                                     </TableCell>
                                     <TableCell className="text-xs">{domain.owner?.email || "—"}</TableCell>
                                     <TableCell>
@@ -192,7 +192,7 @@ export function AdminDomains({ token }: { token: string }) {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        <span className={`text-xs px-2 py-1 rounded-lg ${domain.isPublic ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"}`}>
+                                        <span className={`text-xs px-2 py-1 rounded-lg ${domain.isPublic ? "bg-info/10 text-info" : "bg-nebula-elevated text-nebula-text-muted"}`}>
                                             {domain.isPublic ? "Public" : "Private"}
                                         </span>
                                     </TableCell>
@@ -203,14 +203,14 @@ export function AdminDomains({ token }: { token: string }) {
                                                     <button
                                                         onClick={() => handleReview(domain.id, "APPROVED")}
                                                         disabled={updating === domain.id}
-                                                        className="text-xs text-green-600 hover:text-green-700 font-medium"
+                                                        className="text-xs text-success hover:text-success font-medium"
                                                     >
                                                         Duyệt
                                                     </button>
                                                     <button
                                                         onClick={() => handleReview(domain.id, "REJECTED")}
                                                         disabled={updating === domain.id}
-                                                        className="text-xs text-red-600 hover:text-red-700 font-medium"
+                                                        className="text-xs text-danger hover:text-danger font-medium"
                                                     >
                                                         Từ chối
                                                     </button>

@@ -135,17 +135,17 @@ function StatCard({ label, value, trend, icon, color, delay = 0 }: {
                 </div>
                 {trend !== undefined && trend !== 0 && (
                     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${trend > 0
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        ? "bg-success/10 text-success"
+                        : "bg-danger/10 text-danger"
                         }`}>
                         {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
                     </span>
                 )}
             </div>
-            <div className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <div className="text-3xl font-bold text-nebula-text tracking-tight">
                 {animatedValue.toLocaleString()}
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">{label}</div>
+            <div className="text-sm text-nebula-text-secondary mt-1 font-medium">{label}</div>
         </GlassCard>
     );
 }
@@ -189,10 +189,10 @@ function CircularGauge({ value, max, label, color }: {
                     />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-bold text-slate-800 dark:text-white">{Math.round(percentage)}%</span>
+                    <span className="text-2xl font-bold text-nebula-text">{Math.round(percentage)}%</span>
                 </div>
             </div>
-            <span className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">{label}</span>
+            <span className="text-xs text-nebula-text-secondary mt-2 font-medium">{label}</span>
         </div>
     );
 }
@@ -200,15 +200,15 @@ function CircularGauge({ value, max, label, color }: {
 // Activity Feed Item with Animation
 function ActivityFeedItem({ item, index }: { item: ActivityItem; index: number }) {
     const actionLabels: Record<string, { label: string; color: string }> = {
-        USER_REGISTERED: { label: "Đăng ký mới", color: "bg-blue-500" },
-        LOGIN: { label: "Đăng nhập", color: "bg-green-500" },
-        DOMAIN_CREATED: { label: "Tạo domain", color: "bg-purple-500" },
-        INBOX_CREATED: { label: "Tạo inbox", color: "bg-indigo-500" },
-        MESSAGE_DELETED: { label: "Xóa email", color: "bg-red-500" },
-        ABUSE_REPORTED: { label: "Báo cáo", color: "bg-amber-500" },
+        USER_REGISTERED: { label: "Đăng ký mới", color: "bg-info" },
+        LOGIN: { label: "Đăng nhập", color: "bg-success" },
+        DOMAIN_CREATED: { label: "Tạo domain", color: "bg-nebula-violet" },
+        INBOX_CREATED: { label: "Tạo inbox", color: "bg-primary" },
+        MESSAGE_DELETED: { label: "Xóa email", color: "bg-danger" },
+        ABUSE_REPORTED: { label: "Báo cáo", color: "bg-warning" },
     };
 
-    const action = actionLabels[item.action] || { label: item.action, color: "bg-gray-500" };
+    const action = actionLabels[item.action] || { label: item.action, color: "bg-nebula-text-muted" };
 
     return (
         <div
@@ -343,37 +343,37 @@ export function AdminDashboard({ token }: { token: string }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <GlassCard className="p-5">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            <div className="p-2 rounded-lg bg-success/10 text-success">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </div>
-                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Tổng doanh thu</h3>
+                            <h3 className="text-sm font-medium text-nebula-text-muted">Tổng doanh thu</h3>
                         </div>
-                        <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                        <div className="text-2xl font-bold text-nebula-text">
                             {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(revenueStats.totalRevenue)}
                         </div>
                     </GlassCard>
 
                     <GlassCard className="p-5">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                            <div className="p-2 rounded-lg bg-info/10 text-info">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
                             </div>
-                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Doanh thu định kỳ (MRR)</h3>
+                            <h3 className="text-sm font-medium text-nebula-text-muted">Doanh thu định kỳ (MRR)</h3>
                         </div>
-                        <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(revenueStats.mrr)} <span className="text-xs text-slate-400 font-normal">/tháng (ước tính)</span>
+                        <div className="text-2xl font-bold text-nebula-text">
+                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(revenueStats.mrr)} <span className="text-xs text-nebula-text-muted font-normal">/tháng (ước tính)</span>
                         </div>
                     </GlassCard>
 
                     <GlassCard className="p-5">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
+                            <div className="p-2 rounded-lg bg-nebula-violet/10 text-nebula-violet">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
                             </div>
-                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Thuê bao kích hoạt</h3>
+                            <h3 className="text-sm font-medium text-nebula-text-muted">Thuê bao kích hoạt</h3>
                         </div>
-                        <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {revenueStats.activeSubscribers} <span className="text-xs text-slate-400 font-normal">users</span>
+                        <div className="text-2xl font-bold text-nebula-text">
+                            {revenueStats.activeSubscribers} <span className="text-xs text-nebula-text-muted font-normal">users</span>
                         </div>
                     </GlassCard>
                 </div>
@@ -392,8 +392,8 @@ export function AdminDashboard({ token }: { token: string }) {
                 <div className="col-span-12 lg:col-span-8">
                     <GlassCard className="p-6" hover={false}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-base font-semibold text-slate-800 dark:text-white">Xu hướng hoạt động (7 ngày)</h3>
-                            <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300">
+                            <h3 className="text-base font-semibold text-nebula-text">Xu hướng hoạt động (7 ngày)</h3>
+                            <div className="flex items-center gap-4 text-xs text-nebula-text-secondary">
                                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-500" /> Email</span>
                                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500" /> Users</span>
                                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500" /> Inboxes</span>
@@ -438,7 +438,7 @@ export function AdminDashboard({ token }: { token: string }) {
                 {/* Radar Chart */}
                 <div className="col-span-12 lg:col-span-4">
                     <GlassCard className="p-6 h-full" hover={false}>
-                        <h3 className="text-base font-semibold text-slate-800 dark:text-white mb-4">Phân tích đa chiều</h3>
+                        <h3 className="text-base font-semibold text-nebula-text mb-4">Phân tích đa chiều</h3>
                         <div className="h-64 w-full relative" style={{ minHeight: '250px', display: 'block', minWidth: 0 }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart data={radarData}>
@@ -462,12 +462,12 @@ export function AdminDashboard({ token }: { token: string }) {
                 {/* Activity Feed */}
                 <div className="col-span-12 md:col-span-6 lg:col-span-4">
                     <GlassCard className="p-6 h-full" hover={false}>
-                        <h3 className="text-base font-semibold text-slate-800 dark:text-white mb-4">Hoạt động gần đây</h3>
+                        <h3 className="text-base font-semibold text-nebula-text mb-4">Hoạt động gần đây</h3>
                         <div className="space-y-1">
                             {activity.length > 0 ? (
                                 activity.map((item, i) => <ActivityFeedItem key={item.id} item={item} index={i} />)
                             ) : (
-                                <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">Chưa có hoạt động</p>
+                                <p className="text-sm text-nebula-text-muted text-center py-8">Chưa có hoạt động</p>
                             )}
                         </div>
                     </GlassCard>
@@ -476,7 +476,7 @@ export function AdminDashboard({ token }: { token: string }) {
                 {/* System Health Gauges */}
                 <div className="col-span-12 md:col-span-6 lg:col-span-4">
                     <GlassCard className="p-6 h-full" hover={false}>
-                        <h3 className="text-base font-semibold text-slate-800 dark:text-white mb-6">Sức khỏe hệ thống</h3>
+                        <h3 className="text-base font-semibold text-nebula-text mb-6">Sức khỏe hệ thống</h3>
                         <div className="flex justify-around">
                             <CircularGauge
                                 value={stats.verifiedDomains}
@@ -497,27 +497,27 @@ export function AdminDashboard({ token }: { token: string }) {
                 {/* Quick Stats */}
                 <div className="col-span-12 lg:col-span-4">
                     <GlassCard className="p-6 h-full" hover={false}>
-                        <h3 className="text-base font-semibold text-slate-800 dark:text-white mb-4">Thống kê nhanh</h3>
+                        <h3 className="text-base font-semibold text-nebula-text mb-4">Thống kê nhanh</h3>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-600/50">
-                                <span className="text-sm text-slate-600 dark:text-slate-300">Quy tắc bảo vệ</span>
-                                <span className="font-semibold text-slate-800 dark:text-white">{stats.totalRules}</span>
+                            <div className="flex items-center justify-between py-2 border-b border-nebula-border">
+                                <span className="text-sm text-nebula-text-secondary">Quy tắc bảo vệ</span>
+                                <span className="font-semibold text-nebula-text">{stats.totalRules}</span>
                             </div>
-                            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-600/50">
-                                <span className="text-sm text-slate-600 dark:text-slate-300">Báo cáo mở</span>
-                                <span className={`font-semibold ${stats.openReports > 0 ? "text-red-500" : "text-green-500"}`}>
+                            <div className="flex items-center justify-between py-2 border-b border-nebula-border">
+                                <span className="text-sm text-nebula-text-secondary">Báo cáo mở</span>
+                                <span className={`font-semibold ${stats.openReports > 0 ? "text-danger" : "text-success"}`}>
                                     {stats.openReports}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-600/50">
-                                <span className="text-sm text-slate-600 dark:text-slate-300">Email/Inbox TB</span>
-                                <span className="font-semibold text-slate-800 dark:text-white">
+                            <div className="flex items-center justify-between py-2 border-b border-nebula-border">
+                                <span className="text-sm text-nebula-text-secondary">Email/Inbox TB</span>
+                                <span className="font-semibold text-nebula-text">
                                     {stats.totalInboxes > 0 ? (stats.totalMessages / stats.totalInboxes).toFixed(1) : "0"}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between py-2">
-                                <span className="text-sm text-slate-600 dark:text-slate-300">Tự động làm mới</span>
-                                <span className="text-xs px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded-full font-medium">
+                                <span className="text-sm text-nebula-text-secondary">Tự động làm mới</span>
+                                <span className="text-xs px-2 py-1 bg-success/10 text-success rounded-full font-medium">
                                     Mỗi 30s
                                 </span>
                             </div>

@@ -54,7 +54,7 @@ export const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onSuccess }) => {
             type="button"
             onClick={handlePasskeyLogin}
             disabled={loading}
-            className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-nebula-border rounded-md shadow-sm text-sm font-medium text-nebula-text bg-nebula-surface hover:bg-nebula-elevated focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nebula-violet disabled:opacity-50"
         >
             {loading ? (
                 <>Đang đăng nhập...</>

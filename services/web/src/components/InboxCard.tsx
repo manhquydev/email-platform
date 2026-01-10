@@ -38,16 +38,16 @@ export function InboxCard({
         const diffMs = expires.getTime() - now.getTime();
 
         if (diffMs <= 0) {
-            return { label: "Expired", status: "expired" as const, icon: "text-red-400 bg-red-500/10" };
+            return { label: "Expired", status: "expired" as const, icon: "text-danger bg-danger/10" };
         }
 
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffDays = Math.floor(diffHours / 24);
 
         if (diffHours < 24) {
-            return { label: `${diffHours}h left`, status: "expiring" as const, icon: "text-amber-400 bg-amber-500/10" };
+            return { label: `${diffHours}h left`, status: "expiring" as const, icon: "text-warning bg-warning/10" };
         }
-        return { label: `${diffDays}d left`, status: "active" as const, icon: "text-emerald-400 bg-emerald-500/10" };
+        return { label: `${diffDays}d left`, status: "active" as const, icon: "text-success bg-success/10" };
     };
 
     const ttl = getTTLInfo();
@@ -148,7 +148,7 @@ export function InboxCard({
                     {onTransfer && (
                         <button
                             onClick={(e) => { e.stopPropagation(); onTransfer(); }}
-                            className="p-1.5 rounded-lg text-text-secondary hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                            className="p-1.5 rounded-lg text-text-secondary hover:text-warning hover:bg-warning/10 transition-colors"
                             title="Transfer Ownership"
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -158,7 +158,7 @@ export function InboxCard({
                     )}
                     <button
                         onClick={handleDelete}
-                        className="p-1.5 rounded-lg text-text-secondary hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
                         title="Delete Inbox"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

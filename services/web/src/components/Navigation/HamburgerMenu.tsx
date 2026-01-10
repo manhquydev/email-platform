@@ -93,28 +93,28 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="fixed top-0 right-0 bottom-0 z-50 w-[300px] max-w-[85vw] bg-white dark:bg-slate-900 shadow-2xl flex flex-col"
+                        className="fixed top-0 right-0 bottom-0 z-50 w-[300px] max-w-[85vw] bg-nebula-surface shadow-2xl flex flex-col"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-white/10">
+                        <div className="flex items-center justify-between p-4 border-b border-nebula-border">
                             <div className="flex items-center gap-3">
-                                <div className="size-10 text-primary">
+                                <div className="size-10 text-nebula-violet">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
                                         <path d="M12 12 C12 6, 3 6, 3 12 C3 18, 12 18, 12 12" strokeLinecap="round" />
                                         <path d="M12 12 C12 6, 21 6, 21 12" strokeLinecap="round" opacity="0.6" />
                                         <circle cx="21" cy="12" r="1" fill="currentColor" opacity="0.4" />
                                     </svg>
                                 </div>
-                                <span className="text-lg font-bold text-slate-900 dark:text-white">
+                                <span className="text-lg font-bold text-nebula-text">
                                     {context === "admin" ? "Quản trị" : "Menu"}
                                 </span>
                             </div>
                             <button
                                 onClick={closeDrawer}
-                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors min-h-12 min-w-12 flex items-center justify-center"
+                                className="p-2 rounded-xl hover:bg-nebula-elevated transition-colors min-h-12 min-w-12 flex items-center justify-center"
                                 aria-label="Đóng menu"
                             >
-                                <span className="material-symbols-outlined text-slate-500 dark:text-slate-400">close</span>
+                                <span className="material-symbols-outlined text-nebula-text-muted">close</span>
                             </button>
                         </div>
 
@@ -126,14 +126,14 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
                                     onClick={() => handleNavClick(item)}
                                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-12 ${
                                         isActive(item)
-                                            ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-                                            : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                                            ? "bg-nebula-violet/10 text-nebula-violet"
+                                            : "text-nebula-text-secondary hover:bg-nebula-elevated"
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
                                     <span className="text-sm font-medium">{item.label}</span>
                                     {item.badge && item.badge > 0 && (
-                                        <span className="ml-auto px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-500 text-white">
+                                        <span className="ml-auto px-2 py-0.5 text-[10px] font-bold rounded-full bg-danger text-white">
                                             {item.badge > 99 ? "99+" : item.badge}
                                         </span>
                                     )}
@@ -144,7 +144,7 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
                             {context === "admin" && (
                                 <button
                                     onClick={() => { navigate("/app"); closeDrawer(); }}
-                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-12 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 mt-4 border-t border-slate-200 dark:border-white/10 pt-6"
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-12 text-nebula-text-secondary hover:bg-nebula-elevated mt-4 border-t border-nebula-border pt-6"
                                 >
                                     <span className="material-symbols-outlined text-[22px]">arrow_back</span>
                                     <span className="text-sm font-medium">Quay lại ứng dụng</span>
@@ -153,23 +153,23 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
                         </nav>
 
                         {/* Footer */}
-                        <div className="p-4 border-t border-slate-200 dark:border-white/10 space-y-3">
+                        <div className="p-4 border-t border-nebula-border space-y-3">
                             {/* Theme Toggle */}
                             <div className="flex items-center justify-between px-2">
-                                <span className="text-sm text-slate-500 dark:text-slate-400">Giao diện</span>
+                                <span className="text-sm text-nebula-text-muted">Giao diện</span>
                                 <ThemeToggle />
                             </div>
 
                             {/* User Info & Logout */}
                             <div className="flex items-center gap-3 px-2 py-2">
-                                <div className="size-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary font-bold">
+                                <div className="size-10 rounded-full bg-nebula-violet/10 flex items-center justify-center text-nebula-violet font-bold">
                                     {user?.email?.charAt(0).toUpperCase() || "U"}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                    <div className="text-sm font-medium text-nebula-text truncate">
                                         {user?.email?.split("@")[0] || "Người dùng"}
                                     </div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                    <div className="text-xs text-nebula-text-muted truncate">
                                         {user?.email}
                                     </div>
                                 </div>
@@ -177,7 +177,7 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
 
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-colors min-h-12"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-danger/10 hover:bg-danger/20 text-danger transition-colors min-h-12"
                             >
                                 <span className="material-symbols-outlined text-[20px]">logout</span>
                                 <span className="text-sm font-medium">Đăng xuất</span>

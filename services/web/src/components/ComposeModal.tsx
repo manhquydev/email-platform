@@ -105,7 +105,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                 </div>
 
                 {error && (
-                    <div className="mx-6 mt-4 p-3 bg-red-500/10 text-red-400 text-sm border border-red-500/20 rounded-xl flex items-center gap-3 animate-shake">
+                    <div className="mx-6 mt-4 p-3 bg-danger/10 text-danger text-sm border border-danger/20 rounded-xl flex items-center gap-3 animate-shake">
                         <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         <span className="font-medium">{error}</span>
                     </div>
@@ -258,13 +258,13 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                                 ) : (
                                     files.map((f, idx) => (
                                         <div key={idx} className="flex items-center gap-2 text-[11px] px-3 py-2 bg-[var(--nebula-surface-elevated)]/40 border border-[var(--nebula-border)] rounded-xl text-[var(--nebula-text)] hover:border-[var(--nebula-primary)]/30 transition-colors shadow-sm animate-fade-in group">
-                                            <div className="w-5 h-5 rounded bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                            <div className="w-5 h-5 rounded bg-info/10 flex items-center justify-center text-info">
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                             </div>
                                             <span className="max-w-[120px] truncate font-medium">{f.name}</span>
                                             <button
                                                 onClick={() => setFiles(files.filter((_, i) => i !== idx))}
-                                                className="text-[var(--nebula-text-muted)] hover:text-red-400 transition-colors p-1"
+                                                className="text-[var(--nebula-text-muted)] hover:text-danger transition-colors p-1"
                                             >
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                             </button>
@@ -289,7 +289,7 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                     <div className="flex items-center gap-3">
                         {/* Insufficient Credits Warning */}
                         {user?.credits !== undefined && user.credits < 1 && (
-                            <div className="text-xs text-red-500 font-medium px-3 py-1 bg-red-500/10 rounded-lg flex items-center gap-2">
+                            <div className="text-xs text-danger font-medium px-3 py-1 bg-danger/10 rounded-lg flex items-center gap-2">
                                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                                 Hết tín dụng
                             </div>

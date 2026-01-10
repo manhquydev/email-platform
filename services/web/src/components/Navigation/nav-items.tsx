@@ -68,15 +68,15 @@ export function NavLinkItem({ item, showLabel = true, variant = "sidebar", onCli
     };
 
     const activeClasses = {
-        sidebar: "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30",
-        bottom: "text-primary dark:text-primary",
-        drawer: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white",
+        sidebar: "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm",
+        bottom: "text-nebula-violet",
+        drawer: "bg-nebula-violet/10 text-nebula-violet",
     };
 
     const inactiveClasses = {
-        sidebar: "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700",
-        bottom: "text-slate-400 dark:text-slate-500",
-        drawer: "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700",
+        sidebar: "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated",
+        bottom: "text-nebula-text-muted",
+        drawer: "text-nebula-text-secondary hover:bg-nebula-elevated",
     };
 
     return (
@@ -97,7 +97,7 @@ export function NavLinkItem({ item, showLabel = true, variant = "sidebar", onCli
                 </span>
             )}
             {item.badge && item.badge > 0 && (
-                <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-500 text-white">
+                <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-danger text-white">
                     {item.badge > 99 ? "99+" : item.badge}
                 </span>
             )}

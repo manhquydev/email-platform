@@ -31,18 +31,18 @@ export const MagicLinkRequestForm: React.FC<MagicLinkRequestFormProps> = ({ onSu
     if (sent) {
         return (
             <div className="text-center">
-                <div className="mb-4 text-green-500">
+                <div className="mb-4 text-success">
                     <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Check your email</h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="text-lg font-medium text-nebula-text">Check your email</h3>
+                <p className="mt-2 text-sm text-nebula-text-muted">
                     We've sent a login link to <strong>{email}</strong>.
                 </p>
                 <button
                     onClick={() => setSent(false)}
-                    className="mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                    className="mt-4 text-sm font-medium text-nebula-violet hover:text-nebula-violet-dark"
                 >
                     Try another email
                 </button>
@@ -53,14 +53,14 @@ export const MagicLinkRequestForm: React.FC<MagicLinkRequestFormProps> = ({ onSu
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label htmlFor="magic-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="magic-email" className="block text-sm font-medium text-nebula-text-muted">
                     Email address
                 </label>
                 <input
                     id="magic-email"
                     type="email"
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm p-3 border"
+                    className="mt-1 block w-full rounded-md border-nebula-border shadow-sm focus:border-nebula-violet focus:ring-nebula-violet bg-nebula-elevated text-nebula-text sm:text-sm p-3 border"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -72,7 +72,7 @@ export const MagicLinkRequestForm: React.FC<MagicLinkRequestFormProps> = ({ onSu
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-nebula-violet hover:bg-nebula-violet-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nebula-violet disabled:opacity-50"
                 >
                     {loading ? 'Sending...' : 'Send Login Link'}
                 </button>
@@ -81,7 +81,7 @@ export const MagicLinkRequestForm: React.FC<MagicLinkRequestFormProps> = ({ onSu
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
+                        className="w-full flex justify-center py-2 px-4 border border-nebula-border rounded-md shadow-sm text-sm font-medium text-nebula-text bg-nebula-surface hover:bg-nebula-elevated focus:outline-none"
                     >
                         Cancel
                     </button>

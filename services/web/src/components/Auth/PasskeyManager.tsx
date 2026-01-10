@@ -121,7 +121,7 @@ export const PasskeyManager: React.FC = () => {
                                 <div key={pk.id} className="flex items-center justify-between p-3 rounded-lg border border-[var(--nebula-border)] bg-[var(--nebula-bg-secondary)]">
                                     <div className="flex flex-col">
                                         <span className="font-medium text-sm" style={{ color: 'var(--nebula-text)' }}>Passkey added on {new Date(pk.createdAt).toLocaleDateString()}</span>
-                                        <div className="text-sm text-gray-500">
+                                        <div className="text-sm text-nebula-text-muted">
                                             Tạo lúc: {new Date(pk.createdAt).toLocaleDateString('vi-VN')}
                                         </div>
                                     </div>
@@ -131,7 +131,7 @@ export const PasskeyManager: React.FC = () => {
                                             e.stopPropagation();
                                             confirmDeletePasskey(pk.id);
                                         }}
-                                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                        className="p-2 text-nebula-text-muted hover:text-danger transition-colors"
                                         title="Xóa Passkey"
                                     >
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

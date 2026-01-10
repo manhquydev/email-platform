@@ -30,7 +30,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
         <aside
             className={cn(
                 "hidden md:flex flex-col h-full shrink-0 transition-all duration-300",
-                "glass-panel border-r border-slate-200 dark:border-white/10", // Fixed border contrast
+                "glass-panel border-r border-nebula-border", // Fixed border contrast
                 isExpanded ? "w-64" : "w-20"
             )}
         >
@@ -50,7 +50,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         </svg>
                     </div>
                     {isExpanded && (
-                        <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white animate-in fade-in duration-300 whitespace-nowrap overflow-hidden">
+                        <span className="text-xl font-bold tracking-tight text-nebula-text animate-in fade-in duration-300 whitespace-nowrap overflow-hidden">
                             Ephemera
                         </span>
                     )}
@@ -63,8 +63,8 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         className={cn(
                             "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
                             isActive("/app") && !location.search.includes("tab=")
-                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
+                                ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                : "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
                         )}
                     >
                         <span className="material-symbols-outlined text-[24px] shrink-0">inbox</span>
@@ -82,8 +82,8 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         className={cn(
                             "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
                             isActive("/my-domains")
-                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
+                                ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                : "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
                         )}
                         title="Tên miền">
                         <span className="material-symbols-outlined text-[24px] shrink-0">globe</span>
@@ -95,8 +95,8 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                             className={cn(
                                 "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
                                 isActive("/admin")
-                                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
+                                    ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                    : "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
                             )}
                             title="Quản trị">
                             <span className="material-symbols-outlined text-[24px] shrink-0">admin_panel_settings</span>
@@ -112,8 +112,8 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         className={cn(
                             "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden mt-auto",
                             (isActive("/settings") && !location.search)
-                                ? "bg-primary/10 text-primary border border-primary/20 shadow-sm dark:bg-primary/20 dark:text-white dark:border-primary/30 dark:shadow-[0_0_15px_rgba(37,37,244,0.3)]"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700"
+                                ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                : "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
                         )}
                         title="Cài đặt">
                         <span className="material-symbols-outlined text-[24px] shrink-0">settings</span>
@@ -123,7 +123,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
             </div>
 
             {/* Bottom Actions - User Profile with Dropdown */}
-            <div className="p-4 flex flex-col gap-4 border-t border-slate-200 dark:border-glass-border bg-slate-50/50 dark:bg-black/20 overflow-hidden mt-auto">
+            <div className="p-4 flex flex-col gap-4 border-t border-nebula-border bg-nebula-elevated/50 overflow-hidden mt-auto">
                 {/* Theme Toggle */}
                 <div className={cn("flex items-center justify-center", isExpanded ? "w-full" : "w-full")}>
                     <ThemeToggle />
@@ -132,14 +132,14 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                 {/* User Dropdown */}
                 <Dropdown>
                     <DropdownTrigger>
-                        <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700 transition-colors w-full text-left overflow-hidden">
-                            <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-slate-200 dark:ring-white/10 bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm">
+                        <button className="flex items-center gap-3 px-2 py-2 rounded-lg text-nebula-text-muted hover:bg-nebula-elevated hover:text-nebula-text transition-colors w-full text-left overflow-hidden">
+                            <div className="flex items-center justify-center aspect-square rounded-full size-8 shrink-0 ring-2 ring-nebula-border bg-nebula-violet/10 text-nebula-violet font-bold text-sm">
                                 {user?.email?.charAt(0).toUpperCase() || "U"}
                             </div>
                             {isExpanded && (
                                 <div className="flex flex-col items-start animate-in fade-in duration-300 overflow-hidden">
-                                    <span className="text-sm font-medium text-slate-900 dark:text-white truncate w-full">{user?.email?.split('@')[0] || "Người dùng"}</span>
-                                    <span className="text-xs font-semibold text-slate-600 dark:text-gray-400 truncate w-full uppercase tracking-wide">Gói {
+                                    <span className="text-sm font-medium text-nebula-text truncate w-full">{user?.email?.split('@')[0] || "Người dùng"}</span>
+                                    <span className="text-xs font-semibold text-nebula-text-muted truncate w-full uppercase tracking-wide">Gói {
                                         user?.tier === 'FREE' ? 'MIỄN PHÍ' :
                                             user?.tier === 'STARTER' ? 'KHỞI ĐẦU' :
                                                 user?.tier === 'PROFESSIONAL' ? 'CHUYÊN NGHIỆP' :

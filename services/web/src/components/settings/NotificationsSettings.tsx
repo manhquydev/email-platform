@@ -125,29 +125,29 @@ export function NotificationsSettings() {
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Thông báo</h2>
-                <p className="text-slate-500 dark:text-gray-400 font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
+                <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Thông báo</h2>
+                <p className="text-nebula-text-muted font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
             </div>
 
             {/* Account Telegram Link */}
-            <GlassCard className="p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
+            <GlassCard className="p-6 bg-nebula-surface/80 border border-nebula-border shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
-                    <span className="material-symbols-outlined text-[#0088cc]">send</span>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Thông báo Telegram (Tài khoản)</h3>
+                    <span className="material-symbols-outlined text-info">send</span>
+                    <h3 className="text-lg font-semibold text-nebula-text">Thông báo Telegram (Tài khoản)</h3>
                 </div>
 
                 <div>
                     {telegramStatus?.linked ? (
                         <div className="space-y-4">
                             {/* Linked Status Banner */}
-                            <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-500/20">
-                                    <span className="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span>
+                            <div className="flex items-center gap-3 p-4 rounded-xl bg-success/10 border border-success/30">
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-success/20">
+                                    <span className="material-symbols-outlined text-success">check_circle</span>
                                 </div>
                                 <div>
-                                    <p className="font-medium text-green-700 dark:text-green-400">Đã liên kết Telegram</p>
+                                    <p className="font-medium text-success">Đã liên kết Telegram</p>
                                     {telegramStatus.linkedAt && (
-                                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                                        <p className="text-xs text-nebula-text-muted">
                                             Liên kết vào ngày: {new Date(telegramStatus.linkedAt).toLocaleDateString("vi-VN")}
                                         </p>
                                     )}
@@ -155,14 +155,14 @@ export function NotificationsSettings() {
                             </div>
 
                             {/* Notification Toggle */}
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/15">
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-nebula-elevated border border-nebula-border">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100 dark:bg-cyan-500/10">
-                                        <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-sm">notifications</span>
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-info/10">
+                                        <span className="material-symbols-outlined text-info text-sm">notifications</span>
                                     </div>
                                     <div>
-                                        <span className="text-sm font-medium text-slate-900 dark:text-white">Thông báo email mới</span>
-                                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                                        <span className="text-sm font-medium text-nebula-text">Thông báo email mới</span>
+                                        <p className="text-xs text-nebula-text-muted">
                                             {telegramStatus.notifyOnEmail ? 'Bật' : 'Tắt'}
                                         </p>
                                     </div>
@@ -170,7 +170,7 @@ export function NotificationsSettings() {
                                 <button
                                     onClick={toggleTelegramNotify}
                                     disabled={telegramBusy}
-                                    className={`relative w-11 h-6 rounded-full transition-colors ${telegramStatus.notifyOnEmail ? 'bg-green-500' : 'bg-slate-300 dark:bg-gray-700'}`}
+                                    className={`relative w-11 h-6 rounded-full transition-colors ${telegramStatus.notifyOnEmail ? 'bg-success' : 'bg-nebula-border'}`}
                                 >
                                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow ${telegramStatus.notifyOnEmail ? 'translate-x-5' : ''}`} />
                                 </button>
@@ -178,8 +178,8 @@ export function NotificationsSettings() {
 
                             {/* Unlink Button */}
                             {showUnlinkConfirm ? (
-                                <div className="p-4 border border-red-200 dark:border-red-500/30 rounded-xl bg-red-50 dark:bg-red-500/5">
-                                    <p className="text-sm text-red-600 dark:text-red-400 mb-3">Bạn có chắc chắn muốn hủy liên kết Telegram không?</p>
+                                <div className="p-4 border border-danger/30 rounded-xl bg-danger/5">
+                                    <p className="text-sm text-danger mb-3">Bạn có chắc chắn muốn hủy liên kết Telegram không?</p>
                                     <div className="flex gap-3">
                                         <Button onClick={confirmUnlinkTelegram} variant="danger" disabled={telegramBusy}>Xác nhận hủy</Button>
                                         <Button onClick={() => setShowUnlinkConfirm(false)} variant="secondary">Hủy</Button>
@@ -190,7 +190,7 @@ export function NotificationsSettings() {
                                     onClick={() => setShowUnlinkConfirm(true)}
                                     disabled={telegramBusy}
                                     variant="secondary"
-                                    className="w-full flex items-center justify-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-100 dark:hover:text-red-500 dark:hover:bg-red-500/10"
+                                    className="w-full flex items-center justify-center gap-2 text-danger hover:bg-danger/10"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">link_off</span>
                                     {telegramBusy ? "Đang xử lý..." : "Hủy liên kết Telegram"}
@@ -199,19 +199,19 @@ export function NotificationsSettings() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/15">
-                                <p className="text-sm font-medium mb-1 text-slate-900 dark:text-white">Nhận cảnh báo tức thì</p>
-                                <p className="text-xs text-slate-500 dark:text-gray-400">
+                            <div className="p-4 rounded-xl bg-nebula-elevated border border-nebula-border">
+                                <p className="text-sm font-medium mb-1 text-nebula-text">Nhận cảnh báo tức thì</p>
+                                <p className="text-xs text-nebula-text-muted">
                                     Nhận email mới, OTP và các thông báo quan trọng trực tiếp qua Telegram của bạn.
                                 </p>
                             </div>
 
                             {telegramLinkToken ? (
                                 <div className="space-y-4">
-                                    <div className="p-4 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/30">
-                                        <p className="text-sm mb-2 text-cyan-700 dark:text-cyan-400">Mã liên kết của bạn:</p>
+                                    <div className="p-4 rounded-xl bg-info/10 border border-info/30">
+                                        <p className="text-sm mb-2 text-info">Mã liên kết của bạn:</p>
                                         <div className="flex items-center gap-3">
-                                            <code className="text-2xl font-mono font-bold tracking-widest text-cyan-600 dark:text-cyan-400">
+                                            <code className="text-2xl font-mono font-bold tracking-widest text-info">
                                                 {telegramLinkToken}
                                             </code>
                                             <button
@@ -219,7 +219,7 @@ export function NotificationsSettings() {
                                                     navigator.clipboard.writeText(telegramLinkToken);
                                                     toast.success("Đã sao chép!");
                                                 }}
-                                                className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-cyan-600 dark:text-cyan-400 transition-colors"
+                                                className="p-2 hover:bg-nebula-elevated rounded-lg text-info transition-colors"
                                             >
                                                 <span className="material-symbols-outlined">content_copy</span>
                                             </button>
@@ -246,25 +246,25 @@ export function NotificationsSettings() {
             </GlassCard>
 
             {/* Inbox Telegram Links */}
-            <GlassCard className="p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 shadow-sm dark:shadow-none">
+            <GlassCard className="p-6 bg-nebula-surface/80 border border-nebula-border shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
-                    <span className="material-symbols-outlined text-[#0088cc]">inbox</span>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Liên kết Telegram theo hộp thư</h3>
+                    <span className="material-symbols-outlined text-info">inbox</span>
+                    <h3 className="text-lg font-semibold text-nebula-text">Liên kết Telegram theo hộp thư</h3>
                 </div>
 
-                <p className="text-sm text-slate-500 dark:text-gray-400 mb-4">
+                <p className="text-sm text-nebula-text-muted mb-4">
                     Các hộp thư đang được liên kết với Telegram để nhận thông báo riêng.
                 </p>
 
                 {inboxLinksLoading ? (
                     <div className="flex items-center justify-center py-8">
-                        <span className="material-symbols-outlined animate-spin text-slate-400">progress_activity</span>
+                        <span className="material-symbols-outlined animate-spin text-nebula-text-muted">progress_activity</span>
                     </div>
                 ) : inboxLinks.length === 0 ? (
                     <div className="text-center py-8">
-                        <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-gray-600 mb-2">inbox</span>
-                        <p className="text-sm text-slate-500 dark:text-gray-400">Chưa có hộp thư nào được liên kết</p>
-                        <p className="text-xs text-slate-400 dark:text-gray-500 mt-1">
+                        <span className="material-symbols-outlined text-4xl text-nebula-text-muted mb-2">inbox</span>
+                        <p className="text-sm text-nebula-text-muted">Chưa có hộp thư nào được liên kết</p>
+                        <p className="text-xs text-nebula-text-muted mt-1">
                             Truy cập Public Inbox Viewer và liên kết Telegram cho từng hộp thư
                         </p>
                     </div>
@@ -273,15 +273,15 @@ export function NotificationsSettings() {
                         {inboxLinks.map(link => (
                             <div
                                 key={link.id}
-                                className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-surface border border-slate-200 dark:border-white/15"
+                                className="flex items-center justify-between p-4 rounded-xl bg-nebula-elevated border border-nebula-border"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-500/10">
-                                        <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">mail</span>
+                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-info/10">
+                                        <span className="material-symbols-outlined text-info">mail</span>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-slate-900 dark:text-white">{link.inboxEmail}</p>
-                                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                                        <p className="text-sm font-medium text-nebula-text">{link.inboxEmail}</p>
+                                        <p className="text-xs text-nebula-text-muted">
                                             {link.telegramUsername ? `@${link.telegramUsername}` : 'Telegram'}
                                             {' • '}
                                             {new Date(link.createdAt).toLocaleDateString("vi-VN")}
@@ -291,7 +291,7 @@ export function NotificationsSettings() {
                                 <button
                                     onClick={() => unlinkInbox(link.id)}
                                     disabled={unlinkingId === link.id}
-                                    className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                                    className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors"
                                     title="Hủy liên kết"
                                 >
                                     {unlinkingId === link.id ? (

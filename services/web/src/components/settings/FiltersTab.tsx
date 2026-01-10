@@ -197,22 +197,22 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
         setActions(actions.filter((_, i) => i !== idx));
     };
 
-    if (loading && filters.length === 0) return <div className="p-8 text-center text-text-muted">Đang tải...</div>;
+    if (loading && filters.length === 0) return <div className="p-8 text-center text-nebula-text-muted">Đang tải...</div>;
 
     if (!effectiveInboxId && (!inboxes || inboxes.length === 0)) {
-        return <div className="p-8 text-center text-text-muted">Vui lòng chọn hộp thư.</div>;
+        return <div className="p-8 text-center text-nebula-text-muted">Vui lòng chọn hộp thư.</div>;
     }
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center gap-4">
                 <div className="flex items-center gap-4 flex-1">
-                    <h3 className="text-lg font-semibold text-text-main whitespace-nowrap">Bộ lọc tự động</h3>
+                    <h3 className="text-lg font-semibold text-nebula-text whitespace-nowrap">Bộ lọc tự động</h3>
                     {inboxes.length > 0 && onInboxChange && (
                         <select
                             value={selectedInboxId}
                             onChange={(e) => onInboxChange(e.target.value)}
-                            className="bg-black/20 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-text-main focus:outline-none focus:border-primary-500 max-w-[200px]"
+                            className="bg-nebula-elevated border border-nebula-border rounded-lg px-3 py-1.5 text-sm text-nebula-text focus:outline-none focus:border-nebula-violet max-w-[200px]"
                         >
                             {inboxes.map(ib => (
                                 <option key={ib.id} value={ib.id}>{ib.localPart}@{ib.domain?.name || '...'}</option>
@@ -229,26 +229,26 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                 {filters.map(filter => (
                     <GlassCard key={filter.id} className="p-4 flex flex-col md:flex-row justify-between gap-4 group">
                         <div>
-                            <div className="font-semibold text-text-main mb-1">{filter.name}</div>
-                            <div className="text-sm text-text-muted space-y-1">
+                            <div className="font-semibold text-nebula-text mb-1">{filter.name}</div>
+                            <div className="text-sm text-nebula-text-muted space-y-1">
                                 <div>
-                                    <span className="text-secondary-400 font-medium">Khi {filter.matchType === 'ALL' ? 'tất cả' : 'bất kỳ'}: </span>
+                                    <span className="text-nebula-text-secondary font-medium">Khi {filter.matchType === 'ALL' ? 'tất cả' : 'bất kỳ'}: </span>
                                     {filter.conditions.map((c, i) => {
                                         const fieldLabel = FIELD_OPTIONS.find(o => o.value === c.field)?.label || c.field;
                                         const opLabel = OPERATOR_OPTIONS.find(o => o.value === c.operator)?.label.toLowerCase() || c.operator.toLowerCase();
                                         return (
-                                            <span key={i} className="inline-block bg-white/5 px-2 py-0.5 rounded text-xs mr-2 border border-white/10">
+                                            <span key={i} className="inline-block bg-nebula-elevated px-2 py-0.5 rounded text-xs mr-2 border border-nebula-border">
                                                 {fieldLabel} {opLabel} "{c.value}"
                                             </span>
                                         );
                                     })}
                                 </div>
                                 <div className="flex items-center gap-2 mt-2">
-                                    <span className="text-purple-400 font-medium">Thì: </span>
+                                    <span className="text-nebula-violet font-medium">Thì: </span>
                                     {filter.actions.map((a, i) => {
                                         const actionLabel = ACTION_OPTIONS.find(o => o.value === a.type)?.label || a.type;
                                         return (
-                                            <span key={i} className="inline-block bg-purple-500/20 text-purple-200 px-2 py-0.5 rounded text-xs border border-purple-500/30">
+                                            <span key={i} className="inline-block bg-nebula-violet/20 text-nebula-violet px-2 py-0.5 rounded text-xs border border-nebula-violet/30">
                                                 {actionLabel} {a.value ? `(${a.value})` : ''}
                                             </span>
                                         );
@@ -258,12 +258,12 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                         </div>
                         <div className="flex items-start gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button variant="ghost" size="sm" onClick={() => openEditModal(filter)}>Sửa</Button>
-                            <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-500" onClick={() => handleDelete(filter.id)}>Xóa</Button>
+                            <Button variant="ghost" size="sm" className="text-danger hover:text-danger/80" onClick={() => handleDelete(filter.id)}>Xóa</Button>
                         </div>
                     </GlassCard>
                 ))}
                 {filters.length === 0 && (
-                    <div className="text-center py-10 border border-dashed border-white/10 rounded-xl text-text-muted">
+                    <div className="text-center py-10 border border-dashed border-nebula-border rounded-xl text-nebula-text-muted">
                         Chưa có bộ lọc nào. Hãy tạo bộ lọc đầu tiên để tự động hóa hộp thư của bạn.
                     </div>
                 )}
@@ -274,24 +274,24 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
                     <div className="min-h-full py-8 flex items-center justify-center w-full">
                         <GlassCard className="w-full max-w-2xl p-6 space-y-6 relative animate-fade-in-up">
-                            <h3 className="text-xl font-bold text-text-main">
+                            <h3 className="text-xl font-bold text-nebula-text">
                                 {editingFilter ? "Chỉnh sửa Bộ lọc" : "Tạo Bộ lọc Mới"}
                             </h3>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-text-muted mb-1">Tên bộ lọc</label>
+                                    <label className="block text-sm font-medium text-nebula-text-muted mb-1">Tên bộ lọc</label>
                                     <Input value={name} onChange={e => setName(e.target.value)} placeholder="VD: Hóa đơn Amazon" />
                                 </div>
 
                                 {/* Conditions Section */}
-                                <div className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-3">
+                                <div className="bg-nebula-elevated p-4 rounded-xl border border-nebula-border space-y-3">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-semibold text-text-main">Điều kiện</span>
+                                        <span className="text-sm font-semibold text-nebula-text">Điều kiện</span>
                                         <select
                                             value={matchType}
                                             onChange={(e) => setMatchType(e.target.value as "ALL" | "ANY")}
-                                            className="bg-black/30 border border-white/10 rounded px-2 py-1 text-xs text-text-main focus:outline-none focus:border-primary-500"
+                                            className="bg-nebula-surface border border-nebula-border rounded px-2 py-1 text-xs text-nebula-text focus:outline-none focus:border-nebula-violet"
                                         >
                                             <option value="ALL">Thỏa mãn TẤT CẢ (AND)</option>
                                             <option value="ANY">Thỏa mãn BẤT KỲ (OR)</option>
@@ -303,14 +303,14 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                                             <select
                                                 value={cond.field}
                                                 onChange={e => updateCondition(idx, 'field', e.target.value)}
-                                                className="w-1/3 bg-black/30 border border-white/10 rounded h-10 px-3 text-sm text-text-main"
+                                                className="w-1/3 bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
                                             >
                                                 {FIELD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                             </select>
                                             <select
                                                 value={cond.operator}
                                                 onChange={e => updateCondition(idx, 'operator', e.target.value)}
-                                                className="w-1/3 bg-black/30 border border-white/10 rounded h-10 px-3 text-sm text-text-main"
+                                                className="w-1/3 bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
                                             >
                                                 {OPERATOR_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                             </select>
@@ -320,16 +320,16 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                                                 onChange={e => updateCondition(idx, 'value', e.target.value)}
                                                 placeholder="Giá trị..."
                                             />
-                                            <button onClick={() => removeCondition(idx)} className="text-text-muted hover:text-red-400 p-2">×</button>
+                                            <button onClick={() => removeCondition(idx)} className="text-nebula-text-muted hover:text-danger p-2">×</button>
                                         </div>
                                     ))}
                                     <Button variant="ghost" size="sm" onClick={addCondition}>+ Thêm điều kiện</Button>
                                 </div>
 
                                 {/* Actions Section */}
-                                <div className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-3">
+                                <div className="bg-nebula-elevated p-4 rounded-xl border border-nebula-border space-y-3">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-semibold text-text-main">Hành động</span>
+                                        <span className="text-sm font-semibold text-nebula-text">Hành động</span>
                                     </div>
 
                                     {actions.map((act, idx) => (
@@ -337,7 +337,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                                             <select
                                                 value={act.type}
                                                 onChange={e => updateAction(idx, 'type', e.target.value)}
-                                                className="w-1/3 bg-black/30 border border-white/10 rounded h-10 px-3 text-sm text-text-main"
+                                                className="w-1/3 bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
                                             >
                                                 {ACTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                             </select>
@@ -348,7 +348,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                                                     <select
                                                         value={act.value || ""}
                                                         onChange={e => updateAction(idx, 'value', e.target.value)}
-                                                        className="w-full bg-black/30 border border-white/10 rounded h-10 px-3 text-sm text-text-main"
+                                                        className="w-full bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
                                                     >
                                                         <option value="">-- Chọn nhãn --</option>
                                                         {labels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
@@ -361,20 +361,20 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                                                         className="w-full"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-10 flex items-center px-3 text-text-muted text-sm italic bg-black/10 rounded border border-transparent">
+                                                    <div className="w-full h-10 flex items-center px-3 text-nebula-text-muted text-sm italic bg-nebula-surface/50 rounded border border-transparent">
                                                         Không cần tham số
                                                     </div>
                                                 )}
                                             </div>
 
-                                            <button onClick={() => removeAction(idx)} className="text-text-muted hover:text-red-400 p-2">×</button>
+                                            <button onClick={() => removeAction(idx)} className="text-nebula-text-muted hover:text-danger p-2">×</button>
                                         </div>
                                     ))}
                                     <Button variant="ghost" size="sm" onClick={addAction}>+ Thêm hành động</Button>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-nebula-border">
                                 <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Hủy</Button>
                                 <Button variant="primary" onClick={handleSave}>Lưu Bộ lọc</Button>
                             </div>

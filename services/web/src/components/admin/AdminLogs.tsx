@@ -135,7 +135,7 @@ export function AdminLogs({ token }: { token: string }) {
             <GlassCard className="mb-6" padding="p-4" hover={false}>
                 <div className="flex flex-wrap items-end gap-4">
                     <div>
-                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Hành động</label>
+                        <label className="block text-xs text-nebula-text-muted mb-1.5 font-medium">Hành động</label>
                         <PremiumSelect
                             value={filterAction}
                             onChange={setFilterAction}
@@ -147,21 +147,21 @@ export function AdminLogs({ token }: { token: string }) {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Từ ngày</label>
+                        <label className="block text-xs text-nebula-text-muted mb-1.5 font-medium">Từ ngày</label>
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="px-4 py-2.5 text-sm w-40 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                            className="px-4 py-2.5 text-sm w-40 rounded-xl border border-nebula-border bg-nebula-elevated text-nebula-text"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Đến ngày</label>
+                        <label className="block text-xs text-nebula-text-muted mb-1.5 font-medium">Đến ngày</label>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="px-4 py-2.5 text-sm w-40 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                            className="px-4 py-2.5 text-sm w-40 rounded-xl border border-nebula-border bg-nebula-elevated text-nebula-text"
                         />
                     </div>
                     {(filterAction || startDate || endDate) && (
@@ -180,29 +180,29 @@ export function AdminLogs({ token }: { token: string }) {
                 </GlassCard>
             ) : (
                 <GlassCard padding="p-0" hover={false}>
-                    <div className="max-h-[600px] overflow-y-auto divide-y divide-slate-200 dark:divide-slate-600/50">
+                    <div className="max-h-[600px] overflow-y-auto divide-y divide-nebula-border">
                         {logs.map((log) => (
-                            <div key={log.id} className="flex items-start gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                            <div key={log.id} className="flex items-start gap-4 p-4 hover:bg-nebula-elevated transition-colors">
                                 <div className="w-2.5 h-2.5 rounded-full bg-primary mt-2 shrink-0 ring-4 ring-primary/20" />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-                                        <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                                        <span className="text-sm font-semibold text-nebula-text">
                                             {actionLabels[log.action] || log.action}
                                         </span>
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                        <span className="text-xs text-nebula-text-muted">
                                             {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: vi })}
                                         </span>
-                                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                                        <span className="text-xs text-nebula-text-muted">
                                             ({format(new Date(log.createdAt), "dd/MM/yyyy HH:mm", { locale: vi })})
                                         </span>
                                     </div>
                                     {log.user && (
-                                        <div className="text-xs text-slate-600 dark:text-slate-400">
+                                        <div className="text-xs text-nebula-text-secondary">
                                             {log.user.email}
                                         </div>
                                     )}
                                     {log.meta && Object.keys(log.meta).length > 0 && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5 mt-2 font-mono overflow-x-auto">
+                                        <div className="text-xs text-nebula-text-muted bg-nebula-elevated rounded-lg p-2.5 mt-2 font-mono overflow-x-auto">
                                             {JSON.stringify(log.meta)}
                                         </div>
                                     )}

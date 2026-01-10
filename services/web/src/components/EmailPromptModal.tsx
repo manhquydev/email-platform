@@ -53,7 +53,7 @@ export function EmailPromptModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-xl bg-slate-800 p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-xl bg-nebula-elevated p-6 shadow-2xl">
         <div className="mb-6 text-center">
           {telegramUser.photoUrl && (
             <img
@@ -62,10 +62,10 @@ export function EmailPromptModal({
               className="mx-auto mb-3 h-16 w-16 rounded-full"
             />
           )}
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className="text-xl font-semibold text-nebula-text">
             Welcome, {telegramUser.firstName || telegramUser.username || "User"}!
           </h2>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-nebula-text-muted">
             Telegram doesn't share your email address. Please provide one to complete
             registration.
           </p>
@@ -73,7 +73,7 @@ export function EmailPromptModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+            <label htmlFor="email" className="block text-sm font-medium text-nebula-text-secondary">
               Email Address
             </label>
             <input
@@ -83,19 +83,19 @@ export function EmailPromptModal({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="mt-1 w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 w-full rounded-lg border border-nebula-border bg-nebula-surface px-4 py-2 text-nebula-text placeholder-nebula-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+              <label htmlFor="password" className="block text-sm font-medium text-nebula-text-secondary">
                 Password (Optional)
               </label>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-xs text-slate-400 hover:text-white"
+                className="text-xs text-nebula-text-muted hover:text-nebula-text"
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
@@ -107,15 +107,15 @@ export function EmailPromptModal({
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Set a password for email login"
               minLength={6}
-              className="mt-1 w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 w-full rounded-lg border border-nebula-border bg-nebula-surface px-4 py-2 text-nebula-text placeholder-nebula-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-nebula-text-muted">
               Optional: Set a password if you want to also login with email/password
             </p>
           </div>
 
           {error && (
-            <div className="rounded-lg bg-red-500/20 p-3 text-sm text-red-400">
+            <div className="rounded-lg bg-danger/20 p-3 text-sm text-danger">
               {error}
             </div>
           )}
@@ -124,14 +124,14 @@ export function EmailPromptModal({
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 rounded-lg border border-slate-600 px-4 py-2 text-slate-300 hover:bg-slate-700"
+              className="flex-1 rounded-lg border border-nebula-border px-4 py-2 text-nebula-text-secondary hover:bg-nebula-elevated"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!email || isLoading}
-              className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-lg bg-primary px-4 py-2 font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? "Creating..." : "Complete Registration"}
             </button>

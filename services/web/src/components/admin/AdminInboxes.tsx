@@ -157,14 +157,14 @@ export function AdminInboxes({ token }: { token: string }) {
                             {inboxes.map((inbox) => (
                                 <TableRow key={inbox.id}>
                                     <TableCell>
-                                        <div className="font-medium text-slate-900 dark:text-white">
+                                        <div className="font-medium text-nebula-text">
                                             {inbox.localPart}@{inbox.domain.name}
                                         </div>
-                                        <div className="text-[10px] text-slate-500 font-mono">{inbox.id}</div>
+                                        <div className="text-[10px] text-nebula-text-muted font-mono">{inbox.id}</div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="text-xs">{inbox.owner?.email || "Unknown"}</div>
-                                        <div className="text-[10px] text-slate-500 font-mono">{inbox.ownerId || "—"}</div>
+                                        <div className="text-[10px] text-nebula-text-muted font-mono">{inbox.ownerId || "—"}</div>
                                     </TableCell>
                                     <TableCell>
                                         <StatusBadge
@@ -175,11 +175,11 @@ export function AdminInboxes({ token }: { token: string }) {
                                     <TableCell>{new Date(inbox.createdAt).toLocaleDateString("vi-VN")}</TableCell>
                                     <TableCell>
                                         {inbox.expiresAt ? (
-                                            <span className={new Date(inbox.expiresAt) < new Date() ? "text-red-500" : ""}>
+                                            <span className={new Date(inbox.expiresAt) < new Date() ? "text-danger" : ""}>
                                                 {new Date(inbox.expiresAt).toLocaleDateString("vi-VN")}
                                             </span>
                                         ) : (
-                                            <span className="text-slate-400 italic">Vĩnh viễn</span>
+                                            <span className="text-nebula-text-muted italic">Vĩnh viễn</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -189,7 +189,7 @@ export function AdminInboxes({ token }: { token: string }) {
                                                 size="sm"
                                                 onClick={() => handleTransfer(inbox)}
                                                 disabled={!!updating}
-                                                className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                                className="text-info hover:text-info hover:bg-info/10"
                                                 title="Chuyển quyền sở hữu"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -201,7 +201,7 @@ export function AdminInboxes({ token }: { token: string }) {
                                                 size="sm"
                                                 onClick={() => handleDelete(inbox.id)}
                                                 disabled={updating === inbox.id}
-                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                className="text-danger hover:text-danger hover:bg-danger/10"
                                                 title="Xóa hộp thư"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">

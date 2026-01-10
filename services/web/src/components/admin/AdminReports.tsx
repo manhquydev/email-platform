@@ -111,29 +111,29 @@ export function AdminReports({ token }: { token: string }) {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-3">
                                         <StatusBadge status={getStatusLabel(report.status)} variant={getStatusVariant(report.status)} />
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                        <span className="text-xs text-nebula-text-muted">
                                             {new Date(report.createdAt).toLocaleString("vi-VN")}
                                         </span>
                                     </div>
 
-                                    <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">{report.reason}</p>
+                                    <p className="text-sm text-nebula-text-secondary mb-3">{report.reason}</p>
 
                                     {report.message && (
-                                        <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 mt-3 space-y-1.5">
+                                        <div className="text-xs text-nebula-text-secondary bg-nebula-elevated rounded-xl p-4 mt-3 space-y-1.5">
                                             <div>
-                                                <span className="text-slate-500 dark:text-slate-500">Email:</span>{" "}
-                                                <span className="font-medium text-slate-700 dark:text-slate-300">
+                                                <span className="text-nebula-text-muted">Email:</span>{" "}
+                                                <span className="font-medium text-nebula-text-secondary">
                                                     {report.message.inbox.localPart}@{report.message.inbox.domain.name}
                                                 </span>
                                             </div>
-                                            <div><span className="text-slate-500 dark:text-slate-500">Từ:</span> {report.message.fromAddress}</div>
-                                            <div><span className="text-slate-500 dark:text-slate-500">Chủ đề:</span> {report.message.subject || "(trống)"}</div>
+                                            <div><span className="text-nebula-text-muted">Từ:</span> {report.message.fromAddress}</div>
+                                            <div><span className="text-nebula-text-muted">Chủ đề:</span> {report.message.subject || "(trống)"}</div>
                                         </div>
                                     )}
 
                                     {report.reporter && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-3">
-                                            Người báo cáo: <span className="text-slate-700 dark:text-slate-300">{report.reporter}</span>
+                                        <div className="text-xs text-nebula-text-muted mt-3">
+                                            Người báo cáo: <span className="text-nebula-text-secondary">{report.reporter}</span>
                                         </div>
                                     )}
                                 </div>

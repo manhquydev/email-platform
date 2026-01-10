@@ -26,26 +26,26 @@ function ResponsiveLayoutInner({
     const { isMobile } = useNavigation();
 
     return (
-        <div className="flex flex-row h-screen w-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans relative">
+        <div className="flex flex-row h-screen w-screen overflow-hidden bg-nebula-base text-nebula-text font-sans relative">
             {/* Background Effects */}
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[150px] opacity-40 dark:opacity-60" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] opacity-30 dark:opacity-50" />
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-nebula-violet/10 rounded-full blur-[150px] opacity-40" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-nebula-violet-dark/10 rounded-full blur-[120px] opacity-30" />
             </div>
 
             {/* Main Content Area - Takes full width, sidebar is on right */}
             <div className="flex-1 flex flex-col min-w-0 relative z-10">
                 {/* Mobile Header */}
                 {showMobileHeader && isMobile && (
-                    <header className="md:hidden h-14 border-b border-slate-200 dark:border-white/10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg flex items-center justify-between px-4 z-20 shrink-0">
+                    <header className="md:hidden h-14 border-b border-nebula-border bg-nebula-surface/90 backdrop-blur-lg flex items-center justify-between px-4 z-20 shrink-0">
                         {headerContent || (
                             <>
-                                <div className="font-bold text-lg bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                                <div className="font-bold text-lg bg-gradient-to-r from-nebula-violet to-nebula-violet-dark bg-clip-text text-transparent">
                                     Ephemera
                                 </div>
                                 <button
                                     onClick={() => {}}
-                                    className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary"
+                                    className="w-10 h-10 rounded-full bg-nebula-violet/10 flex items-center justify-center text-xs font-bold text-nebula-violet"
                                 >
                                     U
                                 </button>

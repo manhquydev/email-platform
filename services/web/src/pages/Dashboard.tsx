@@ -383,16 +383,16 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
                     className={cn(
-                        "flex flex-col h-full bg-slate-50/50 dark:bg-bg border-r border-slate-200 dark:border-white/15",
+                        "flex flex-col h-full bg-nebula-elevated/50 border-r border-nebula-border",
                         selectedMessage ? "hidden md:flex md:w-[320px] lg:w-[360px]" : "w-full md:w-[320px] lg:w-[360px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
-                    <div className="h-16 px-4 border-b border-slate-200 dark:border-white/15 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
+                    <div className="h-16 px-4 border-b border-nebula-border flex items-center justify-between shrink-0 bg-nebula-surface/90 backdrop-blur-md">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="lg:hidden shrink-0 text-slate-700 dark:text-white"
+                                className="lg:hidden shrink-0 text-nebula-text"
                                 onClick={() => setShowMobileSidebar(true)}
                                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>}
                             />
@@ -415,9 +415,9 @@ export function Dashboard() {
 
                             {/* Desktop: Static Header */}
                             <div className="hidden lg:flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{activeDomain?.name}</span>
+                                <span className="text-[10px] font-bold text-nebula-text-muted uppercase tracking-wider">{activeDomain?.name}</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                    <span className="text-sm font-bold text-nebula-text">
                                         {activeInbox ? `${activeInbox.localPart}@${activeDomain?.name}` : "Chọn hộp thư"}
                                     </span>
                                 </div>
@@ -442,7 +442,7 @@ export function Dashboard() {
                                 size="icon"
                                 onClick={() => selectedInbox && loadMessages(selectedInbox)}
                                 disabled={busy}
-                                className="text-slate-500 dark:text-text-primary hover:text-primary"
+                                className="text-nebula-text-muted hover:text-nebula-violet"
                                 icon={<svg className={cn("w-5 h-5", busy && "animate-spin")} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>}
                             />
                             {canSendOutbound && (
@@ -459,13 +459,13 @@ export function Dashboard() {
                     </div>
 
                     {/* Search */}
-                    <div className="p-3 border-b border-slate-200 dark:border-white/15 shrink-0">
+                    <div className="p-3 border-b border-nebula-border shrink-0">
                         <div className="relative">
-                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-nebula-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                className="w-full bg-slate-100 dark:bg-surface-glass border border-slate-200 dark:border-white/15 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-text-primary placeholder:text-slate-500 dark:placeholder-text-tertiary focus:outline-none focus:border-primary/50 transition-colors"
+                                className="w-full bg-nebula-elevated border border-nebula-border rounded-lg pl-10 pr-4 py-2 text-sm text-nebula-text placeholder:text-nebula-text-muted focus:outline-none focus:border-nebula-violet/50 transition-colors"
                                 placeholder="Tìm kiếm... (từ:, là:chưa đọc)"
                                 value={messageSearch}
                                 onChange={(e) => setMessageSearch(e.target.value)}
@@ -476,7 +476,7 @@ export function Dashboard() {
                     {/* List Content */}
                     <div className="flex-1 overflow-hidden relative">
                         {!selectedInbox ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-400 dark:text-text-tertiary">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-nebula-text-muted">
                                 <span className="material-symbols-outlined text-4xl mb-2 opacity-50">inbox</span>
                                 <p className="text-sm">Chọn một hộp thư để xem tin nhắn</p>
                             </div>
@@ -492,7 +492,7 @@ export function Dashboard() {
                                     />
                                     {/* Load More Button */}
                                     {messages.length < messageTotal && (
-                                        <div className="p-4 flex justify-center border-t border-slate-200 dark:border-white/15">
+                                        <div className="p-4 flex justify-center border-t border-nebula-border">
                                             <Button
                                                 variant="secondary"
                                                 size="sm"
@@ -514,38 +514,38 @@ export function Dashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className={cn(
-                        "flex-1 bg-white dark:bg-bg flex flex-col h-full overflow-hidden border-l border-slate-200 dark:border-white/15",
+                        "flex-1 bg-nebula-surface flex flex-col h-full overflow-hidden border-l border-nebula-border",
                         // Mobile: show only if message selected
-                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-white md:bg-transparent dark:bg-bg"
+                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-nebula-surface"
                     )}>
                     {selectedMessage ? (
                         <>
                             {/* Detail Header */}
-                            <div className="h-16 px-6 border-b border-slate-200 dark:border-white/15 flex items-center justify-between shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md">
+                            <div className="h-16 px-6 border-b border-nebula-border flex items-center justify-between shrink-0 bg-nebula-surface/90 backdrop-blur-md">
                                 <div className="flex items-center gap-3">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="md:hidden text-slate-700 dark:text-white" // Back button only on mobile
+                                        className="md:hidden text-nebula-text" // Back button only on mobile
                                         onClick={() => setSelectedMessage(null)}
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>}
                                     />
                                     <div className="flex flex-col">
-                                        <h3 className="text-base font-semibold text-slate-900 dark:text-white max-w-[200px] md:max-w-md truncate">
+                                        <h3 className="text-base font-semibold text-nebula-text max-w-[200px] md:max-w-md truncate">
                                             {selectedMessage.fromAddress}
                                         </h3>
-                                        <span className="text-xs text-slate-500 dark:text-text-tertiary">
+                                        <span className="text-xs text-nebula-text-muted">
                                             {new Date(selectedMessage.receivedAt).toLocaleString("vi-VN")}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-elevated/50 rounded-lg p-1 border border-slate-200 dark:border-white/15 shadow-lg backdrop-blur-md">
+                                <div className="flex items-center gap-1 bg-nebula-elevated rounded-lg p-1 border border-nebula-border shadow-lg backdrop-blur-md">
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => setShowCompose(true)}
                                         title="Trả lời"
-                                        className="text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                                        className="text-nebula-text-muted hover:text-nebula-text"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>}
                                     />
                                     <Button
@@ -553,33 +553,33 @@ export function Dashboard() {
                                         size="icon"
                                         onClick={() => handleMarkUnread(selectedMessage.id)}
                                         title="Đánh dấu chưa đọc"
-                                        className="text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                                        className="text-nebula-text-muted hover:text-nebula-text"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
                                     />
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleTogglePin(selectedMessage.id, !selectedMessage.isPinned)}
-                                        className={selectedMessage.isPinned ? "text-warning" : "text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"}
+                                        className={selectedMessage.isPinned ? "text-warning" : "text-nebula-text-muted hover:text-nebula-text"}
                                         title={selectedMessage.isPinned ? "Bỏ ghim" : "Ghim"}
                                         icon={<svg className="w-5 h-5" fill={selectedMessage.isPinned ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>}
                                     />
 
-                                    <div className="w-px h-5 bg-slate-300 dark:bg-white/10 mx-1"></div>
+                                    <div className="w-px h-5 bg-nebula-border mx-1"></div>
 
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleDeleteMessage(selectedMessage.id)}
-                                        className="text-slate-500 hover:text-red-500 dark:text-slate-200 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-danger/10"
+                                        className="text-nebula-text-muted hover:text-danger hover:bg-danger/10"
                                         title="Xóa"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
                                     />
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => copyOTP(selectedMessage.textBody || selectedMessage.htmlBody || "")} // Re-using copyOTP for now as a functional placeholder for 'View Source' action
-                                        className="text-slate-500 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
+                                        onClick={() => copyOTP(selectedMessage.textBody || selectedMessage.htmlBody || "")}
+                                        className="text-nebula-text-muted hover:text-nebula-text"
                                         title="Sao chép nội dung"
                                         icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>}
                                     />
@@ -589,7 +589,7 @@ export function Dashboard() {
                             {/* Detail Content */}
                             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pb-24 md:pb-6">
                                 {/* Subject */}
-                                <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
+                                <h1 className="text-2xl font-bold text-nebula-text mb-6 leading-tight">
                                     {selectedMessage.subject || "(Không có chủ đề)"}
                                 </h1>
 
@@ -598,14 +598,14 @@ export function Dashboard() {
                                     const otpResult = extractOTP(selectedMessage.textBody || selectedMessage.htmlBody || "");
                                     const otp = typeof otpResult === 'string' ? otpResult : otpResult?.code;
                                     if (otp) return (
-                                        <div className="mb-8 p-6 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-between">
+                                        <div className="mb-8 p-6 bg-nebula-violet/10 border border-nebula-violet/20 rounded-2xl flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white text-2xl shadow-lg shadow-primary/20">
+                                                <div className="w-12 h-12 rounded-xl bg-nebula-violet flex items-center justify-center text-white text-2xl shadow-lg shadow-nebula-violet/20">
                                                     🔢
                                                 </div>
                                                 <div>
-                                                    <div className="text-sm text-primary font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
-                                                    <div className="text-3xl font-bold text-slate-800 dark:text-white font-mono tracking-widest">{otp}</div>
+                                                    <div className="text-sm text-nebula-violet font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
+                                                    <div className="text-3xl font-bold text-nebula-text font-mono tracking-widest">{otp}</div>
                                                 </div>
                                             </div>
                                             <Button
@@ -621,7 +621,7 @@ export function Dashboard() {
                                 })()}
 
                                 {/* Email Body */}
-                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-slate-800/80 border-2 border-slate-200 dark:border-slate-600 overflow-hidden shadow-sm">
+                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-nebula-elevated/80 border-2 border-nebula-border overflow-hidden shadow-sm">
                                     {selectedMessage.htmlBody ? (
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe
@@ -632,7 +632,7 @@ export function Dashboard() {
                                             />
                                         </div>
                                     ) : (
-                                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-slate-700 dark:text-slate-200">
+                                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-nebula-text-secondary">
                                             {selectedMessage.textBody || "Không có nội dung"}
                                         </pre>
                                     )}
@@ -652,16 +652,16 @@ export function Dashboard() {
                                                     href={`/api/attachments/${att.storageKey}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center gap-3 p-3 rounded-xl bg-surface-glass border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all group"
+                                                    className="flex items-center gap-3 p-3 rounded-xl bg-nebula-elevated border border-nebula-border hover:border-nebula-violet/50 hover:bg-nebula-surface transition-all group"
                                                 >
-                                                    <div className="p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                                                    <div className="p-2 bg-nebula-surface rounded-lg group-hover:bg-nebula-violet/20 group-hover:text-nebula-violet transition-colors">
                                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                         </svg>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-medium text-white truncate">{att.filename || `Tệp ${idx + 1}`}</div>
-                                                        <div className="text-xs text-text-tertiary">Nhấp để tải xuống</div>
+                                                        <div className="text-sm font-medium text-nebula-text truncate">{att.filename || `Tệp ${idx + 1}`}</div>
+                                                        <div className="text-xs text-nebula-text-muted">Nhấp để tải xuống</div>
                                                     </div>
                                                 </a>
                                             ))}
@@ -671,13 +671,13 @@ export function Dashboard() {
                             </div>
                         </>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center p-8 text-text-secondary">
-                            <div className="w-20 h-20 rounded-3xl bg-surface-glass border border-white/5 flex items-center justify-center mb-6 shadow-xl">
-                                <svg className="w-10 h-10 text-text-tertiary" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8 text-nebula-text-secondary">
+                            <div className="w-20 h-20 rounded-3xl bg-nebula-elevated border border-nebula-border flex items-center justify-center mb-6 shadow-xl">
+                                <svg className="w-10 h-10 text-nebula-text-muted" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                                 </svg>
                             </div>
-                            <h3 className="text-lg font-medium text-text-primary mb-2">Chưa chọn tin nhắn</h3>
+                            <h3 className="text-lg font-medium text-nebula-text mb-2">Chưa chọn tin nhắn</h3>
                             <p className="max-w-xs mx-auto">Chọn một email từ danh sách để xem nội dung.</p>
                         </div>
                     )}
@@ -685,15 +685,15 @@ export function Dashboard() {
 
                     {/* Quick Reply Footer - Wireframe Match */}
                     {selectedMessage && (
-                        <div className="hidden md:flex p-4 border-t border-white/5 bg-background/50 backdrop-blur-md shrink-0 z-10">
+                        <div className="hidden md:flex p-4 border-t border-nebula-border bg-nebula-surface/50 backdrop-blur-md shrink-0 z-10">
                             <button
                                 onClick={() => setShowCompose(true)}
-                                className="flex-1 h-12 rounded-lg bg-[#0a0a14] border border-white/10 hover:border-primary/50 text-left px-4 text-text-tertiary text-sm flex items-center justify-between group transition-all"
+                                className="flex-1 h-12 rounded-lg bg-nebula-elevated border border-nebula-border hover:border-nebula-violet/50 text-left px-4 text-nebula-text-muted text-sm flex items-center justify-between group transition-all"
                             >
                                 <span>Soạn phản hồi nhanh...</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="p-1 rounded bg-white/5 border border-white/10 text-xs text-text-tertiary">Ctrl + Enter</span>
-                                    <span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">send</span>
+                                    <span className="p-1 rounded bg-nebula-surface border border-nebula-border text-xs text-nebula-text-muted">Ctrl + Enter</span>
+                                    <span className="material-symbols-outlined text-[20px] group-hover:text-nebula-violet transition-colors">send</span>
                                 </div>
                             </button>
                         </div>
@@ -718,9 +718,9 @@ export function Dashboard() {
                                 animate={{ x: 0 }}
                                 exit={{ x: "-100%" }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                                className="relative w-[300px] h-full bg-surface-elevated border-r border-white/10 shadow-2xl flex flex-col"
+                                className="relative w-[300px] h-full bg-nebula-surface border-r border-nebula-border shadow-2xl flex flex-col"
                             >
-                                <div className="p-4 border-b border-white/5 flex justify-between items-center">
+                                <div className="p-4 border-b border-nebula-border flex justify-between items-center">
                                     <span className="font-bold text-lg">Menu</span>
                                     <Button
                                         variant="ghost"

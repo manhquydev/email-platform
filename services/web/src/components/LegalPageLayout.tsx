@@ -26,11 +26,11 @@ export function LegalPageLayout({ title, description, lastUpdated, tocItems, chi
                         if (id) {
                             document.querySelectorAll('.toc-link').forEach((link) => {
                                 link.classList.remove('text-primary', 'font-semibold');
-                                link.classList.add('text-slate-400');
+                                link.classList.add('text-nebula-text-muted');
                             });
                             const activeLink = document.querySelector(`.toc-link[href="#${id}"]`);
                             if (activeLink) {
-                                activeLink.classList.remove('text-slate-400');
+                                activeLink.classList.remove('text-nebula-text-muted');
                                 activeLink.classList.add('text-primary', 'font-semibold');
                             }
                         }
@@ -64,7 +64,7 @@ export function LegalPageLayout({ title, description, lastUpdated, tocItems, chi
                             {description}
                         </p>
                     )}
-                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-slate-400">
+                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-nebula-text-muted">
                         <span>Last Updated: {lastUpdated}</span>
                     </div>
                 </div>
@@ -79,7 +79,7 @@ export function LegalPageLayout({ title, description, lastUpdated, tocItems, chi
                                     <a
                                         key={item.id}
                                         href={`#${item.id}`}
-                                        className="toc-link text-slate-400 hover:text-white transition-colors text-sm py-1 block"
+                                        className="toc-link text-nebula-text-muted hover:text-white transition-colors text-sm py-1 block"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });

@@ -132,15 +132,15 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div className="bg-nebula-surface rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between p-4 border-b border-nebula-border">
+          <h2 className="text-lg font-bold text-nebula-text">
             Link to Telegram
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            className="text-nebula-text-muted hover:text-nebula-text"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -152,22 +152,22 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
         <div className="p-6">
           {state === "loading" && (
             <div className="flex flex-col items-center py-8">
-              <div className="animate-spin w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">Generating link token...</p>
+              <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mb-4" />
+              <p className="text-nebula-text-secondary">Generating link token...</p>
             </div>
           )}
 
           {state === "error" && (
             <div className="text-center py-8">
-              <div className="text-red-500 mb-4">
+              <div className="text-danger mb-4">
                 <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+              <p className="text-danger mb-4">{error}</p>
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
+                className="px-4 py-2 bg-nebula-elevated rounded-lg text-nebula-text-secondary"
               >
                 Close
               </button>
@@ -176,7 +176,7 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
 
           {state === "ready" && tokenData && (
             <div className="flex flex-col items-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
+              <p className="text-sm text-nebula-text-secondary mb-4 text-center">
                 Scan QR code or click the button to link <strong>{inboxEmail}</strong> to Telegram
               </p>
 
@@ -191,14 +191,14 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
 
               {/* Token display */}
               <div className="text-center mb-4">
-                <p className="text-xs text-gray-500 mb-1">Your linking code:</p>
-                <code className="text-lg font-mono font-bold text-blue-600 dark:text-blue-400">
+                <p className="text-xs text-nebula-text-muted mb-1">Your linking code:</p>
+                <code className="text-lg font-mono font-bold text-primary">
                   {tokenData.token}
                 </code>
               </div>
 
               {/* Timer */}
-              <div className="text-sm text-gray-500 mb-4">
+              <div className="text-sm text-nebula-text-muted mb-4">
                 Expires in: <span className="font-mono">{timeLeft}</span>
               </div>
 
@@ -215,7 +215,7 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
                 Open in Telegram
               </a>
 
-              <p className="text-xs text-gray-500 mt-4 text-center">
+              <p className="text-xs text-nebula-text-muted mt-4 text-center">
                 After clicking, send the start command to the bot
               </p>
             </div>
@@ -223,21 +223,21 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
 
           {state === "success" && (
             <div className="text-center py-8">
-              <div className="text-green-500 mb-4">
+              <div className="text-success mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-bold text-nebula-text mb-2">
                 Successfully Linked!
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-nebula-text-secondary mb-4">
                 You will now receive Telegram notifications for new emails to{" "}
                 <strong>{inboxEmail}</strong>
               </p>
               <button
                 onClick={onClose}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                className="px-6 py-2 bg-success text-white rounded-lg hover:bg-success/90"
               >
                 Done
               </button>
@@ -246,17 +246,17 @@ export function TelegramLinkModal({ inboxEmail, onClose }: TelegramLinkModalProp
 
           {state === "expired" && (
             <div className="text-center py-8">
-              <div className="text-yellow-500 mb-4">
+              <div className="text-warning mb-4">
                 <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-nebula-text-secondary mb-4">
                 The linking token has expired. Please try again.
               </p>
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
+                className="px-4 py-2 bg-nebula-elevated rounded-lg text-nebula-text-secondary"
               >
                 Close
               </button>

@@ -103,7 +103,7 @@ export function AdminSystem({ token }: { token: string }) {
                 {/* Resource Monitoring Charts */}
                 <GlassCard>
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Tải CPU (%)</h3>
+                        <h3 className="text-sm font-semibold text-nebula-text">Tải CPU (%)</h3>
                     </div>
                     <div className="h-64 mt-4">
                         <ResponsiveContainer width="100%" height="100%">
@@ -128,7 +128,7 @@ export function AdminSystem({ token }: { token: string }) {
 
                 <GlassCard>
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Sử dụng Memory (%)</h3>
+                        <h3 className="text-sm font-semibold text-nebula-text">Sử dụng Memory (%)</h3>
                     </div>
                     <div className="h-64 mt-4">
                         <ResponsiveContainer width="100%" height="100%">
@@ -157,36 +157,36 @@ export function AdminSystem({ token }: { token: string }) {
                 <div className="lg:col-span-2 space-y-6">
                     <GlassCard>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Thông tin máy chủ</h3>
+                            <h3 className="text-sm font-semibold text-nebula-text">Thông tin máy chủ</h3>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="text-xs text-slate-400 mb-1">Thời gian server</div>
+                                <div className="text-xs text-nebula-text-muted mb-1">Thời gian server</div>
                                 <div className="text-sm font-medium">{new Date(stats?.serverTime || "").toLocaleTimeString()}</div>
                             </div>
                             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="text-xs text-slate-400 mb-1">Bộ nhớ</div>
+                                <div className="text-xs text-nebula-text-muted mb-1">Bộ nhớ</div>
                                 <div className="text-sm font-medium">{stats?.resources?.memUsed}MB / {stats?.resources?.memTotal}MB</div>
                             </div>
                             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="text-xs text-slate-400 mb-1">Disk Used</div>
+                                <div className="text-xs text-nebula-text-muted mb-1">Disk Used</div>
                                 <div className="text-sm font-medium">{stats?.resources?.diskUsed}%</div>
                             </div>
                             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="text-xs text-slate-400 mb-1">Disk Trống</div>
-                                <div className="text-sm font-medium text-green-400">{stats?.resources?.diskAvailable}GB</div>
+                                <div className="text-xs text-nebula-text-muted mb-1">Disk Trống</div>
+                                <div className="text-sm font-medium text-success">{stats?.resources?.diskAvailable}GB</div>
                             </div>
                         </div>
                     </GlassCard>
 
                     <GlassCard>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Chính sách lưu trữ (Retention Policy)</h3>
+                            <h3 className="text-sm font-semibold text-nebula-text">Chính sách lưu trữ (Retention Policy)</h3>
                         </div>
                         <div className="space-y-4 mt-4">
                             <div className="flex items-end gap-4">
                                 <div className="flex-1">
-                                    <label className="block text-xs text-slate-400 mb-1.5">Số ngày giữ email (0 là vĩnh viễn)</label>
+                                    <label className="block text-xs text-nebula-text-muted mb-1.5">Số ngày giữ email (0 là vĩnh viễn)</label>
                                     <PremiumInput
                                         type="number"
                                         value={retentionDays}
@@ -215,7 +215,7 @@ export function AdminSystem({ token }: { token: string }) {
                 {/* Quick Actions */}
                 <GlassCard>
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Hành động nhanh</h3>
+                        <h3 className="text-sm font-semibold text-nebula-text">Hành động nhanh</h3>
                     </div>
                     <div className="space-y-3 mt-4">
                         <PremiumButton

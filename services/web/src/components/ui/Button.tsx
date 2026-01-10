@@ -18,13 +18,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     icon,
     ...props
 }, ref) => {
-    // Nebula Variants
+    // Nebula Variants - Using design tokens for consistency
     const variants = {
-        primary: 'bg-gradient-to-r from-primary to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.02] border-none',
-        secondary: 'bg-surface/50 backdrop-blur-md border border-white/10 text-text-main hover:bg-surface/80 hover:border-white/20 shadow-sm',
-        ghost: 'bg-transparent text-text-main hover:bg-white/5 data-[state=open]:bg-white/5',
-        danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20',
-        outline: 'border border-border bg-transparent hover:bg-surface/50 text-text-main',
+        primary: 'bg-gradient-to-r from-nebula-violet to-nebula-violet-dark text-white shadow-lg hover:shadow-xl hover:scale-[1.02] border-none',
+        secondary: 'bg-nebula-surface/50 backdrop-blur-md border border-nebula-border text-nebula-text hover:bg-nebula-surface/80 hover:border-nebula-border shadow-sm',
+        ghost: 'bg-transparent text-nebula-text hover:bg-nebula-elevated/50 data-[state=open]:bg-nebula-elevated/50',
+        danger: 'bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20',
+        outline: 'border border-nebula-border bg-transparent hover:bg-nebula-surface/50 text-nebula-text',
     };
 
     const sizes = {
@@ -38,7 +38,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
         <button
             ref={ref}
             className={cn(
-                'relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
+                'relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-nebula-violet/50 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
                 variants[variant],
                 sizes[size],
                 isLoading && 'text-transparent cursor-wait',

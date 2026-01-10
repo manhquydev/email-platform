@@ -95,21 +95,21 @@ export function RetentionSettings({
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Thời gian lưu trữ</h2>
-                <p className="text-slate-500 dark:text-gray-400 font-body">
+                <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Thời gian lưu trữ</h2>
+                <p className="text-nebula-text-muted font-body">
                     Cấu hình thời gian lưu giữ email trước khi tự động xóa.
                 </p>
             </div>
 
             {/* Tier Info Banner */}
-            <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-cyan-500/10 border border-primary/20 dark:border-primary/30">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-nebula-violet/10 to-nebula-violet-dark/10 border border-nebula-violet/20">
                 <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary text-2xl">schedule</span>
+                    <span className="material-symbols-outlined text-nebula-violet text-2xl">schedule</span>
                     <div>
-                        <p className="font-medium text-slate-900 dark:text-white">
+                        <p className="font-medium text-nebula-text">
                             Gói {tierInfo.label} - Tối đa {tierInfo.max} ngày
                         </p>
-                        <p className="text-sm text-slate-500 dark:text-gray-400">
+                        <p className="text-sm text-nebula-text-muted">
                             {userTier === "FREE"
                                 ? "Nâng cấp để lưu trữ email lâu hơn"
                                 : "Bạn có thể cấu hình thời gian lưu trữ tùy chỉnh"
@@ -125,14 +125,14 @@ export function RetentionSettings({
             </div>
 
             {/* Default Retention Setting */}
-            <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 border-l-4 border-l-blue-500/70 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border border-l-4 border-l-info/70 shadow-sm">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-blue-500">settings</span>
+                        <h3 className="text-lg font-bold text-nebula-text mb-1 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-info">settings</span>
                             Mặc định cho tài khoản
                         </h3>
-                        <p className="text-sm text-slate-500 dark:text-gray-400">
+                        <p className="text-sm text-nebula-text-muted">
                             Áp dụng cho tất cả inbox không có cấu hình riêng.
                         </p>
                     </div>
@@ -142,7 +142,7 @@ export function RetentionSettings({
                     <select
                         value={defaultRetention === null ? "null" : defaultRetention.toString()}
                         onChange={(e) => setDefaultRetention(e.target.value === "null" ? null : parseInt(e.target.value))}
-                        className="flex-1 max-w-xs px-3 py-2 rounded-lg border border-slate-300 dark:border-white/20 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                        className="flex-1 max-w-xs px-3 py-2 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text"
                     >
                         {retentionOptions.map(opt => (
                             <option key={opt.value ?? "null"} value={opt.value === null ? "null" : opt.value}>
@@ -155,27 +155,27 @@ export function RetentionSettings({
                     </Button>
                 </div>
 
-                <p className="text-xs text-slate-400 dark:text-gray-500 mt-2">
+                <p className="text-xs text-nebula-text-muted mt-2">
                     Mặc định theo gói: {tierInfo.max} ngày ({tierInfo.label})
                 </p>
             </section>
 
             {/* Per-Inbox Retention Settings */}
-            <section className="glass-panel rounded-xl p-6 dark:!bg-white/[0.08] border border-slate-200 dark:border-white/15 border-l-4 border-l-green-500/70 shadow-sm dark:shadow-none">
+            <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border border-l-4 border-l-success/70 shadow-sm">
                 <div className="mb-4">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-green-500">inbox</span>
+                    <h3 className="text-lg font-bold text-nebula-text mb-1 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-success">inbox</span>
                         Cấu hình theo inbox
                     </h3>
-                    <p className="text-sm text-slate-500 dark:text-gray-400">
+                    <p className="text-sm text-nebula-text-muted">
                         Tùy chỉnh thời gian lưu trữ cho từng inbox cụ thể.
                     </p>
                 </div>
 
                 {userInboxes.length === 0 ? (
-                    <div className="text-center py-8 bg-slate-50 dark:bg-black/20 rounded-lg border border-slate-200 dark:border-white/15 border-dashed">
-                        <span className="material-symbols-outlined text-slate-400 dark:text-gray-600 text-3xl mb-2">inbox</span>
-                        <p className="text-slate-500 dark:text-gray-500 text-sm">Chưa có inbox nào.</p>
+                    <div className="text-center py-8 bg-nebula-elevated/50 rounded-lg border border-nebula-border border-dashed">
+                        <span className="material-symbols-outlined text-nebula-text-muted text-3xl mb-2">inbox</span>
+                        <p className="text-nebula-text-muted text-sm">Chưa có inbox nào.</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -185,18 +185,18 @@ export function RetentionSettings({
                                 onClick={() => handleInboxSelect(inbox)}
                                 className={`p-4 rounded-lg border cursor-pointer transition-all ${
                                     selectedInbox?.id === inbox.id
-                                        ? "border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-500/10"
-                                        : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/30 hover:border-slate-300 dark:hover:border-white/20"
+                                        ? "border-success bg-success/10"
+                                        : "border-nebula-border bg-nebula-elevated/50 hover:border-nebula-border-highlight"
                                 }`}
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-green-500 text-[18px]">mail</span>
-                                        <span className="font-mono text-sm text-slate-900 dark:text-white">
+                                        <span className="material-symbols-outlined text-success text-[18px]">mail</span>
+                                        <span className="font-mono text-sm text-nebula-text">
                                             {inbox.localPart}@{inbox.domain?.name}
                                         </span>
                                     </div>
-                                    <span className="text-xs text-slate-400 dark:text-gray-500">
+                                    <span className="text-xs text-nebula-text-muted">
                                         {(inbox as Inbox & { retentionDays?: number }).retentionDays
                                             ? `${(inbox as Inbox & { retentionDays?: number }).retentionDays} ngày`
                                             : "Mặc định"
@@ -206,22 +206,22 @@ export function RetentionSettings({
                             </div>
                         ))}
                         {userInboxes.length > 10 && (
-                            <p className="text-xs text-slate-400 text-center">+ {userInboxes.length - 10} inbox khác</p>
+                            <p className="text-xs text-nebula-text-muted text-center">+ {userInboxes.length - 10} inbox khác</p>
                         )}
                     </div>
                 )}
 
                 {/* Selected Inbox Edit Panel */}
                 {selectedInbox && (
-                    <div className="mt-4 p-4 bg-slate-100 dark:bg-black/40 rounded-lg border border-slate-200 dark:border-white/10">
-                        <h4 className="font-medium text-slate-900 dark:text-white mb-3">
+                    <div className="mt-4 p-4 bg-nebula-elevated rounded-lg border border-nebula-border">
+                        <h4 className="font-medium text-nebula-text mb-3">
                             Cấu hình cho: {selectedInbox.localPart}@{selectedInbox.domain?.name}
                         </h4>
                         <div className="flex items-center gap-4">
                             <select
                                 value={inboxRetention === null ? "null" : inboxRetention.toString()}
                                 onChange={(e) => setInboxRetention(e.target.value === "null" ? null : parseInt(e.target.value))}
-                                className="flex-1 max-w-xs px-3 py-2 rounded-lg border border-slate-300 dark:border-white/20 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                className="flex-1 max-w-xs px-3 py-2 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text"
                             >
                                 {retentionOptions.map(opt => (
                                     <option key={opt.value ?? "null"} value={opt.value === null ? "null" : opt.value}>
@@ -241,12 +241,12 @@ export function RetentionSettings({
             </section>
 
             {/* Info Box */}
-            <div className="p-4 rounded-lg bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10">
-                <h4 className="font-medium text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+            <div className="p-4 rounded-lg bg-nebula-elevated border border-nebula-border">
+                <h4 className="font-medium text-nebula-text mb-2 flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">info</span>
                     Cách hoạt động
                 </h4>
-                <ul className="text-sm text-slate-600 dark:text-gray-400 space-y-1">
+                <ul className="text-sm text-nebula-text-secondary space-y-1">
                     <li>• <strong>Inbox riêng</strong> được ưu tiên cao nhất</li>
                     <li>• Nếu không có, dùng <strong>mặc định tài khoản</strong></li>
                     <li>• Nếu không có, dùng <strong>mặc định gói</strong> ({tierInfo.max} ngày)</li>

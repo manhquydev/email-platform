@@ -12,13 +12,13 @@ interface AppHeaderProps {
 const getTierBadge = (tier?: string) => {
     switch (tier) {
         case 'ENTERPRISE':
-            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">Enterprise</span>;
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20">Enterprise</span>;
         case 'PROFESSIONAL':
-            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200">Pro</span>;
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-info/10 text-info border border-info/20">Pro</span>;
         case 'STARTER':
-            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 border border-green-200">Starter</span>;
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-success/10 text-success border border-success/20">Starter</span>;
         default:
-            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">Free</span>;
+            return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-nebula-elevated text-nebula-text-muted border border-nebula-border">Free</span>;
     }
 };
 
@@ -110,11 +110,11 @@ export function AppHeader({ title, showBackButton, onBack }: AppHeaderProps) {
                                         <span className="app-header-dropdown-name">{user?.email?.split("@")[0]}</span>
                                         {getTierBadge(user?.tier)}
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5 mb-0.5">
-                                        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-yellow-600">
+                                    <div className="flex items-center gap-1.5 text-xs text-nebula-text-muted mt-0.5 mb-0.5">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-warning">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <span className="font-medium text-yellow-700">{user?.credits?.toLocaleString() || 0} credits</span>
+                                        <span className="font-medium text-warning">{user?.credits?.toLocaleString() || 0} credits</span>
                                     </div>
                                     <span className="app-header-dropdown-email">{user?.email}</span>
                                 </div>

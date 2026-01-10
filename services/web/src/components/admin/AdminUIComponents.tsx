@@ -35,8 +35,8 @@ export function SectionHeader({ title, subtitle, action }: {
     return (
         <div className="flex items-center justify-between mb-6">
             <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
-                {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+                <h2 className="text-xl font-bold text-nebula-text">{title}</h2>
+                {subtitle && <p className="text-sm text-nebula-text-muted mt-1">{subtitle}</p>}
             </div>
             {action}
         </div>
@@ -49,7 +49,7 @@ export function PremiumTable({ children, className = "" }: {
     className?: string;
 }) {
     return (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
+        <div className="overflow-x-auto rounded-xl border border-nebula-border">
             <table className={`w-full border-collapse ${className}`}>
                 {children}
             </table>
@@ -59,7 +59,7 @@ export function PremiumTable({ children, className = "" }: {
 
 export function TableHeader({ children }: { children: React.ReactNode }) {
     return (
-        <thead className="bg-gray-50 dark:bg-slate-800">
+        <thead className="bg-nebula-elevated">
             {children}
         </thead>
     );
@@ -67,14 +67,14 @@ export function TableHeader({ children }: { children: React.ReactNode }) {
 
 export function TableHeaderCell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
     return (
-        <th className={`text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider px-4 py-3 ${className}`}>
+        <th className={`text-left text-xs font-semibold text-nebula-text-muted uppercase tracking-wider px-4 py-3 ${className}`}>
             {children}
         </th>
     );
 }
 
 export function TableBody({ children }: { children: React.ReactNode }) {
-    return <tbody className="divide-y divide-gray-200 dark:divide-white/10">{children}</tbody>;
+    return <tbody className="divide-y divide-nebula-border">{children}</tbody>;
 }
 
 export function TableRow({ children, className = "", onClick }: {
@@ -84,7 +84,7 @@ export function TableRow({ children, className = "", onClick }: {
 }) {
     return (
         <tr
-            className={`bg-white dark:bg-[#18181B] hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${onClick ? "cursor-pointer" : ""} ${className}`}
+            className={`bg-nebula-surface hover:bg-nebula-elevated transition-colors ${onClick ? "cursor-pointer" : ""} ${className}`}
             onClick={onClick}
         >
             {children}
@@ -94,7 +94,7 @@ export function TableRow({ children, className = "", onClick }: {
 
 export function TableCell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
     return (
-        <td className={`px-4 py-3 text-sm text-gray-700 dark:text-gray-300 ${className}`}>
+        <td className={`px-4 py-3 text-sm text-nebula-text-secondary ${className}`}>
             {children}
         </td>
     );
@@ -106,11 +106,11 @@ export function StatusBadge({ status, variant = "default" }: {
     variant?: "success" | "warning" | "danger" | "info" | "default";
 }) {
     const variants = {
-        success: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-        warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-        danger: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-        info: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-        default: "bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300",
+        success: "bg-success/10 text-success",
+        warning: "bg-warning/10 text-warning",
+        danger: "bg-danger/10 text-danger",
+        info: "bg-info/10 text-info",
+        default: "bg-nebula-elevated text-nebula-text-secondary",
     };
 
     return (
@@ -135,9 +135,9 @@ export function PremiumButton({ children, onClick, variant = "primary", size = "
 }) {
     const variants = {
         primary: "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/25",
-        secondary: "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-white/20",
-        danger: "bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/25",
-        ghost: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10",
+        secondary: "bg-nebula-elevated text-nebula-text hover:bg-nebula-surface",
+        danger: "bg-danger text-white hover:bg-danger/80 shadow-lg shadow-danger/25",
+        ghost: "text-nebula-text-secondary hover:bg-nebula-elevated",
     };
 
     const sizes = {
@@ -189,10 +189,10 @@ export function PremiumInput({ value, onChange, placeholder, type = "text", clas
 }) {
     return (
         <div className={className}>
-            {label && <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>}
+            {label && <label className="block text-sm font-medium text-nebula-text-muted mb-1.5">{label}</label>}
             <div className="relative">
                 {icon && (
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-nebula-text-muted">
                         {icon}
                     </span>
                 )}
@@ -205,10 +205,10 @@ export function PremiumInput({ value, onChange, placeholder, type = "text", clas
                     disabled={disabled}
                     required={required}
                     className={`
-        w-full rounded-xl border border-gray-200 dark:border-white/10
-        bg-white dark:bg-slate-800
-        text-gray-900 dark:text-white
-        placeholder:text-gray-400 dark:placeholder:text-gray-500
+        w-full rounded-xl border border-nebula-border
+        bg-nebula-elevated
+        text-nebula-text
+        placeholder:text-nebula-text-muted
         focus:border-primary focus:ring-2 focus:ring-primary/20
         transition-all duration-200
         disabled:opacity-50 disabled:cursor-not-allowed
@@ -234,9 +234,9 @@ export function PremiumSelect({ value, onChange, options, className = "", disabl
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             className={`
-    rounded-xl border border-gray-200 dark:border-white/10
-    bg-white dark:bg-[#18181B]
-    text-gray-900 dark:text-white
+    rounded-xl border border-nebula-border
+    bg-nebula-elevated
+    text-nebula-text
     px-4 py-2.5
     focus:border-primary focus:ring-2 focus:ring-primary/20
     transition-all duration-200
@@ -259,9 +259,9 @@ export function EmptyState({ icon, title, description }: {
 }) {
     return (
         <div className="text-center py-12">
-            {icon && <div className="text-gray-300 dark:text-gray-600 mb-4">{icon}</div>}
-            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{title}</h3>
-            {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>}
+            {icon && <div className="text-nebula-text-muted mb-4">{icon}</div>}
+            <h3 className="text-lg font-medium text-nebula-text-secondary">{title}</h3>
+            {description && <p className="text-sm text-nebula-text-muted mt-1">{description}</p>}
         </div>
     );
 }
@@ -297,7 +297,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: {
             >
                 ← Trước
             </PremiumButton>
-            <span className="text-sm text-gray-600 dark:text-gray-400 px-4">
+            <span className="text-sm text-nebula-text-muted px-4">
                 Trang {currentPage} / {totalPages}
             </span>
             <PremiumButton
@@ -352,10 +352,10 @@ export function PremiumToggle({ checked, onChange, disabled = false, label }: {
                     onChange={(e) => !disabled && onChange(e.target.checked)}
                     disabled={disabled}
                 />
-                <div className={`w-10 h-6 rounded-full transition-colors duration-200 ease-in-out ${checked ? "bg-primary" : "bg-slate-200 dark:bg-slate-700"}`} />
+                <div className={`w-10 h-6 rounded-full transition-colors duration-200 ease-in-out ${checked ? "bg-primary" : "bg-nebula-elevated"}`} />
                 <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${checked ? "translate-x-4" : "translate-x-0"}`} />
             </div>
-            {label && <span className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none">{label}</span>}
+            {label && <span className="text-sm font-medium text-nebula-text-secondary select-none">{label}</span>}
         </label>
     );
 }
@@ -388,10 +388,10 @@ export function ConfirmModal({
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <GlassCard className="w-full max-w-sm overflow-hidden border border-white/20 shadow-2xl animate-in zoom-in-95 duration-200" padding="p-0">
                 <div className="p-6">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</p>
+                    <h3 className="text-xl font-bold text-nebula-text mb-2">{title}</h3>
+                    <p className="text-sm text-nebula-text-muted leading-relaxed">{message}</p>
                 </div>
-                <div className="p-4 bg-gray-50/50 dark:bg-slate-800 flex gap-3 justify-end items-center">
+                <div className="p-4 bg-nebula-elevated flex gap-3 justify-end items-center">
                     <PremiumButton variant="ghost" onClick={onClose} disabled={isLoading}>
                         {cancelText}
                     </PremiumButton>

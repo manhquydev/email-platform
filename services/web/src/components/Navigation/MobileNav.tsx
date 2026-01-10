@@ -77,7 +77,7 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
                 opacity: isVisible ? 1 : 0,
             }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/10 safe-area-bottom"
+            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-nebula-surface/95 backdrop-blur-lg border-t border-nebula-border safe-area-bottom"
         >
             <div className="flex justify-around items-center h-16 px-1">
                 {displayItems.map((item) => {
@@ -89,7 +89,7 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
                                 whileTap={{ scale: 0.9 }}
                                 whileHover={{ scale: 1.05 }}
                                 onClick={() => onCompose?.()}
-                                className="relative -top-4 bg-gradient-to-tr from-primary to-purple-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 border-4 border-white dark:border-slate-900"
+                                className="relative -top-4 bg-gradient-to-tr from-nebula-violet to-nebula-violet-dark text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-nebula-violet/30 border-4 border-nebula-surface"
                                 aria-label="Soạn thư"
                             >
                                 <span className="material-symbols-outlined text-[28px]">add</span>
@@ -104,7 +104,7 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
                                 key="more"
                                 whileTap={{ scale: 0.95 }}
                                 onClick={openDrawer}
-                                className="flex flex-col items-center justify-center w-full h-full py-2 min-h-12 min-w-12 text-slate-400 dark:text-slate-500"
+                                className="flex flex-col items-center justify-center w-full h-full py-2 min-h-12 min-w-12 text-nebula-text-muted"
                                 aria-label="Thêm"
                             >
                                 <span className="material-symbols-outlined text-[24px]">more_horiz</span>
@@ -123,7 +123,7 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
                             whileTap={{ scale: 0.95 }}
                             onClick={() => navigate(navItem.path)}
                             className={`flex flex-col items-center justify-center w-full h-full py-2 min-h-12 min-w-12 transition-colors ${
-                                active ? "text-primary dark:text-primary" : "text-slate-400 dark:text-slate-500"
+                                active ? "text-nebula-violet" : "text-nebula-text-muted"
                             }`}
                             aria-label={navItem.label}
                         >
@@ -136,7 +136,7 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
                                             initial={{ scale: 0, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
                                             exit={{ scale: 0, opacity: 0 }}
-                                            className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full px-1"
+                                            className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center bg-danger text-white text-[9px] font-bold rounded-full px-1"
                                         >
                                             {unreadCount > 9 ? "9+" : unreadCount}
                                         </motion.span>
@@ -146,7 +146,7 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
                                 {active && (
                                     <motion.div
                                         layoutId="mobileActiveTab"
-                                        className="absolute -inset-1.5 bg-primary/10 rounded-full -z-10"
+                                        className="absolute -inset-1.5 bg-nebula-violet/10 rounded-full -z-10"
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                                     />
                                 )}

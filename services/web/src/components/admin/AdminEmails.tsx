@@ -126,14 +126,14 @@ export function AdminEmails({ token }: { token: string }) {
                         type="date"
                         value={startDate}
                         onChange={(e) => { setStartDate(e.target.value); setPage(0); }}
-                        className="px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                        className="px-4 py-2.5 border border-nebula-border rounded-xl bg-nebula-elevated text-nebula-text text-sm"
                         title="Từ ngày"
                     />
                     <input
                         type="date"
                         value={endDate}
                         onChange={(e) => { setEndDate(e.target.value); setPage(0); }}
-                        className="px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                        className="px-4 py-2.5 border border-nebula-border rounded-xl bg-nebula-elevated text-nebula-text text-sm"
                         title="Đến ngày"
                     />
                 </div>
@@ -170,7 +170,7 @@ export function AdminEmails({ token }: { token: string }) {
                             {emails.map((email) => (
                                 <TableRow key={email.id} onClick={() => handleViewEmail(email.id)}>
                                     <TableCell className="max-w-xs">
-                                        <div className={`truncate ${!email.isRead ? "font-semibold text-slate-900 dark:text-white" : ""}`}>
+                                        <div className={`truncate ${!email.isRead ? "font-semibold text-nebula-text" : ""}`}>
                                             {!email.isRead && <span className="w-2 h-2 bg-primary rounded-full inline-block mr-2" />}
                                             {email.subject || "(Không có tiêu đề)"}
                                         </div>
@@ -185,7 +185,7 @@ export function AdminEmails({ token }: { token: string }) {
                                             variant="ghost"
                                             size="sm"
                                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteEmail(email.id); }}
-                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                            className="text-danger hover:text-danger hover:bg-danger/10"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -221,33 +221,33 @@ export function AdminEmails({ token }: { token: string }) {
                             <LoadingSpinner />
                         ) : (
                             <>
-                                <div className="p-5 border-b border-slate-200 dark:border-slate-600/50">
+                                <div className="p-5 border-b border-nebula-border">
                                     <div className="flex items-start justify-between">
-                                        <h2 className="text-lg font-bold text-slate-900 dark:text-white pr-8">
+                                        <h2 className="text-lg font-bold text-nebula-text pr-8">
                                             {selectedEmail.subject || "(Không có tiêu đề)"}
                                         </h2>
-                                        <button onClick={() => setSelectedEmail(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                                        <button onClick={() => setSelectedEmail(null)} className="text-nebula-text-muted hover:text-nebula-text-secondary">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                     </div>
-                                    <div className="mt-3 text-sm text-slate-600 dark:text-slate-400 space-y-1">
-                                        <p><span className="font-medium text-slate-700 dark:text-slate-300">From:</span> {selectedEmail.fromAddress}</p>
-                                        <p><span className="font-medium text-slate-700 dark:text-slate-300">To:</span> {selectedEmail.toAddress}</p>
-                                        <p><span className="font-medium text-slate-700 dark:text-slate-300">Received:</span> {new Date(selectedEmail.receivedAt).toLocaleString("vi-VN")}</p>
+                                    <div className="mt-3 text-sm text-nebula-text-secondary space-y-1">
+                                        <p><span className="font-medium text-nebula-text">From:</span> {selectedEmail.fromAddress}</p>
+                                        <p><span className="font-medium text-nebula-text">To:</span> {selectedEmail.toAddress}</p>
+                                        <p><span className="font-medium text-nebula-text">Received:</span> {new Date(selectedEmail.receivedAt).toLocaleString("vi-VN")}</p>
                                     </div>
                                 </div>
-                                <div className="p-5 overflow-y-auto flex-1 bg-white dark:bg-slate-800/50">
+                                <div className="p-5 overflow-y-auto flex-1 bg-nebula-surface">
                                     {selectedEmail.htmlBody ? (
                                         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedEmail.htmlBody) }} className="prose prose-sm dark:prose-invert max-w-none" />
                                     ) : selectedEmail.textBody ? (
-                                        <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{selectedEmail.textBody}</pre>
+                                        <pre className="whitespace-pre-wrap text-sm text-nebula-text-secondary">{selectedEmail.textBody}</pre>
                                     ) : (
-                                        <p className="text-slate-500 dark:text-slate-400 italic">Không có nội dung</p>
+                                        <p className="text-nebula-text-muted italic">Không có nội dung</p>
                                     )}
                                 </div>
-                                <div className="p-4 border-t border-slate-200 dark:border-slate-600/50 flex justify-end gap-3">
+                                <div className="p-4 border-t border-nebula-border flex justify-end gap-3">
                                     <PremiumButton variant="danger" onClick={() => handleDeleteEmail(selectedEmail.id)}>
                                         Xóa email
                                     </PremiumButton>

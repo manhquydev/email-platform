@@ -116,16 +116,16 @@ export function AdminOrders({ token }: { token: string }) {
                             {orders.map((order) => (
                                 <TableRow key={order.id}>
                                     <TableCell>
-                                        <div className="font-mono text-xs text-slate-500 truncate w-32" title={order.stripePaymentId}>
+                                        <div className="font-mono text-xs text-nebula-text-muted truncate w-32" title={order.stripePaymentId}>
                                             {order.stripePaymentId || "—"}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="font-medium text-slate-900 dark:text-white">{order.user?.email || "Unknown"}</div>
-                                        <div className="text-xs text-slate-500">{order.userId}</div>
+                                        <div className="font-medium text-nebula-text">{order.user?.email || "Unknown"}</div>
+                                        <div className="text-xs text-nebula-text-muted">{order.userId}</div>
                                     </TableCell>
                                     <TableCell>
-                                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                        <span className="font-semibold text-success">
                                             {formatCurrency(Number(order.amount) / 100 || 0, order.currency)}
                                         </span>
                                     </TableCell>

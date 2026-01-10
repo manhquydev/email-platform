@@ -41,7 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                         "disabled:cursor-not-allowed disabled:opacity-50",
                         icon && "pl-10",
                         rightIcon && "pr-10",
-                        error && "border-red-500/50 focus-visible:ring-red-500/20",
+                        error && "border-danger/50 focus-visible:ring-danger/20",
                         className
                     )}
                     {...props}
@@ -53,7 +53,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                 )}
             </div>
             {error && (
-                <p className="text-xs text-red-400 pl-1">{error}</p>
+                <p className="text-xs text-danger pl-1">{error}</p>
             )}
         </div>
     );

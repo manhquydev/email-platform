@@ -88,10 +88,10 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                         className="p-6 sm:p-8 relative overflow-hidden h-full"
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <h2 id="create-inbox-modal-title" className="text-xl font-bold text-slate-900 dark:text-white">Tạo email mới</h2>
+                            <h2 id="create-inbox-modal-title" className="text-xl font-bold text-nebula-text">Tạo email mới</h2>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 text-text-secondary transition-colors"
+                                className="p-2 rounded-lg hover:bg-nebula-elevated text-text-secondary transition-colors"
                                 title="Đóng"
                             >
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
@@ -104,7 +104,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                             {verifiedDomains.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-8 text-center text-text-secondary">
                                     <div className="text-4xl mb-4">📧</div>
-                                    <h4 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Chưa có domain khả dụng</h4>
+                                    <h4 className="text-lg font-medium text-nebula-text mb-2">Chưa có domain khả dụng</h4>
                                     <p className="mb-6">Tài khoản của bạn chưa có domain nào được xác thực.</p>
                                     <Button
                                         variant="primary"
@@ -118,7 +118,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                                     {/* Email Preview */}
                                     <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center text-center">
                                         <span className="text-xs font-medium text-primary/80 uppercase tracking-widest mb-1">Địa chỉ email của bạn</span>
-                                        <span className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white break-all">
+                                        <span className="text-lg sm:text-xl font-bold text-nebula-text break-all">
                                             {previewEmail || 'chọn domain...'}
                                         </span>
                                     </div>
@@ -158,14 +158,14 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                                                     value={selectedDomainId}
                                                     onChange={(e) => setSelectedDomainId(e.target.value)}
                                                     className={cn(
-                                                        "w-full h-[46px] px-4 bg-slate-50 dark:bg-surface-glass border border-slate-200 dark:border-white/10 rounded-xl",
-                                                        "text-slate-900 dark:text-white outline-none transition-all duration-200",
+                                                        "w-full h-[46px] px-4 bg-nebula-elevated border border-nebula-border rounded-xl",
+                                                        "text-nebula-text outline-none transition-all duration-200",
                                                         "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
                                                         "appearance-none cursor-pointer"
                                                     )}
                                                 >
                                                     {verifiedDomains.map(d => (
-                                                        <option key={d.id} value={d.id} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">
+                                                        <option key={d.id} value={d.id} className="bg-nebula-surface text-nebula-text">
                                                             @{d.name} {d.isPublic ? '(Shared)' : '(Private)'}
                                                         </option>
                                                     ))}

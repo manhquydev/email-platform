@@ -46,14 +46,14 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-4 border-nebula-violet border-t-transparent rounded-full" />
       </div>
     );
   }
 
   if (!message) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full text-nebula-text-muted">
         Select a message to view
       </div>
     );
@@ -69,9 +69,9 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
   return (
     <div className="flex flex-col h-full overflow-auto">
       {/* Header */}
-      <div className="p-4 border-b dark:border-gray-700">
+      <div className="p-4 border-b border-nebula-border">
         <h2 className="text-xl font-bold mb-2">{message.subject || "(no subject)"}</h2>
-        <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+        <div className="text-sm text-nebula-text-muted space-y-1">
           <div><strong>From:</strong> {message.fromAddress || "(unknown)"}</div>
           <div><strong>To:</strong> {message.toAddress || "(unknown)"}</div>
           <div>
@@ -82,7 +82,7 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
 
       {/* Attachments */}
       {message.attachments.length > 0 && (
-        <div className="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div className="p-4 border-b border-nebula-border bg-nebula-elevated">
           <div className="text-sm font-medium mb-2">
             Attachments ({message.attachments.length})
           </div>
@@ -91,11 +91,11 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
               <a
                 key={att.id}
                 href={`${apiUrl}/api/public/attachments/${att.id}/download`}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 border rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-600"
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-nebula-surface border border-nebula-border rounded-lg text-sm hover:bg-nebula-elevated"
                 download
               >
                 <span className="truncate max-w-[150px]">{att.filename}</span>
-                <span className="text-xs text-gray-500">({formatSize(att.size)})</span>
+                <span className="text-xs text-nebula-text-muted">({formatSize(att.size)})</span>
               </a>
             ))}
           </div>
@@ -112,7 +112,7 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
         ) : message.textBody ? (
           <pre className="whitespace-pre-wrap font-sans text-sm">{message.textBody}</pre>
         ) : (
-          <div className="text-gray-500 italic">(no content)</div>
+          <div className="text-nebula-text-muted italic">(no content)</div>
         )}
       </div>
     </div>

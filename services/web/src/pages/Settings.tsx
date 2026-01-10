@@ -26,6 +26,7 @@ interface UserProfile {
     credits: number;
     emailVerified: string | null;
     twoFactorEnabled: boolean;
+    retentionDays?: number | null;
     _count: { domains: number; inboxes: number };
     usage: { domains: number; inboxes: number; storage: number };
     limits: { domains: number; inboxes: number; storageGB: number; dailyEmails: number };
@@ -112,7 +113,7 @@ export function Settings() {
                     {activeTab === 'notifications' && <NotificationsSettings />}
                     {activeTab === 'filters' && <FiltersTab inboxes={inboxes} selectedInboxId={selectedInboxId} onInboxChange={setSelectedInboxId} />}
                     {activeTab === 'labels' && <LabelsTab inboxes={inboxes} selectedInboxId={selectedInboxId} onInboxChange={setSelectedInboxId} />}
-                    {activeTab === 'retention' && <RetentionSettings userInboxes={inboxes} userTier={profile?.tier} />}
+                    {activeTab === 'retention' && <RetentionSettings userInboxes={inboxes} userTier={profile?.tier} userRetentionDays={profile?.retentionDays} />}
                     {activeTab === 'teams' && <TeamSettings userInboxes={inboxes} />}
                 </div>
             </main>

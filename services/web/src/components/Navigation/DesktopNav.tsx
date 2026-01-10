@@ -91,46 +91,71 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
             <div className="flex-1" />
 
             {/* Footer - Theme Toggle & User Profile */}
-            <div className="p-4 flex flex-col gap-3 border-t border-nebula-border bg-nebula-elevated/50">
-                {/* Theme Toggle */}
-                <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-start px-2")}>
+            <div className="p-3 flex flex-col gap-2 border-t border-nebula-border/50 bg-gradient-to-t from-nebula-void/30 to-transparent backdrop-blur-sm">
+                {/* Theme Toggle Row */}
+                <div className={cn(
+                    "flex items-center rounded-lg transition-colors",
+                    isCollapsed ? "justify-center py-2" : "justify-between px-3 py-2 hover:bg-nebula-elevated/50"
+                )}>
+                    {!isCollapsed && (
+                        <span className="text-xs font-medium text-nebula-text-muted uppercase tracking-wider">
+                            Giao diện
+                        </span>
+                    )}
                     <ThemeToggle />
                 </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-nebula-border/50 to-transparent" />
 
                 {/* User Dropdown */}
                 <Dropdown>
                     <DropdownTrigger>
                         <button
                             className={cn(
-                                "flex items-center gap-3 px-2 py-2.5 rounded-xl transition-colors w-full text-left min-h-12",
-                                "text-nebula-text-secondary hover:bg-nebula-elevated"
+                                "flex items-center gap-3 px-2 py-2 rounded-xl transition-all w-full text-left group",
+                                "hover:bg-nebula-violet/5 hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]",
+                                "border border-transparent hover:border-nebula-violet/20"
                             )}
                         >
-                            <div className="flex items-center justify-center aspect-square rounded-full size-10 shrink-0 ring-2 ring-nebula-border bg-nebula-violet/10 text-nebula-violet font-bold text-sm">
-                                {user?.email?.charAt(0).toUpperCase() || "U"}
+                            {/* Avatar with glow effect */}
+                            <div className="relative">
+                                <div className="flex items-center justify-center size-10 rounded-full shrink-0 bg-gradient-to-br from-nebula-violet to-nebula-violet-dark text-white font-bold text-sm shadow-lg shadow-nebula-violet/20 group-hover:shadow-nebula-violet/40 transition-shadow">
+                                    {user?.email?.charAt(0).toUpperCase() || "U"}
+                                </div>
+                                {/* Online indicator */}
+                                <div className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-success border-2 border-nebula-surface" />
                             </div>
                             {!isCollapsed && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="flex flex-col items-start overflow-hidden"
+                                    className="flex-1 flex flex-col items-start overflow-hidden min-w-0"
                                 >
-                                    <span className="text-sm font-medium text-nebula-text truncate w-full">
+                                    <span className="text-sm font-semibold text-nebula-text truncate w-full">
                                         {user?.email?.split("@")[0] || "Người dùng"}
                                     </span>
-                                    <span className="text-xs text-nebula-text-muted truncate w-full uppercase tracking-wide">
-                                        Gói{" "}
-                                        {user?.tier === "FREE"
-                                            ? "MIỄN PHÍ"
-                                            : user?.tier === "STARTER"
-                                            ? "KHỞI ĐẦU"
-                                            : user?.tier === "PROFESSIONAL"
-                                            ? "CHUYÊN NGHIỆP"
-                                            : user?.tier === "ENTERPRISE"
-                                            ? "DOANH NGHIỆP"
-                                            : user?.tier || "MIỄN PHÍ"}
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className={cn(
+                                            "text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide",
+                                            user?.tier === "ENTERPRISE" ? "bg-nebula-pink/10 text-nebula-pink" :
+                                            user?.tier === "PROFESSIONAL" ? "bg-nebula-cyan/10 text-nebula-cyan" :
+                                            user?.tier === "STARTER" ? "bg-success/10 text-success" :
+                                            "bg-nebula-text-muted/10 text-nebula-text-muted"
+                                        )}>
+                                            {user?.tier === "FREE" ? "Free" :
+                                             user?.tier === "STARTER" ? "Starter" :
+                                             user?.tier === "PROFESSIONAL" ? "Pro" :
+                                             user?.tier === "ENTERPRISE" ? "Enterprise" :
+                                             "Free"}
+                                        </span>
+                                    </div>
                                 </motion.div>
+                            )}
+                            {!isCollapsed && (
+                                <span className="material-symbols-outlined text-[18px] text-nebula-text-muted group-hover:text-nebula-violet transition-colors">
+                                    expand_more
+                                </span>
                             )}
                         </button>
                     </DropdownTrigger>

@@ -122,7 +122,7 @@ export function Login() {
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center ml-1">
                                             <label className="text-text-secondary text-sm font-medium">Mật khẩu</label>
-                                            <a href="#" className="text-xs text-primary hover:text-primary-glow transition-colors">Quên mật khẩu?</a>
+                                            <a href="#" className="text-xs text-primary hover:text-primary-glow transition-colors py-1 px-2 -mr-2 min-h-[44px] flex items-center">Quên mật khẩu?</a>
                                         </div>
                                         <Input
                                             type="password"
@@ -140,7 +140,7 @@ export function Login() {
 
                                     <Button
                                         type="submit"
-                                        className="w-full h-12 text-base font-bold shadow-glow hover:shadow-[0_0_30px_rgba(37,37,244,0.5)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group bg-primary hover:bg-blue-600"
+                                        className="w-full h-12 text-base font-bold shadow-glow hover:shadow-nebula-glow hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group bg-primary hover:bg-nebula-violet-dark"
                                         isLoading={busy}
                                     >
                                         <span>Đăng nhập</span>

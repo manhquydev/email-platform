@@ -55,7 +55,7 @@ export function FocusStreamLayout({
             case 'ENTERPRISE':
                 return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]">Enterprise</span>;
             case 'PROFESSIONAL':
-                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]">Pro</span>;
+                return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-nebula-cyan/10 text-nebula-cyan border border-nebula-cyan/20 shadow-[0_0_10px_rgba(6,182,212,0.2)]">Pro</span>;
             case 'STARTER':
                 return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]">Starter</span>;
             default:
@@ -102,7 +102,7 @@ export function FocusStreamLayout({
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-br from-bg via-slate-100 to-slate-200 dark:from-bg dark:via-[#0f1016] dark:to-[#0a0b0e]" />
                 <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary/5 dark:bg-primary/10 blur-[100px]" />
-                <div className="absolute bottom-[10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-blue-400/10 dark:bg-blue-600/10 blur-[80px]" />
+                <div className="absolute bottom-[10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-nebula-violet/10 dark:bg-nebula-violet/10 blur-[80px]" />
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
             </div>
 

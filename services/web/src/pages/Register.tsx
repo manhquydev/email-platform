@@ -170,7 +170,7 @@ export function Register() {
 
                         <Button
                             type="submit"
-                            className="w-full h-12 text-base font-bold shadow-glow hover:shadow-[0_0_30px_rgba(37,37,244,0.5)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group bg-primary hover:bg-blue-600"
+                            className="w-full h-12 text-base font-bold shadow-glow hover:shadow-nebula-glow hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group bg-primary hover:bg-nebula-violet-dark"
                             isLoading={busy}
                         >
                             <span>Tạo tài khoản</span>
@@ -180,7 +180,7 @@ export function Register() {
 
                     {/* Telegram hint - Guide users to link via bot after registration */}
                     {import.meta.env.VITE_TELEGRAM_BOT_USERNAME && (
-                        <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
+                        <div className="mt-4 p-3 rounded-lg bg-nebula-violet/10 border border-nebula-violet/20 text-sm text-nebula-violet-light">
                             <div className="flex items-start gap-2">
                                 <span className="text-lg">💡</span>
                                 <p>

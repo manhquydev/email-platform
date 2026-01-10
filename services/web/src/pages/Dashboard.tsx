@@ -621,7 +621,7 @@ export function Dashboard() {
                                 })()}
 
                                 {/* Email Body */}
-                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:!bg-nebula-elevated/80 border-2 border-nebula-border overflow-hidden shadow-sm">
+                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:bg-[var(--nebula-surface)] border-2 border-nebula-border overflow-hidden shadow-sm">
                                     {selectedMessage.htmlBody ? (
                                         <div className="prose dark:prose-invert max-w-none">
                                             <iframe

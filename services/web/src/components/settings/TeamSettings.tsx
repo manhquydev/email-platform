@@ -4,7 +4,7 @@ import { Input } from "../ui/Input";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../utils/api";
 import { toast } from "react-hot-toast";
-import type { Team, TeamMember, Inbox, TeamRole } from "../../types";
+import type { Team, Inbox, TeamRole } from "../../types";
 
 interface TeamSettingsProps {
     userInboxes?: Inbox[];

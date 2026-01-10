@@ -9,7 +9,7 @@ interface OnboardingStep {
 }
 
 interface OnboardingHintsProps {
-    steps: OnboardingStep[];
+    steps?: OnboardingStep[];
     storageKey?: string;
     onComplete?: () => void;
 }

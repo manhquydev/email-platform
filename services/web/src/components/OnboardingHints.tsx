@@ -17,34 +17,37 @@ interface OnboardingHintsProps {
 const defaultSteps: OnboardingStep[] = [
     {
         id: "welcome",
-        title: "Chào mừng đến Email Platform! 👋",
-        description: "Hãy cùng khám phá các tính năng chính của ứng dụng.",
+        title: "Chào mừng đến Ephemera! 🛡️",
+        description: "Nền tảng email tạm thời với chính sách Zero-Log. Không lưu IP gốc, không tracking pixels, không quảng cáo - chỉ có bảo mật.",
+    },
+    {
+        id: "privacy",
+        title: "Zero-Log: Cam kết bảo mật",
+        description: "• IP của bạn được ẩn danh hóa ngay khi nhận\n• Tracking pixels bị loại bỏ tự động\n• Headers nhạy cảm được lọc\n• Mã nguồn mở để kiểm chứng",
     },
     {
         id: "domains",
-        title: "Quản lý Tên miền",
-        description: "Thêm và xác thực tên miền của bạn để bắt đầu nhận email.",
+        title: "Chọn Tên miền",
+        description: "Sử dụng domain công khai hoặc thêm domain riêng của bạn để nhận email ẩn danh chuyên nghiệp.",
         targetSelector: "[data-onboarding='domains']",
         position: "bottom",
     },
     {
         id: "inbox",
-        title: "Tạo Hộp thư",
-        description: "Tạo các địa chỉ email tạm thời hoặc vĩnh viễn cho mỗi tên miền.",
+        title: "Tạo Email Tạm thời",
+        description: "Tạo địa chỉ email ngẫu nhiên hoặc tùy chọn. Email tự động hết hạn theo cấu hình - bạn kiểm soát hoàn toàn.",
         targetSelector: "[data-onboarding='inbox']",
         position: "right",
     },
     {
-        id: "search",
-        title: "Tìm kiếm Nhanh",
-        description: "Nhấn / để focus vào thanh tìm kiếm. Sử dụng from:, to:, has:attachment để lọc.",
-        targetSelector: "[data-onboarding='search']",
-        position: "bottom",
+        id: "api",
+        title: "Developer-Friendly API",
+        description: "REST API với webhooks realtime. Tích hợp CI/CD, tự động hóa kiểm thử, xây dựng ứng dụng của riêng bạn.",
     },
     {
         id: "shortcuts",
-        title: "Phím tắt",
-        description: "Nhấn ? để xem tất cả phím tắt. Sử dụng j/k để di chuyển giữa email.",
+        title: "Phím tắt & Tìm kiếm",
+        description: "Nhấn / để tìm kiếm, ? để xem phím tắt, j/k để di chuyển giữa email. Giao diện được tối ưu cho hiệu suất.",
     },
 ];
 

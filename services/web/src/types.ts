@@ -230,3 +230,43 @@ export interface RedemptionCode {
     createdAt: string;
     package?: ServicePackage;
 }
+
+// ==================
+// TEAMS
+// ==================
+
+export type TeamRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+
+export interface TeamMember {
+    id: string;
+    teamId: string;
+    userId: string;
+    role: TeamRole;
+    joinedAt: string;
+    user?: { id: string; email: string };
+}
+
+export interface TeamInbox {
+    id: string;
+    teamId: string;
+    inboxId: string;
+    addedAt: string;
+    addedBy: string;
+    inbox?: Inbox;
+}
+
+export interface Team {
+    id: string;
+    name: string;
+    description?: string;
+    ownerId: string;
+    createdAt: string;
+    updatedAt: string;
+    owner?: { id: string; email: string };
+    members?: TeamMember[];
+    sharedInboxes?: TeamInbox[];
+    _count?: {
+        members: number;
+        sharedInboxes: number;
+    };
+}

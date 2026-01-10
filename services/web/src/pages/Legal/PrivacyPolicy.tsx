@@ -16,10 +16,41 @@ export function PrivacyPolicy() {
 
                 <div className="mb-10 text-center">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 neo-text-gradient-aurora">Chính sách Bảo mật</h1>
-                    <p className="text-[var(--nebula-text-muted)] text-lg">Cập nhật lần cuối: Tháng 12, 2025</p>
+                    <p className="text-[var(--nebula-text-muted)] text-lg">Cập nhật lần cuối: Tháng 1, 2026</p>
+
+                    {/* Zero-Log Trust Badge */}
+                    <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 rounded-full bg-green-500/10 border border-green-500/30">
+                        <span className="material-symbols-outlined text-green-400 !text-[28px]">verified_user</span>
+                        <div className="text-left">
+                            <p className="text-green-400 font-bold text-sm">ZERO-LOG VERIFIED</p>
+                            <p className="text-green-300/70 text-xs">Không lưu IP, không theo dõi, không quảng cáo</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="prose prose-invert prose-lg max-w-none prose-headings:text-[var(--nebula-text)] prose-p:text-[var(--nebula-text-secondary)] prose-li:text-[var(--nebula-text-secondary)] prose-strong:text-[var(--nebula-text)]">
+                    {/* Zero-Log Commitment Section */}
+                    <section className="mb-8 p-6 rounded-xl bg-green-500/5 border border-green-500/20">
+                        <h2 className="flex items-center gap-2 !text-green-400">
+                            <span className="material-symbols-outlined">shield</span>
+                            Cam kết Zero-Log
+                        </h2>
+                        <p className="!text-green-300/80">
+                            <strong>Ephemera cam kết KHÔNG lưu trữ bất kỳ thông tin theo dõi nào:</strong>
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2 mt-2 !text-green-300/70">
+                            <li><strong>Không lưu địa chỉ IP:</strong> IP của bạn được ẩn danh hóa (truncate octet cuối) trước khi lưu</li>
+                            <li><strong>Không tracking pixels:</strong> Chúng tôi tự động loại bỏ tracking pixels từ email đến</li>
+                            <li><strong>Không quảng cáo:</strong> Không bao giờ có quảng cáo, không bán dữ liệu cho bên thứ 3</li>
+                            <li><strong>Không cookies theo dõi:</strong> Chỉ sử dụng cookies thiết yếu cho xác thực</li>
+                            <li><strong>Mã nguồn mở:</strong> Code được công khai để audit tại GitHub</li>
+                        </ul>
+                        <p className="mt-4 text-sm !text-green-300/60">
+                            Kiến trúc của chúng tôi được thiết kế để việc theo dõi là <em>không thể thực hiện được về mặt kỹ thuật</em>,
+                            không chỉ là lời hứa chính sách.
+                        </p>
+                    </section>
+
                     <section className="mb-8">
                         <h2>1. Thông tin chúng tôi thu thập</h2>
                         <h3 className="text-xl font-semibold mt-6 mb-3 text-[var(--nebula-text)]">Thông tin tài khoản</h3>

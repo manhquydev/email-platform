@@ -17,6 +17,8 @@ import { processFiltersForMessage } from './services/emailFilters';
 import { notifyNewEmail, notifyInboxTelegramSubscribers } from './services/telegram';
 import { forwardMessageIfMatched } from './services/emailForwarder';
 import { triggerWebhook } from './services/webhookService';
+import { anonymizeIp } from './utils/ip-anonymizer';
+import { sanitizeHtml, sanitizeHeaders } from './utils/email-sanitizer';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -177,8 +179,18 @@ export const setupEmailWorker = (logger: Logger) => {
                     throw new Error(`Invalid recipient ${primaryRecipient}`);
                 }
 
-                const htmlBody = typeof mail.html === "string" ? mail.html : "";
+                const rawHtmlBody = typeof mail.html === "string" ? mail.html : "";
                 const textBody = mail.text ?? "";
+
+                // Sanitize HTML to remove tracking pixels and privacy-invasive content
+                const sanitizeResult = sanitizeHtml(rawHtmlBody, { removeTrackingPixels: true, rewriteTrackingLinks: true });
+                const htmlBody = sanitizeResult.html;
+                if (sanitizeResult.trackingPixelsRemoved > 0 || sanitizeResult.linksRewritten > 0) {
+                    logger.info({
+                        trackingPixelsRemoved: sanitizeResult.trackingPixelsRemoved,
+                        linksRewritten: sanitizeResult.linksRewritten
+                    }, 'email sanitized for privacy');
+                }
 
                 const toAddress = addressToText(mail.to) ?? primaryRecipient;
                 const fromAddress = addressToText(mail.from as AddressObject | AddressObject[] | undefined);
@@ -239,10 +251,10 @@ export const setupEmailWorker = (logger: Logger) => {
                         receivedAt: new Date(),
                         textBody,
                         htmlBody,
-                        headers: headersToObject(mail.headers as Map<string, string | string[] | undefined>),
+                        headers: sanitizeHeaders(headersToObject(mail.headers as Map<string, string | string[] | undefined>)),
                         spamScore: spamResult.score,
                         size: rawContent.length,
-                        sourceIp,
+                        sourceIp: anonymizeIp(sourceIp),
                     },
                 });
 

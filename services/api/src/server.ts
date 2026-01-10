@@ -34,6 +34,8 @@ import { telegramAuthRoutes } from "./routes/telegram-auth";
 import { notificationRoutes } from "./routes/notifications";
 import { uploadRoutes } from "./routes/upload";
 import { apiKeysRoutes } from "./routes/api-keys";
+import { teamRoutes } from "./routes/teams";
+import { apiUsageRoutes } from "./routes/api-usage";
 import { setupSwagger } from "./plugins/swagger";
 import crypto from "crypto";
 import { prisma } from "./lib/prisma";
@@ -237,6 +239,8 @@ export const buildServer = () => {
   app.register(notificationRoutes, { prefix: "/notifications" });
   app.register(uploadRoutes, { prefix: "/uploads" });
   app.register(webhookRoutes);
+  app.register(teamRoutes);
+  app.register(apiUsageRoutes);
 
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);

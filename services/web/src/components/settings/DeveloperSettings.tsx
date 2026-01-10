@@ -5,6 +5,7 @@ import { Input } from "../ui/Input"; // Assuming Input component exists
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../utils/api";
 import { toast } from "react-hot-toast";
+import { WebhookLogs } from "./WebhookLogs";
 import type { Webhook } from "../../types";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -35,6 +36,7 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
     const [webhooksLoading, setWebhooksLoading] = useState(false);
     const [isWebhookModalOpen, setIsWebhookModalOpen] = useState(false);
+    const [selectedWebhookForLogs, setSelectedWebhookForLogs] = useState<Webhook | null>(null);
 
     // Webhook Form State
     const [newWebhookName, setNewWebhookName] = useState("");
@@ -284,6 +286,9 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
                                         </div>
                                     </div>
                                     <div className="flex gap-1 shrink-0">
+                                        <Button size="sm" variant="ghost" onClick={() => setSelectedWebhookForLogs(hook)} title="Xem lịch sử">
+                                            Logs
+                                        </Button>
                                         <Button size="sm" variant="ghost" onClick={() => handleTestWebhook(hook.id)} title="Gửi test payload">
                                             Test
                                         </Button>
@@ -354,6 +359,15 @@ export function DeveloperSettings({ }: DeveloperSettingsProps) {
                         </div>
                     </GlassCard>
                 </div>
+            )}
+
+            {/* Webhook Logs Modal */}
+            {selectedWebhookForLogs && (
+                <WebhookLogs
+                    webhookId={selectedWebhookForLogs.id}
+                    webhookName={selectedWebhookForLogs.name}
+                    onClose={() => setSelectedWebhookForLogs(null)}
+                />
             )}
         </div>
     );

@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import type { Domain, Inbox } from "../types";
 import { CountdownTimer } from "./CountdownTimer";
 import { generateRandomName } from "../utils/random";
+import { TrustBadge } from "./trust-badge";
 
 interface SidebarProps {
     domains: Domain[];
@@ -237,6 +238,11 @@ export function Sidebar({
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* Trust Badge Footer */}
+            <div className="p-3 border-t border-slate-200 dark:border-white/10">
+                <TrustBadge variant="compact" className="w-full justify-center" />
             </div>
         </div>
     );

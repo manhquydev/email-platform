@@ -3,9 +3,34 @@ import { appConfig } from "./config";
 import path from "path";
 import { promises as fs } from "fs";
 
+// Tier-based retention limits (in days)
+const TIER_RETENTION_LIMITS: Record<string, number> = {
+  FREE: 7,
+  STARTER: 30,
+  PROFESSIONAL: 90,
+  ENTERPRISE: 365,
+};
+
+// Get effective retention for a message based on inbox -> user -> tier -> global hierarchy
+const getEffectiveRetentionHours = (
+  inboxRetentionDays: number | null,
+  userRetentionDays: number | null,
+  userTier: string
+): number => {
+  // Priority: inbox-specific > user-specific > tier default > global config
+  if (inboxRetentionDays !== null) {
+    return inboxRetentionDays * 24;
+  }
+  if (userRetentionDays !== null) {
+    return userRetentionDays * 24;
+  }
+  const tierDefault = TIER_RETENTION_LIMITS[userTier] || TIER_RETENTION_LIMITS.FREE;
+  return tierDefault * 24;
+};
+
 export const runRetentionSweep = async (log: { info: Function; error: Function; warn?: Function }) => {
   const now = new Date();
-  const messageExpiry = new Date(now.getTime() - appConfig.messageTtlHours * 60 * 60 * 1000);
+  const globalMessageExpiry = new Date(now.getTime() - appConfig.messageTtlHours * 60 * 60 * 1000);
   const inboxExpiry = new Date(now.getTime() - appConfig.inboxTtlHours * 60 * 60 * 1000);
 
   const removeFiles = async (storageKeys: string[]) => {
@@ -20,15 +45,50 @@ export const runRetentionSweep = async (log: { info: Function; error: Function; 
   };
 
   try {
-    const expiredMessages = await prisma.message.findMany({
+    // Fetch all inboxes with their owners for custom retention calculation
+    const inboxesWithOwners = await prisma.inbox.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        retentionDays: true,
+        owner: {
+          select: {
+            retentionDays: true,
+            tier: true,
+          }
+        }
+      }
+    });
+
+    // Build a map of inbox ID to effective retention hours
+    const inboxRetentionMap = new Map<string, number>();
+    for (const inbox of inboxesWithOwners) {
+      const effectiveHours = getEffectiveRetentionHours(
+        inbox.retentionDays,
+        inbox.owner?.retentionDays ?? null,
+        inbox.owner?.tier ?? "FREE"
+      );
+      inboxRetentionMap.set(inbox.id, effectiveHours);
+    }
+
+    // Find expired messages - check each message against its inbox's effective retention
+    const allMessages = await prisma.message.findMany({
       where: {
         OR: [
-          { receivedAt: { lt: messageExpiry } },
-          { deletedAt: { lt: messageExpiry } },
+          { receivedAt: { lt: globalMessageExpiry } }, // Global fallback
+          { deletedAt: { lt: globalMessageExpiry } },
         ],
       },
       include: { attachments: true },
     });
+
+    // Filter messages based on their inbox's custom retention
+    const expiredMessages = allMessages.filter(msg => {
+      const inboxRetentionHours = inboxRetentionMap.get(msg.inboxId) ?? appConfig.messageTtlHours;
+      const messageExpiry = new Date(now.getTime() - inboxRetentionHours * 60 * 60 * 1000);
+      return msg.receivedAt < messageExpiry || (msg.deletedAt && msg.deletedAt < messageExpiry);
+    });
+
     const messageIds = expiredMessages.map((m) => m.id);
     await removeFiles(expiredMessages.flatMap((m) => m.attachments.map((a) => a.storageKey)));
     if (messageIds.length) {

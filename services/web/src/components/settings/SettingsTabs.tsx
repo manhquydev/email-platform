@@ -23,6 +23,10 @@ const tabs: TabConfig[] = [
     // Email group
     { id: 'filters', label: 'Bộ lọc', icon: 'filter_list', group: 'email' },
     { id: 'labels', label: 'Nhãn', icon: 'label', group: 'email' },
+    { id: 'retention', label: 'Lưu trữ', icon: 'schedule', group: 'email' },
+
+    // Collaboration group
+    { id: 'teams', label: 'Nhóm', icon: 'groups', group: 'collaboration' },
 
     // Developer group
     { id: 'developer', label: 'Khóa API', icon: 'code', group: 'developer' },

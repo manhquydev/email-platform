@@ -24,6 +24,7 @@ model User {
   credits                    Int                    @default(0)
   subscriptionEndsAt         DateTime?
   trialEndsAt                DateTime?
+  retentionDays              Int?                   // Custom retention period (null = use tier default)
   telegramChatId             String?                @unique
   telegramLinkedAt           DateTime?
   // Telegram Auth (Login Widget) - separate from chat notifications
@@ -54,6 +55,8 @@ model User {
   apiKeys                    ApiKey[]
   webhooks                   Webhook[]
   outboundMsgs               OutboundMessage[]
+  ownedTeams                 Team[]             @relation("TeamOwner")
+  teamMemberships            TeamMember[]       @relation("TeamMembership")
 }
 
 model ApiKey {
@@ -145,12 +148,14 @@ model Inbox {
   deletedAt       DateTime?
   claimedAt       DateTime         @default(now())
   ownerId         String?
+  retentionDays   Int?             // Custom retention period (null = use user/global default)
   emailFilters    EmailFilter[]
   forwardingRules ForwardingRule[]
   domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
   owner           User?            @relation(fields: [ownerId], references: [id])
   labels          Label[]
   messages        Message[]
+  teamInboxes     TeamInbox[]
 
   @@unique([domainId, localPart])
   @@index([ownerId])
@@ -676,4 +681,58 @@ enum BounceType {
   HARD // Permanent - email does not exist
   SOFT // Temporary - mailbox full, server down
   COMPLAINT // Spam complaint
+}
+
+// Phase 08: Team Shared Inboxes
+
+model Team {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  owner       User         @relation("TeamOwner", fields: [ownerId], references: [id])
+  members     TeamMember[]
+  sharedInboxes TeamInbox[]
+
+  @@index([ownerId])
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  teamId    String
+  userId    String
+  role      TeamRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  team User @relation("TeamMembership", fields: [userId], references: [id])
+  teamRef Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@index([teamId])
+}
+
+model TeamInbox {
+  id        String   @id @default(uuid())
+  teamId    String
+  inboxId   String
+  addedAt   DateTime @default(now())
+  addedBy   String
+
+  team  Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  inbox Inbox @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, inboxId])
+  @@index([teamId])
+  @@index([inboxId])
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }

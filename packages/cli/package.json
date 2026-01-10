@@ -1,0 +1,46 @@
+{
+  "name": "@ephemera/cli",
+  "version": "1.0.0",
+  "description": "Command-line interface for Ephemera Email Platform",
+  "bin": {
+    "ephemera": "./dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/cli.ts --format cjs --dts --clean",
+    "dev": "tsup src/cli.ts --format cjs --watch",
+    "start": "node dist/cli.js",
+    "lint": "eslint src/",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ephemera",
+    "email",
+    "cli",
+    "temporary-email",
+    "disposable-email"
+  ],
+  "author": "Ephemera Team",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.3",
+    "commander": "^11.1.0",
+    "conf": "^10.2.0",
+    "inquirer": "^8.2.6",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.10.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

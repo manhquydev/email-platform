@@ -90,6 +90,19 @@ export function LandingPage() {
                         </Link>
                     </div>
 
+                    {/* Trust Badge - Hero Section */}
+                    <div className="mt-8 neo-animate-fade-in-up neo-stagger-3">
+                        <Link
+                            to="/privacy"
+                            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/15 hover:border-green-500/50 transition-all group"
+                        >
+                            <span className="material-symbols-outlined text-green-400 !text-[20px]">verified_user</span>
+                            <span className="text-green-400 font-medium text-sm">ZERO-LOG PRIVACY</span>
+                            <span className="text-green-300/50 text-xs hidden sm:inline">Không IP · Không Tracking · Mã nguồn mở</span>
+                            <span className="material-symbols-outlined text-green-400/50 !text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </Link>
+                    </div>
+
                     {/* Terminal/Code Preview */}
                     <div id="how-it-works" className="mt-20 mx-auto max-w-4xl perspective-1000 neo-animate-fade-in-up neo-stagger-4 scroll-mt-32">
                         <div className="bg-[var(--nebula-surface)]/80 backdrop-blur-xl rounded-xl overflow-hidden border border-[var(--nebula-border)] shadow-2xl transform rotate-x-12 hover:rotate-0 transition-transform duration-700 ease-out">

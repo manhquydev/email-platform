@@ -13,6 +13,7 @@ import { AppShell } from "../layouts/AppShell";
 import { Sidebar } from "../components/Sidebar";
 import { extractOTP } from "../utils/otpExtractor";
 import { ConfirmationModal } from "../components/ConfirmationModal";
+import { OnboardingHints } from "../components/OnboardingHints";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { EmailStream } from "../components/EmailStream";
@@ -792,6 +793,9 @@ export function Dashboard() {
                     onConfirm={confirmDeleteInbox}
                     onCancel={() => setInboxToDelete(null)}
                 />
+
+                {/* Onboarding Wizard for new users */}
+                <OnboardingHints />
             </div>
         </AppShell >
     );

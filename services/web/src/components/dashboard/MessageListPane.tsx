@@ -125,7 +125,7 @@ export function MessageListPane({
                         <span className="text-[10px] font-bold text-nebula-text-muted uppercase tracking-wider">{activeDomain?.name}</span>
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-nebula-text">
-                                {activeInbox ? `${activeInbox.localPart}@${activeDomain?.name}` : "Chọn hộp thư"}
+                                {activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name || activeDomain?.name}` : "Chọn hộp thư"}
                             </span>
                         </div>
                     </div>

@@ -49,7 +49,7 @@ export function NotificationCenter() {
     const buttonRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
         if (!token) return;
         try {
             const res = await api<{ notifications: Notification[], unreadCount: number }>('/notifications', { token });
@@ -58,7 +58,7 @@ export function NotificationCenter() {
         } catch (e) {
             console.error('Failed to fetch notifications', e);
         }
-    };
+    }, [token]);
 
     const calculatePosition = useCallback(() => {
         if (!buttonRef.current) return;
@@ -101,10 +101,11 @@ export function NotificationCenter() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Initial fetch on mount is valid
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
-    }, [token]);
+    }, [fetchNotifications]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {

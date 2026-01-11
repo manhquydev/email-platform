@@ -6,6 +6,7 @@ import { useLocalStorage } from "../hooks/useLocalStorage";
 import { api } from "../utils/api";
 import type { User } from "../types";
 import { Loading } from "../components/Loading";
+import { clarityTrack, clarityIdentify, claritySetTag } from "../hooks/useClarity";
 
 interface AuthContextType {
     token: string;
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [initializing, setInitializing] = useState(true);
 
     const logout = () => {
+        clarityTrack("logout");
         setToken("");
         setUser(null);
         toast.success("Đã đăng xuất");
@@ -40,6 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (res.token && res.user) {
                 setToken(res.token);
                 setUser(res.user);
+                // Track login in Clarity
+                clarityIdentify(res.user.id, undefined, res.user.email);
+                claritySetTag("user_role", res.user.role);
+                if (res.user.tier) claritySetTag("tier", res.user.tier);
+                clarityTrack("login");
                 toast.success("Đăng nhập thành công");
             }
             return res;
@@ -61,6 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             setToken(res.token);
             setUser(res.user);
+            // Track 2FA verification in Clarity
+            clarityIdentify(res.user.id, undefined, res.user.email);
+            claritySetTag("user_role", res.user.role);
+            if (res.user.tier) claritySetTag("tier", res.user.tier);
+            clarityTrack("login_2fa");
             toast.success("Xác thực thành công");
         } catch (e) {
             const msg = (e as Error).toString();

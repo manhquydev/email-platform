@@ -7,6 +7,7 @@ import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
     TableBody, TableRow, TableCell, PremiumButton, LoadingSpinner, Pagination
 } from "../../components/admin/AdminUIComponents";
+import { ClarityLinksGroup } from "../../components/admin/ClarityLinkButton";
 
 interface AnalyticsStats {
     totalSearches: number;
@@ -141,6 +142,17 @@ export function AnalyticsPage() {
                 title="Public Inbox Viewer Analytics"
                 subtitle="Theo dõi hoạt động truy cập công khai vào hòm thư"
             />
+
+            {/* Clarity Deep Links */}
+            <GlassCard className="p-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-sm font-semibold text-nebula-text">Microsoft Clarity</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">Session recordings, heatmaps & user insights</p>
+                    </div>
+                    <ClarityLinksGroup />
+                </div>
+            </GlassCard>
 
             {/* Time Range Filter */}
             <div className="flex items-center gap-4">

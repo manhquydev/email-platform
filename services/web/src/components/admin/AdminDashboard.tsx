@@ -9,6 +9,7 @@ import {
 } from "recharts";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { ClaritySection } from "./ClarityInsightsWidget";
 
 interface Stats {
     totalUsers: number;
@@ -381,6 +382,11 @@ export function AdminDashboard({ token }: { token: string }) {
 
             {/* Bento Grid Layout */}
             <div className="grid grid-cols-12 gap-4">
+                {/* Clarity Live Insights */}
+                <div className="col-span-12">
+                    <ClaritySection />
+                </div>
+
                 {/* Stats Cards - Row 1 */}
                 {statCards.map((card, i) => (
                     <div key={i} className="col-span-6 md:col-span-3">

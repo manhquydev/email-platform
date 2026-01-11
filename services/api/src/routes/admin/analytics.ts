@@ -7,7 +7,61 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 
+// Cache for Clarity API rate limit protection
+let clarityCache: { data: unknown; timestamp: number } | null = null;
+const CLARITY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export async function adminAnalyticsRoutes(app: FastifyInstance) {
+  /**
+   * GET /admin/analytics/clarity/live-insights
+   * Proxy to Clarity Data Export API
+   */
+  app.get("/admin/analytics/clarity/live-insights", { preHandler: app.requireAdmin }, async (_request, reply) => {
+    // Check cache first
+    if (clarityCache && Date.now() - clarityCache.timestamp < CLARITY_CACHE_TTL) {
+      return { ...(clarityCache.data as object), cached: true };
+    }
+
+    const token = process.env.CLARITY_API_TOKEN;
+    if (!token) {
+      return reply.status(503).send({
+        error: "Clarity API not configured",
+        message: "CLARITY_API_TOKEN environment variable not set"
+      });
+    }
+
+    try {
+      const response = await fetch(
+        "https://www.clarity.ms/export-data/api/v1/project-live-insights",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Clarity API error:", response.status, errorText);
+        return reply.status(response.status).send({
+          error: "Clarity API error",
+          status: response.status
+        });
+      }
+
+      const data = await response.json();
+
+      // Update cache
+      clarityCache = { data, timestamp: Date.now() };
+
+      return { ...data, cached: false };
+    } catch (error) {
+      console.error("Clarity API fetch error:", error);
+      return reply.status(500).send({ error: "Failed to fetch Clarity data" });
+    }
+  });
+
   /**
    * GET /admin/analytics/public-viewer
    * Dashboard stats for public inbox viewer

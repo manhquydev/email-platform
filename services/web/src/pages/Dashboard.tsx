@@ -18,6 +18,7 @@ import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { EmailStream } from "../components/EmailStream";
 import { cn } from "../utils/cn";
+import { clarityTrack } from "../hooks/useClarity";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 // Lazy load heavy modal components
@@ -220,6 +221,7 @@ export function Dashboard() {
         setBusy(true);
         try {
             await api("/domains", { method: "POST", token, body: { name } });
+            clarityTrack("domain_created");
             toast.success("Đã thêm tên miền");
             await loadDomains();
         } catch (e) {
@@ -231,6 +233,7 @@ export function Dashboard() {
         setBusy(true);
         try {
             await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: verifyToken } });
+            clarityTrack("domain_verified");
             toast.success("Đã xác thực tên miền!");
             await loadDomains();
         } catch (error) { toast.error("Lỗi xác thực: " + (error as Error).message); } finally { setBusy(false); }

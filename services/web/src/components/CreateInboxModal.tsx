@@ -9,6 +9,7 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { cn } from '../utils/cn';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { clarityTrack } from '../hooks/useClarity';
 
 interface CreateInboxModalProps {
     domains: Domain[];
@@ -54,6 +55,7 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
             // Manually attach domain since API might not return included relation
             const newInbox = { ...res.inbox, domain: activeDomain };
 
+            clarityTrack("inbox_created");
             toast.success('Đã tạo hộp thư mới!');
             onInboxCreated?.(newInbox);
             onClose();

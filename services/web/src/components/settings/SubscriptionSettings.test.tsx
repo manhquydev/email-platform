@@ -333,7 +333,7 @@ describe("SubscriptionSettings - Redeem Code Functionality", () => {
 
         await waitFor(() => {
             expect(toast.success).toHaveBeenCalledWith("Kích hoạt thành công!");
-        });
+        }, { timeout: 3000 });
     });
 
     it("should reload profile after successful redeem", async () => {

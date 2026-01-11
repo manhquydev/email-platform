@@ -107,12 +107,12 @@ export function FocusStreamLayout({
             </div>
 
             {/* Notification Center - Absolute Top Right */}
-            <div className="absolute top-4 right-4 z-[60]">
+            <div className="absolute top-4 right-24 z-[60]">
                 <NotificationCenter />
             </div>
 
             {/* Header with InboxSelector - Fixed top */}
-            <div className="fixed top-0 left-20 right-16 z-[55] h-16 flex items-center px-4 bg-bg/80 backdrop-blur-lg border-b border-white/5">
+            <div className="fixed top-0 left-0 right-20 z-[55] h-16 flex items-center px-4 bg-bg/80 backdrop-blur-lg border-b border-white/5">
                 <InboxSelector
                     domains={domains}
                     inboxes={inboxes}
@@ -132,8 +132,8 @@ export function FocusStreamLayout({
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsMobileNavOpen(false)} />
             )}
 
-            {/* Replaced IconRail with NavigationSidebar */}
-            <div className="fixed left-0 top-0 bottom-0 z-30 flex">
+            {/* NavigationSidebar on the RIGHT to match AppShell */}
+            <div className="fixed right-0 top-0 bottom-0 z-30 flex">
                 <NavigationSidebar
                     isExpanded={isNavExpanded}
                     onNavToggle={handleNavToggle}
@@ -142,7 +142,7 @@ export function FocusStreamLayout({
 
             {/* User Menu Dropdown */}
             {showUserMenu && (
-                <div className="fixed bottom-20 left-4 md:left-20 z-50 min-w-[200px] animate-fade-in-up">
+                <div className="fixed bottom-20 right-4 md:right-20 z-50 min-w-[200px] animate-fade-in-up">
                     <div className="bg-white/80 dark:bg-surface/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden p-1">
                         <div className="px-3 py-2 border-b border-slate-100 dark:border-white/15 mb-1">
                             <div className="flex items-center gap-2 mb-0.5">
@@ -185,7 +185,7 @@ export function FocusStreamLayout({
             <AnimatePresence mode="wait">
                 <motion.main
                     key={location.pathname}
-                    className="relative z-10 w-full md:pl-20 pt-16 min-h-screen pb-20 md:pb-0"
+                    className="relative z-10 w-full md:pr-20 pt-16 min-h-screen pb-20 md:pb-0"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}

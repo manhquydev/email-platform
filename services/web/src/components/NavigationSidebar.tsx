@@ -30,7 +30,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
         <aside
             className={cn(
                 "hidden md:flex flex-col h-full shrink-0 transition-all duration-300",
-                "glass-panel border-r border-nebula-border", // Fixed border contrast
+                "glass-panel border-l border-nebula-border", // Changed to border-l for right positioning
                 isExpanded ? "w-64" : "w-20"
             )}
         >
@@ -76,6 +76,19 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                                 )}
                             </>
                         )}
+                    </Link>
+
+                    <Link
+                        to="/app/manager"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
+                            isActive("/app/manager")
+                                ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                : "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
+                        )}
+                        title="Quản lý hộp thư">
+                        <span className="material-symbols-outlined text-[24px] shrink-0">folder_managed</span>
+                        {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Quản lý</span>}
                     </Link>
 
                     <Link to="/my-domains"

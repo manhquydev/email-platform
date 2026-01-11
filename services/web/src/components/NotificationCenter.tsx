@@ -16,9 +16,11 @@ interface Notification {
 }
 
 interface DropdownPosition {
-    top: number;
+    top?: number;
+    bottom?: number;
     left: number;
     width?: number;
+    maxHeight?: number;
 }
 
 
@@ -63,11 +65,33 @@ export function NotificationCenter() {
         const rect = buttonRef.current.getBoundingClientRect();
         const isMobile = window.innerWidth < 768;
         const dropdownWidth = isMobile ? window.innerWidth - 32 : 384;
+        const dropdownHeight = 450;
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
         if (isMobile) {
-            setPosition({ top: rect.bottom + 12, left: 16, width: dropdownWidth });
+            setPosition({
+                top: rect.bottom + 12,
+                left: 16,
+                width: dropdownWidth,
+                maxHeight: Math.min(dropdownHeight, spaceBelow - 24)
+            });
         } else {
             const left = rect.right - dropdownWidth;
-            setPosition({ top: rect.bottom + 12, left: Math.max(16, left) });
+            if (spaceBelow < dropdownHeight + 24 && spaceAbove > spaceBelow) {
+                setPosition({
+                    bottom: viewportHeight - rect.top + 12,
+                    left: Math.max(16, left),
+                    maxHeight: Math.min(dropdownHeight, spaceAbove - 24)
+                });
+            } else {
+                setPosition({
+                    top: rect.bottom + 12,
+                    left: Math.max(16, left),
+                    maxHeight: Math.min(dropdownHeight, spaceBelow - 24)
+                });
+            }
         }
     }, []);
 
@@ -120,7 +144,7 @@ export function NotificationCenter() {
         <div
             ref={dropdownRef}
             className="fixed bg-white dark:bg-slate-900 shadow-2xl shadow-black/20 rounded-2xl z-[9999] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-black/10 dark:ring-white/10"
-            style={{ top: position.top, left: position.left, width: position.width || 384, maxHeight: 'calc(100vh - 100px)' }}
+            style={{ top: position.top, bottom: position.bottom, left: position.left, width: position.width || 384, maxHeight: position.maxHeight || 450 }}
         >
             <div className="px-5 py-4 border-b border-black/5 dark:border-white/10 flex justify-between items-center bg-gray-50/80 dark:bg-slate-800/80">
                 <h3 className="font-semibold text-sm tracking-tight text-gray-900 dark:text-white">THONG BAO</h3>

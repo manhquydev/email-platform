@@ -52,7 +52,7 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
       setRules(rulesData);
       setTemplates(templatesData);
     } catch (err) {
-      toast.error('Failed to load visibility rules');
+      toast.error('Không thể tải quy tắc hiển thị');
     } finally {
       setLoading(false);
     }
@@ -67,21 +67,21 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
     try {
       await updateVisibilityRule(rule.id, { isEnabled: !rule.isEnabled }, token);
       setRules(prev => prev.map(r => r.id === rule.id ? { ...r, isEnabled: !r.isEnabled } : r));
-      toast.success(rule.isEnabled ? 'Rule disabled' : 'Rule enabled');
+      toast.success(rule.isEnabled ? 'Đã tắt quy tắc' : 'Đã bật quy tắc');
     } catch {
-      toast.error('Failed to update rule');
+      toast.error('Không thể cập nhật quy tắc');
     }
   };
 
   const handleDelete = async (rule: VisibilityRule) => {
     if (!token) return;
-    if (!confirm(`Delete rule "${rule.name}"?`)) return;
+    if (!confirm(`Xóa quy tắc "${rule.name}"?`)) return;
     try {
       await deleteVisibilityRule(rule.id, token);
       setRules(prev => prev.filter(r => r.id !== rule.id));
-      toast.success('Rule deleted');
+      toast.success('Đã xóa quy tắc');
     } catch {
-      toast.error('Failed to delete rule');
+      toast.error('Không thể xóa quy tắc');
     }
   };
 
@@ -90,9 +90,9 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
     try {
       const newRule = await applyVisibilityTemplate(inboxId, templateId, undefined, token);
       setRules(prev => [...prev, newRule]);
-      toast.success('Template applied');
+      toast.success('Đã áp dụng mẫu');
     } catch {
-      toast.error('Failed to apply template');
+      toast.error('Không thể áp dụng mẫu');
     }
   };
 
@@ -104,7 +104,7 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
       setTestResults(results);
       setShowTestModal(true);
     } catch {
-      toast.error('Failed to test rules');
+      toast.error('Không thể kiểm tra quy tắc');
     } finally {
       setTesting(false);
     }
@@ -124,16 +124,16 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
       if (editingRule) {
         const updated = await updateVisibilityRule(editingRule.id, data, token);
         setRules(prev => prev.map(r => r.id === editingRule.id ? updated : r));
-        toast.success('Rule updated');
+        toast.success('Đã cập nhật quy tắc');
       } else {
         const created = await createVisibilityRule(inboxId, data, token);
         setRules(prev => [...prev, created]);
-        toast.success('Rule created');
+        toast.success('Đã tạo quy tắc');
       }
       setShowEditor(false);
       setEditingRule(null);
     } catch {
-      toast.error('Failed to save rule');
+      toast.error('Không thể lưu quy tắc');
     }
   };
 
@@ -143,7 +143,7 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <div>
-            <h2 className="text-lg font-bold text-text-main">Visibility Rules</h2>
+            <h2 className="text-lg font-bold text-text-main">Quy tắc hiển thị</h2>
             <p className="text-xs text-text-secondary">{inboxEmail}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -152,13 +152,13 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
               disabled={testing || rules.length === 0}
               className="px-3 py-1.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors disabled:opacity-50"
             >
-              {testing ? 'Testing...' : 'Test Rules'}
+              {testing ? 'Đang kiểm tra...' : 'Kiểm tra quy tắc'}
             </button>
             <button
               onClick={() => { setEditingRule(null); setShowEditor(true); }}
               className="px-3 py-1.5 text-xs font-medium bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors"
             >
-              + Add Rule
+              + Thêm quy tắc
             </button>
             <button
               onClick={onClose}
@@ -175,7 +175,7 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
         {templates.length > 0 && (
           <div className="p-4 border-b border-white/5 bg-surface/30">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-text-secondary">Quick Templates:</span>
+              <span className="text-xs text-text-secondary">Mẫu nhanh:</span>
               {templates.slice(0, 5).map(t => (
                 <button
                   key={t.id}
@@ -197,8 +197,8 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
             </div>
           ) : rules.length === 0 ? (
             <div className="text-center py-12 text-text-secondary">
-              <p className="mb-4">No visibility rules configured</p>
-              <p className="text-xs">Add rules to control which emails are visible to public viewers</p>
+              <p className="mb-4">Chưa có quy tắc hiển thị nào</p>
+              <p className="text-xs">Thêm quy tắc để kiểm soát email nào được hiển thị công khai</p>
             </div>
           ) : (
             rules.map(rule => (
@@ -335,11 +335,11 @@ function RuleEditorModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || conditions.length === 0) {
-      toast.error('Name and at least one condition required');
+      toast.error('Cần có tên và ít nhất một điều kiện');
       return;
     }
     if (conditions.some(c => !c.value.trim())) {
-      toast.error('All conditions must have a value');
+      toast.error('Tất cả điều kiện phải có giá trị');
       return;
     }
     setSaving(true);
@@ -355,66 +355,66 @@ function RuleEditorModal({
       <GlassCard className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl overflow-hidden">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <div className="p-4 border-b border-white/10">
-            <h3 className="font-bold text-text-main">{rule ? 'Edit Rule' : 'New Rule'}</h3>
+            <h3 className="font-bold text-text-main">{rule ? 'Sửa quy tắc' : 'Quy tắc mới'}</h3>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Name */}
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Rule Name</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1">Tên quy tắc</label>
               <input
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main placeholder-text-secondary focus:outline-none focus:border-primary"
-                placeholder="e.g., Hide Verification Emails"
+                placeholder="VD: Ẩn email xác minh"
                 required
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Description (optional)</label>
+              <label className="block text-xs font-medium text-text-secondary mb-1">Mô tả (tùy chọn)</label>
               <input
                 type="text"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main placeholder-text-secondary focus:outline-none focus:border-primary"
-                placeholder="What does this rule do?"
+                placeholder="Quy tắc này dùng để làm gì?"
               />
             </div>
 
             {/* Rule Type & Match Type */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Action</label>
+                <label className="block text-xs font-medium text-text-secondary mb-1">Hành động</label>
                 <select
                   value={ruleType}
                   onChange={e => setRuleType(e.target.value as VisibilityRuleType)}
                   className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main focus:outline-none focus:border-primary"
                 >
-                  <option value="HIDE">🚫 Hide - Don't show matching emails</option>
-                  <option value="SHOW_ONLY">✅ Show Only - Only show matching emails</option>
-                  <option value="WARN">⚠️ Warn - Show with warning</option>
-                  <option value="REDACT">🔒 Redact - Hide content</option>
+                  <option value="HIDE">🚫 Ẩn - Không hiển thị email khớp</option>
+                  <option value="SHOW_ONLY">✅ Chỉ hiển thị - Chỉ hiển thị email khớp</option>
+                  <option value="WARN">⚠️ Cảnh báo - Hiển thị kèm cảnh báo</option>
+                  <option value="REDACT">🔒 Che giấu - Ẩn nội dung</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Match</label>
+                <label className="block text-xs font-medium text-text-secondary mb-1">Điều kiện</label>
                 <select
                   value={matchType}
                   onChange={e => setMatchType(e.target.value as VisibilityMatchType)}
                   className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main focus:outline-none focus:border-primary"
                 >
-                  <option value="ALL">ALL conditions must match</option>
-                  <option value="ANY">ANY condition matches</option>
+                  <option value="ALL">TẤT CẢ điều kiện phải khớp</option>
+                  <option value="ANY">BẤT KỲ điều kiện nào khớp</option>
                 </select>
               </div>
             </div>
 
             {/* Conditions */}
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-2">Conditions</label>
+              <label className="block text-xs font-medium text-text-secondary mb-2">Điều kiện</label>
               <div className="space-y-2">
                 {conditions.map((condition, index) => (
                   <div key={index} className="flex items-center gap-2 p-2 bg-surface/30 rounded-lg">
@@ -447,7 +447,7 @@ function RuleEditorModal({
                       type="text"
                       value={condition.value}
                       onChange={e => updateCondition(index, { value: e.target.value })}
-                      placeholder={condition.field === 'HAS_ATTACHMENT' ? 'true or false' : 'Value...'}
+                      placeholder={condition.field === 'HAS_ATTACHMENT' ? 'true hoặc false' : 'Giá trị...'}
                       className="flex-1 px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
                     />
                     <label className="flex items-center gap-1 text-[10px] text-text-secondary">
@@ -457,7 +457,7 @@ function RuleEditorModal({
                         onChange={e => updateCondition(index, { negate: e.target.checked })}
                         className="w-3 h-3"
                       />
-                      NOT
+                      KHÔNG
                     </label>
                     {conditions.length > 1 && (
                       <button
@@ -478,14 +478,14 @@ function RuleEditorModal({
                 onClick={addCondition}
                 className="mt-2 text-xs text-primary hover:underline"
               >
-                + Add Condition
+                + Thêm điều kiện
               </button>
             </div>
 
             {/* Priority */}
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-1">
-                Priority: {priority} (higher = runs first)
+                Độ ưu tiên: {priority} (cao hơn = chạy trước)
               </label>
               <input
                 type="range"
@@ -505,7 +505,7 @@ function RuleEditorModal({
                 onChange={e => setIsEnabled(e.target.checked)}
                 className="w-4 h-4"
               />
-              <span className="text-sm text-text-main">Enable this rule</span>
+              <span className="text-sm text-text-main">Bật quy tắc này</span>
             </label>
           </div>
 
@@ -515,14 +515,14 @@ function RuleEditorModal({
               onClick={onClose}
               className="px-4 py-2 text-sm text-text-secondary hover:text-text-main"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               disabled={saving}
               className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Save Rule'}
+              {saving ? 'Đang lưu...' : 'Lưu quy tắc'}
             </button>
           </div>
         </form>
@@ -552,7 +552,7 @@ function TestResultsModal({
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60">
       <GlassCard className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
-          <h3 className="font-bold text-text-main">Test Results</h3>
+          <h3 className="font-bold text-text-main">Kết quả kiểm tra</h3>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-text-secondary">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -564,23 +564,23 @@ function TestResultsModal({
         <div className="p-4 border-b border-white/5 bg-surface/30 grid grid-cols-5 gap-2 text-center">
           <div>
             <div className="text-lg font-bold text-text-main">{summary.total}</div>
-            <div className="text-[10px] text-text-secondary">Total</div>
+            <div className="text-[10px] text-text-secondary">Tổng</div>
           </div>
           <div>
             <div className="text-lg font-bold text-green-400">{summary.shown}</div>
-            <div className="text-[10px] text-text-secondary">Shown</div>
+            <div className="text-[10px] text-text-secondary">Hiển thị</div>
           </div>
           <div>
             <div className="text-lg font-bold text-red-400">{summary.hidden}</div>
-            <div className="text-[10px] text-text-secondary">Hidden</div>
+            <div className="text-[10px] text-text-secondary">Đã ẩn</div>
           </div>
           <div>
             <div className="text-lg font-bold text-yellow-400">{summary.warned}</div>
-            <div className="text-[10px] text-text-secondary">Warned</div>
+            <div className="text-[10px] text-text-secondary">Cảnh báo</div>
           </div>
           <div>
             <div className="text-lg font-bold text-purple-400">{summary.redacted}</div>
-            <div className="text-[10px] text-text-secondary">Redacted</div>
+            <div className="text-[10px] text-text-secondary">Che giấu</div>
           </div>
         </div>
 
@@ -590,10 +590,10 @@ function TestResultsModal({
             <div key={item.messageId} className="flex items-center gap-3 p-2 bg-surface/30 rounded-lg">
               <span className="text-lg">{actionIcons[item.action]}</span>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-text-main truncate">{item.subject || '(No Subject)'}</div>
+                <div className="text-sm text-text-main truncate">{item.subject || '(Không có tiêu đề)'}</div>
                 <div className="text-[10px] text-text-secondary">
-                  From: {item.fromAddress || 'Unknown'}
-                  {item.matchedRule && ` • Matched: ${item.matchedRule.name}`}
+                  Từ: {item.fromAddress || 'Không rõ'}
+                  {item.matchedRule && ` • Khớp: ${item.matchedRule.name}`}
                 </div>
               </div>
               <span className={cn(

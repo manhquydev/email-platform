@@ -147,34 +147,34 @@ export async function testVisibilityRules(
 
 // Field display labels
 export const FIELD_LABELS: Record<string, string> = {
-  FROM: 'From (Sender)',
-  TO: 'To (Recipient)',
-  SUBJECT: 'Subject',
-  BODY: 'Body Content',
-  HEADER: 'Header',
-  SIZE: 'Size (bytes)',
-  SPAM_SCORE: 'Spam Score',
-  HAS_ATTACHMENT: 'Has Attachment',
+  FROM: 'Người gửi',
+  TO: 'Người nhận',
+  SUBJECT: 'Tiêu đề',
+  BODY: 'Nội dung',
+  HEADER: 'Tiêu đề thư',
+  SIZE: 'Kích thước (bytes)',
+  SPAM_SCORE: 'Điểm spam',
+  HAS_ATTACHMENT: 'Có tệp đính kèm',
 };
 
 // Operator display labels
 export const OPERATOR_LABELS: Record<string, string> = {
-  EQUALS: 'Equals',
-  CONTAINS: 'Contains',
-  STARTS_WITH: 'Starts With',
-  ENDS_WITH: 'Ends With',
-  REGEX: 'Matches Regex',
-  IN: 'In List',
-  GT: 'Greater Than',
-  LT: 'Less Than',
+  EQUALS: 'Bằng',
+  CONTAINS: 'Chứa',
+  STARTS_WITH: 'Bắt đầu bằng',
+  ENDS_WITH: 'Kết thúc bằng',
+  REGEX: 'Khớp Regex',
+  IN: 'Trong danh sách',
+  GT: 'Lớn hơn',
+  LT: 'Nhỏ hơn',
 };
 
 // Rule type display info
 export const RULE_TYPE_INFO: Record<VisibilityRuleType, { label: string; color: string; icon: string }> = {
-  HIDE: { label: 'Hide', color: 'red', icon: '🚫' },
-  SHOW_ONLY: { label: 'Show Only', color: 'green', icon: '✅' },
-  WARN: { label: 'Warning', color: 'yellow', icon: '⚠️' },
-  REDACT: { label: 'Redact', color: 'purple', icon: '🔒' },
+  HIDE: { label: 'Ẩn', color: 'red', icon: '🚫' },
+  SHOW_ONLY: { label: 'Chỉ hiển thị', color: 'green', icon: '✅' },
+  WARN: { label: 'Cảnh báo', color: 'yellow', icon: '⚠️' },
+  REDACT: { label: 'Che giấu', color: 'purple', icon: '🔒' },
 };
 
 // Get valid operators for a field

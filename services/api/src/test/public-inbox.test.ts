@@ -9,6 +9,7 @@ describe("Public Inbox API", () => {
     let testInboxId: string;
     let testMessageId: string;
     let testDomainId: string;
+    let privateInboxId: string;
 
     beforeAll(async () => {
         app = buildServer();
@@ -20,12 +21,19 @@ describe("Public Inbox API", () => {
         });
         testDomainId = domain.id;
 
+        // Create PUBLIC inbox for testing
         const inbox = await prisma.inbox.create({
-            data: { domainId: domain.id, localPart: "testuser" },
+            data: { domainId: domain.id, localPart: "testuser", shareMode: "PUBLIC" },
         });
         testInboxId = inbox.id;
 
-        // Create test message
+        // Create PRIVATE inbox for testing
+        const privateInbox = await prisma.inbox.create({
+            data: { domainId: domain.id, localPart: "privateuser", shareMode: "PRIVATE" },
+        });
+        privateInboxId = privateInbox.id;
+
+        // Create test message for public inbox
         const message = await prisma.message.create({
             data: {
                 inboxId: inbox.id,
@@ -36,12 +44,22 @@ describe("Public Inbox API", () => {
             },
         });
         testMessageId = message.id;
+
+        // Create test message for private inbox
+        await prisma.message.create({
+            data: {
+                inboxId: privateInbox.id,
+                fromAddress: "sender@example.com",
+                subject: "Private Message",
+                textBody: "Private content",
+            },
+        });
     });
 
     afterAll(async () => {
         // Cleanup in correct order due to foreign keys
-        await prisma.message.deleteMany({ where: { inboxId: testInboxId } });
-        await prisma.inbox.delete({ where: { id: testInboxId } }).catch(() => {});
+        await prisma.message.deleteMany({ where: { inboxId: { in: [testInboxId, privateInboxId] } } });
+        await prisma.inbox.deleteMany({ where: { id: { in: [testInboxId, privateInboxId] } } });
         await prisma.domain.delete({ where: { id: testDomainId } }).catch(() => {});
         await app.close();
     });
@@ -132,5 +150,64 @@ describe("Public Inbox API", () => {
         });
 
         expect(res.statusCode).toBe(404);
+    });
+
+    // Share Mode Tests
+    it("POST /api/public/inbox/search - returns 403 for PRIVATE inbox", async () => {
+        const res = await app.inject({
+            method: "POST",
+            url: "/api/public/inbox/search",
+            payload: { email: "privateuser@test-public.example.com" },
+        });
+
+        expect(res.statusCode).toBe(403);
+        const body = JSON.parse(res.payload);
+        expect(body.code).toBe("INBOX_PRIVATE");
+        expect(body.error).toContain("private");
+    });
+
+    it("GET /api/public/inbox/:email/messages - returns 403 for PRIVATE inbox", async () => {
+        const res = await app.inject({
+            method: "GET",
+            url: "/api/public/inbox/privateuser@test-public.example.com/messages",
+        });
+
+        expect(res.statusCode).toBe(403);
+        const body = JSON.parse(res.payload);
+        expect(body.code).toBe("INBOX_PRIVATE");
+    });
+
+    it("GET /api/public/inbox/:email/messages/:messageId - returns 403 for PRIVATE inbox", async () => {
+        const res = await app.inject({
+            method: "GET",
+            url: "/api/public/inbox/privateuser@test-public.example.com/messages/00000000-0000-0000-0000-000000000000",
+        });
+
+        expect(res.statusCode).toBe(403);
+        const body = JSON.parse(res.payload);
+        expect(body.code).toBe("INBOX_PRIVATE");
+    });
+
+    it("PUBLIC inbox - search succeeds", async () => {
+        const res = await app.inject({
+            method: "POST",
+            url: "/api/public/inbox/search",
+            payload: { email: "testuser@test-public.example.com" },
+        });
+
+        expect(res.statusCode).toBe(200);
+        const body = JSON.parse(res.payload);
+        expect(body.inbox.email).toBe("testuser@test-public.example.com");
+    });
+
+    it("PUBLIC inbox - messages list succeeds", async () => {
+        const res = await app.inject({
+            method: "GET",
+            url: "/api/public/inbox/testuser@test-public.example.com/messages",
+        });
+
+        expect(res.statusCode).toBe(200);
+        const body = JSON.parse(res.payload);
+        expect(body.data).toBeInstanceOf(Array);
     });
 });

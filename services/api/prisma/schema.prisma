@@ -149,6 +149,7 @@ model Inbox {
   claimedAt       DateTime         @default(now())
   ownerId         String?
   retentionDays   Int?             // Custom retention period (null = use user/global default)
+  shareMode       ShareMode        @default(PRIVATE)
   emailFilters    EmailFilter[]
   forwardingRules ForwardingRule[]
   domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
@@ -741,4 +742,9 @@ enum TeamRole {
   ADMIN
   MEMBER
   VIEWER
+}
+
+enum ShareMode {
+  PUBLIC
+  PRIVATE
 }

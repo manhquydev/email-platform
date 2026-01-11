@@ -49,6 +49,21 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: "Inbox not found" });
     }
 
+    // Check share mode - PRIVATE inboxes are not accessible publicly
+    if (inbox.shareMode === "PRIVATE") {
+      await recordAudit(null, "PRIVATE_INBOX_ACCESS_DENIED", {
+        email: body.data.email,
+        ip: request.ip,
+        userAgent: request.headers["user-agent"] || "Unknown",
+        reason: "Inbox is private",
+        timestamp: Date.now(),
+      });
+      return reply.status(403).send({
+        error: "This inbox is private. Only the owner can access it.",
+        code: "INBOX_PRIVATE",
+      });
+    }
+
     await recordAudit(null, "PUBLIC_INBOX_SEARCHED", {
       email: body.data.email,
       ip: request.ip,
@@ -98,10 +113,26 @@ export async function publicInboxRoutes(app: FastifyInstance) {
         domain: { name: domainName, status: "VERIFIED" },
         deletedAt: null,
       },
+      select: { id: true, shareMode: true },
     });
 
     if (!inbox) {
       return reply.status(404).send({ error: "Inbox not found" });
+    }
+
+    // Check share mode - PRIVATE inboxes are not accessible publicly
+    if (inbox.shareMode === "PRIVATE") {
+      await recordAudit(null, "PRIVATE_INBOX_ACCESS_DENIED", {
+        email: params.data.email,
+        ip: request.ip,
+        userAgent: request.headers["user-agent"] || "Unknown",
+        reason: "Inbox is private - messages list",
+        timestamp: Date.now(),
+      });
+      return reply.status(403).send({
+        error: "This inbox is private. Only the owner can view messages.",
+        code: "INBOX_PRIVATE",
+      });
     }
 
     const [messages, total] = await Promise.all([
@@ -174,10 +205,27 @@ export async function publicInboxRoutes(app: FastifyInstance) {
         domain: { name: domainName, status: "VERIFIED" },
         deletedAt: null,
       },
+      select: { id: true, shareMode: true },
     });
 
     if (!inbox) {
       return reply.status(404).send({ error: "Inbox not found" });
+    }
+
+    // Check share mode - PRIVATE inboxes are not accessible publicly
+    if (inbox.shareMode === "PRIVATE") {
+      await recordAudit(null, "PRIVATE_INBOX_ACCESS_DENIED", {
+        email: params.data.email,
+        messageId: params.data.messageId,
+        ip: request.ip,
+        userAgent: request.headers["user-agent"] || "Unknown",
+        reason: "Inbox is private - message detail",
+        timestamp: Date.now(),
+      });
+      return reply.status(403).send({
+        error: "This inbox is private. Only the owner can access it.",
+        code: "INBOX_PRIVATE",
+      });
     }
 
     const message = await prisma.message.findFirst({
@@ -254,6 +302,23 @@ export async function publicInboxRoutes(app: FastifyInstance) {
     // Verify inbox and message not deleted
     if (attachment.message.inbox.deletedAt || attachment.message.deletedAt) {
       return reply.status(404).send({ error: "Attachment not found" });
+    }
+
+    // Check share mode - PRIVATE inboxes are not accessible publicly
+    if (attachment.message.inbox.shareMode === "PRIVATE") {
+      const inboxEmail = `${attachment.message.inbox.localPart}@${attachment.message.inbox.domain.name}`;
+      await recordAudit(null, "PRIVATE_INBOX_ACCESS_DENIED", {
+        attachmentId: params.data.id,
+        inboxEmail,
+        ip: request.ip,
+        userAgent: request.headers["user-agent"] || "Unknown",
+        reason: "Inbox is private - attachment download",
+        timestamp: Date.now(),
+      });
+      return reply.status(403).send({
+        error: "This inbox is private. Only the owner can access attachments.",
+        code: "INBOX_PRIVATE",
+      });
     }
 
     const stream = await storageService.getReadStream(attachment.storageKey);

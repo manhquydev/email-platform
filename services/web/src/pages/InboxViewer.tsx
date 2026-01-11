@@ -35,6 +35,12 @@ interface FullMessage {
   }>;
 }
 
+interface AccessError {
+  type: "not_found" | "private" | "rate_limit" | "error";
+  message: string;
+  suggestion?: string;
+}
+
 export function InboxViewer() {
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -46,9 +52,45 @@ export function InboxViewer() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [accessError, setAccessError] = useState<AccessError | null>(null);
+
+  const parseApiError = (status: number, data: { error?: string; code?: string }): AccessError => {
+    if (status === 404) {
+      return {
+        type: "not_found",
+        message: "Inbox not found",
+        suggestion: "Please verify the email address and try again.",
+      };
+    }
+    if (status === 403) {
+      if (data.code === "INBOX_PRIVATE") {
+        return {
+          type: "private",
+          message: data.error || "This inbox is private.",
+          suggestion: "If you're the owner, please log in to access this inbox.",
+        };
+      }
+      return {
+        type: "error",
+        message: data.error || "Access denied",
+      };
+    }
+    if (status === 429) {
+      return {
+        type: "rate_limit",
+        message: "Too many requests",
+        suggestion: "Please wait a moment and try again.",
+      };
+    }
+    return {
+      type: "error",
+      message: data.error || "Failed to access inbox",
+    };
+  };
 
   const fetchMessages = useCallback(async (emailAddr: string, pageNum: number) => {
     setLoading(true);
+    setAccessError(null);
     try {
       const offset = (pageNum - 1) * 20;
       const res = await fetch(
@@ -56,8 +98,10 @@ export function InboxViewer() {
       );
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to fetch messages");
+        const data = await res.json();
+        const error = parseApiError(res.status, data);
+        setAccessError(error);
+        throw new Error(error.message);
       }
 
       const data = await res.json();
@@ -85,6 +129,7 @@ export function InboxViewer() {
   }, [searchParams, initialLoadDone]);
 
   const handleSearch = async (emailAddr: string) => {
+    setAccessError(null);
     // First validate inbox exists
     try {
       const res = await fetch(`${API_URL}/api/public/inbox/search`, {
@@ -94,8 +139,10 @@ export function InboxViewer() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Inbox not found");
+        const data = await res.json();
+        const error = parseApiError(res.status, data);
+        setAccessError(error);
+        throw new Error(error.message);
       }
 
       // Fetch messages
@@ -114,7 +161,9 @@ export function InboxViewer() {
       );
 
       if (!res.ok) {
-        throw new Error("Failed to load message");
+        const data = await res.json();
+        const error = parseApiError(res.status, data);
+        throw new Error(error.message);
       }
 
       const data = await res.json();
@@ -131,6 +180,58 @@ export function InboxViewer() {
     fetchMessages(email, newPage);
   };
 
+  const handleClearError = () => {
+    setAccessError(null);
+    setEmail("");
+  };
+
+  const renderAccessError = () => {
+    if (!accessError) return null;
+
+    const iconMap = {
+      not_found: (
+        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      private: (
+        <svg className="w-12 h-12 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+      rate_limit: (
+        <svg className="w-12 h-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      error: (
+        <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      ),
+    };
+
+    return (
+      <div className="py-20 flex flex-col items-center justify-center text-center">
+        <div className="mb-4">{iconMap[accessError.type]}</div>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          {accessError.message}
+        </h2>
+        {accessError.suggestion && (
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+            {accessError.suggestion}
+          </p>
+        )}
+        <button
+          onClick={handleClearError}
+          className="px-6 py-2 bg-nebula-violet text-white rounded-lg hover:bg-nebula-violet-dark"
+        >
+          Try another inbox
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Header */}
@@ -139,7 +240,7 @@ export function InboxViewer() {
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
             Public Inbox Viewer
           </h1>
-          {email && (
+          {email && !accessError && (
             <button
               onClick={() => setShowTelegramModal(true)}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
@@ -151,7 +252,9 @@ export function InboxViewer() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {!email ? (
+        {accessError ? (
+          renderAccessError()
+        ) : !email ? (
           <div className="py-20">
             <SearchForm onSearch={handleSearch} loading={loading} />
           </div>

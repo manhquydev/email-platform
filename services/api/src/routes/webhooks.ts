@@ -62,8 +62,6 @@ export async function webhookRoutes(app: FastifyInstance) {
         return reply.status(200).send({ success: true });
     });
 
-// Update a webhook    app.put('/webhooks/:id', { preHandler: app.authenticate }, async (request, reply) => {        const user = request.user as { userId: string };        const { id } = request.params as { id: string };        const updateSchema = z.object({            name: z.string().min(1).max(100).optional(),            url: z.string().url().optional(),            events: z.array(z.string()).optional(),            isActive: z.boolean().optional(),        });        const parsed = updateSchema.safeParse(request.body);        if (!parsed.success) {            return reply.status(400).send({ error: 'Invalid
-
     // Update a webhook
     app.put('/webhooks/:id', { preHandler: app.authenticate }, async (request, reply) => {
         const user = request.user as { userId: string };
@@ -138,5 +136,32 @@ export async function webhookRoutes(app: FastifyInstance) {
         });
 
         return { success: true, message: 'Test webhook queued' };
+    });
+
+    // Retry a failed webhook log
+    app.post('/webhooks/:id/logs/:logId/retry', { preHandler: app.authenticate }, async (request, reply) => {
+        const user = request.user as { userId: string };
+        const { id, logId } = request.params as { id: string; logId: string };
+
+        const webhook = await prisma.webhook.findFirst({
+            where: { id, userId: user.userId }
+        });
+
+        if (!webhook) {
+            return reply.status(404).send({ error: 'Webhook not found' });
+        }
+
+        const log = await prisma.webhookLog.findFirst({
+            where: { id: logId, webhookId: id }
+        });
+
+        if (!log) {
+            return reply.status(404).send({ error: 'Log not found' });
+        }
+
+        // Re-trigger the webhook with the same payload
+        await triggerWebhook(user.userId, log.eventType, log.payload);
+
+        return { success: true, message: 'Webhook retry queued' };
     });
 }

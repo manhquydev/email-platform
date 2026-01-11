@@ -211,24 +211,22 @@ export function LandingPage() {
                                 <div className="absolute inset-0 bg-gradient-to-tr from-[var(--nebula-violet)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20"></div>
                                 <div className="bg-[#0a0a16] h-[300px] w-full flex flex-col">
                                     <div className="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5">
-                                        <span className="text-xs text-slate-400">request.js</span>
+                                        <span className="text-xs text-slate-400">api-example.js</span>
                                         <div className="flex gap-1.5">
                                             <div className="w-2 h-2 rounded-full bg-slate-600"></div>
                                             <div className="w-2 h-2 rounded-full bg-slate-600"></div>
                                         </div>
                                     </div>
                                     <div className="p-4 font-mono text-xs text-slate-300 space-y-2 relative overflow-hidden">
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">1</span> <span className="text-purple-400">const</span> ephemera = <span className="text-blue-400">require</span>(<span className="text-green-300">'ephemera-sdk'</span>);</div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">2</span></div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">3</span> <span className="text-purple-400">async function</span> <span className="text-yellow-200">getVerificationCode</span>() {`{`}</div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">4</span> &nbsp;&nbsp;<span className="text-purple-400">const</span> inbox = <span className="text-purple-400">await</span> ephemera.<span className="text-blue-400">createInbox</span>();</div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">5</span> &nbsp;&nbsp;<span className="text-slate-500">// Wait for email to arrive</span></div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">6</span> &nbsp;&nbsp;<span className="text-purple-400">const</span> message = <span className="text-purple-400">await</span> inbox.<span className="text-blue-400">waitForEmail</span>({`{`}</div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">7</span> &nbsp;&nbsp;&nbsp;&nbsp;subject: <span className="text-green-300">"Your Code"</span>,</div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">8</span> &nbsp;&nbsp;&nbsp;&nbsp;timeout: <span className="text-orange-300">30000</span></div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">9</span> &nbsp;&nbsp;{`}`});</div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">10</span> &nbsp;&nbsp;<span className="text-purple-400">return</span> message.extractCode();</div>
-                                        <div className="flex"><span className="w-8 text-slate-600 select-none">11</span> {`}`}</div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">1</span> <span className="text-slate-500">// Tạo inbox mới</span></div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">2</span> <span className="text-purple-400">const</span> res = <span className="text-purple-400">await</span> <span className="text-blue-400">fetch</span>(<span className="text-green-300">'/inboxes'</span>, {`{`}</div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">3</span> &nbsp;&nbsp;method: <span className="text-green-300">'POST'</span>,</div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">4</span> &nbsp;&nbsp;headers: {`{`} Authorization: <span className="text-green-300">`Bearer ${`{`}API_KEY{`}`}`</span> {`}`}</div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">5</span> {`}`});</div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">6</span></div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">7</span> <span className="text-purple-400">const</span> inbox = <span className="text-purple-400">await</span> res.<span className="text-blue-400">json</span>();</div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">8</span> console.<span className="text-blue-400">log</span>(inbox.address);</div>
+                                        <div className="flex"><span className="w-8 text-slate-600 select-none">9</span> <span className="text-slate-500">// → random@yourdomain.com</span></div>
                                         {/* Glow effect */}
                                         <div className="absolute top-1/2 left-0 w-full h-12 bg-gradient-to-r from-[var(--nebula-violet)]/10 to-transparent pointer-events-none"></div>
                                     </div>

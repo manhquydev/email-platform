@@ -8,21 +8,27 @@ import { toast } from "react-hot-toast";
 interface WebhookLog {
     id: string;
     webhookId: string;
-    event: string;
-    status: "SUCCESS" | "FAILED" | "PENDING";
+    eventType: string;
     statusCode?: number;
-    responseTime?: number;
-    errorMessage?: string;
+    responseBody?: string;
+    duration?: number;
     payload: Record<string, unknown>;
     createdAt: string;
-    retriedAt?: string;
-    retryCount: number;
 }
+
+type LogStatus = "SUCCESS" | "FAILED" | "PENDING";
 
 interface WebhookLogsProps {
     webhookId: string;
     webhookName: string;
     onClose: () => void;
+}
+
+// Helper function to derive status from statusCode
+function getLogStatus(log: WebhookLog): LogStatus {
+    if (!log.statusCode) return "PENDING";
+    if (log.statusCode >= 200 && log.statusCode < 300) return "SUCCESS";
+    return "FAILED";
 }
 
 export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProps) {
@@ -34,13 +40,15 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
 
     useEffect(() => {
         loadLogs();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [webhookId]);
 
     const loadLogs = async () => {
         setLoading(true);
         try {
-            const data = await api<{ logs: WebhookLog[] }>(`/webhooks/${webhookId}/logs`, { token });
-            setLogs(data?.logs || []);
+            // Backend returns array directly, not { logs: [] }
+            const data = await api<WebhookLog[]>(`/webhooks/${webhookId}/logs`, { token });
+            setLogs(Array.isArray(data) ? data : []);
         } catch {
             toast.error("Không thể tải lịch sử webhook");
         } finally {
@@ -64,7 +72,7 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
         }
     };
 
-    const getStatusBadge = (status: WebhookLog["status"], statusCode?: number) => {
+    const getStatusBadge = (status: LogStatus, statusCode?: number) => {
         switch (status) {
             case "SUCCESS":
                 return (
@@ -123,13 +131,13 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                     </div>
                     <div className="text-center">
                         <div className="text-2xl font-bold text-success">
-                            {logs.filter(l => l.status === "SUCCESS").length}
+                            {logs.filter(l => getLogStatus(l) === "SUCCESS").length}
                         </div>
                         <div className="text-xs text-nebula-text-muted">Thành công</div>
                     </div>
                     <div className="text-center">
                         <div className="text-2xl font-bold text-danger">
-                            {logs.filter(l => l.status === "FAILED").length}
+                            {logs.filter(l => getLogStatus(l) === "FAILED").length}
                         </div>
                         <div className="text-xs text-nebula-text-muted">Thất bại</div>
                     </div>
@@ -137,8 +145,8 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                         <div className="text-2xl font-bold text-info">
                             {logs.length > 0
                                 ? Math.round(
-                                    logs.filter(l => l.responseTime).reduce((sum, l) => sum + (l.responseTime || 0), 0) /
-                                    logs.filter(l => l.responseTime).length
+                                    logs.filter(l => l.duration).reduce((sum, l) => sum + (l.duration || 0), 0) /
+                                    logs.filter(l => l.duration).length
                                 ) || 0
                                 : 0}ms
                         </div>
@@ -165,55 +173,50 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                                     <th className="px-4 py-3">Sự kiện</th>
                                     <th className="px-4 py-3">Thời gian</th>
                                     <th className="px-4 py-3">Response</th>
-                                    <th className="px-4 py-3">Retry</th>
                                     <th className="px-4 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-nebula-border">
-                                {logs.map(log => (
-                                    <tr
-                                        key={log.id}
-                                        className="hover:bg-nebula-elevated transition-colors cursor-pointer"
-                                        onClick={() => setSelectedLog(log)}
-                                    >
-                                        <td className="px-4 py-3">
-                                            {getStatusBadge(log.status, log.statusCode)}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="text-sm text-nebula-violet font-mono">
-                                                {log.event}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-nebula-text-muted">
-                                            {new Date(log.createdAt).toLocaleString("vi-VN")}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-nebula-text-muted">
-                                            {log.responseTime ? `${log.responseTime}ms` : "-"}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {log.retryCount > 0 && (
-                                                <span className="text-xs text-warning">
-                                                    {log.retryCount}x
+                                {logs.map(log => {
+                                    const status = getLogStatus(log);
+                                    return (
+                                        <tr
+                                            key={log.id}
+                                            className="hover:bg-nebula-elevated transition-colors cursor-pointer"
+                                            onClick={() => setSelectedLog(log)}
+                                        >
+                                            <td className="px-4 py-3">
+                                                {getStatusBadge(status, log.statusCode)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="text-sm text-nebula-violet font-mono">
+                                                    {log.eventType}
                                                 </span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {log.status === "FAILED" && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleRetry(log.id);
-                                                    }}
-                                                    disabled={retrying === log.id}
-                                                >
-                                                    {retrying === log.id ? "..." : "Retry"}
-                                                </Button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-nebula-text-muted">
+                                                {new Date(log.createdAt).toLocaleString("vi-VN")}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-nebula-text-muted">
+                                                {log.duration ? `${log.duration}ms` : "-"}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {status === "FAILED" && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRetry(log.id);
+                                                        }}
+                                                        disabled={retrying === log.id}
+                                                    >
+                                                        {retrying === log.id ? "..." : "Retry"}
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     )}
@@ -225,8 +228,8 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                         <div className="bg-nebula-surface rounded-xl w-full max-w-2xl max-h-[70vh] flex flex-col border border-nebula-border">
                             <div className="flex items-center justify-between p-4 border-b border-nebula-border">
                                 <div className="flex items-center gap-3">
-                                    {getStatusBadge(selectedLog.status, selectedLog.statusCode)}
-                                    <span className="text-nebula-text font-medium">{selectedLog.event}</span>
+                                    {getStatusBadge(getLogStatus(selectedLog), selectedLog.statusCode)}
+                                    <span className="text-nebula-text font-medium">{selectedLog.eventType}</span>
                                 </div>
                                 <button
                                     onClick={() => setSelectedLog(null)}
@@ -249,25 +252,21 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                                         <div>
                                             <span className="text-nebula-text-muted">Response time:</span>
                                             <span className="text-nebula-text ml-2">
-                                                {selectedLog.responseTime ? `${selectedLog.responseTime}ms` : "N/A"}
+                                                {selectedLog.duration ? `${selectedLog.duration}ms` : "N/A"}
                                             </span>
                                         </div>
                                         <div>
                                             <span className="text-nebula-text-muted">Status code:</span>
                                             <span className="text-nebula-text ml-2">{selectedLog.statusCode || "N/A"}</span>
                                         </div>
-                                        <div>
-                                            <span className="text-nebula-text-muted">Retry count:</span>
-                                            <span className="text-nebula-text ml-2">{selectedLog.retryCount}</span>
-                                        </div>
                                     </div>
                                 </div>
 
-                                {selectedLog.errorMessage && (
+                                {selectedLog.responseBody && getLogStatus(selectedLog) === "FAILED" && (
                                     <div>
-                                        <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Lỗi</h4>
-                                        <pre className="bg-danger/10 border border-danger/20 rounded p-3 text-sm text-danger overflow-auto">
-                                            {selectedLog.errorMessage}
+                                        <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Response</h4>
+                                        <pre className="bg-danger/10 border border-danger/20 rounded p-3 text-sm text-danger overflow-auto max-h-[100px]">
+                                            {selectedLog.responseBody}
                                         </pre>
                                     </div>
                                 )}
@@ -281,7 +280,7 @@ export function WebhookLogs({ webhookId, webhookName, onClose }: WebhookLogsProp
                             </div>
 
                             <div className="p-4 border-t border-nebula-border flex justify-end gap-2">
-                                {selectedLog.status === "FAILED" && (
+                                {getLogStatus(selectedLog) === "FAILED" && (
                                     <Button
                                         size="sm"
                                         onClick={() => {

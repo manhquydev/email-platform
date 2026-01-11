@@ -4,6 +4,7 @@ import { useNavigation } from "./NavigationContext";
 import { useNavItems, NavLinkItem } from "./nav-items";
 import { useAuth } from "../../context/AuthContext";
 import { ThemeToggle } from "../ThemeToggle";
+import { NotificationCenter } from "../NotificationCenter";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "../ui/Dropdown";
 import { cn } from "../../utils/cn";
 
@@ -92,6 +93,19 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
 
             {/* Footer - Theme Toggle & User Profile */}
             <div className="p-3 flex flex-col gap-2 border-t border-nebula-border/50 bg-gradient-to-t from-nebula-void/30 to-transparent backdrop-blur-sm">
+                {/* Notification Row */}
+                <div className={cn(
+                    "flex items-center rounded-lg transition-colors",
+                    isCollapsed ? "justify-center py-2" : "justify-between px-3 py-2 hover:bg-nebula-elevated/50"
+                )}>
+                    {!isCollapsed && (
+                        <span className="text-xs font-medium text-nebula-text-muted uppercase tracking-wider">
+                            Thông báo
+                        </span>
+                    )}
+                    <NotificationCenter />
+                </div>
+
                 {/* Theme Toggle Row */}
                 <div className={cn(
                     "flex items-center rounded-lg transition-colors",

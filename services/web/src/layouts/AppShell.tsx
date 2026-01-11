@@ -67,11 +67,6 @@ function AppShellInner({ children }: AppShellProps) {
                     <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-cyan-500/10 rounded-full blur-[100px] opacity-20 dark:opacity-30" />
                 </div>
 
-                {/* Notification Center - Desktop only (fixed position) */}
-                <div className="hidden md:block fixed top-4 right-[280px] z-50">
-                    <NotificationCenter />
-                </div>
-
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0 relative z-10">
                     {/* Mobile Header */}

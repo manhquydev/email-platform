@@ -48,6 +48,10 @@ jobs:
             docker compose -f docker-compose.prod.yml build api web postfix dovecot
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
+            # Run database migrations
+            echo "Running database migrations..."
+            docker exec email-platform-api-1 npx prisma migrate deploy || echo "Migration warning: check logs"
+
             # Wait for services to be healthy
             echo "Waiting for services to start..."
             sleep 20

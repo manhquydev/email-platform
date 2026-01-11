@@ -53,57 +53,72 @@ export function FocusStreamLayout({
 
     return (
         <NavigationProvider>
-            <div className="min-h-screen w-full relative overflow-hidden bg-bg text-text-main font-sans selection:bg-primary/30">
-
+            <div className="flex flex-row h-screen w-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans relative">
                 {/* Background Effects */}
-                <div className="fixed inset-0 z-0 pointer-events-none">
-                    <div className="absolute inset-0 bg-gradient-to-br from-bg via-slate-100 to-slate-200 dark:from-bg dark:via-[#0f1016] dark:to-[#0a0b0e]" />
-                    <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-primary/5 dark:bg-primary/10 blur-[100px]" />
-                    <div className="absolute bottom-[10%] left-[-10%] w-[30%] h-[30%] rounded-full bg-nebula-violet/10 dark:bg-nebula-violet/10 blur-[80px]" />
-                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02]" />
+                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                    <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[150px] opacity-40 dark:opacity-60" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] opacity-30 dark:opacity-50" />
+                    <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-cyan-500/10 rounded-full blur-[100px] opacity-20 dark:opacity-30" />
                 </div>
 
-                {/* Notification Center - Absolute Top Right */}
-                <div className="hidden md:block absolute top-4 right-24 z-[60]">
-                    <NotificationCenter />
-                </div>
+                {/* Main Content Area */}
+                <div className="flex-1 flex flex-col min-w-0 relative z-10">
+                    {/* Mobile Header */}
+                    <header className="md:hidden h-14 border-b border-slate-200 dark:border-white/10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg flex items-center justify-between px-4 z-20 shrink-0">
+                        <div className="font-bold text-lg bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                            Ephemera
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <NotificationCenter />
+                        </div>
+                    </header>
 
-                {/* Header with InboxSelector - Fixed top */}
-                <div className="fixed top-0 left-0 right-0 md:right-20 z-[55] h-16 flex items-center px-4 bg-bg/80 backdrop-blur-lg border-b border-white/5">
-                    <InboxSelector
-                        domains={domains}
-                        inboxes={inboxes}
-                        selectedDomainId={selectedDomainId}
-                        selectedInboxId={selectedInboxId}
-                        onSelectDomain={onSelectDomain}
-                        onSelectInbox={onSelectInbox}
-                        onCreateInbox={onCreateInbox}
-                        onDeleteInbox={onDeleteInbox}
-                        user={user}
-                        token={localStorage.getItem('token')}
+                    {/* Desktop Header with InboxSelector */}
+                    <header className="hidden md:flex h-16 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg items-center px-4 z-20 shrink-0">
+                        <InboxSelector
+                            domains={domains}
+                            inboxes={inboxes}
+                            selectedDomainId={selectedDomainId}
+                            selectedInboxId={selectedInboxId}
+                            onSelectDomain={onSelectDomain}
+                            onSelectInbox={onSelectInbox}
+                            onCreateInbox={onCreateInbox}
+                            onDeleteInbox={onDeleteInbox}
+                            user={user}
+                            token={localStorage.getItem('token')}
+                        />
+                    </header>
+
+                    <main id="main-content" className="flex-1 relative overflow-hidden flex flex-col">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={location.pathname}
+                                className="flex-1 overflow-auto"
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                            >
+                                {children}
+                            </motion.div>
+                        </AnimatePresence>
+                    </main>
+
+                    {/* Mobile Bottom Nav */}
+                    <MobileNav
+                        context="user"
+                        onCompose={() => navigate('/app?action=new_inbox')}
+                        unreadCount={unreadCount}
                     />
                 </div>
 
-                {/* Desktop Sidebar - Same as AppShell */}
+                {/* Desktop Sidebar (Right side) - uses order-last */}
                 <DesktopNav context="user" />
 
-                {/* Mobile Hamburger Drawer - Same as AppShell */}
+                {/* Mobile Hamburger Drawer */}
                 <HamburgerMenu context="user" />
 
-                <AnimatePresence mode="wait">
-                    <motion.main
-                        key={location.pathname}
-                        className="relative z-10 w-full md:pr-20 pt-16 min-h-screen pb-20 md:pb-0"
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                    >
-                        {children}
-                    </motion.main>
-                </AnimatePresence>
-
-                {/* Search Bar - Dedicated for Email Search */}
+                {/* Overlays */}
                 <SearchBar
                     isOpen={showSearchBar}
                     onClose={() => setShowSearchBar(false)}
@@ -111,7 +126,6 @@ export function FocusStreamLayout({
                     recentSearches={recentSearches}
                 />
 
-                {/* Command Palette - Quick Actions for Power Users */}
                 <CommandPalette
                     isOpen={showCommandPalette}
                     onClose={() => setShowCommandPalette(false)}
@@ -124,13 +138,6 @@ export function FocusStreamLayout({
                         }
                     }}
                     onSearch={handleSearch}
-                />
-
-                {/* Mobile Bottom Nav - Same as AppShell */}
-                <MobileNav
-                    context="user"
-                    onCompose={() => navigate('/app?action=new_inbox')}
-                    unreadCount={unreadCount}
                 />
             </div>
         </NavigationProvider>

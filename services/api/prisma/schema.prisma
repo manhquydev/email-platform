@@ -150,7 +150,8 @@ model Inbox {
   ownerId         String?
   retentionDays   Int?             // Custom retention period (null = use user/global default)
   shareMode       ShareMode        @default(PRIVATE)
-  emailFilters    EmailFilter[]
+  emailFilters     EmailFilter[]
+  visibilityRules  VisibilityRule[]
   forwardingRules ForwardingRule[]
   domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
   owner           User?            @relation(fields: [ownerId], references: [id])
@@ -747,4 +748,66 @@ enum TeamRole {
 enum ShareMode {
   PUBLIC
   PRIVATE
+}
+
+// Phase 09: Advanced Message Visibility Rules
+
+enum VisibilityRuleType {
+  HIDE       // Email matching conditions will not be shown to public
+  SHOW_ONLY  // Only emails matching conditions will be shown (whitelist mode)
+  WARN       // Email shown with warning icon/message
+  REDACT     // Email shown but sensitive fields redacted
+}
+
+enum VisibilityAction {
+  SHOWN
+  HIDDEN
+  WARNED
+  REDACTED
+}
+
+model VisibilityRule {
+  id          String             @id @default(uuid())
+  inboxId     String
+  name        String
+  description String?
+  ruleType    VisibilityRuleType
+  matchType   FilterMatchType    @default(ALL)
+  conditions  Json               // Array of VisibilityCondition
+  priority    Int                @default(50) // 0-100, higher executes first
+  isEnabled   Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  inbox Inbox @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+
+  @@index([inboxId, isEnabled, priority])
+}
+
+model VisibilityRuleTemplate {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  description String?
+  category    String             // security, banking, hr, custom
+  ruleType    VisibilityRuleType
+  matchType   FilterMatchType    @default(ALL)
+  conditions  Json               // Array of VisibilityCondition
+  isSystem    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+}
+
+model MessageVisibilityAudit {
+  id          String           @id @default(uuid())
+  inboxId     String
+  messageId   String
+  action      VisibilityAction
+  ruleId      String?
+  ruleName    String?
+  reason      String?
+  requestedBy String?          // IP address or userId
+  userAgent   String?
+  createdAt   DateTime         @default(now())
+
+  @@index([inboxId, createdAt])
+  @@index([messageId])
 }

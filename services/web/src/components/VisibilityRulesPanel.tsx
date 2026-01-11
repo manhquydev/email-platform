@@ -1,0 +1,614 @@
+import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { GlassCard } from './ui/GlassCard';
+import { cn } from '../utils/cn';
+import {
+  getVisibilityRules,
+  createVisibilityRule,
+  updateVisibilityRule,
+  deleteVisibilityRule,
+  getVisibilityTemplates,
+  applyVisibilityTemplate,
+  testVisibilityRules,
+  FIELD_LABELS,
+  OPERATOR_LABELS,
+  RULE_TYPE_INFO,
+  getOperatorsForField,
+  type VisibilityRule,
+  type VisibilityRuleTemplate,
+  type VisibilityCondition,
+  type VisibilityRuleType,
+  type VisibilityMatchType,
+  type VisibilityTestResult,
+  type VisibilityTestSummary,
+} from '../utils/visibility-rules-api';
+
+interface VisibilityRulesPanelProps {
+  inboxId: string;
+  inboxEmail: string;
+  onClose: () => void;
+}
+
+export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: VisibilityRulesPanelProps) {
+  const { token } = useAuth();
+  const [rules, setRules] = useState<VisibilityRule[]>([]);
+  const [templates, setTemplates] = useState<VisibilityRuleTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showEditor, setShowEditor] = useState(false);
+  const [editingRule, setEditingRule] = useState<VisibilityRule | null>(null);
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [testResults, setTestResults] = useState<{ results: VisibilityTestResult[]; summary: VisibilityTestSummary } | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  const loadRules = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const [rulesData, templatesData] = await Promise.all([
+        getVisibilityRules(inboxId, token),
+        getVisibilityTemplates(token),
+      ]);
+      setRules(rulesData);
+      setTemplates(templatesData);
+    } catch (err) {
+      toast.error('Failed to load visibility rules');
+    } finally {
+      setLoading(false);
+    }
+  }, [inboxId, token]);
+
+  useEffect(() => {
+    loadRules();
+  }, [loadRules]);
+
+  const handleToggleEnabled = async (rule: VisibilityRule) => {
+    if (!token) return;
+    try {
+      await updateVisibilityRule(rule.id, { isEnabled: !rule.isEnabled }, token);
+      setRules(prev => prev.map(r => r.id === rule.id ? { ...r, isEnabled: !r.isEnabled } : r));
+      toast.success(rule.isEnabled ? 'Rule disabled' : 'Rule enabled');
+    } catch {
+      toast.error('Failed to update rule');
+    }
+  };
+
+  const handleDelete = async (rule: VisibilityRule) => {
+    if (!token) return;
+    if (!confirm(`Delete rule "${rule.name}"?`)) return;
+    try {
+      await deleteVisibilityRule(rule.id, token);
+      setRules(prev => prev.filter(r => r.id !== rule.id));
+      toast.success('Rule deleted');
+    } catch {
+      toast.error('Failed to delete rule');
+    }
+  };
+
+  const handleApplyTemplate = async (templateId: string) => {
+    if (!token) return;
+    try {
+      const newRule = await applyVisibilityTemplate(inboxId, templateId, undefined, token);
+      setRules(prev => [...prev, newRule]);
+      toast.success('Template applied');
+    } catch {
+      toast.error('Failed to apply template');
+    }
+  };
+
+  const handleTest = async () => {
+    if (!token) return;
+    setTesting(true);
+    try {
+      const results = await testVisibilityRules(inboxId, { limit: 20 }, token);
+      setTestResults(results);
+      setShowTestModal(true);
+    } catch {
+      toast.error('Failed to test rules');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleSaveRule = async (data: {
+    name: string;
+    description?: string;
+    ruleType: VisibilityRuleType;
+    matchType: VisibilityMatchType;
+    conditions: VisibilityCondition[];
+    priority: number;
+    isEnabled: boolean;
+  }) => {
+    if (!token) return;
+    try {
+      if (editingRule) {
+        const updated = await updateVisibilityRule(editingRule.id, data, token);
+        setRules(prev => prev.map(r => r.id === editingRule.id ? updated : r));
+        toast.success('Rule updated');
+      } else {
+        const created = await createVisibilityRule(inboxId, data, token);
+        setRules(prev => [...prev, created]);
+        toast.success('Rule created');
+      }
+      setShowEditor(false);
+      setEditingRule(null);
+    } catch {
+      toast.error('Failed to save rule');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <GlassCard className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div>
+            <h2 className="text-lg font-bold text-text-main">Visibility Rules</h2>
+            <p className="text-xs text-text-secondary">{inboxEmail}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleTest}
+              disabled={testing || rules.length === 0}
+              className="px-3 py-1.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+            >
+              {testing ? 'Testing...' : 'Test Rules'}
+            </button>
+            <button
+              onClick={() => { setEditingRule(null); setShowEditor(true); }}
+              className="px-3 py-1.5 text-xs font-medium bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors"
+            >
+              + Add Rule
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/10 rounded-lg text-text-secondary"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Templates Quick Apply */}
+        {templates.length > 0 && (
+          <div className="p-4 border-b border-white/5 bg-surface/30">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-text-secondary">Quick Templates:</span>
+              {templates.slice(0, 5).map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => handleApplyTemplate(t.id)}
+                  className="px-2 py-1 text-xs bg-white/5 hover:bg-white/10 rounded border border-white/10 text-text-main transition-colors"
+                >
+                  {t.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Rules List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+            </div>
+          ) : rules.length === 0 ? (
+            <div className="text-center py-12 text-text-secondary">
+              <p className="mb-4">No visibility rules configured</p>
+              <p className="text-xs">Add rules to control which emails are visible to public viewers</p>
+            </div>
+          ) : (
+            rules.map(rule => (
+              <div
+                key={rule.id}
+                className={cn(
+                  "p-4 rounded-xl border transition-all",
+                  rule.isEnabled
+                    ? "bg-surface/50 border-white/10"
+                    : "bg-surface/20 border-white/5 opacity-60"
+                )}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">{RULE_TYPE_INFO[rule.ruleType].icon}</span>
+                      <h3 className="font-semibold text-text-main truncate">{rule.name}</h3>
+                      <span className={cn(
+                        "px-2 py-0.5 text-[10px] rounded-full font-medium",
+                        rule.ruleType === 'HIDE' && "bg-red-500/20 text-red-400",
+                        rule.ruleType === 'SHOW_ONLY' && "bg-green-500/20 text-green-400",
+                        rule.ruleType === 'WARN' && "bg-yellow-500/20 text-yellow-400",
+                        rule.ruleType === 'REDACT' && "bg-purple-500/20 text-purple-400",
+                      )}>
+                        {RULE_TYPE_INFO[rule.ruleType].label}
+                      </span>
+                    </div>
+                    {rule.description && (
+                      <p className="text-xs text-text-secondary mb-2">{rule.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {rule.conditions.slice(0, 3).map((c, i) => (
+                        <span key={i} className="px-2 py-0.5 text-[10px] bg-white/5 rounded text-text-secondary">
+                          {FIELD_LABELS[c.field]} {OPERATOR_LABELS[c.operator].toLowerCase()} "{c.value.slice(0, 20)}"
+                        </span>
+                      ))}
+                      {rule.conditions.length > 3 && (
+                        <span className="px-2 py-0.5 text-[10px] bg-white/5 rounded text-text-secondary">
+                          +{rule.conditions.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleEnabled(rule)}
+                      className={cn(
+                        "w-10 h-5 rounded-full transition-colors relative",
+                        rule.isEnabled ? "bg-green-500" : "bg-gray-600"
+                      )}
+                    >
+                      <span className={cn(
+                        "absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform",
+                        rule.isEnabled ? "left-5" : "left-0.5"
+                      )} />
+                    </button>
+                    <button
+                      onClick={() => { setEditingRule(rule); setShowEditor(true); }}
+                      className="p-1.5 hover:bg-white/10 rounded text-text-secondary"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(rule)}
+                      className="p-1.5 hover:bg-red-500/20 rounded text-red-400"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Rule Editor Modal */}
+        {showEditor && (
+          <RuleEditorModal
+            rule={editingRule}
+            onSave={handleSaveRule}
+            onClose={() => { setShowEditor(false); setEditingRule(null); }}
+          />
+        )}
+
+        {/* Test Results Modal */}
+        {showTestModal && testResults && (
+          <TestResultsModal
+            results={testResults}
+            onClose={() => setShowTestModal(false)}
+          />
+        )}
+      </GlassCard>
+    </div>
+  );
+}
+
+// Rule Editor Modal Component
+function RuleEditorModal({
+  rule,
+  onSave,
+  onClose,
+}: {
+  rule: VisibilityRule | null;
+  onSave: (data: any) => void;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState(rule?.name || '');
+  const [description, setDescription] = useState(rule?.description || '');
+  const [ruleType, setRuleType] = useState<VisibilityRuleType>(rule?.ruleType || 'HIDE');
+  const [matchType, setMatchType] = useState<VisibilityMatchType>(rule?.matchType || 'ALL');
+  const [conditions, setConditions] = useState<VisibilityCondition[]>(
+    rule?.conditions || [{ field: 'FROM', operator: 'CONTAINS', value: '' }]
+  );
+  const [priority, setPriority] = useState(rule?.priority ?? 50);
+  const [isEnabled, setIsEnabled] = useState(rule?.isEnabled ?? true);
+  const [saving, setSaving] = useState(false);
+
+  const addCondition = () => {
+    setConditions([...conditions, { field: 'FROM', operator: 'CONTAINS', value: '' }]);
+  };
+
+  const removeCondition = (index: number) => {
+    setConditions(conditions.filter((_, i) => i !== index));
+  };
+
+  const updateCondition = (index: number, updates: Partial<VisibilityCondition>) => {
+    setConditions(conditions.map((c, i) => i === index ? { ...c, ...updates } : c));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || conditions.length === 0) {
+      toast.error('Name and at least one condition required');
+      return;
+    }
+    if (conditions.some(c => !c.value.trim())) {
+      toast.error('All conditions must have a value');
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave({ name, description, ruleType, matchType, conditions, priority, isEnabled });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60">
+      <GlassCard className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+          <div className="p-4 border-b border-white/10">
+            <h3 className="font-bold text-text-main">{rule ? 'Edit Rule' : 'New Rule'}</h3>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-xs font-medium text-text-secondary mb-1">Rule Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main placeholder-text-secondary focus:outline-none focus:border-primary"
+                placeholder="e.g., Hide Verification Emails"
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-xs font-medium text-text-secondary mb-1">Description (optional)</label>
+              <input
+                type="text"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main placeholder-text-secondary focus:outline-none focus:border-primary"
+                placeholder="What does this rule do?"
+              />
+            </div>
+
+            {/* Rule Type & Match Type */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-text-secondary mb-1">Action</label>
+                <select
+                  value={ruleType}
+                  onChange={e => setRuleType(e.target.value as VisibilityRuleType)}
+                  className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main focus:outline-none focus:border-primary"
+                >
+                  <option value="HIDE">🚫 Hide - Don't show matching emails</option>
+                  <option value="SHOW_ONLY">✅ Show Only - Only show matching emails</option>
+                  <option value="WARN">⚠️ Warn - Show with warning</option>
+                  <option value="REDACT">🔒 Redact - Hide content</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-text-secondary mb-1">Match</label>
+                <select
+                  value={matchType}
+                  onChange={e => setMatchType(e.target.value as VisibilityMatchType)}
+                  className="w-full px-3 py-2 bg-surface/50 border border-white/10 rounded-lg text-text-main focus:outline-none focus:border-primary"
+                >
+                  <option value="ALL">ALL conditions must match</option>
+                  <option value="ANY">ANY condition matches</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Conditions */}
+            <div>
+              <label className="block text-xs font-medium text-text-secondary mb-2">Conditions</label>
+              <div className="space-y-2">
+                {conditions.map((condition, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-surface/30 rounded-lg">
+                    <select
+                      value={condition.field}
+                      onChange={e => {
+                        const newField = e.target.value;
+                        const validOps = getOperatorsForField(newField);
+                        updateCondition(index, {
+                          field: newField as any,
+                          operator: validOps.includes(condition.operator) ? condition.operator : validOps[0] as any,
+                        });
+                      }}
+                      className="px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
+                    >
+                      {Object.entries(FIELD_LABELS).map(([k, v]) => (
+                        <option key={k} value={k}>{v}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={condition.operator}
+                      onChange={e => updateCondition(index, { operator: e.target.value as any })}
+                      className="px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
+                    >
+                      {getOperatorsForField(condition.field).map(op => (
+                        <option key={op} value={op}>{OPERATOR_LABELS[op]}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={condition.value}
+                      onChange={e => updateCondition(index, { value: e.target.value })}
+                      placeholder={condition.field === 'HAS_ATTACHMENT' ? 'true or false' : 'Value...'}
+                      className="flex-1 px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
+                    />
+                    <label className="flex items-center gap-1 text-[10px] text-text-secondary">
+                      <input
+                        type="checkbox"
+                        checked={condition.negate || false}
+                        onChange={e => updateCondition(index, { negate: e.target.checked })}
+                        className="w-3 h-3"
+                      />
+                      NOT
+                    </label>
+                    {conditions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeCondition(index)}
+                        className="p-1 hover:bg-red-500/20 rounded text-red-400"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={addCondition}
+                className="mt-2 text-xs text-primary hover:underline"
+              >
+                + Add Condition
+              </button>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <label className="block text-xs font-medium text-text-secondary mb-1">
+                Priority: {priority} (higher = runs first)
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={priority}
+                onChange={e => setPriority(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            {/* Enabled */}
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={isEnabled}
+                onChange={e => setIsEnabled(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="text-sm text-text-main">Enable this rule</span>
+            </label>
+          </div>
+
+          <div className="p-4 border-t border-white/10 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-text-secondary hover:text-text-main"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Rule'}
+            </button>
+          </div>
+        </form>
+      </GlassCard>
+    </div>
+  );
+}
+
+// Test Results Modal Component
+function TestResultsModal({
+  results,
+  onClose,
+}: {
+  results: { results: VisibilityTestResult[]; summary: VisibilityTestSummary };
+  onClose: () => void;
+}) {
+  const { summary, results: items } = results;
+
+  const actionIcons: Record<string, string> = {
+    SHOWN: '✅',
+    HIDDEN: '🚫',
+    WARNED: '⚠️',
+    REDACTED: '🔒',
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60">
+      <GlassCard className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl overflow-hidden">
+        <div className="p-4 border-b border-white/10 flex items-center justify-between">
+          <h3 className="font-bold text-text-main">Test Results</h3>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-text-secondary">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Summary */}
+        <div className="p-4 border-b border-white/5 bg-surface/30 grid grid-cols-5 gap-2 text-center">
+          <div>
+            <div className="text-lg font-bold text-text-main">{summary.total}</div>
+            <div className="text-[10px] text-text-secondary">Total</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-green-400">{summary.shown}</div>
+            <div className="text-[10px] text-text-secondary">Shown</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-red-400">{summary.hidden}</div>
+            <div className="text-[10px] text-text-secondary">Hidden</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-yellow-400">{summary.warned}</div>
+            <div className="text-[10px] text-text-secondary">Warned</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold text-purple-400">{summary.redacted}</div>
+            <div className="text-[10px] text-text-secondary">Redacted</div>
+          </div>
+        </div>
+
+        {/* Results List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {items.map(item => (
+            <div key={item.messageId} className="flex items-center gap-3 p-2 bg-surface/30 rounded-lg">
+              <span className="text-lg">{actionIcons[item.action]}</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-text-main truncate">{item.subject || '(No Subject)'}</div>
+                <div className="text-[10px] text-text-secondary">
+                  From: {item.fromAddress || 'Unknown'}
+                  {item.matchedRule && ` • Matched: ${item.matchedRule.name}`}
+                </div>
+              </div>
+              <span className={cn(
+                "px-2 py-0.5 text-[10px] rounded font-medium",
+                item.action === 'SHOWN' && "bg-green-500/20 text-green-400",
+                item.action === 'HIDDEN' && "bg-red-500/20 text-red-400",
+                item.action === 'WARNED' && "bg-yellow-500/20 text-yellow-400",
+                item.action === 'REDACTED' && "bg-purple-500/20 text-purple-400",
+              )}>
+                {item.action}
+              </span>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+    </div>
+  );
+}

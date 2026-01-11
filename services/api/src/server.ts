@@ -36,6 +36,7 @@ import { uploadRoutes } from "./routes/upload";
 import { apiKeysRoutes } from "./routes/api-keys";
 import { teamRoutes } from "./routes/teams";
 import { apiUsageRoutes } from "./routes/api-usage";
+import { visibilityRulesRoutes } from "./routes/visibility-rules";
 import { setupSwagger } from "./plugins/swagger";
 import crypto from "crypto";
 import { prisma } from "./lib/prisma";
@@ -241,6 +242,7 @@ export const buildServer = () => {
   app.register(webhookRoutes);
   app.register(teamRoutes);
   app.register(apiUsageRoutes);
+  app.register(visibilityRulesRoutes);
 
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);

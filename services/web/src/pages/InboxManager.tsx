@@ -15,6 +15,7 @@ import { lazy, Suspense } from "react";
 
 const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").then(m => ({ default: m.CreateInboxModal })));
 const TransferInboxModal = lazy(() => import("../components/TransferInboxModal").then(m => ({ default: m.TransferInboxModal })));
+const VisibilityRulesPanel = lazy(() => import("../components/VisibilityRulesPanel").then(m => ({ default: m.VisibilityRulesPanel })));
 import { ConfirmationModal } from "../components/ConfirmationModal";
 
 type SortOption = 'created' | 'name' | 'ttl' | 'messages';
@@ -51,6 +52,7 @@ export function InboxManager() {
 
     const [inboxToDelete, setInboxToDelete] = useState<Inbox | null>(null);
     const [inboxToTransfer, setInboxToTransfer] = useState<Inbox | null>(null);
+    const [inboxForVisibilityRules, setInboxForVisibilityRules] = useState<Inbox | null>(null);
     const [isBatchDeleting, setIsBatchDeleting] = useState(false);
     const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
 
@@ -541,6 +543,7 @@ export function InboxManager() {
                                         onViewMessages={() => handleViewMessages(inbox)}
                                         onTransfer={() => setInboxToTransfer(inbox)}
                                         onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
+                                        onVisibilityRules={() => setInboxForVisibilityRules(inbox)}
                                     />
                                 ))
                             )}
@@ -754,6 +757,16 @@ export function InboxManager() {
                             }
                             setInboxToTransfer(null);
                         }}
+                    />
+                )}
+            </Suspense>
+
+            <Suspense fallback={null}>
+                {inboxForVisibilityRules && (
+                    <VisibilityRulesPanel
+                        inboxId={inboxForVisibilityRules.id}
+                        inboxEmail={`${inboxForVisibilityRules.localPart}@${inboxForVisibilityRules.domain?.name}`}
+                        onClose={() => setInboxForVisibilityRules(null)}
                     />
                 )}
             </Suspense>

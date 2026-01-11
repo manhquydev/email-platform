@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 import { storageService } from "../services/storage";
 import { generateSessionId } from "../utils/session";
+import { evaluateMessage, logVisibilityAudit, redactMessage, type EmailData } from "../services/visibility-engine";
 
 /**
  * Public inbox viewer routes - no authentication required
@@ -135,35 +136,91 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       });
     }
 
-    const [messages, total] = await Promise.all([
+    // Fetch more messages than requested to account for visibility filtering
+    const fetchLimit = query.data.limit * 3;
+    const [rawMessages, total] = await Promise.all([
       prisma.message.findMany({
         where: { inboxId: inbox.id, deletedAt: null },
         orderBy: { receivedAt: query.data.sort },
-        take: query.data.limit,
+        take: fetchLimit,
         skip: query.data.offset,
         select: {
           id: true,
           fromAddress: true,
+          toAddress: true,
           subject: true,
           receivedAt: true,
           isRead: true,
           textBody: true,
+          htmlBody: true,
+          headers: true,
+          size: true,
+          spamScore: true,
           _count: { select: { attachments: true } },
         },
       }),
       prisma.message.count({ where: { inboxId: inbox.id, deletedAt: null } }),
     ]);
 
-    // Truncate preview to 150 chars, exclude full textBody
-    const messagesWithPreview = messages.map((m) => ({
-      id: m.id,
-      fromAddress: m.fromAddress,
-      subject: m.subject,
-      receivedAt: m.receivedAt,
-      isRead: m.isRead,
-      preview: m.textBody?.slice(0, 150) || "",
-      attachmentCount: m._count.attachments,
-    }));
+    // Apply visibility rules to filter/transform messages
+    const visibleMessages: Array<{
+      id: string;
+      fromAddress: string | null;
+      subject: string | null;
+      receivedAt: Date;
+      isRead: boolean;
+      preview: string;
+      attachmentCount: number;
+      visibilityWarning?: string;
+    }> = [];
+
+    for (const m of rawMessages) {
+      if (visibleMessages.length >= query.data.limit) break;
+
+      const emailData: EmailData = {
+        fromAddress: m.fromAddress,
+        toAddress: m.toAddress,
+        subject: m.subject,
+        textBody: m.textBody,
+        htmlBody: m.htmlBody,
+        headers: m.headers as Record<string, string> | null,
+        size: m.size,
+        spamScore: m.spamScore,
+        hasAttachment: m._count.attachments > 0,
+      };
+
+      const result = await evaluateMessage(inbox.id, emailData);
+
+      // Log visibility decision for audit
+      await logVisibilityAudit(inbox.id, m.id, result, request.ip);
+
+      if (result.action === 'HIDDEN') {
+        continue; // Skip hidden messages
+      }
+
+      let preview = m.textBody?.slice(0, 150) || "";
+      let subject = m.subject;
+      let fromAddress = m.fromAddress;
+
+      if (result.action === 'REDACTED') {
+        // Redact sensitive content
+        preview = "[Content hidden by visibility rules]";
+        subject = m.subject ? "[Subject redacted]" : null;
+      }
+
+      visibleMessages.push({
+        id: m.id,
+        fromAddress,
+        subject,
+        receivedAt: m.receivedAt,
+        isRead: m.isRead,
+        preview,
+        attachmentCount: m._count.attachments,
+        visibilityWarning: result.action === 'WARNED' ? result.reason : undefined,
+      });
+    }
+
+    const messagesWithPreview = visibleMessages;
 
     await recordAudit(null, "PUBLIC_MESSAGES_LISTED", {
       email: params.data.email,
@@ -246,6 +303,29 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: "Message not found" });
     }
 
+    // Apply visibility rules to this message
+    const emailData: EmailData = {
+      fromAddress: message.fromAddress,
+      toAddress: message.toAddress,
+      subject: message.subject,
+      textBody: message.textBody,
+      htmlBody: message.htmlBody,
+      headers: message.headers as Record<string, string> | null,
+      size: message.size,
+      spamScore: message.spamScore,
+      hasAttachment: message.attachments.length > 0,
+    };
+
+    const visibilityResult = await evaluateMessage(inbox.id, emailData);
+    await logVisibilityAudit(inbox.id, message.id, visibilityResult, request.ip);
+
+    if (visibilityResult.action === 'HIDDEN') {
+      return reply.status(403).send({
+        error: "This message is not available for public viewing",
+        code: "MESSAGE_HIDDEN",
+      });
+    }
+
     await recordAudit(null, "PUBLIC_MESSAGE_VIEWED", {
       email: params.data.email,
       messageId: message.id,
@@ -261,7 +341,18 @@ export async function publicInboxRoutes(app: FastifyInstance) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { sourceIp, ...safeMessage } = message as any;
 
-    return { message: safeMessage };
+    // Apply redaction if needed
+    let finalMessage = safeMessage;
+    if (visibilityResult.action === 'REDACTED') {
+      finalMessage = redactMessage(safeMessage);
+    }
+
+    // Add warning if applicable
+    if (visibilityResult.action === 'WARNED') {
+      finalMessage = { ...finalMessage, visibilityWarning: visibilityResult.reason };
+    }
+
+    return { message: finalMessage };
   });
 
   /**

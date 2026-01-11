@@ -10,7 +10,7 @@ import { EmailStream } from "../components/EmailStream";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
 
 import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
-import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
+import type { Domain, Inbox, Message, PaginatedResponse, ShareMode } from "../types";
 import { lazy, Suspense } from "react";
 
 const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").then(m => ({ default: m.CreateInboxModal })));
@@ -207,6 +207,22 @@ export function InboxManager() {
 
     const handleDeleteInbox = (inbox: Inbox) => {
         setInboxToDelete(inbox);
+    };
+
+    const handleShareModeChange = async (inboxId: string, shareMode: ShareMode) => {
+        try {
+            const updated = await api<{ inbox: Inbox }>(`/inboxes/${inboxId}`, {
+                method: "PATCH",
+                token,
+                body: { shareMode }
+            });
+            if (updated?.inbox) {
+                setInboxes(prev => prev.map(i => i.id === inboxId ? { ...i, shareMode } : i));
+                toast.success(shareMode === 'PUBLIC' ? 'Inbox is now public' : 'Inbox is now private');
+            }
+        } catch {
+            toast.error("Failed to update share mode");
+        }
     };
 
     const confirmDeleteInbox = async () => {
@@ -524,6 +540,7 @@ export function InboxManager() {
                                         onDelete={() => handleDeleteInbox(inbox)}
                                         onViewMessages={() => handleViewMessages(inbox)}
                                         onTransfer={() => setInboxToTransfer(inbox)}
+                                        onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
                                     />
                                 ))
                             )}

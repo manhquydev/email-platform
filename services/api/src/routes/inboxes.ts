@@ -159,6 +159,7 @@ export async function inboxRoutes(app: FastifyInstance) {
       ownerEmail: z.string().email().optional(),
       expiresAt: z.string().datetime().nullable().optional(),
       retentionDays: z.number().min(1).max(365).nullable().optional(),
+      shareMode: z.enum(["PUBLIC", "PRIVATE"]).optional(),
     }).safeParse(request.body);
 
     if (!params.success || !body.success) {
@@ -227,6 +228,11 @@ export async function inboxRoutes(app: FastifyInstance) {
         dataToUpdate.ownerId = newOwnerId;
         dataToUpdate.claimedAt = new Date(); // Reset claim time for new owner
       }
+    }
+
+    // Handle shareMode update
+    if (body.data.shareMode !== undefined) {
+      dataToUpdate.shareMode = body.data.shareMode;
     }
 
     const updated = await prisma.inbox.update({

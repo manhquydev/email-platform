@@ -23,6 +23,8 @@ export type Domain = {
     owner?: { email: string };
 };
 
+export type ShareMode = 'PUBLIC' | 'PRIVATE';
+
 export type Inbox = {
     id: string;
     domainId: string;
@@ -31,6 +33,7 @@ export type Inbox = {
     expiresAt?: string | null;
     claimedAt?: string;
     ownerId?: string | null;
+    shareMode?: ShareMode;
     domain?: Domain;
     owner?: { email: string };
     _count?: { messages: number };

@@ -13,6 +13,7 @@ interface InboxCardProps {
     onDelete: () => void;
     onViewMessages: () => void;
     onTransfer?: () => void;
+    onShareModeChange?: (shareMode: 'PUBLIC' | 'PRIVATE') => void;
 }
 
 export function InboxCard({
@@ -24,7 +25,8 @@ export function InboxCard({
     onCopy,
     onDelete,
     onViewMessages,
-    onTransfer
+    onTransfer,
+    onShareModeChange
 }: InboxCardProps) {
     const email = `${inbox.localPart}@${inbox.domain?.name || 'domain'}`;
 
@@ -127,6 +129,33 @@ export function InboxCard({
                             </svg>
                             {new Date(inbox.createdAt).toLocaleDateString()}
                         </span>
+                        {/* Share Mode Toggle */}
+                        {onShareModeChange && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onShareModeChange(inbox.shareMode === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC');
+                                }}
+                                className={cn(
+                                    "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors",
+                                    inbox.shareMode === 'PUBLIC'
+                                        ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                                        : "bg-gray-500/20 text-gray-400 hover:bg-gray-500/30"
+                                )}
+                                title={inbox.shareMode === 'PUBLIC' ? 'Public: Anyone can view via inbox viewer' : 'Private: Only you can access'}
+                            >
+                                {inbox.shareMode === 'PUBLIC' ? (
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                )}
+                                {inbox.shareMode === 'PUBLIC' ? 'Public' : 'Private'}
+                            </button>
+                        )}
                     </div>
                 </div>
 

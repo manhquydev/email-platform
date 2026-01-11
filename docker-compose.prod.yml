@@ -249,6 +249,7 @@ services:
         VITE_TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
         VITE_MAIL_HOSTNAME: mail.${DOMAIN:-localhost}
         VITE_MAIL_SERVER_IP: ${MAIL_SERVER_IP:-165.22.48.193}
+        VITE_CLARITY_PROJECT_ID: ${VITE_CLARITY_PROJECT_ID:-}
     restart: unless-stopped
     environment:
       # Runtime environment for entrypoint.sh to generate config.js

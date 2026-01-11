@@ -1,12 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
+import Clarity from '@microsoft/clarity'
 import './index.css'
 import './styles/focus-stream.css'
 import App from './App.tsx'
 
 // Register Service Worker for PWA
 registerSW({ immediate: true })
+
+// Initialize Microsoft Clarity analytics
+const clarityProjectId = import.meta.env.VITE_CLARITY_PROJECT_ID
+if (clarityProjectId) {
+  Clarity.init(clarityProjectId)
+}
 
 // --------------------------------------------------------------------------
 // Mobile "Pull-to-Refresh" & Overscroll Prevention (Robust Fix v5 - Capture Phase)

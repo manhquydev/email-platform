@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { NavigationProvider, DesktopNav, MobileNav, HamburgerMenu, useNavigation } from "../components/Navigation/index";
 import { CommandPalette } from "../components/CommandPalette";
 import { SearchAdvanced } from "../components/SearchAdvanced";
+import { NotificationCenter } from "../components/NotificationCenter";
 import { api } from "../utils/api";
 import type { Domain, Inbox, PaginatedResponse } from "../types";
 
@@ -66,6 +67,11 @@ function AppShellInner({ children }: AppShellProps) {
                     <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-cyan-500/10 rounded-full blur-[100px] opacity-20 dark:opacity-30" />
                 </div>
 
+                {/* Notification Center - Desktop only (fixed position) */}
+                <div className="hidden md:block fixed top-4 right-[280px] z-50">
+                    <NotificationCenter />
+                </div>
+
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0 relative z-10">
                     {/* Mobile Header */}
@@ -73,13 +79,16 @@ function AppShellInner({ children }: AppShellProps) {
                         <div className="font-bold text-lg bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                             Ephemera
                         </div>
-                        <button
-                            onClick={openDrawer}
-                            className="w-10 h-10 rounded-full bg-gradient-to-br from-nebula-violet to-nebula-violet-dark flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-nebula-violet/20 active:scale-95 transition-transform"
-                            aria-label="Mở menu"
-                        >
-                            {user?.email?.charAt(0).toUpperCase() || "U"}
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <NotificationCenter />
+                            <button
+                                onClick={openDrawer}
+                                className="w-10 h-10 rounded-full bg-gradient-to-br from-nebula-violet to-nebula-violet-dark flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-nebula-violet/20 active:scale-95 transition-transform"
+                                aria-label="Mở menu"
+                            >
+                                {user?.email?.charAt(0).toUpperCase() || "U"}
+                            </button>
+                        </div>
                     </header>
 
                     <main id="main-content" className="flex-1 relative overflow-hidden flex flex-col">

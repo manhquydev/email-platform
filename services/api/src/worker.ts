@@ -19,6 +19,7 @@ import { forwardMessageIfMatched } from './services/emailForwarder';
 import { triggerWebhook } from './services/webhookService';
 import { anonymizeIp } from './utils/ip-anonymizer';
 import { sanitizeHtml, sanitizeHeaders } from './utils/email-sanitizer';
+import { evaluateMessage as evaluateVisibility, type EmailData } from './services/visibility-engine';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -279,15 +280,37 @@ export const setupEmailWorker = (logger: Logger) => {
                             logger.warn({ err: telegramErr }, 'failed to send Telegram notification');
                         }
 
-                        // Release 2b: Per-Inbox Telegram Notifications
+                        // Release 2b: Per-Inbox Telegram Notifications (with visibility check)
                         try {
                             const inboxEmail = `${messageWithRelations.inbox.localPart}@${messageWithRelations.inbox.domain.name}`;
-                            await notifyInboxTelegramSubscribers(inboxEmail, {
-                                id: message.id,
+
+                            // Check visibility rules before sending Telegram notification
+                            const emailDataForVisibility: EmailData = {
                                 fromAddress: fromAddress ?? null,
+                                toAddress: toAddress ?? null,
                                 subject: message.subject,
                                 textBody,
-                            });
+                                htmlBody,
+                                headers: message.headers as Record<string, string> | null,
+                                size: message.size,
+                                spamScore: message.spamScore,
+                                hasAttachment: (messageWithRelations as any).attachments?.length > 0 || false,
+                            };
+
+                            const visibilityResult = await evaluateVisibility(messageWithRelations.inbox.id, emailDataForVisibility);
+
+                            // Only send notification if email is visible (not hidden)
+                            if (visibilityResult.action !== 'HIDDEN') {
+                                await notifyInboxTelegramSubscribers(inboxEmail, {
+                                    id: message.id,
+                                    fromAddress: fromAddress ?? null,
+                                    subject: message.subject,
+                                    textBody,
+                                });
+                                logger.info({ messageId: message.id, visibility: visibilityResult.action }, 'sent inbox Telegram notification');
+                            } else {
+                                logger.info({ messageId: message.id, reason: visibilityResult.reason }, 'skipped Telegram notification - message hidden by visibility rules');
+                            }
                         } catch (inboxTelegramErr) {
                             logger.warn({ err: inboxTelegramErr }, 'failed to send inbox Telegram notifications');
                         }

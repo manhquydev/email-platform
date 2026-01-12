@@ -30,7 +30,7 @@ interface CreateRulePayload {
   isEnabled?: boolean;
 }
 
-interface UpdateRulePayload extends Partial<CreateRulePayload> {}
+type UpdateRulePayload = Partial<CreateRulePayload>;
 
 /**
  * Get all visibility rules for an inbox

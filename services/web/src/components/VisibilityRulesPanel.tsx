@@ -51,7 +51,7 @@ export function VisibilityRulesPanel({ inboxId, inboxEmail, onClose }: Visibilit
       ]);
       setRules(rulesData);
       setTemplates(templatesData);
-    } catch (err) {
+    } catch {
       toast.error('Không thể tải quy tắc hiển thị');
     } finally {
       setLoading(false);
@@ -306,7 +306,15 @@ function RuleEditorModal({
   onClose,
 }: {
   rule: VisibilityRule | null;
-  onSave: (data: any) => void;
+  onSave: (data: {
+    name: string;
+    description?: string;
+    ruleType: VisibilityRuleType;
+    matchType: VisibilityMatchType;
+    conditions: VisibilityCondition[];
+    priority: number;
+    isEnabled: boolean;
+  }) => void;
   onClose: () => void;
 }) {
   const [name, setName] = useState(rule?.name || '');
@@ -423,11 +431,11 @@ function RuleEditorModal({
                       <select
                         value={condition.field}
                         onChange={e => {
-                          const newField = e.target.value;
+                          const newField = e.target.value as VisibilityCondition['field'];
                           const validOps = getOperatorsForField(newField);
                           updateCondition(index, {
-                            field: newField as any,
-                            operator: validOps.includes(condition.operator) ? condition.operator : validOps[0] as any,
+                            field: newField,
+                            operator: validOps.includes(condition.operator) ? condition.operator : validOps[0] as VisibilityCondition['operator'],
                           });
                         }}
                         className="flex-1 px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
@@ -438,7 +446,7 @@ function RuleEditorModal({
                       </select>
                       <select
                         value={condition.operator}
-                        onChange={e => updateCondition(index, { operator: e.target.value as any })}
+                        onChange={e => updateCondition(index, { operator: e.target.value as VisibilityCondition['operator'] })}
                         className="flex-1 px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
                       >
                         {getOperatorsForField(condition.field).map(op => (

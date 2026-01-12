@@ -102,6 +102,9 @@ function evaluateCondition(condition: VisibilityCondition, email: EmailData): bo
   const fieldValue = getFieldValue(condition, email);
   const compareValue = condition.value;
 
+  // Debug logging
+  console.log(`[VisibilityEngine] Evaluating condition: field=${condition.field}, operator=${condition.operator}, value="${compareValue.slice(0, 50)}", fieldValue="${String(fieldValue).slice(0, 100)}"`);
+
   let result: boolean;
 
   // Handle boolean field
@@ -169,6 +172,7 @@ function evaluateCondition(condition: VisibilityCondition, email: EmailData): bo
       result = false;
   }
 
+  console.log(`[VisibilityEngine] Condition result: ${result}, negate: ${condition.negate}, final: ${condition.negate ? !result : result}`);
   return condition.negate ? !result : result;
 }
 
@@ -224,6 +228,9 @@ export async function evaluateMessage(
 ): Promise<VisibilityResult> {
   const rules = await getRulesForInbox(inboxId);
 
+  console.log(`[VisibilityEngine] Evaluating message: from="${email.fromAddress}", subject="${email.subject?.slice(0, 50)}", rules=${rules.length}`);
+  console.log(`[VisibilityEngine] Email body preview: textBody=${email.textBody?.slice(0, 100) || 'null'}, htmlBody=${email.htmlBody?.slice(0, 100) || 'null'}`);
+
   if (rules.length === 0) {
     return { action: 'SHOWN' };
   }
@@ -233,6 +240,8 @@ export async function evaluateMessage(
   const showOnlyRules = rules.filter(r => r.ruleType === 'SHOW_ONLY');
   const warnRules = rules.filter(r => r.ruleType === 'WARN');
   const redactRules = rules.filter(r => r.ruleType === 'REDACT');
+
+  console.log(`[VisibilityEngine] Rules by type: HIDE=${hideRules.length}, SHOW_ONLY=${showOnlyRules.length}, WARN=${warnRules.length}, REDACT=${redactRules.length}`);
 
   // 1. Check HIDE rules first (highest priority category)
   for (const rule of hideRules) {
@@ -252,9 +261,13 @@ export async function evaluateMessage(
   if (showOnlyRules.length > 0) {
     const matchesAnyShowOnly = showOnlyRules.some(rule => {
       const conditions = rule.conditions as unknown as VisibilityCondition[];
-      return evaluateConditions(conditions, email, rule.matchType);
+      console.log(`[VisibilityEngine] Checking SHOW_ONLY rule: "${rule.name}", conditions=${JSON.stringify(conditions)}`);
+      const matches = evaluateConditions(conditions, email, rule.matchType);
+      console.log(`[VisibilityEngine] SHOW_ONLY rule "${rule.name}" matches: ${matches}`);
+      return matches;
     });
 
+    console.log(`[VisibilityEngine] SHOW_ONLY final result: matchesAny=${matchesAnyShowOnly}`);
     if (!matchesAnyShowOnly) {
       return {
         action: 'HIDDEN',

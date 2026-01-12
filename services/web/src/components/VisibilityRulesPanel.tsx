@@ -351,14 +351,14 @@ function RuleEditorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60">
-      <GlassCard className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl overflow-hidden">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <div className="p-4 border-b border-white/10">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 overflow-y-auto">
+      <GlassCard className="w-full max-w-2xl my-4 flex flex-col rounded-2xl">
+        <form onSubmit={handleSubmit} className="flex flex-col max-h-[85vh]">
+          <div className="p-4 border-b border-white/10 shrink-0">
             <h3 className="font-bold text-text-main">{rule ? 'Sửa quy tắc' : 'Quy tắc mới'}</h3>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
             {/* Name */}
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-1">Tên quy tắc</label>
@@ -516,7 +516,7 @@ function RuleEditorModal({
             </label>
           </div>
 
-          <div className="p-4 border-t border-white/10 flex justify-end gap-2">
+          <div className="p-4 border-t border-white/10 flex justify-end gap-2 shrink-0">
             <button
               type="button"
               onClick={onClose}

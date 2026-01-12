@@ -18,6 +18,7 @@ const DEFAULTS: Record<string, string> = {
   PUBLIC_INBOX_LIMIT_MODE: "none",
   PUBLIC_INBOX_MAX_EMAILS: "100",
   PUBLIC_INBOX_MAX_DAYS: "7",
+  REQUIRE_EMAIL_VERIFICATION: "true", // Default: require verification
 };
 
 /**
@@ -53,4 +54,13 @@ export function getDateCutoff(maxDays: number): Date {
   cutoff.setDate(cutoff.getDate() - maxDays);
   cutoff.setHours(0, 0, 0, 0);
   return cutoff;
+}
+
+/**
+ * Check if email verification is required for new registrations
+ * Reads from DB (dynamic) with ENV fallback
+ */
+export async function isEmailVerificationRequired(): Promise<boolean> {
+  const value = await getSystemSetting("REQUIRE_EMAIL_VERIFICATION");
+  return value.toLowerCase() === "true";
 }

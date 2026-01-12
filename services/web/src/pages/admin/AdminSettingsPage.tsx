@@ -4,6 +4,12 @@ import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 
+interface SystemSetting {
+    key: string;
+    value: string;
+    description?: string;
+}
+
 export function AdminSettingsPage() {
     const { token } = useAuth();
     const [password, setPassword] = useState("");
@@ -34,6 +40,10 @@ export function AdminSettingsPage() {
     const [twoFABusy, setTwoFABusy] = useState(false);
     const [twoFAError, setTwoFAError] = useState("");
 
+    // Email verification setting
+    const [emailVerificationRequired, setEmailVerificationRequired] = useState(true);
+    const [emailVerificationLoading, setEmailVerificationLoading] = useState(false);
+
     const loadProfile = useCallback(async () => {
         try {
             const profileRes = await api<{ user: typeof profile }>("/admin/profile", { token });
@@ -46,12 +56,17 @@ export function AdminSettingsPage() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [profileRes, systemRes] = await Promise.all([
+                const [profileRes, systemRes, settingsRes] = await Promise.all([
                     api<{ user: typeof profile }>("/admin/profile", { token }),
-                    api<{ system: typeof systemInfo }>("/admin/system-info", { token })
+                    api<{ system: typeof systemInfo }>("/admin/system-info", { token }),
+                    api<{ settings: SystemSetting[] }>("/admin/system/settings", { token })
                 ]);
                 setProfile(profileRes.user);
                 setSystemInfo(systemRes.system);
+
+                // Load email verification setting
+                const emailVerifSetting = settingsRes.settings.find(s => s.key === "REQUIRE_EMAIL_VERIFICATION");
+                setEmailVerificationRequired(emailVerifSetting?.value !== "false");
             } catch {
                 // Silent fail
             }
@@ -137,6 +152,30 @@ export function AdminSettingsPage() {
         }
     };
 
+    const toggleEmailVerification = async () => {
+        setEmailVerificationLoading(true);
+        try {
+            const newValue = !emailVerificationRequired;
+            await api("/admin/system/settings", {
+                method: "POST",
+                token,
+                body: {
+                    key: "REQUIRE_EMAIL_VERIFICATION",
+                    value: String(newValue)
+                }
+            });
+            setEmailVerificationRequired(newValue);
+            toast.success(newValue
+                ? "Đã bật xác minh email cho người dùng mới"
+                : "Đã tắt xác minh email - người dùng mới không cần verify"
+            );
+        } catch (error) {
+            toast.error(getFriendlyErrorMessage((error as Error).message));
+        } finally {
+            setEmailVerificationLoading(false);
+        }
+    };
+
     return (
         <div className="p-4 md:p-6 max-w-2xl">
             <div className="mb-6">
@@ -209,6 +248,46 @@ export function AdminSettingsPage() {
                     ) : (
                         <div className="text-sm text-muted">Đang tải...</div>
                     )}
+                </div>
+            </div>
+
+            {/* Email Verification Setting */}
+            <div className="bg-surface border border-border rounded-lg p-5 mt-6">
+                <h3 className="text-sm font-medium mb-4 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                    </svg>
+                    Xác minh Email khi đăng ký
+                </h3>
+                <div className="space-y-3">
+                    <p className="text-sm text-muted">
+                        Khi bật, người dùng mới đăng ký phải xác minh email trước khi đăng nhập.
+                        Khi tắt, tài khoản được kích hoạt ngay sau khi đăng ký.
+                    </p>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <span className={`text-sm font-medium ${emailVerificationRequired ? "text-green-600" : "text-amber-600"}`}>
+                                {emailVerificationRequired ? "Đang yêu cầu xác minh" : "Không yêu cầu xác minh"}
+                            </span>
+                        </div>
+                        <button
+                            onClick={toggleEmailVerification}
+                            disabled={emailVerificationLoading}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                                emailVerificationRequired ? "bg-green-500" : "bg-slate-300 dark:bg-slate-600"
+                            } ${emailVerificationLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                        >
+                            <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    emailVerificationRequired ? "translate-x-6" : "translate-x-1"
+                                }`}
+                            />
+                        </button>
+                    </div>
+                    <p className="text-xs text-muted border-t border-border pt-3 mt-3">
+                        Lưu ý: Thay đổi này chỉ áp dụng cho người dùng mới. Để xác minh thủ công user đã đăng ký,
+                        vào <a href="/admin/users" className="text-primary hover:underline">Quản lý người dùng</a> và click vào "Chưa xác thực".
+                    </p>
                 </div>
             </div>
 

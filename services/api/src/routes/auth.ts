@@ -8,6 +8,7 @@ import { verifyPassword, hashPassword } from "../utils/password";
 import { encrypt, decrypt } from "../utils/encryption";
 import { appConfig } from "../config";
 import { outboundService } from "../services/outbound";
+import { isEmailVerificationRequired } from "../utils/system-settings";
 import { recordAudit } from "../utils/audit";
 import { TIER_LIMITS } from "./billing";
 
@@ -32,6 +33,9 @@ export async function authRoutes(app: FastifyInstance) {
 
     const passwordHash = await hashPassword(password);
 
+    // Check dynamic setting from DB (not static ENV)
+    const requireVerification = await isEmailVerificationRequired();
+
     // Generate verification token
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -42,14 +46,14 @@ export async function authRoutes(app: FastifyInstance) {
         passwordHash,
         role: "USER",
         // Auto-verify if email verification is disabled
-        emailVerified: appConfig.requireEmailVerification ? null : new Date(),
-        verificationToken: appConfig.requireEmailVerification ? verificationToken : null,
-        verificationTokenExpiresAt: appConfig.requireEmailVerification ? verificationTokenExpiresAt : null,
+        emailVerified: requireVerification ? null : new Date(),
+        verificationToken: requireVerification ? verificationToken : null,
+        verificationTokenExpiresAt: requireVerification ? verificationTokenExpiresAt : null,
       },
     });
 
     // Send verification email (only if verification is required)
-    if (appConfig.requireEmailVerification) {
+    if (requireVerification) {
       try {
         const verifyUrl = `${appConfig.webUrl}/verify-email?token=${verificationToken}`;
         await outboundService.sendVerificationEmail(email, verifyUrl);
@@ -67,7 +71,7 @@ export async function authRoutes(app: FastifyInstance) {
     return {
       token,
       user: { id: user.id, email: user.email, role: user.role },
-      message: appConfig.requireEmailVerification
+      message: requireVerification
         ? "Registration successful. Please check your email to verify your account."
         : "Registration successful. You can now login."
     };
@@ -194,8 +198,9 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
-    // Check email verification (skip if verification is disabled)
-    if (appConfig.requireEmailVerification && !user.emailVerified) {
+    // Check email verification (dynamic setting from DB)
+    const requireVerification = await isEmailVerificationRequired();
+    if (requireVerification && !user.emailVerified) {
       await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "email_not_verified" });
       return reply.status(403).send({ error: "Email not verified. Please check your email." });
     }

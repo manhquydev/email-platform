@@ -199,7 +199,7 @@ export async function publicInboxRoutes(app: FastifyInstance) {
     }> = [];
 
     for (const m of rawMessages) {
-      if (visibleMessages.length >= query.data.limit) break;
+      if (visibleMessages.length >= effectiveLimit) break;
 
       const emailData: EmailData = {
         fromAddress: m.fromAddress,

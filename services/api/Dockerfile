@@ -2,8 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install OpenSSL for Prisma
-RUN apk add --no-cache openssl
+# Install OpenSSL for Prisma, rclone for cloud backup, and bash
+RUN apk add --no-cache openssl rclone bash docker-cli
 
 COPY package*.json ./
 COPY tsconfig.json ./

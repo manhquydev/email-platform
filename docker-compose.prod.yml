@@ -142,6 +142,9 @@ services:
     volumes:
       - api_storage:/app/storage
       - postfix_shared:/app/shared
+      - ./backups:/app/backups
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.config/rclone:/root/.config/rclone:ro
     ports:
       - "2525:2525" # SMTP Inbound (không qua Caddy)
     networks:

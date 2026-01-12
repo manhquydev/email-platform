@@ -5,6 +5,7 @@ import { recordAudit } from "../utils/audit";
 import { storageService } from "../services/storage";
 import { generateSessionId } from "../utils/session";
 import { evaluateMessage, logVisibilityAudit, redactMessage, type EmailData } from "../services/visibility-engine";
+import { getPublicInboxSettings, getDateCutoff } from "../utils/system-settings";
 
 /**
  * Public inbox viewer routes - no authentication required
@@ -136,11 +137,34 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       });
     }
 
+    // Get system settings for public inbox limits
+    const settings = await getPublicInboxSettings();
+
+    // Build where clause based on limit mode
+    const baseWhere: Record<string, unknown> = { inboxId: inbox.id, deletedAt: null };
+
+    // Apply date filter if mode includes 'days'
+    if (settings.limitMode === "days" || settings.limitMode === "both") {
+      baseWhere.receivedAt = { gte: getDateCutoff(settings.maxDays) };
+    }
+
+    // Calculate effective limit based on settings
+    let effectiveLimit = query.data.limit;
+    if (settings.limitMode === "count" || settings.limitMode === "both") {
+      const remaining = Math.max(0, settings.maxEmails - query.data.offset);
+      effectiveLimit = Math.min(effectiveLimit, remaining);
+    }
+
+    // If no emails allowed due to limits, return empty
+    if (effectiveLimit <= 0) {
+      return { data: [], meta: { total: 0, limit: query.data.limit, offset: query.data.offset, limitMode: settings.limitMode } };
+    }
+
     // Fetch more messages than requested to account for visibility filtering
-    const fetchLimit = query.data.limit * 3;
+    const fetchLimit = effectiveLimit * 3;
     const [rawMessages, total] = await Promise.all([
       prisma.message.findMany({
-        where: { inboxId: inbox.id, deletedAt: null },
+        where: baseWhere,
         orderBy: { receivedAt: query.data.sort },
         take: fetchLimit,
         skip: query.data.offset,
@@ -159,7 +183,7 @@ export async function publicInboxRoutes(app: FastifyInstance) {
           _count: { select: { attachments: true } },
         },
       }),
-      prisma.message.count({ where: { inboxId: inbox.id, deletedAt: null } }),
+      prisma.message.count({ where: baseWhere }),
     ]);
 
     // Apply visibility rules to filter/transform messages
@@ -232,7 +256,7 @@ export async function publicInboxRoutes(app: FastifyInstance) {
       timestamp: Date.now(),
     });
 
-    return { data: messagesWithPreview, meta: { total, limit: query.data.limit, offset: query.data.offset } };
+    return { data: messagesWithPreview, meta: { total, limit: query.data.limit, offset: query.data.offset, limitMode: settings.limitMode } };
   });
 
   /**

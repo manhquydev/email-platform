@@ -38,6 +38,9 @@ export function AdminSystem({ token }: { token: string }) {
     const [history, setHistory] = useState<any[]>([]);
     const [saving, setSaving] = useState(false);
 
+    // Local state for limit mode to allow UI toggling before save
+    const [localLimitMode, setLocalLimitMode] = useState<string | null>(null);
+
     const loadData = useCallback(async () => {
         try {
             const [statsRes, settingsRes] = await Promise.all([
@@ -91,6 +94,12 @@ export function AdminSystem({ token }: { token: string }) {
     if (loading && !stats) return <LoadingSpinner />;
 
     const retentionDays = settings.find(s => s.key === "RETENTION_DAYS")?.value || "30";
+
+    // New variables
+    const inboxLimitModeSetting = settings.find(s => s.key === "PUBLIC_INBOX_LIMIT_MODE")?.value || "none";
+    const inboxLimitMode = localLimitMode !== null ? localLimitMode : inboxLimitModeSetting;
+    const inboxMaxEmails = settings.find(s => s.key === "PUBLIC_INBOX_MAX_EMAILS")?.value || "100";
+    const inboxMaxDays = settings.find(s => s.key === "PUBLIC_INBOX_MAX_DAYS")?.value || "7";
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -207,6 +216,96 @@ export function AdminSystem({ token }: { token: string }) {
                             </div>
                             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
                                 <strong>Lưu ý:</strong> Hệ thống sẽ tự động xóa tất cả email (trừ email được ghim) đã nhận quá thời gian trên vào lúc 3:00 AM hàng ngày.
+                            </div>
+                        </div>
+                    </GlassCard>
+
+                    {/* Public Inbox Limits */}
+                    <GlassCard>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-semibold text-nebula-text">Giới hạn Inbox Công khai</h3>
+                        </div>
+                        <div className="space-y-4 mt-4">
+                            <div>
+                                <label className="block text-xs text-nebula-text-muted mb-1.5">Chế độ giới hạn</label>
+                                <select
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-nebula-text focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                                    value={inboxLimitMode}
+                                    onChange={(e) => setLocalLimitMode(e.target.value)}
+                                    disabled={saving}
+                                    id="limit-mode-select"
+                                >
+                                    <option value="none">Không giới hạn</option>
+                                    <option value="count">Theo số lượng email</option>
+                                    <option value="days">Theo thời gian (ngày)</option>
+                                    <option value="both">Cả hai (cái nào đến trước)</option>
+                                </select>
+                            </div>
+
+                            {inboxLimitMode !== 'none' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    {(inboxLimitMode === 'count' || inboxLimitMode === 'both') && (
+                                        <div>
+                                            <label className="block text-xs text-nebula-text-muted mb-1.5">Số email tối đa</label>
+                                            <input
+                                                type="number"
+                                                defaultValue={inboxMaxEmails}
+                                                placeholder="100"
+                                                id="max-emails-input"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-nebula-text focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                                            />
+                                        </div>
+                                    )}
+                                    {(inboxLimitMode === 'days' || inboxLimitMode === 'both') && (
+                                        <div>
+                                            <label className="block text-xs text-nebula-text-muted mb-1.5">Số ngày tối đa</label>
+                                            <input
+                                                type="number"
+                                                defaultValue={inboxMaxDays}
+                                                placeholder="7"
+                                                id="max-days-input"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-nebula-text focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex justify-end">
+                                <PremiumButton
+                                    onClick={async () => {
+                                        setSaving(true);
+                                        try {
+                                            const limitMode = (document.getElementById('limit-mode-select') as HTMLSelectElement).value;
+                                            const maxEmails = (document.getElementById('max-emails-input') as HTMLInputElement)?.value || "100";
+                                            const maxDays = (document.getElementById('max-days-input') as HTMLInputElement)?.value || "7";
+
+                                            await Promise.all([
+                                                api("/admin/system/settings", { method: "POST", token, body: { key: "PUBLIC_INBOX_LIMIT_MODE", value: limitMode } }),
+                                                api("/admin/system/settings", { method: "POST", token, body: { key: "PUBLIC_INBOX_MAX_EMAILS", value: maxEmails } }),
+                                                api("/admin/system/settings", { method: "POST", token, body: { key: "PUBLIC_INBOX_MAX_DAYS", value: maxDays } })
+                                            ]);
+
+                                            toast.success("Đã cập nhật giới hạn inbox");
+                                            setLocalLimitMode(null); // Reset local state to fallback to API
+                                            await loadData();
+                                        } catch (e) {
+                                            toast.error("Lỗi: " + (e as Error).message);
+                                        } finally {
+                                            setSaving(false);
+                                        }
+                                    }}
+                                    disabled={saving || inboxLimitMode === 'none'}
+                                >
+                                    Lưu giới hạn
+                                </PremiumButton>
+                            </div>
+                            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-200">
+                                <strong>Thông tin:</strong> Giới hạn này áp dụng cho người xem inbox công khai (không đăng nhập).
+                                <ul className="list-disc ml-4 mt-1 space-y-1 text-blue-200/80">
+                                    <li><strong>Theo số lượng:</strong> Chỉ hiển thị N email mới nhất.</li>
+                                    <li><strong>Theo thời gian:</strong> Chỉ hiển thị email trong N ngày gần đây.</li>
+                                </ul>
                             </div>
                         </div>
                     </GlassCard>

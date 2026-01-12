@@ -6,6 +6,40 @@
 import { prisma } from '../lib/prisma';
 import type { VisibilityRule, VisibilityRuleType, FilterMatchType } from '@prisma/client';
 
+// HTML entity decode map for common entities
+const HTML_ENTITIES: Record<string, string> = {
+  '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>',
+  '&quot;': '"', '&apos;': "'", '&#39;': "'",
+  '&aacute;': 'á', '&agrave;': 'à', '&atilde;': 'ã', '&acirc;': 'â',
+  '&eacute;': 'é', '&egrave;': 'è', '&etilde;': 'ẽ', '&ecirc;': 'ê',
+  '&iacute;': 'í', '&igrave;': 'ì', '&itilde;': 'ĩ',
+  '&oacute;': 'ó', '&ograve;': 'ò', '&otilde;': 'õ', '&ocirc;': 'ô',
+  '&uacute;': 'ú', '&ugrave;': 'ù', '&utilde;': 'ũ',
+  '&yacute;': 'ý', '&ygrave;': 'ỳ',
+};
+
+/**
+ * Strip HTML tags and decode common entities from HTML content
+ */
+function stripHtmlForSearch(html: string): string {
+  // Remove HTML tags
+  let text = html.replace(/<[^>]*>/g, ' ');
+
+  // Decode numeric HTML entities (&#xxx; or &#xXXX;)
+  text = text.replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)));
+  text = text.replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)));
+
+  // Decode named HTML entities
+  for (const [entity, char] of Object.entries(HTML_ENTITIES)) {
+    text = text.replace(new RegExp(entity, 'gi'), char);
+  }
+
+  // Normalize whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+
+  return text;
+}
+
 // Condition structure matching schema.prisma Json field
 export interface VisibilityCondition {
   field: 'FROM' | 'TO' | 'SUBJECT' | 'BODY' | 'HEADER' | 'SIZE' | 'SPAM_SCORE' | 'HAS_ATTACHMENT';
@@ -78,9 +112,16 @@ function getFieldValue(condition: VisibilityCondition, email: EmailData): string
       return email.subject || '';
     case 'BODY':
       // Skip large bodies for performance
-      const body = email.textBody || email.htmlBody || '';
-      if (body.length > 10_000_000) return ''; // 10MB limit
-      return body;
+      if (email.textBody) {
+        if (email.textBody.length > 10_000_000) return ''; // 10MB limit
+        return email.textBody;
+      }
+      if (email.htmlBody) {
+        if (email.htmlBody.length > 10_000_000) return ''; // 10MB limit
+        // Strip HTML tags and decode entities for searchable text
+        return stripHtmlForSearch(email.htmlBody);
+      }
+      return '';
     case 'HEADER':
       if (!condition.headerName || !email.headers) return '';
       return email.headers[condition.headerName] || '';

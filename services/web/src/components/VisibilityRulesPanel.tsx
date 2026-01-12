@@ -415,61 +415,68 @@ function RuleEditorModal({
             {/* Conditions */}
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-2">Điều kiện</label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {conditions.map((condition, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 bg-surface/30 rounded-lg">
-                    <select
-                      value={condition.field}
-                      onChange={e => {
-                        const newField = e.target.value;
-                        const validOps = getOperatorsForField(newField);
-                        updateCondition(index, {
-                          field: newField as any,
-                          operator: validOps.includes(condition.operator) ? condition.operator : validOps[0] as any,
-                        });
-                      }}
-                      className="px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
-                    >
-                      {Object.entries(FIELD_LABELS).map(([k, v]) => (
-                        <option key={k} value={k}>{v}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={condition.operator}
-                      onChange={e => updateCondition(index, { operator: e.target.value as any })}
-                      className="px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
-                    >
-                      {getOperatorsForField(condition.field).map(op => (
-                        <option key={op} value={op}>{OPERATOR_LABELS[op]}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="text"
-                      value={condition.value}
-                      onChange={e => updateCondition(index, { value: e.target.value })}
-                      placeholder={condition.field === 'HAS_ATTACHMENT' ? 'true hoặc false' : 'Giá trị...'}
-                      className="flex-1 px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
-                    />
-                    <label className="flex items-center gap-1 text-[10px] text-text-secondary">
-                      <input
-                        type="checkbox"
-                        checked={condition.negate || false}
-                        onChange={e => updateCondition(index, { negate: e.target.checked })}
-                        className="w-3 h-3"
-                      />
-                      KHÔNG
-                    </label>
-                    {conditions.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeCondition(index)}
-                        className="p-1 hover:bg-red-500/20 rounded text-red-400"
+                  <div key={index} className="p-3 bg-surface/30 rounded-lg space-y-2">
+                    {/* Row 1: Field & Operator selects */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={condition.field}
+                        onChange={e => {
+                          const newField = e.target.value;
+                          const validOps = getOperatorsForField(newField);
+                          updateCondition(index, {
+                            field: newField as any,
+                            operator: validOps.includes(condition.operator) ? condition.operator : validOps[0] as any,
+                          });
+                        }}
+                        className="flex-1 px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
+                        {Object.entries(FIELD_LABELS).map(([k, v]) => (
+                          <option key={k} value={k}>{v}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={condition.operator}
+                        onChange={e => updateCondition(index, { operator: e.target.value as any })}
+                        className="flex-1 px-2 py-1.5 bg-surface/50 border border-white/10 rounded text-sm text-text-main"
+                      >
+                        {getOperatorsForField(condition.field).map(op => (
+                          <option key={op} value={op}>{OPERATOR_LABELS[op]}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* Row 2: Value input & controls */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={condition.value}
+                        onChange={e => updateCondition(index, { value: e.target.value })}
+                        placeholder={condition.field === 'HAS_ATTACHMENT' ? 'true hoặc false' : 'Nhập giá trị để so khớp...'}
+                        className="flex-1 px-3 py-2 bg-surface/50 border border-white/10 rounded text-sm text-text-main min-w-0"
+                      />
+                      <label className="flex items-center gap-1.5 text-xs text-text-secondary whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={condition.negate || false}
+                          onChange={e => updateCondition(index, { negate: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        Phủ định
+                      </label>
+                      {conditions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeCondition(index)}
+                          className="p-1.5 hover:bg-red-500/20 rounded text-red-400"
+                          title="Xóa điều kiện"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

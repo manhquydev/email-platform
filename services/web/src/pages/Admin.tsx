@@ -21,6 +21,7 @@ import { AdminSystem } from "../components/admin/AdminSystem";
 import { AdminInboxes } from "../components/admin/AdminInboxes";
 import { AdminOrders } from "../components/admin/AdminOrders";
 import { AdminDomains } from "../components/admin/AdminDomains";
+import { AdminBackup } from "../components/admin/AdminBackup";
 
 export function Admin() {
     const { user, token } = useAuth();
@@ -55,6 +56,7 @@ export function Admin() {
                         <Route path="analytics" element={<AnalyticsPage />} />
                         <Route path="telegram" element={<TelegramManagementPage />} />
                         <Route path="settings" element={<AdminSettingsPage />} />
+                        <Route path="backup" element={<AdminBackup token={token} />} />
                     </Route>
                 </Routes>
             </div>

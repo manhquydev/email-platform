@@ -14,6 +14,7 @@ import { adminPackagesRoutes } from "./packages";
 import { adminSystemRoutes } from "./system";
 import { adminAnalyticsRoutes } from "./analytics";
 import { adminTelegramRoutes } from "./telegram";
+import { adminBackupRoutes } from "./backup";
 
 export async function adminRoutes(app: FastifyInstance) {
     // Register all admin route modules
@@ -27,6 +28,7 @@ export async function adminRoutes(app: FastifyInstance) {
     await adminSystemRoutes(app);
     await adminAnalyticsRoutes(app);
     await adminTelegramRoutes(app);
+    await adminBackupRoutes(app);
 }
 
 // Re-export individual modules for selective use
@@ -41,4 +43,5 @@ export {
     adminSystemRoutes,
     adminAnalyticsRoutes,
     adminTelegramRoutes,
+    adminBackupRoutes,
 };

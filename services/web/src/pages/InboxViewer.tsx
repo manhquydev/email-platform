@@ -58,33 +58,33 @@ export function InboxViewer() {
     if (status === 404) {
       return {
         type: "not_found",
-        message: "Inbox not found",
-        suggestion: "Please verify the email address and try again.",
+        message: "Không tìm thấy hộp thư",
+        suggestion: "Vui lòng kiểm tra lại địa chỉ email và thử lại.",
       };
     }
     if (status === 403) {
       if (data.code === "INBOX_PRIVATE") {
         return {
           type: "private",
-          message: data.error || "This inbox is private.",
-          suggestion: "If you're the owner, please log in to access this inbox.",
+          message: data.error || "Hộp thư này ở chế độ riêng tư.",
+          suggestion: "Nếu bạn là chủ sở hữu, vui lòng đăng nhập để truy cập.",
         };
       }
       return {
         type: "error",
-        message: data.error || "Access denied",
+        message: data.error || "Truy cập bị từ chối",
       };
     }
     if (status === 429) {
       return {
         type: "rate_limit",
-        message: "Too many requests",
-        suggestion: "Please wait a moment and try again.",
+        message: "Quá nhiều yêu cầu",
+        suggestion: "Vui lòng đợi một lát rồi thử lại.",
       };
     }
     return {
       type: "error",
-      message: data.error || "Failed to access inbox",
+      message: data.error || "Không thể truy cập hộp thư",
     };
   };
 
@@ -226,7 +226,7 @@ export function InboxViewer() {
           onClick={handleClearError}
           className="px-6 py-2 bg-nebula-violet text-white rounded-lg hover:bg-nebula-violet-dark"
         >
-          Try another inbox
+          Thử hộp thư khác
         </button>
       </div>
     );
@@ -238,14 +238,14 @@ export function InboxViewer() {
       <header className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Public Inbox Viewer
+            Xem hộp thư công khai
           </h1>
           {email && !accessError && (
             <button
               onClick={() => setShowTelegramModal(true)}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
             >
-              Link to Telegram
+              Liên kết Telegram
             </button>
           )}
         </div>
@@ -263,13 +263,25 @@ export function InboxViewer() {
             {/* Message List */}
             <div className="lg:w-1/3 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="p-3 border-b dark:border-gray-700 flex justify-between items-center">
-                <span className="text-sm font-medium">{email}</span>
-                <button
-                  onClick={() => setEmail("")}
-                  className="text-sm text-blue-500 hover:underline"
-                >
-                  Change
-                </button>
+                <span className="text-sm font-medium truncate flex-1">{email}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => fetchMessages(email, page)}
+                    disabled={loading}
+                    className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
+                    title="Tải lại"
+                  >
+                    <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setEmail("")}
+                    className="text-sm text-blue-500 hover:underline"
+                  >
+                    Đổi
+                  </button>
+                </div>
               </div>
               <MessageList
                 messages={messages}

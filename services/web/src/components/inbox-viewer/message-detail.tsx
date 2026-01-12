@@ -54,13 +54,13 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
   if (!message) {
     return (
       <div className="flex items-center justify-center h-full text-nebula-text-muted">
-        Select a message to view
+        Chọn một email để xem
       </div>
     );
   }
 
   const formatSize = (bytes: number | null) => {
-    if (!bytes) return "Unknown";
+    if (!bytes) return "Không rõ";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -70,12 +70,12 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
     <div className="flex flex-col h-full overflow-auto">
       {/* Header */}
       <div className="p-4 border-b border-nebula-border">
-        <h2 className="text-xl font-bold mb-2">{message.subject || "(no subject)"}</h2>
+        <h2 className="text-xl font-bold mb-2">{message.subject || "(không có tiêu đề)"}</h2>
         <div className="text-sm text-nebula-text-muted space-y-1">
-          <div><strong>From:</strong> {message.fromAddress || "(unknown)"}</div>
-          <div><strong>To:</strong> {message.toAddress || "(unknown)"}</div>
+          <div><strong>Từ:</strong> {message.fromAddress || "(không rõ)"}</div>
+          <div><strong>Đến:</strong> {message.toAddress || "(không rõ)"}</div>
           <div>
-            <strong>Date:</strong> {format(new Date(message.receivedAt), "PPpp")}
+            <strong>Ngày:</strong> {format(new Date(message.receivedAt), "PPpp")}
           </div>
         </div>
       </div>
@@ -84,7 +84,7 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
       {message.attachments.length > 0 && (
         <div className="p-4 border-b border-nebula-border bg-nebula-elevated">
           <div className="text-sm font-medium mb-2">
-            Attachments ({message.attachments.length})
+            Tệp đính kèm ({message.attachments.length})
           </div>
           <div className="flex flex-wrap gap-2">
             {message.attachments.map((att) => (
@@ -112,7 +112,7 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
         ) : message.textBody ? (
           <pre className="whitespace-pre-wrap font-sans text-sm">{message.textBody}</pre>
         ) : (
-          <div className="text-nebula-text-muted italic">(no content)</div>
+          <div className="text-nebula-text-muted italic">(không có nội dung)</div>
         )}
       </div>
     </div>

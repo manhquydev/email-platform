@@ -18,14 +18,14 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
 
     // Empty check
     if (!trimmedEmail) {
-      setError("Please enter an email address");
+      setError("Vui lòng nhập địa chỉ email");
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
-      setError("Invalid email format. Please enter a valid email address.");
+      setError("Định dạng email không hợp lệ. Vui lòng nhập địa chỉ email đúng.");
       return;
     }
 
@@ -36,7 +36,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
       <div className="flex flex-col gap-3">
         <label className="text-sm font-medium text-nebula-text-muted">
-          Enter email address to view inbox
+          Nhập địa chỉ email để xem hộp thư
         </label>
         <div className="flex gap-2">
           <input
@@ -46,7 +46,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
               setEmail(e.target.value);
               if (error) setError("");
             }}
-            placeholder="user@example.com"
+            placeholder="nguoidung@example.com"
             className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-nebula-violet bg-nebula-elevated text-nebula-text ${
               error ? "border-red-500" : "border-nebula-border"
             }`}
@@ -57,7 +57,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
             disabled={loading}
             className="px-6 py-2 bg-nebula-violet text-white rounded-lg hover:bg-nebula-violet-dark disabled:opacity-50"
           >
-            {loading ? "..." : "Search"}
+            {loading ? "..." : "Tìm kiếm"}
           </button>
         </div>
         {error && (
@@ -69,7 +69,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
           </p>
         )}
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Note: Only public inboxes can be viewed. Private inboxes require owner authentication.
+          Lưu ý: Chỉ có thể xem hộp thư công khai. Hộp thư riêng tư yêu cầu đăng nhập.
         </p>
       </div>
     </form>

@@ -35,7 +35,7 @@ export function MessageList({
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-auto">
         {messages.length === 0 ? (
-          <div className="p-4 text-center text-nebula-text-muted">No messages found</div>
+          <div className="p-4 text-center text-nebula-text-muted">Không có email nào</div>
         ) : (
           <ul className="divide-y divide-nebula-border">
             {messages.map((msg) => (
@@ -48,19 +48,19 @@ export function MessageList({
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className="font-medium text-sm truncate max-w-[200px]">
-                    {msg.fromAddress || "(unknown)"}
+                    {msg.fromAddress || "(không rõ)"}
                   </span>
                   <span className="text-xs text-nebula-text-muted">
                     {formatDistanceToNow(new Date(msg.receivedAt), { addSuffix: true })}
                   </span>
                 </div>
                 <div className="text-sm font-medium mb-1 truncate">
-                  {msg.subject || "(no subject)"}
+                  {msg.subject || "(không có tiêu đề)"}
                 </div>
                 <div className="text-xs text-nebula-text-muted truncate">{msg.preview}</div>
                 {msg.attachmentCount > 0 && (
                   <span className="text-xs text-info mt-1 inline-block">
-                    {msg.attachmentCount} attachment(s)
+                    {msg.attachmentCount} tệp đính kèm
                   </span>
                 )}
               </li>
@@ -77,7 +77,7 @@ export function MessageList({
             disabled={page <= 1}
             className="px-3 py-1 rounded border disabled:opacity-50"
           >
-            Prev
+            Trước
           </button>
           <span className="px-3 py-1">
             {page} / {totalPages}
@@ -87,7 +87,7 @@ export function MessageList({
             disabled={page >= totalPages}
             className="px-3 py-1 rounded border disabled:opacity-50"
           >
-            Next
+            Sau
           </button>
         </div>
       )}

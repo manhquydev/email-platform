@@ -300,6 +300,8 @@ export function AdminSettingsPage() {
                     Đổi mật khẩu
                 </h3>
                 <form onSubmit={submit} className="space-y-4">
+                    {/* Hidden username field for browser accessibility */}
+                    <input type="text" autoComplete="username" className="hidden" aria-hidden="true" tabIndex={-1} />
                     <div>
                         <label className="block text-xs text-muted mb-1.5">Mật khẩu mới</label>
                         <input

@@ -26,9 +26,11 @@ export function ClarityInsightsWidget() {
         setError(null);
       } catch (err) {
         const message = (err as Error).message;
-        // Don't show error for "not configured" - just hide widget
+        // Don't show error for "not configured" or rate limiting - just hide widget
         if (message.includes("503") || message.includes("not configured")) {
           setError("not_configured");
+        } else if (message.includes("429") || message.includes("Too Many Requests")) {
+          setError("rate_limited");
         } else {
           setError(message);
         }
@@ -55,6 +57,16 @@ export function ClarityInsightsWidget() {
       <div className="text-center py-6 text-nebula-text-muted">
         <p className="text-sm mb-2">Clarity API chưa được cấu hình</p>
         <p className="text-xs">Thêm CLARITY_API_TOKEN vào biến môi trường API server</p>
+      </div>
+    );
+  }
+
+  // Handle rate limiting gracefully
+  if (error === "rate_limited") {
+    return (
+      <div className="text-center py-6 text-nebula-text-muted">
+        <p className="text-sm mb-2">Đã vượt giới hạn request</p>
+        <p className="text-xs">Thử lại sau vài phút</p>
       </div>
     );
   }

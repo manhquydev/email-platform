@@ -191,6 +191,8 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
                     <h3 className="text-lg font-semibold text-nebula-text">Đổi mật khẩu</h3>
                 </div>
                 <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+                    {/* Hidden username field for browser accessibility */}
+                    <input type="text" autoComplete="username" className="hidden" aria-hidden="true" tabIndex={-1} />
                     <div>
                         <Input
                             label="Mật khẩu mới"

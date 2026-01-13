@@ -219,3 +219,90 @@ Khi deploy có feature mới cần env vars (ví dụ: VAPID keys cho Push Notif
 ```bash
 ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-api-1 npx prisma migrate deploy"
 ```
+
+---
+
+## Kiến Thức Từ Lỗi Đã Gặp
+
+### WebSocket URL bị malformed
+
+**Triệu chứng:** Console log hiển thị URL như `wss://app.manhquy.clickhttps//api.manhquy.click/ws/events`
+
+**Nguyên nhân:** Code nối `window.location.host` với `API_BASE_URL` (đã là full URL) thay vì parse host từ API_BASE_URL.
+
+**Giải pháp:**
+```typescript
+// Sai:
+const WS_URL = `wss://${window.location.host}${API_BASE}/ws/events`;
+
+// Đúng - Parse URL để lấy host:
+const getApiHost = (): string => {
+  if (!API_BASE_URL) return window.location.host;
+  try {
+    const url = new URL(API_BASE_URL);
+    return url.host;
+  } catch {
+    return window.location.host;
+  }
+};
+const API_HOST = getApiHost();
+const WS_URL = `wss://${API_HOST}/ws/events`;
+```
+
+### Recharts chart width/height -1 warning
+
+**Triệu chứng:** Console warning về chart width(-1) và height(-1)
+
+**Nguyên nhân:** `ResponsiveContainer` render trước khi parent có dimensions (collapsed/hidden container).
+
+**Giải pháp:**
+```tsx
+// Thêm minHeight và minWidth vào container:
+<div className="h-64" style={{ minHeight: '256px', minWidth: 0 }}>
+  <ResponsiveContainer width="100%" height="100%">
+    ...
+  </ResponsiveContainer>
+</div>
+```
+
+### Password form accessibility warning
+
+**Triệu chứng:** Browser warning "Password forms should have (optionally hidden) username fields for accessibility"
+
+**Nguyên nhân:** Form chỉ có password field mà không có username field.
+
+**Giải pháp:**
+```tsx
+<form>
+  {/* Hidden username field for browser accessibility */}
+  <input
+    type="text"
+    autoComplete="username"
+    className="hidden"
+    aria-hidden="true"
+    tabIndex={-1}
+  />
+  <input type="password" autoComplete="new-password" />
+</form>
+```
+
+### 429 Too Many Requests từ external API
+
+**Triệu chứng:** Console báo 429 errors khi gọi Clarity API hoặc external services.
+
+**Nguyên nhân:** External API (Microsoft Clarity) có rate limit, không thể thay đổi từ phía chúng ta.
+
+**Giải pháp:**
+1. Handle 429 gracefully trong code, không hiển thị error message
+2. Thêm caching để giảm số lượng requests
+3. Thêm retry logic với exponential backoff nếu cần
+
+```typescript
+} catch (err) {
+  const message = (err as Error).message;
+  if (message.includes("429")) {
+    setError("rate_limited");  // Show friendly message instead of error
+  }
+}
+```
+

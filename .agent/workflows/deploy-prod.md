@@ -77,6 +77,19 @@ ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/emai
 ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && docker compose -f docker-compose.prod.yml build --no-cache api web && docker compose -f docker-compose.prod.yml up -d --force-recreate api web"
 ```
 
+### Rebuild Web với Vite Build Args
+
+> **QUAN TRỌNG:** Vite env vars (`VITE_*`) cần truyền qua `--build-arg` khi build Docker, không phải runtime env.
+
+```bash
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml build --no-cache --build-arg VITE_CLARITY_PROJECT_ID=uzly2516v2 web && docker compose -f docker-compose.prod.yml up -d --force-recreate web"
+```
+
+**Verify Clarity đã inject:**
+```bash
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "curl -s https://app.manhquy.click/assets/index-*.js | grep -o 'uzly2516v2' | head -1"
+```
+
 ---
 
 ## Server Info
@@ -118,6 +131,29 @@ API đang crash. Kiểm tra logs và restart:
 ```bash
 ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd /root/email-platform. && docker compose logs --tail 100 api && docker compose restart api"
 ```
+
+### Vite Environment Variables không hoạt động
+
+**Triệu chứng:** Biến `VITE_*` như `VITE_CLARITY_PROJECT_ID` không có trong bundle.
+
+**Nguyên nhân:** Vite inject env vars tại **build time**, không phải runtime. Docker `environment:` trong docker-compose chỉ set runtime env.
+
+**Giải pháp:**
+1. Đảm bảo Dockerfile có `ARG` và `ENV` cho biến Vite:
+   ```dockerfile
+   ARG VITE_CLARITY_PROJECT_ID
+   ENV VITE_CLARITY_PROJECT_ID=${VITE_CLARITY_PROJECT_ID}
+   ```
+
+2. Build với `--build-arg`:
+   ```bash
+   docker compose build --build-arg VITE_CLARITY_PROJECT_ID=uzly2516v2 web
+   ```
+
+3. Verify trong bundle:
+   ```bash
+   curl -s https://app.manhquy.click/assets/index-*.js | grep -o 'uzly2516v2'
+   ```
 
 ---
 

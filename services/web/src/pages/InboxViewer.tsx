@@ -1,6 +1,6 @@
 // services/web/src/pages/InboxViewer.tsx
 import { useState, useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { SearchForm } from "../components/inbox-viewer/search-form";
 import { MessageList } from "../components/inbox-viewer/message-list";
@@ -43,6 +43,7 @@ interface AccessError {
 
 export function InboxViewer() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [total, setTotal] = useState(0);
@@ -118,17 +119,27 @@ export function InboxViewer() {
     }
   }, []);
 
-  // Auto-load inbox from URL query param
-  useEffect(() => {
-    if (initialLoadDone) return;
-    const emailParam = searchParams.get("email");
-    if (emailParam) {
-      setInitialLoadDone(true);
-      handleSearch(emailParam);
-    }
-  }, [searchParams, initialLoadDone]);
+  
 
-  const handleSearch = async (emailAddr: string) => {
+  // Update URL when email changes (for shareable links)
+  const updateUrlWithEmail = useCallback((emailAddr: string) => {
+    const newUrl = emailAddr
+      ? "/inbox-viewer?email=" + encodeURIComponent(emailAddr)
+      : "/inbox-viewer";
+    navigate(newUrl, { replace: true });
+  }, [navigate]);
+
+  // Copy share link to clipboard
+  const handleCopyShareLink = () => {
+    const shareUrl = window.location.origin + "/inbox-viewer?email=" + encodeURIComponent(email);
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast.success("Đã sao chép link chia sẻ!");
+    }).catch(() => {
+      toast.error("Không thể sao chép link");
+    });
+  };
+
+const handleSearch = useCallback(async (emailAddr: string) => {
     setAccessError(null);
     // First validate inbox exists
     try {
@@ -145,14 +156,28 @@ export function InboxViewer() {
         throw new Error(error.message);
       }
 
+      // Update URL with email for shareable link
+      updateUrlWithEmail(emailAddr);
+
       // Fetch messages
       await fetchMessages(emailAddr, 1);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message);
     }
-  };
+  }, [updateUrlWithEmail, fetchMessages]);
 
+  // Auto-load inbox from URL query param
+  useEffect(() => {
+    if (initialLoadDone) return;
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setInitialLoadDone(true);
+      handleSearch(emailParam);
+    }
+  }, [searchParams, initialLoadDone, handleSearch]);
+
+  
   const handleSelectMessage = async (messageId: string) => {
     setDetailLoading(true);
     try {
@@ -183,6 +208,14 @@ export function InboxViewer() {
   const handleClearError = () => {
     setAccessError(null);
     setEmail("");
+    updateUrlWithEmail("");
+  };
+
+  const handleChangeEmail = () => {
+    setEmail("");
+    setMessages([]);
+    setSelectedMessage(null);
+    updateUrlWithEmail("");
   };
 
   const renderAccessError = () => {
@@ -241,12 +274,24 @@ export function InboxViewer() {
             Xem hộp thư công khai
           </h1>
           {email && !accessError && (
-            <button
-              onClick={() => setShowTelegramModal(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
-            >
-              Liên kết Telegram
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyShareLink}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm flex items-center gap-2"
+                title="Sao chép link chia sẻ"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Chia sẻ
+              </button>
+              <button
+                onClick={() => setShowTelegramModal(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
+              >
+                Liên kết Telegram
+              </button>
+            </div>
           )}
         </div>
       </header>
@@ -266,6 +311,15 @@ export function InboxViewer() {
                 <span className="text-sm font-medium truncate flex-1">{email}</span>
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={handleCopyShareLink}
+                    className="p-1.5 text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-colors"
+                    title="Sao chép link chia sẻ"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  </button>
+                  <button
                     onClick={() => fetchMessages(email, page)}
                     disabled={loading}
                     className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
@@ -276,7 +330,7 @@ export function InboxViewer() {
                     </svg>
                   </button>
                   <button
-                    onClick={() => setEmail("")}
+                    onClick={handleChangeEmail}
                     className="text-sm text-blue-500 hover:underline"
                   >
                     Đổi

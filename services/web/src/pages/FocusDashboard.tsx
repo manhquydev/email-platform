@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import { useRealtimeContext } from "../hooks/useRealtimeContext";
 import { api, PAGE_SIZE } from "../utils/api";
 import { parseSearchQuery } from "../utils/searchParser";
 import { Loading } from "../components/Loading";
@@ -12,6 +13,7 @@ import { InboxToolbar } from "../components/InboxToolbar";
 import { Button } from "../components/ui/Button";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
+import type { RealtimeEvent, EmailNewPayload } from "../types/realtime";
 
 // Lazy load modals
 const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
@@ -20,6 +22,7 @@ const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").the
 export function FocusDashboard() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { token, user: _user } = useAuth();
+    const { subscribe, unsubscribe, isConnected } = useRealtimeContext();
     const [busy, setBusy] = useState(false);
 
     // Data
@@ -104,7 +107,7 @@ export function FocusDashboard() {
     }, [token, searchQuery]);
 
     // --- Effects ---
-    useEffect(() => { loadDomains(); }, [token]);
+    useEffect(() => { loadDomains(); }, [loadDomains]);
     useEffect(() => { loadInboxes(); }, [loadInboxes]);
     useEffect(() => {
         if (selectedInbox) {
@@ -115,12 +118,27 @@ export function FocusDashboard() {
         }
     }, [selectedInbox, loadMessages]);
 
-    // Auto-refresh
+    // Auto-refresh via realtime (replaces polling)
     useEffect(() => {
-        if (!selectedInbox) return;
-        const interval = setInterval(() => loadMessages(selectedInbox, true), 10000);
+        const handleRealtimeEvent = (event: RealtimeEvent) => {
+            if (event.type === 'email.new') {
+                const payload = event.payload as unknown as EmailNewPayload;
+                if (payload.inboxId === selectedInbox) {
+                    loadMessages(selectedInbox, true);
+                }
+            }
+        };
+
+        subscribe('focus-dashboard', handleRealtimeEvent);
+        return () => unsubscribe('focus-dashboard');
+    }, [selectedInbox, loadMessages, subscribe, unsubscribe]);
+
+    // Fallback polling only when realtime is disconnected
+    useEffect(() => {
+        if (isConnected || !selectedInbox) return;
+        const interval = setInterval(() => loadMessages(selectedInbox, true), 30000);
         return () => clearInterval(interval);
-    }, [selectedInbox, loadMessages]);
+    }, [selectedInbox, loadMessages, isConnected]);
 
     // Update title with unread count
     useEffect(() => {

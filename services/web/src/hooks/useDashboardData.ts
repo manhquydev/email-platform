@@ -1,13 +1,16 @@
 /**
  * useDashboardData Hook
  * Manages dashboard data loading (domains, inboxes, messages)
+ * Now with realtime updates via WebSocket/SSE
  */
 
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { api, PAGE_SIZE } from "../utils/api";
 import { parseSearchQuery } from "../utils/searchParser";
+import { useRealtimeContext } from "../hooks/useRealtimeContext";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
+import type { RealtimeEvent, EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
 
 interface UseDashboardDataOptions {
     token: string | null;
@@ -39,6 +42,9 @@ interface UseDashboardDataReturn {
     // Loading
     busy: boolean;
 
+    // Realtime
+    isRealtimeConnected: boolean;
+
     // Actions
     loadDomains: () => Promise<void>;
     loadInboxes: () => Promise<void>;
@@ -50,6 +56,9 @@ interface UseDashboardDataReturn {
 }
 
 export function useDashboardData({ token, userId }: UseDashboardDataOptions): UseDashboardDataReturn {
+    // Realtime context
+    const { subscribe, unsubscribe, isConnected } = useRealtimeContext();
+
     // Data
     const [domains, setDomains] = useState<Domain[]>([]);
     const [inboxes, setInboxes] = useState<Inbox[]>([]);
@@ -181,12 +190,47 @@ export function useDashboardData({ token, userId }: UseDashboardDataOptions): Us
         return () => clearTimeout(t);
     }, [messageSearch, selectedInbox, loadMessages]);
 
-    // Polling for new messages
+    // Realtime event handling (replaces polling)
     useEffect(() => {
-        if (!selectedInbox) return;
-        const interval = setInterval(() => { loadMessages(selectedInbox, { background: true }); }, 10000);
+        const handleRealtimeEvent = (event: RealtimeEvent) => {
+            switch (event.type) {
+                case 'email.new': {
+                    const payload = event.payload as unknown as EmailNewPayload;
+                    // If event is for current inbox, reload messages
+                    if (payload.inboxId === selectedInbox) {
+                        loadMessages(selectedInbox, { background: true });
+                    }
+                    break;
+                }
+                case 'email.read': {
+                    const { messageId, isRead } = event.payload as unknown as EmailReadPayload;
+                    setMessages(prev => prev.map(m =>
+                        m.id === messageId ? { ...m, isRead } : m
+                    ));
+                    break;
+                }
+                case 'email.deleted': {
+                    const { messageId } = event.payload as unknown as EmailDeletedPayload;
+                    setMessages(prev => prev.filter(m => m.id !== messageId));
+                    break;
+                }
+                case 'inbox.created': {
+                    loadInboxes();
+                    break;
+                }
+            }
+        };
+
+        subscribe('dashboard-data', handleRealtimeEvent);
+        return () => unsubscribe('dashboard-data');
+    }, [selectedInbox, loadMessages, loadInboxes, subscribe, unsubscribe]);
+
+    // Fallback polling only when realtime is disconnected
+    useEffect(() => {
+        if (isConnected || !selectedInbox) return;
+        const interval = setInterval(() => { loadMessages(selectedInbox, { background: true }); }, 30000);
         return () => clearInterval(interval);
-    }, [selectedInbox, loadMessages]);
+    }, [selectedInbox, loadMessages, isConnected]);
 
     return {
         domains,
@@ -203,6 +247,7 @@ export function useDashboardData({ token, userId }: UseDashboardDataOptions): Us
         activeDomain,
         activeInbox,
         busy,
+        isRealtimeConnected: isConnected,
         loadDomains,
         loadInboxes,
         loadMessages,

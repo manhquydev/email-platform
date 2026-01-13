@@ -811,3 +811,16 @@ model MessageVisibilityAudit {
   @@index([inboxId, createdAt])
   @@index([messageId])
 }
+
+// Phase 10: Browser Push Notifications
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String   // Public key
+  auth      String   // Auth secret
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

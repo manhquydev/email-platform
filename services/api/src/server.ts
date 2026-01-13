@@ -40,6 +40,11 @@ import { visibilityRulesRoutes } from "./routes/visibility-rules";
 import { setupSwagger } from "./plugins/swagger";
 import crypto from "crypto";
 import { prisma } from "./lib/prisma";
+import websocket from "@fastify/websocket";
+import { realtimeEvents } from "./services/realtime-events";
+import realtimeWsRoutes from "./routes/realtime-ws";
+import realtimeSseRoutes from "./routes/realtime-sse";
+import pushRoutes from "./routes/push";
 
 // ... existing imports ...
 
@@ -117,6 +122,14 @@ export const buildServer = () => {
     },
     methods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"],
   });
+
+  // WebSocket plugin for realtime features
+  app.register(websocket, {
+    options: {
+      maxPayload: 1048576, // 1MB max message size
+    },
+  });
+
   app.register(jwt, { secret: appConfig.jwtSecret });
   app.register(rateLimit, {
     max: appConfig.rateLimitMax,
@@ -244,6 +257,11 @@ export const buildServer = () => {
   app.register(apiUsageRoutes);
   app.register(visibilityRulesRoutes);
 
+  // Realtime routes (WebSocket, SSE, Push)
+  app.register(realtimeWsRoutes);
+  app.register(realtimeSseRoutes);
+  app.register(pushRoutes);
+
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);
   }
@@ -256,10 +274,22 @@ export const startHttpServer = async (): Promise<FastifyInstance> => {
   await app.listen({ port: appConfig.httpPort, host: "0.0.0.0" });
   app.log.info(`HTTP API running on :${appConfig.httpPort}`);
 
+  // Initialize realtime events service
+  await realtimeEvents.init();
+  app.log.info('Realtime events service initialized');
+
   // Setup Telegram bot commands menu
   setupBotCommands().catch(err => {
     app.log.error('Failed to setup Telegram bot commands:', err);
   });
+
+  // Graceful shutdown
+  const shutdown = () => {
+    app.log.info('Shutting down realtime services...');
+    realtimeEvents.shutdown();
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 
   return app;
 };

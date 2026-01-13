@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useRealtimeContext } from '../hooks/useRealtimeContext';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import type { RealtimeEvent, NotificationNewPayload } from '../types/realtime';
 
 interface Notification {
     id: string;
@@ -42,6 +44,7 @@ const NotificationIcon = ({ type }: { type: string }) => {
 
 export function NotificationCenter() {
     const { token } = useAuth();
+    const { subscribe, unsubscribe, isConnected } = useRealtimeContext();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -103,9 +106,36 @@ export function NotificationCenter() {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- Initial fetch on mount is valid
         fetchNotifications();
+    }, [fetchNotifications]);
+
+    // Realtime notification updates (replaces polling)
+    useEffect(() => {
+        const handleRealtimeEvent = (event: RealtimeEvent) => {
+            if (event.type === 'notification.new') {
+                const payload = event.payload as unknown as NotificationNewPayload;
+                // Add new notification to state
+                setNotifications(prev => [{
+                    id: payload.id,
+                    title: payload.title,
+                    message: payload.message,
+                    type: payload.type as Notification['type'],
+                    isRead: false,
+                    createdAt: new Date().toISOString(),
+                }, ...prev]);
+                setUnreadCount(prev => prev + 1);
+            }
+        };
+
+        subscribe('notification-center', handleRealtimeEvent);
+        return () => unsubscribe('notification-center');
+    }, [subscribe, unsubscribe]);
+
+    // Fallback polling only when realtime is disconnected
+    useEffect(() => {
+        if (isConnected) return;
         const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
-    }, [fetchNotifications]);
+    }, [fetchNotifications, isConnected]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {

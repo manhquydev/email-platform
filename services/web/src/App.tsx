@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { RealtimeProvider } from "./context/RealtimeContext";
 import { LandingPage } from "./pages/LandingPage";
 import { Features } from "./pages/Features";
 import { API } from "./pages/API";
@@ -39,72 +40,74 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        {/* Skip to main content link for accessibility */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
-        >
-          Bỏ qua đến nội dung chính
-        </a>
-        <Toaster position="top-right" />
-        <BrowserRouter>
-          <ScrollToTop />
-          <VersionCheck />
-          <ErrorBoundary>
-            <Suspense fallback={<Loading fullScreen />}>
-              <Routes>
-                {/* Public pages with shared nav + footer */}
-                <Route element={<PublicLayout />}>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/features" element={<Features />} />
-                  <Route path="/api" element={<API />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/terms" element={<TermsOfService />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/acceptable-use" element={<AcceptableUse />} />
-                  <Route path="/gdpr" element={<GDPR />} />
-                  <Route path="/support" element={<Support />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/sales" element={<Sales />} />
-                  <Route path="/docs" element={<Docs />} />
-                  <Route path="/verify-email" element={<VerifyEmail />} />
-                  <Route path="/auth/magic-link/verify" element={<MagicLinkVerify />} />
-                </Route>
+        <RealtimeProvider>
+          {/* Skip to main content link for accessibility */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
+          >
+            Bỏ qua đến nội dung chính
+          </a>
+          <Toaster position="top-right" />
+          <BrowserRouter>
+            <ScrollToTop />
+            <VersionCheck />
+            <ErrorBoundary>
+              <Suspense fallback={<Loading fullScreen />}>
+                <Routes>
+                  {/* Public pages with shared nav + footer */}
+                  <Route element={<PublicLayout />}>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/features" element={<Features />} />
+                    <Route path="/api" element={<API />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/acceptable-use" element={<AcceptableUse />} />
+                    <Route path="/gdpr" element={<GDPR />} />
+                    <Route path="/support" element={<Support />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/sales" element={<Sales />} />
+                    <Route path="/docs" element={<Docs />} />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
+                    <Route path="/auth/magic-link/verify" element={<MagicLinkVerify />} />
+                  </Route>
 
-                {/* Auth pages with minimal footer */}
-                <Route element={<AuthLayout />}>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                </Route>
+                  {/* Auth pages with minimal footer */}
+                  <Route element={<AuthLayout />}>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                  </Route>
 
-                {/* Classic Dashboard (Wireframe Implementation) */}
-                <Route path="/app" element={<Dashboard />} />
+                  {/* Classic Dashboard (Wireframe Implementation) */}
+                  <Route path="/app" element={<Dashboard />} />
 
-                {/* Inbox Manager */}
-                <Route path="/app/manager" element={<InboxManager />} />
+                  {/* Inbox Manager */}
+                  <Route path="/app/manager" element={<InboxManager />} />
 
-                {/* Legacy Focus Stream Dashboard */}
-                <Route path="/app/stream" element={<FocusDashboard />} />
+                  {/* Legacy Focus Stream Dashboard */}
+                  <Route path="/app/stream" element={<FocusDashboard />} />
 
-                {/* Public Inbox Viewer */}
-                <Route path="/inbox-viewer" element={<InboxViewer />} />
+                  {/* Public Inbox Viewer */}
+                  <Route path="/inbox-viewer" element={<InboxViewer />} />
 
-                {/* Protected app routes */}
-                <Route element={<MainLayout />}>
-                  <Route path="/admin/*" element={<Admin />} />
-                  <Route path="/authenticator" element={<Authenticator />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/my-domains" element={<MyDomains />} />
-                  <Route path="/forwarding" element={<Forwarding />} />
-                  <Route path="/plans" element={<Plans />} />
-                </Route>
+                  {/* Protected app routes */}
+                  <Route element={<MainLayout />}>
+                    <Route path="/admin/*" element={<Admin />} />
+                    <Route path="/authenticator" element={<Authenticator />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/my-domains" element={<MyDomains />} />
+                    <Route path="/forwarding" element={<Forwarding />} />
+                    <Route path="/plans" element={<Plans />} />
+                  </Route>
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </ErrorBoundary>
-        </BrowserRouter>
+                  {/* Fallback */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </BrowserRouter>
+        </RealtimeProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -19,7 +19,10 @@ import { Button } from "../components/ui/Button";
 import { EmailStream } from "../components/EmailStream";
 import { cn } from "../utils/cn";
 import { clarityTrack } from "../hooks/useClarity";
+import { useRealtimeSubscription } from "../hooks/useRealtimeContext";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
+import type { RealtimeEvent } from "../types/realtime";
+import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
 
 // Lazy load heavy modal components
 const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
@@ -32,6 +35,24 @@ export function Dashboard() {
     const navigate = useNavigate();
     const [busy, setBusy] = useState(false);
 
+    
+
+    // Data
+    const [domains, setDomains] = useState<Domain[]>([]);
+    const [inboxes, setInboxes] = useState<Inbox[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    // Selection
+    const [selectedDomain, setSelectedDomain] = useState<string>("");
+    const [selectedInbox, setSelectedInbox] = useState<string>("");
+    const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+
+    // Filter/Pagination States
+    const [messageSearch, setMessageSearch] = useState("");
+    const [messageOffset, setMessageOffset] = useState(0);
+    const [messageTotal, setMessageTotal] = useState(0);
+
+    
     // Sync state with URL params
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -56,22 +77,7 @@ export function Dashboard() {
         }
 
         if (action === "compose") setShowCompose(true);
-    }, [location.search]);
-
-    // Data
-    const [domains, setDomains] = useState<Domain[]>([]);
-    const [inboxes, setInboxes] = useState<Inbox[]>([]);
-    const [messages, setMessages] = useState<Message[]>([]);
-
-    // Selection
-    const [selectedDomain, setSelectedDomain] = useState<string>("");
-    const [selectedInbox, setSelectedInbox] = useState<string>("");
-    const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-
-    // Filter/Pagination States
-    const [messageSearch, setMessageSearch] = useState("");
-    const [messageOffset, setMessageOffset] = useState(0);
-    const [messageTotal, setMessageTotal] = useState(0);
+    }, [location.search, location.pathname, navigate, selectedInbox, messageSearch]);
 
     // UI States
     const [showCompose, setShowCompose] = useState(false);
@@ -95,7 +101,7 @@ export function Dashboard() {
     const outboundEnabled = String(window.env?.OUTBOUND_ENABLED ?? import.meta.env.VITE_OUTBOUND_ENABLED ?? "false").toLowerCase() === "true";
     const canSendOutbound = outboundEnabled && isAdmin;
 
-    // --- Loaders ---
+// --- Loaders ---
     const loadDomains = useCallback(async () => {
         if (!token) return;
         try {
@@ -193,6 +199,39 @@ export function Dashboard() {
         }
     }, [token, messageSearch]);
 
+    // Realtime subscription
+    useRealtimeSubscription("dashboard-email-events", (event: RealtimeEvent) => {
+        if (!selectedInbox) return;
+
+        if (event.type === "email.new") {
+            const payload = event.payload as unknown as EmailNewPayload;
+            // Only update if it belongs to current inbox
+            if (payload.inboxId === selectedInbox) {
+                toast.success(`Có email mới từ ${payload.from || "Unknown"}: ${payload.subject || "(No Subject)"}`, {
+                    position: "bottom-right",
+                    duration: 4000
+                });
+                // Refresh messages
+                loadMessages(selectedInbox, { background: true });
+            }
+        } else if (event.type === "email.read") {
+            const payload = event.payload as unknown as EmailReadPayload;
+            setMessages(prev => prev.map(m => m.id === payload.messageId ? { ...m, isRead: payload.isRead } : m));
+            if (selectedMessage?.id === payload.messageId) {
+                setSelectedMessage(prev => prev ? { ...prev, isRead: payload.isRead } : null);
+            }
+        } else if (event.type === "email.deleted") {
+            const payload = event.payload as unknown as EmailDeletedPayload;
+            if (payload.inboxId === selectedInbox) {
+                setMessages(prev => prev.filter(m => m.id !== payload.messageId));
+                if (selectedMessage?.id === payload.messageId) {
+                    setSelectedMessage(null);
+                }
+            }
+        }
+    }, [selectedInbox, selectedMessage, loadMessages]);
+
+    
     // --- Effects ---
     useEffect(() => { loadDomains(); }, [loadDomains]);
     useEffect(() => { loadInboxes(); }, [loadInboxes]);
@@ -210,11 +249,7 @@ export function Dashboard() {
         return () => clearTimeout(t);
     }, [messageSearch, selectedInbox, loadMessages]);
 
-    useEffect(() => {
-        if (!selectedInbox) return;
-        const interval = setInterval(() => { loadMessages(selectedInbox, { background: true }); }, 10000);
-        return () => clearInterval(interval);
-    }, [selectedInbox, loadMessages]);
+    // Polling removed - now using realtime updates via useDashboardData hook
 
     // --- Actions ---
     const createDomain = async (name: string) => {
@@ -320,7 +355,7 @@ export function Dashboard() {
             if (selectedMessage?.id === msgId) setSelectedMessage(null);
             toast.success("Đã xóa email");
         } catch { toast.error("Không thể xóa email"); } finally { setBusy(false); }
-    }, [token, selectedMessage]);
+    }, [selectedMessage]);
 
     const handleTogglePin = async (msgId: string, isPinned: boolean) => {
         setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned } : m));

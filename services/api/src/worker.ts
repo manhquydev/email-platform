@@ -20,6 +20,8 @@ import { triggerWebhook } from './services/webhookService';
 import { anonymizeIp } from './utils/ip-anonymizer';
 import { sanitizeHtml, sanitizeHeaders } from './utils/email-sanitizer';
 import { evaluateMessage as evaluateVisibility, type EmailData } from './services/visibility-engine';
+import { realtimeEvents } from './services/realtime-events';
+import { pushNotification } from './services/push-notification';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -337,6 +339,42 @@ export const setupEmailWorker = (logger: Logger) => {
                             }
                         } catch (webhookErr) {
                             logger.warn({ err: webhookErr }, 'failed to trigger webhook');
+                        }
+
+                        // Realtime WebSocket/SSE notification
+                        try {
+                            if (messageWithRelations.inbox.ownerId) {
+                                await realtimeEvents.publishEmailNew(
+                                    messageWithRelations.inbox.ownerId,
+                                    {
+                                        inboxId: inbox.id,
+                                        messageId: message.id,
+                                        from: fromAddress ?? null,
+                                        subject: message.subject ?? null,
+                                        receivedAt: message.receivedAt.toISOString(),
+                                    }
+                                );
+                                logger.info({ messageId: message.id }, 'published realtime email.new event');
+                            }
+                        } catch (realtimeErr) {
+                            logger.warn({ err: realtimeErr }, 'failed to publish realtime event');
+                        }
+
+                        // Browser Push notification
+                        try {
+                            if (messageWithRelations.inbox.ownerId) {
+                                await pushNotification.sendEmailNotification(
+                                    messageWithRelations.inbox.ownerId,
+                                    {
+                                        from: fromAddress ?? null,
+                                        subject: message.subject ?? null,
+                                        inboxId: inbox.id,
+                                    }
+                                );
+                                logger.info({ messageId: message.id }, 'sent browser push notification');
+                            }
+                        } catch (pushErr) {
+                            logger.warn({ err: pushErr }, 'failed to send push notification');
                         }
                     }
                 } catch (maildirErr) {

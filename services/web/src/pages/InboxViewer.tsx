@@ -139,6 +139,15 @@ export function InboxViewer() {
     });
   };
 
+  // Copy email address to clipboard
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(email).then(() => {
+      toast.success("Đã sao chép email!");
+    }).catch(() => {
+      toast.error("Không thể sao chép email");
+    });
+  };
+
 const handleSearch = useCallback(async (emailAddr: string) => {
     setAccessError(null);
     // First validate inbox exists
@@ -176,6 +185,25 @@ const handleSearch = useCallback(async (emailAddr: string) => {
       handleSearch(emailParam);
     }
   }, [searchParams, initialLoadDone, handleSearch]);
+
+  // Keyboard shortcut: R to refresh
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only trigger if not in input/textarea and email is loaded
+      if (
+        e.key.toLowerCase() === "r" &&
+        !loading &&
+        email &&
+        !(e.target instanceof HTMLInputElement) &&
+        !(e.target instanceof HTMLTextAreaElement)
+      ) {
+        e.preventDefault();
+        fetchMessages(email, page);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [email, page, loading, fetchMessages]);
 
   
   const handleSelectMessage = async (messageId: string) => {
@@ -308,8 +336,23 @@ const handleSearch = useCallback(async (emailAddr: string) => {
             {/* Message List */}
             <div className="lg:w-1/3 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="p-3 border-b dark:border-gray-700 flex justify-between items-center">
-                <span className="text-sm font-medium truncate flex-1">{email}</span>
+                <button
+                  onClick={handleCopyEmail}
+                  className="text-sm font-medium truncate flex-1 text-left cursor-pointer hover:text-nebula-violet transition-colors"
+                  title="Nhấn để sao chép email"
+                >
+                  {email}
+                </button>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleCopyEmail}
+                    className="p-1.5 text-gray-500 hover:text-nebula-violet hover:bg-nebula-violet/10 dark:hover:bg-nebula-violet/20 rounded transition-colors"
+                    title="Sao chép email"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
                   <button
                     onClick={handleCopyShareLink}
                     className="p-1.5 text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-colors"
@@ -344,6 +387,7 @@ const handleSearch = useCallback(async (emailAddr: string) => {
                 total={total}
                 page={page}
                 onPageChange={handlePageChange}
+                loading={loading}
               />
             </div>
 

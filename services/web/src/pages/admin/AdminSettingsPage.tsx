@@ -310,6 +310,7 @@ export function AdminSettingsPage() {
                             className="text-sm input-nebula w-full max-w-xs"
                             minLength={6}
                             required
+                            autoComplete="new-password"
                         />
                     </div>
                     <button type="submit" disabled={busy} className="btn-primary h-10 px-6">

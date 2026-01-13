@@ -16,8 +16,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     rightIcon,
     error,
     label,
+    type,
     ...props
 }, ref) => {
+    // Auto-add autocomplete for password fields to satisfy browser accessibility
+    const autoComplete = props.autoComplete ?? (type === 'password' ? 'new-password' : undefined);
+
     return (
         <div className={cn("flex flex-col gap-1.5", containerClassName)}>
             {label && (
@@ -33,6 +37,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                 )}
                 <input
                     ref={ref}
+                    type={type}
+                    autoComplete={autoComplete}
                     className={cn(
                         "flex h-10 w-full rounded-xl border border-border/60 bg-surface/30 px-3 py-2 text-sm text-text-main shadow-sm",
                         "backdrop-blur-md transition-all duration-200",

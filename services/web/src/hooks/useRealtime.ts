@@ -15,9 +15,22 @@ interface UseRealtimeReturn {
   reconnect: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE || '';
-const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${API_BASE}/ws/events`;
-const SSE_URL = `${API_BASE}/api/events`;
+// Parse API base URL to extract host for WebSocket/SSE connections
+const API_BASE_URL = import.meta.env.VITE_API_BASE || '';
+const getApiHost = (): string => {
+  if (!API_BASE_URL) return window.location.host;
+  try {
+    const url = new URL(API_BASE_URL);
+    return url.host;
+  } catch {
+    // If not a full URL, assume it's a path on current host
+    return window.location.host;
+  }
+};
+
+const API_HOST = getApiHost();
+const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${API_HOST}/ws/events`;
+const SSE_URL = `${API_BASE_URL}/realtime/sse`;
 const MAX_RECONNECT_DELAY = 30000;
 const INITIAL_RECONNECT_DELAY = 1000;
 

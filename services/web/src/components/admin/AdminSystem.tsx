@@ -114,7 +114,7 @@ export function AdminSystem({ token }: { token: string }) {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-semibold text-nebula-text">Tải CPU (%)</h3>
                     </div>
-                    <div className="h-64 mt-4">
+                    <div className="h-64 mt-4" style={{ minHeight: '256px', minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={history}>
                                 <defs>
@@ -139,7 +139,7 @@ export function AdminSystem({ token }: { token: string }) {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-semibold text-nebula-text">Sử dụng Memory (%)</h3>
                     </div>
-                    <div className="h-64 mt-4">
+                    <div className="h-64 mt-4" style={{ minHeight: '256px', minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={history}>
                                 <defs>

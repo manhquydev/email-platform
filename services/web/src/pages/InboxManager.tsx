@@ -8,6 +8,8 @@ import { cn } from "../utils/cn";
 import { TabNavigation, InboxTabIcon, MessagesTabIcon } from "../components/TabNavigation";
 import { EmailStream } from "../components/EmailStream";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
+import { useRealtimeSubscription } from "../hooks/useRealtimeContext";
+import type { RealtimeEvent } from "../types/realtime";
 
 import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
 import type { Domain, Inbox, Message, PaginatedResponse, ShareMode } from "../types";
@@ -116,7 +118,7 @@ export function InboxManager() {
     }, [token]);
 
     // --- Effects ---
-    useEffect(() => { loadDomains(); }, [token]);
+    useEffect(() => { loadDomains(); }, [loadDomains]);
     useEffect(() => { loadInboxes(); }, [loadInboxes]);
     useEffect(() => {
         if (activeInbox) {
@@ -125,6 +127,32 @@ export function InboxManager() {
             setMessages([]);
         }
     }, [activeInbox, loadMessages]);
+
+    // Realtime subscription for new emails and updates
+    useRealtimeSubscription("inbox-manager", (event: RealtimeEvent) => {
+        if (event.type === 'email.new') {
+            const payload = event.payload as { inboxId: string };
+            // Refresh messages if viewing the inbox that received new email
+            if (activeInbox && payload.inboxId === activeInbox.id) {
+                loadMessages(activeInbox.id);
+            }
+        } else if (event.type === 'email.deleted') {
+            const payload = event.payload as { messageId: string; inboxId: string };
+            // Remove deleted message from state
+            if (activeInbox && payload.inboxId === activeInbox.id) {
+                setMessages(prev => prev.filter(m => m.id !== payload.messageId));
+            }
+        } else if (event.type === 'email.read') {
+            const payload = event.payload as { messageId: string; isRead: boolean };
+            // Update read status in state
+            setMessages(prev => prev.map(m =>
+                m.id === payload.messageId ? { ...m, isRead: payload.isRead } : m
+            ));
+        } else if (event.type === 'inbox.created') {
+            // Refresh inbox list when new inbox created
+            loadInboxes();
+        }
+    }, [activeInbox?.id, loadMessages, loadInboxes]);
 
     // Handle payment success/cancellation
     useEffect(() => {
@@ -246,10 +274,10 @@ export function InboxManager() {
         }
     };
 
-    const handleBatchDelete = () => {
+    const handleBatchDelete = useCallback(() => {
         if (selectedInboxIds.size === 0) return;
         setShowBatchDeleteConfirm(true);
-    };
+    }, [selectedInboxIds]);
 
     const confirmBatchDelete = async () => {
         setIsBatchDeleting(true);
@@ -323,7 +351,7 @@ export function InboxManager() {
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [activeTab, filteredInboxes, focusedIndex, selectedInboxIds]);
+    }, [activeTab, filteredInboxes, focusedIndex, selectedInboxIds, handleBatchDelete]);
 
     const handleSelectMessage = async (msg: Message) => {
         setSelectedMessage(msg);

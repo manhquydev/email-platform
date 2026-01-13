@@ -27,6 +27,7 @@ export interface EmailReadEvent extends BaseEvent {
   type: 'email.read';
   payload: {
     messageId: string;
+    inboxId: string;
     isRead: boolean;
   };
 }

@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
+import { realtimeEvents } from "../services/realtime-events";
 
 export async function inboxRoutes(app: FastifyInstance) {
   app.get("/inboxes", { preHandler: app.authenticate }, async (request, reply) => {
@@ -109,6 +110,13 @@ export async function inboxRoutes(app: FastifyInstance) {
     await recordAudit(user.userId, "INBOX_CREATED", {
       inboxId: inbox.id,
       email: `${localPart}@${domain.name}`
+    });
+
+    // Publish realtime event
+    await realtimeEvents.publishInboxCreated(user.userId, {
+      inboxId: inbox.id,
+      email: `${localPart}@${domain.name}`,
+      domainId: domain.id,
     });
 
     return reply.status(201).send({ inbox });

@@ -8,6 +8,7 @@ import { storageService } from "../services/storage";
 import { promises as fs } from "fs";
 import { recordAudit } from "../utils/audit";
 import Mailbuild from "mailbuild";
+import { realtimeEvents } from "../services/realtime-events";
 
 export const messageRoutes = async (app: FastifyInstance) => {
   app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
@@ -254,6 +255,13 @@ export const messageRoutes = async (app: FastifyInstance) => {
     await prisma.attachment.updateMany({ where: { messageId: existing.id }, data: { deletedAt: now } });
     await prisma.message.update({ where: { id: existing.id }, data: { deletedAt: now } });
     await recordAudit(userId, "MESSAGE_DELETED", { messageId: existing.id });
+
+    // Publish realtime event
+    await realtimeEvents.publishEmailDeleted(userId, {
+      messageId: existing.id,
+      inboxId: existing.inboxId,
+    });
+
     return { ok: true };
   });
 
@@ -282,6 +290,13 @@ export const messageRoutes = async (app: FastifyInstance) => {
       where: { id: existing.id },
       data: { isRead: body.data.isRead },
       include: { attachments: { where: { deletedAt: null } }, inbox: { include: { domain: true } } },
+    });
+
+    // Publish realtime event
+    await realtimeEvents.publishEmailRead(userId, {
+      messageId: existing.id,
+      inboxId: existing.inboxId,
+      isRead: body.data.isRead,
     });
 
     return { message: updated };

@@ -132,6 +132,38 @@ API đang crash. Kiểm tra logs và restart:
 ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd /root/email-platform. && docker compose logs --tail 100 api && docker compose restart api"
 ```
 
+### Environment Variables không được container nhận
+
+**Triệu chứng:** Biến env được thêm vào `.env` nhưng container không nhận (ví dụ: `VAPID_*` keys).
+
+**Nguyên nhân:** Docker Compose đọc env từ `env_file` khi **tạo** container, không phải khi restart.
+
+**Giải pháp:**
+1. Kiểm tra `docker-compose.prod.yml` xem service dùng `env_file` nào:
+   ```yaml
+   api:
+     env_file:
+       - ./services/api/.env  # <-- Thêm env vào file này
+   ```
+
+2. Thêm biến vào đúng file `.env`:
+   ```bash
+   # Nếu api dùng services/api/.env:
+   ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && echo 'NEW_VAR=value' >> services/api/.env"
+   ```
+
+3. **Force recreate** container (không phải restart):
+   ```bash
+   ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && docker compose -f docker-compose.prod.yml up -d --force-recreate api"
+   ```
+
+4. Verify biến đã được inject:
+   ```bash
+   ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-api-1 printenv | grep NEW_VAR"
+   ```
+
+> **Lưu ý:** `docker compose restart` chỉ restart process, KHÔNG đọc lại env files. Phải dùng `up -d --force-recreate`.
+
 ### Vite Environment Variables không hoạt động
 
 **Triệu chứng:** Biến `VITE_*` như `VITE_CLARITY_PROJECT_ID` không có trong bundle.
@@ -163,3 +195,27 @@ ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd /root/email-platform. && docker co
 - [ ] All containers running (Up status)
 - [ ] API health check returns `{"ok":true}`
 - [ ] Web app returns HTTP 200
+
+---
+
+## Post-Deploy Tasks (nếu có)
+
+### Thêm Environment Variables mới
+
+Khi deploy có feature mới cần env vars (ví dụ: VAPID keys cho Push Notifications):
+
+1. Generate keys nếu cần:
+   ```bash
+   ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-api-1 npx web-push generate-vapid-keys --json"
+   ```
+
+2. Thêm vào đúng env file và recreate:
+   ```bash
+   ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && echo 'VAPID_PUBLIC_KEY=...' >> services/api/.env && docker compose -f docker-compose.prod.yml up -d --force-recreate api"
+   ```
+
+### Run Prisma Migrations
+
+```bash
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-api-1 npx prisma migrate deploy"
+```

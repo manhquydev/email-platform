@@ -95,7 +95,7 @@ export function AdminBackup({ token }: { token: string }) {
             const res = await api<{ logs: string }>("/admin/backup/logs", { token });
             setLogs(res.logs);
             setShowLogs(true);
-        } catch (err) {
+        } catch {
             toast.error("Không thể tải logs");
         }
     };

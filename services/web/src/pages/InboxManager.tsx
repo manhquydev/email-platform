@@ -499,6 +499,10 @@ export function InboxManager() {
                                                 loadMessages(inbox.id);
                                             }
                                         }}
+                                        onDeleteInbox={handleDeleteInbox}
+                                        onTransferInbox={(inbox) => setInboxToTransfer(inbox)}
+                                        onShareModeChange={handleShareModeChange}
+                                        onVisibilityRules={(inbox) => setInboxForVisibilityRules(inbox)}
                                         isLoading={busy && inboxes.length === 0}
                                     />
                                 </div>

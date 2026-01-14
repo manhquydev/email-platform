@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, Fragment } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { api, PAGE_SIZE } from "../utils/api";
@@ -31,6 +32,7 @@ type FilterOption = 'all' | 'active' | 'expired' | 'expiring';
 
 export function InboxManager() {
     const { token } = useAuth();
+    const navigate = useNavigate();
     const [busy, setBusy] = useState(false);
     const breakpoint = useBreakpoint();
     const isDesktop = breakpoint === 'desktop';
@@ -490,19 +492,30 @@ export function InboxManager() {
                                         <div>
                                             <h2 className="text-sm font-semibold text-text-main flex items-center gap-2">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                                Hộp thư
+                                                Quản lý Inbox
                                             </h2>
                                             <p className="text-[11px] text-text-secondary mt-0.5">{filteredInboxes.length} inboxes</p>
                                         </div>
-                                        <button
-                                            className="p-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-primary transition-all hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] active:scale-95"
-                                            onClick={() => setShowCreateModal(true)}
-                                            title="Tạo inbox mới (n)"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                            </svg>
-                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                className="p-2 hover:bg-white/5 rounded-xl text-text-secondary hover:text-primary transition-all"
+                                                onClick={() => navigate('/app')}
+                                                title="Đọc email"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                className="p-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-primary transition-all hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] active:scale-95"
+                                                onClick={() => setShowCreateModal(true)}
+                                                title="Tạo inbox mới (n)"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     {/* Sort/Filter chips - Nebula styled */}
                                     <div className="flex items-center gap-1.5 flex-wrap">

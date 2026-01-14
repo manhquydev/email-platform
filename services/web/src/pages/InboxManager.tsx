@@ -9,6 +9,9 @@ import { TabNavigation, InboxTabIcon, MessagesTabIcon } from "../components/TabN
 import { EmailStream } from "../components/EmailStream";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
 import { useRealtimeSubscription } from "../hooks/useRealtimeContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
+import { SplitPaneLayout } from "../components/split-pane/SplitPaneLayout";
+import { InboxSidebar } from "../components/split-pane/InboxSidebar";
 import type { RealtimeEvent } from "../types/realtime";
 
 import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
@@ -26,6 +29,8 @@ type FilterOption = 'all' | 'active' | 'expired' | 'expiring';
 export function InboxManager() {
     const { token } = useAuth();
     const [busy, setBusy] = useState(false);
+    const breakpoint = useBreakpoint();
+    const isDesktop = breakpoint === 'desktop';
 
     // Data
     const [domains, setDomains] = useState<Domain[]>([]);
@@ -449,14 +454,120 @@ export function InboxManager() {
             unreadCount={unreadCount}
         >
 
-            {/* Tab Navigation */}
-            <div className="sticky top-0 z-30">
-                <TabNavigation
-                    tabs={tabs}
-                    activeTab={activeTab}
-                    onTabChange={(id) => setActiveTab(id as 'inboxes' | 'messages')}
-                />
-            </div>
+            {/* Desktop: Split-Pane Layout */}
+            {isDesktop ? (
+                <div className="h-[calc(100vh-64px)]">
+                    <SplitPaneLayout
+                        breakpoint={breakpoint}
+                        leftPane={
+                            <div className="h-full flex flex-col">
+                                <div className="p-3 border-b border-white/5">
+                                    <h2 className="text-sm font-semibold text-text-main">Hộp thư</h2>
+                                    <p className="text-xs text-text-secondary">{filteredInboxes.length} inboxes</p>
+                                </div>
+                                <div className="flex-1 overflow-y-auto">
+                                    <InboxSidebar
+                                        inboxes={filteredInboxes}
+                                        activeInboxId={activeInbox?.id || null}
+                                        onSelectInbox={(id) => {
+                                            const inbox = inboxes.find(i => i.id === id);
+                                            if (inbox) {
+                                                handleSelectInbox(inbox);
+                                                loadMessages(inbox.id);
+                                            }
+                                        }}
+                                        isLoading={busy && inboxes.length === 0}
+                                    />
+                                </div>
+                            </div>
+                        }
+                        middlePane={
+                            <div className="h-full flex flex-col">
+                                <div className="p-3 border-b border-white/5 flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-sm font-semibold text-text-main">
+                                            {activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name}` : 'Tin nhắn'}
+                                        </h2>
+                                        <p className="text-xs text-text-secondary">
+                                            {activeInbox ? `${messages.length} messages` : 'Chọn inbox để xem'}
+                                        </p>
+                                    </div>
+                                    {activeInbox && (
+                                        <button
+                                            className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                            onClick={() => loadMessages(activeInbox.id)}
+                                            title="Refresh"
+                                        >
+                                            <svg className={cn("w-4 h-4", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex-1 overflow-y-auto">
+                                    {activeInbox ? (
+                                        busy && messages.length === 0 ? (
+                                            <div className="p-4 space-y-3">
+                                                {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                                            </div>
+                                        ) : (
+                                            <EmailStream
+                                                messages={messages}
+                                                selectedMessageId={selectedMessage?.id || null}
+                                                onSelectMessage={handleSelectMessage}
+                                            />
+                                        )
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-text-secondary">
+                                            <p className="text-sm">← Chọn inbox từ danh sách</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        }
+                        rightPane={
+                            selectedMessage ? (
+                                <div className="h-full flex flex-col">
+                                    <div className="p-4 border-b border-white/5">
+                                        <h2 className="text-lg font-bold text-text-main truncate">{selectedMessage.subject || '(No Subject)'}</h2>
+                                        <div className="flex items-center gap-2 mt-1 text-sm text-text-secondary">
+                                            <span className="font-medium text-primary bg-primary/10 px-2 py-0.5 rounded text-xs">From</span>
+                                            <span className="truncate">{selectedMessage.fromAddress}</span>
+                                            <span className="text-muted">•</span>
+                                            <span className="whitespace-nowrap">{new Date(selectedMessage.receivedAt).toLocaleString('vi-VN')}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 overflow-auto bg-white">
+                                        {selectedMessage.htmlBody ? (
+                                            <iframe
+                                                srcDoc={selectedMessage.htmlBody}
+                                                title="Email content"
+                                                sandbox="allow-same-origin allow-scripts"
+                                                className="w-full h-full border-0"
+                                            />
+                                        ) : (
+                                            <div className="p-6 whitespace-pre-wrap font-mono text-sm text-gray-800">
+                                                {selectedMessage.textBody || 'No content'}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : undefined
+                        }
+                        showRightPane={!!selectedMessage}
+                    />
+                </div>
+            ) : (
+                /* Mobile/Tablet: Original Tab-based Layout */
+                <>
+                    {/* Tab Navigation */}
+                    <div className="sticky top-0 z-30">
+                        <TabNavigation
+                            tabs={tabs}
+                            activeTab={activeTab}
+                            onTabChange={(id) => setActiveTab(id as 'inboxes' | 'messages')}
+                        />
+                    </div>
 
             {/* Tab Content */}
             <div className="p-4 md:p-6 w-full max-w-7xl mx-auto">
@@ -707,10 +818,11 @@ export function InboxManager() {
                         )}
                     </div>
                 )}
-            </div>
+                </>
+            )}
 
-            {/* Message Detail Overlay - Using standard fixed overlay or maybe a drawer component? Keeping custom for now but styled */}
-            {showDetail && selectedMessage && (
+            {/* Message Detail Overlay - Only for mobile/tablet, desktop uses inline reading pane */}
+            {!isDesktop && showDetail && selectedMessage && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowDetail(false)}>
                     <GlassCard
                         className="w-full max-w-4xl max-h-full h-[80vh] flex flex-col rounded-2xl shadow-2xl relative overflow-hidden bg-bg-secondary/95"

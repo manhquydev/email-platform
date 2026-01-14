@@ -491,8 +491,8 @@ export function InboxManager() {
                                     <div className="flex items-center justify-between mb-3">
                                         <div>
                                             <h2 className="text-sm font-semibold text-text-main flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                                Quản lý Inbox
+                                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
+                                                <span className="text-cyan-400">Quản lý</span>
                                             </h2>
                                             <p className="text-[11px] text-text-secondary mt-0.5">{filteredInboxes.length} inboxes</p>
                                         </div>

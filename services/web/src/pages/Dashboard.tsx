@@ -453,7 +453,12 @@ export function Dashboard() {
 
                             {/* Desktop: Static Header */}
                             <div className="hidden lg:flex flex-col">
-                                <span className="text-[10px] font-bold text-nebula-text-muted uppercase tracking-wider">{activeDomain?.name}</span>
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                                    <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider">Hộp thư</span>
+                                    <span className="text-[10px] text-nebula-text-muted">•</span>
+                                    <span className="text-[10px] font-medium text-nebula-text-muted">{activeDomain?.name}</span>
+                                </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-bold text-nebula-text">
                                         {activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name || activeDomain?.name}` : "Chọn hộp thư"}

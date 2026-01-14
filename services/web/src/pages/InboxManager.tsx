@@ -410,19 +410,45 @@ export function InboxManager() {
         setActiveTab('messages'); // Switch to messages tab to show results
 
         try {
-            // Parse special search operators
-            let searchUrl = `/messages/search?q=${encodeURIComponent(query)}`;
+            // Parse search query to build URL params
+            const params = new URLSearchParams();
+            let textQuery = query;
 
-            // Support special search syntax
-            if (query.startsWith('from:')) {
-                const fromAddress = query.replace('from:', '').trim();
-                searchUrl = `/messages/search?from=${encodeURIComponent(fromAddress)}`;
-            } else if (query.startsWith('has:attachment')) {
-                searchUrl = `/messages/search?hasAttachment=true`;
-            } else if (query.startsWith('is:unread')) {
-                searchUrl = `/messages/search?isRead=false`;
+            // Parse has:attachment filter
+            if (textQuery.includes('has:attachment')) {
+                params.set('hasAttachment', 'true');
+                textQuery = textQuery.replace(/has:attachment/g, '').trim();
             }
 
+            // Parse is:unread filter
+            if (textQuery.includes('is:unread')) {
+                params.set('isRead', 'false');
+                textQuery = textQuery.replace(/is:unread/g, '').trim();
+            }
+
+            // Parse after:Xd filter (e.g., after:7d for last 7 days)
+            const afterMatch = textQuery.match(/after:(\d+)d/);
+            if (afterMatch) {
+                const days = parseInt(afterMatch[1], 10);
+                const afterDate = new Date();
+                afterDate.setDate(afterDate.getDate() - days);
+                params.set('after', afterDate.toISOString());
+                textQuery = textQuery.replace(/after:\d+d/g, '').trim();
+            }
+
+            // Parse from: filter
+            const fromMatch = textQuery.match(/from:(\S+)/);
+            if (fromMatch) {
+                params.set('from', fromMatch[1]);
+                textQuery = textQuery.replace(/from:\S+/g, '').trim();
+            }
+
+            // Remaining text becomes the general query
+            if (textQuery.trim()) {
+                params.set('q', textQuery.trim());
+            }
+
+            const searchUrl = `/messages/search?${params.toString()}`;
             const res = await api<PaginatedResponse<Message>>(searchUrl, { token });
             setSearchResults(res?.data || []);
 

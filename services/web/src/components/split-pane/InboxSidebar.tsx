@@ -154,6 +154,7 @@ export function InboxSidebarItem({
                             createdAt={inbox.createdAt}
                             size="sm"
                             className="flex-1"
+                            showLabel={true}
                         />
                         <div className="flex items-center gap-1.5 text-[10px] text-text-secondary">
                             <svg className="w-3 h-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

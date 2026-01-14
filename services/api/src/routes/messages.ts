@@ -138,6 +138,10 @@ export const messageRoutes = async (app: FastifyInstance) => {
       .object({
         q: z.string().optional(),
         domain: z.string().optional(),
+        from: z.string().optional(),
+        hasAttachment: z.enum(["true", "false"]).optional(),
+        isRead: z.enum(["true", "false"]).optional(),
+        after: z.string().optional(),
         limit: z.coerce.number().min(1).max(200).optional(),
         offset: z.coerce.number().min(0).optional(),
       })
@@ -146,27 +150,56 @@ export const messageRoutes = async (app: FastifyInstance) => {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const where = {
+    const { q, domain, from, hasAttachment, isRead, after, limit = 50, offset = 0 } = query.data;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {
       deletedAt: null,
-      ...(query.data.domain ? { inbox: { domain: { name: query.data.domain } } } : {}),
-      ...(query.data.q
-        ? {
-          OR: [
-            { subject: { contains: query.data.q, mode: "insensitive" as const } },
-            { fromAddress: { contains: query.data.q, mode: "insensitive" as const } },
-            { toAddress: { contains: query.data.q, mode: "insensitive" as const } },
-            { textBody: { contains: query.data.q, mode: "insensitive" as const } },
-          ],
-        }
-        : {}),
     };
+
+    // Domain filter
+    if (domain) {
+      where.inbox = { domain: { name: domain } };
+    }
+
+    // Text search
+    if (q) {
+      where.OR = [
+        { subject: { contains: q, mode: "insensitive" as const } },
+        { fromAddress: { contains: q, mode: "insensitive" as const } },
+        { toAddress: { contains: q, mode: "insensitive" as const } },
+        { textBody: { contains: q, mode: "insensitive" as const } },
+      ];
+    }
+
+    // From address filter
+    if (from) {
+      where.fromAddress = { contains: from, mode: "insensitive" as const };
+    }
+
+    // Has attachment filter
+    if (hasAttachment === "true") {
+      where.attachments = { some: { deletedAt: null } };
+    }
+
+    // Read status filter
+    if (isRead === "true") {
+      where.isRead = true;
+    } else if (isRead === "false") {
+      where.isRead = false;
+    }
+
+    // Date filter (messages after a certain date)
+    if (after) {
+      where.receivedAt = { gte: new Date(after) };
+    }
 
     const [messages, total] = await Promise.all([
       prisma.message.findMany({
         where,
         orderBy: { receivedAt: "desc" },
-        take: query.data.limit ?? 50,
-        skip: query.data.offset ?? 0,
+        take: limit,
+        skip: offset,
         include: { inbox: { include: { domain: true } }, attachments: { where: { deletedAt: null } } },
       }),
       prisma.message.count({ where }),

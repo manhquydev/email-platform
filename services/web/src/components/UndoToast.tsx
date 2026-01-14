@@ -26,29 +26,41 @@ export function UndoToast({
     const startTime = useRef<number>(0);
     const remainingTime = useRef<number>(duration);
     const animationFrame = useRef<number>(0);
+    const isPausedRef = useRef(isPaused);
+    const onCompleteRef = useRef(onComplete);
 
-    const animate = useCallback(() => {
-        if (isPaused) return;
+    // Keep refs in sync
+    useEffect(() => {
+        isPausedRef.current = isPaused;
+    }, [isPaused]);
 
-        const elapsed = Date.now() - startTime.current;
-        const remaining = Math.max(0, remainingTime.current - elapsed);
-        const newProgress = (remaining / duration) * 100;
-
-        setProgress(newProgress);
-
-        if (remaining > 0) {
-            animationFrame.current = requestAnimationFrame(animate);
-        } else {
-            onComplete();
-        }
-    }, [duration, isPaused, onComplete]);
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
 
     useEffect(() => {
         if (!isVisible) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset on visibility change is intentional
             setProgress(100);
             remainingTime.current = duration;
             return;
         }
+
+        const animate = () => {
+            if (isPausedRef.current) return;
+
+            const elapsed = Date.now() - startTime.current;
+            const remaining = Math.max(0, remainingTime.current - elapsed);
+            const newProgress = (remaining / duration) * 100;
+
+            setProgress(newProgress);
+
+            if (remaining > 0) {
+                animationFrame.current = requestAnimationFrame(animate);
+            } else {
+                onCompleteRef.current();
+            }
+        };
 
         startTime.current = Date.now();
         animationFrame.current = requestAnimationFrame(animate);
@@ -58,7 +70,7 @@ export function UndoToast({
                 cancelAnimationFrame(animationFrame.current);
             }
         };
-    }, [isVisible, animate, duration]);
+    }, [isVisible, duration]);
 
     const handlePause = useCallback(() => {
         setIsPaused(true);
@@ -71,8 +83,25 @@ export function UndoToast({
     const handleResume = useCallback(() => {
         setIsPaused(false);
         startTime.current = Date.now();
+
+        const animate = () => {
+            if (isPausedRef.current) return;
+
+            const elapsed = Date.now() - startTime.current;
+            const remaining = Math.max(0, remainingTime.current - elapsed);
+            const newProgress = (remaining / duration) * 100;
+
+            setProgress(newProgress);
+
+            if (remaining > 0) {
+                animationFrame.current = requestAnimationFrame(animate);
+            } else {
+                onCompleteRef.current();
+            }
+        };
+
         animationFrame.current = requestAnimationFrame(animate);
-    }, [animate]);
+    }, [duration]);
 
     const handleUndo = useCallback(() => {
         if (animationFrame.current) {
@@ -134,52 +163,6 @@ export function UndoToast({
             </div>
         </div>
     );
-}
-
-// Hook for managing undo toast state
-interface UndoAction {
-    id: string;
-    message: string;
-    undoFn: () => void;
-    completeFn: () => void;
-}
-
-export function useUndoToast() {
-    const [currentAction, setCurrentAction] = useState<UndoAction | null>(null);
-
-    const showUndo = useCallback((action: Omit<UndoAction, 'id'>) => {
-        setCurrentAction({
-            ...action,
-            id: Date.now().toString(),
-        });
-    }, []);
-
-    const handleUndo = useCallback(() => {
-        if (currentAction) {
-            currentAction.undoFn();
-            setCurrentAction(null);
-        }
-    }, [currentAction]);
-
-    const handleComplete = useCallback(() => {
-        if (currentAction) {
-            currentAction.completeFn();
-            setCurrentAction(null);
-        }
-    }, [currentAction]);
-
-    const dismiss = useCallback(() => {
-        setCurrentAction(null);
-    }, []);
-
-    return {
-        currentAction,
-        showUndo,
-        handleUndo,
-        handleComplete,
-        dismiss,
-        isVisible: !!currentAction,
-    };
 }
 
 export default UndoToast;

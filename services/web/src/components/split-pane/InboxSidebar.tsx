@@ -42,6 +42,7 @@ export function InboxSidebarItem({
 
     // Check if inbox is expiring soon (within 24h)
     const isExpiringSoon = inbox.expiresAt
+        // eslint-disable-next-line react-hooks/purity -- Date.now() needed for TTL calculation
         ? new Date(inbox.expiresAt).getTime() - Date.now() < 24 * 60 * 60 * 1000
         : false;
 

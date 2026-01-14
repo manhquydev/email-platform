@@ -38,25 +38,20 @@ export function BottomSheet({
     const startY = useRef(0);
     const startHeight = useRef(0);
 
-    // Reset state when opened
-    useEffect(() => {
-        if (isOpen) {
-            setCurrentSnap(initialSnap);
-            setDragOffset(0);
-        }
-    }, [isOpen, initialSnap]);
-
-    // Prevent body scroll when open
+    // Prevent body scroll when open and reset state when closed
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset state when sheet closes is intentional for UX
+            setCurrentSnap(initialSnap);
+            setDragOffset(0);
         }
         return () => {
             document.body.style.overflow = '';
         };
-    }, [isOpen]);
+    }, [isOpen, initialSnap]);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         setIsDragging(true);

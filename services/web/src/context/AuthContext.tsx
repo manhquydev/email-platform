@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         window.addEventListener("auth:unauthorized", handleUnauthorized);
         return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
-    }, [token, user, setToken]);
+    }, [token, setToken]); // Removed user to prevent infinite loop
 
     if (initializing) {
         return <Loading fullScreen message="Đang tải dữ liệu..." />;

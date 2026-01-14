@@ -7,6 +7,7 @@ import type {
   VisibilityMatchType,
   VisibilityTestResult,
   VisibilityTestSummary,
+  VisibilityConditionOperator,
 } from '../types/visibility-rules';
 
 // Re-export types
@@ -18,6 +19,7 @@ export type {
   VisibilityMatchType,
   VisibilityTestResult,
   VisibilityTestSummary,
+  VisibilityConditionOperator,
 };
 
 interface CreateRulePayload {

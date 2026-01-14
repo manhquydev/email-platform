@@ -43,7 +43,7 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
 
         const timeoutId = setTimeout(fetchUsers, 300); // Debounce
         return () => clearTimeout(timeoutId);
-    }, [query, isOpen]);
+    }, [query, isOpen, token]);
 
     // Fetch initial selected user if value exists
     useEffect(() => {
@@ -52,7 +52,7 @@ export function UserSelect({ value, onChange, label, placeholder = "Search user 
             // For now, let's try to find it if we can or just show the ID.
             // Or we can fetch specific user detail.
         }
-    }, [value]);
+    }, [value, selectedUser]);
 
     // Close on click outside
     useEffect(() => {

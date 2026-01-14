@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: email_service
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - email_postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
@@ -35,6 +35,22 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  backup:
+    build:
+      context: .
+      dockerfile: services/backup/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backups:/backups
+    env_file:
+      - ./services/api/.env
+    environment:
+      - BACKUP_DIR=/backups
+      - CONTAINER_NAME=email-platform-postgres-1
+    depends_on:
+      - postgres
 
   api:
     build:
@@ -66,7 +82,7 @@ services:
       - mailpit
       - redis
     volumes:
-      - ./services/api/storage:/app/storage
+      - email_storage:/app/storage
     ports:
       - "3001:3001"
       - "25:2525"
@@ -120,7 +136,9 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres-data:
+  email_postgres_data:
+    driver: local
+  email_storage:
     driver: local
   redis_data:
     driver: local

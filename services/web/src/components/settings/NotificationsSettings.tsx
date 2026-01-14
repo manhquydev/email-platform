@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GlassCard } from "../ui/GlassCard";
 import { Button } from "../ui/Button";
 import { api } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
+import { usePushNotifications } from "../../hooks/usePushNotifications";
 import toast from "react-hot-toast";
 import { getFriendlyErrorMessage } from "../../utils/errorMapping";
 
@@ -32,12 +33,10 @@ export function NotificationsSettings() {
     const [inboxLinksLoading, setInboxLinksLoading] = useState(false);
     const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
 
-    useEffect(() => {
-        loadTelegramStatus();
-        loadInboxLinks();
-    }, [token]);
+    // Browser Push
+    const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
-    const loadTelegramStatus = async () => {
+    const loadTelegramStatus = useCallback(async () => {
         if (!token) return;
         try {
             const status = await api<TelegramStatus>("/telegram/status", { token });
@@ -45,9 +44,9 @@ export function NotificationsSettings() {
         } catch {
             // Telegram not configured, ignore
         }
-    };
+    }, [token]);
 
-    const loadInboxLinks = async () => {
+    const loadInboxLinks = useCallback(async () => {
         if (!token) return;
         setInboxLinksLoading(true);
         try {
@@ -58,7 +57,12 @@ export function NotificationsSettings() {
         } finally {
             setInboxLinksLoading(false);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        loadTelegramStatus();
+        loadInboxLinks();
+    }, [loadTelegramStatus, loadInboxLinks]);
 
     const unlinkInbox = async (linkId: string) => {
         setUnlinkingId(linkId);
@@ -128,6 +132,37 @@ export function NotificationsSettings() {
                 <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Thông báo</h2>
                 <p className="text-nebula-text-muted font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
             </div>
+
+            {/* Browser Push Notifications */}
+            {isSupported && (
+                <GlassCard className="p-6 bg-nebula-surface/80 border border-nebula-border shadow-sm">
+                    <div className="flex items-center gap-2 mb-6">
+                        <span className="material-symbols-outlined text-nebula-violet">notifications_active</span>
+                        <h3 className="text-lg font-semibold text-nebula-text">Thông báo trình duyệt</h3>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-nebula-elevated border border-nebula-border">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-nebula-violet/10">
+                                <span className="material-symbols-outlined text-nebula-violet text-sm">desktop_windows</span>
+                            </div>
+                            <div>
+                                <span className="text-sm font-medium text-nebula-text">Nhận thông báo trên thiết bị này</span>
+                                <p className="text-xs text-nebula-text-muted">
+                                    {isSubscribed ? 'Đang bật' : 'Đang tắt'}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={isSubscribed ? unsubscribe : subscribe}
+                            disabled={pushLoading}
+                            className={`relative w-11 h-6 rounded-full transition-colors ${isSubscribed ? 'bg-success' : 'bg-nebula-border'}`}
+                        >
+                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow ${isSubscribed ? 'translate-x-5' : ''}`} />
+                        </button>
+                    </div>
+                </GlassCard>
+            )}
 
             {/* Account Telegram Link */}
             <GlassCard className="p-6 bg-nebula-surface/80 border border-nebula-border shadow-sm">

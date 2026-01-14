@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { authenticator } from "otplib";
 import { useAuth } from "../context/AuthContext";
@@ -52,7 +52,7 @@ export function Authenticator() {
     const [accountToDelete, setAccountToDelete] = useState<AuthenticatorAccount | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const fetchAccounts = async () => {
+    const fetchAccounts = useCallback(async () => {
         try {
             const res = await fetch(`${API_BASE}/auth/authenticator/accounts`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -68,11 +68,11 @@ export function Authenticator() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
 
     useEffect(() => {
         fetchAccounts();
-    }, [token]);
+    }, [fetchAccounts]);
 
     // Timer and Code Generation
     useEffect(() => {
@@ -97,7 +97,7 @@ export function Authenticator() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [accounts]);
+    }, [accounts, codes]);
 
     useEffect(() => {
         if (accounts.length > 0) {
@@ -113,7 +113,7 @@ export function Authenticator() {
             });
             setCodes(newCodes);
         }
-    }, [accounts]);
+    }, [accounts, codes]);
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { api } from "../../utils/api";
 import type {
@@ -70,15 +70,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
         { type: "MARK_READ" }
     ]);
 
-    useEffect(() => {
-        if (effectiveInboxId) {
-            loadData();
-        } else {
-            setFilters([]);
-        }
-    }, [effectiveInboxId]);
-
-    async function loadData() {
+    const loadData = useCallback(async () => {
         if (!effectiveInboxId) return;
         setLoading(true);
         try {
@@ -94,7 +86,15 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
         } finally {
             setLoading(false);
         }
-    }
+    }, [effectiveInboxId]);
+
+    useEffect(() => {
+        if (effectiveInboxId) {
+            loadData();
+        } else {
+            setFilters([]);
+        }
+    }, [effectiveInboxId, loadData]);
 
     const openCreateModal = () => {
         setEditingFilter(null);

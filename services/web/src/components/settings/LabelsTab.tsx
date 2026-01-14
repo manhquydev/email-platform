@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { CirclePicker } from "react-color";
 import type { ColorResult } from "react-color";
@@ -28,15 +28,7 @@ export function LabelsTab({ inboxId, inboxes = [], selectedInboxId, onInboxChang
     const [name, setName] = useState("");
     const [color, setColor] = useState("#6366f1");
 
-    useEffect(() => {
-        if (effectiveInboxId) {
-            loadLabels();
-        } else {
-            setLabels([]);
-        }
-    }, [effectiveInboxId]);
-
-    async function loadLabels() {
+    const loadLabels = useCallback(async () => {
         if (!effectiveInboxId) return;
         setLoading(true);
         try {
@@ -48,7 +40,15 @@ export function LabelsTab({ inboxId, inboxes = [], selectedInboxId, onInboxChang
         } finally {
             setLoading(false);
         }
-    }
+    }, [effectiveInboxId]);
+
+    useEffect(() => {
+        if (effectiveInboxId) {
+            loadLabels();
+        } else {
+            setLabels([]);
+        }
+    }, [effectiveInboxId, loadLabels]);
 
     const openCreateModal = () => {
         setName("");

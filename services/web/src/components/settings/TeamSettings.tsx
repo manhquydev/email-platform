@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { useAuth } from "../../context/AuthContext";
@@ -35,11 +35,7 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
     const [selectedInboxId, setSelectedInboxId] = useState("");
     const [sharingInbox, setSharingInbox] = useState(false);
 
-    useEffect(() => {
-        if (token) loadTeams();
-    }, [token]);
-
-    const loadTeams = async () => {
+    const loadTeams = useCallback(async () => {
         setLoading(true);
         try {
             const data = await api<{ teams: Team[] }>("/teams", { token });
@@ -49,7 +45,11 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        if (token) loadTeams();
+    }, [token, loadTeams]);
 
     const loadTeamDetails = async (teamId: string) => {
         try {

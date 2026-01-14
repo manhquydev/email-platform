@@ -53,19 +53,20 @@ export function TelegramLoginButton({
       script.setAttribute("data-userpic", "false");
     }
 
-    containerRef.current?.appendChild(script);
+    const container = containerRef.current;
+    container?.appendChild(script);
 
     return () => {
       delete (window as unknown as Record<string, unknown>)[callbackName];
-      if (containerRef.current) {
-        const existingScript = containerRef.current.querySelector("script");
+      if (container) {
+        const existingScript = container.querySelector("script");
         if (existingScript) {
-          containerRef.current.removeChild(existingScript);
+          container.removeChild(existingScript);
         }
         // Also remove the iframe that Telegram creates
-        const iframe = containerRef.current.querySelector("iframe");
+        const iframe = container.querySelector("iframe");
         if (iframe) {
-          containerRef.current.removeChild(iframe);
+          container.removeChild(iframe);
         }
       }
     };

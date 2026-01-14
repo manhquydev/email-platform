@@ -23,6 +23,17 @@ vi.mock("../utils/api", () => ({
     getFriendlyErrorMessage: (msg: string) => msg,
 }));
 
+// Mock Realtime Context
+vi.mock("../hooks/useRealtimeContext", () => ({
+    useRealtimeContext: () => ({
+        subscribe: vi.fn(),
+        unsubscribe: vi.fn(),
+        isConnected: true,
+        status: "connected",
+    }),
+    useRealtimeSubscription: vi.fn(),
+}));
+
 // Mock child components to avoid deep rendering
 vi.mock("../layouts/AppShell", () => ({
     AppShell: ({ children }: { children: React.ReactNode }) => (

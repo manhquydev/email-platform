@@ -155,21 +155,37 @@ export function SplitPaneLayout({
             <div className="flex-1 overflow-auto min-w-0">
                 {showRightPane ? rightPane : (
                     <div className="h-full flex items-center justify-center text-text-secondary">
-                        <div className="text-center">
-                            <svg
-                                className="w-16 h-16 mx-auto mb-4 opacity-30"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1.5}
-                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                />
-                            </svg>
-                            <p className="text-sm">Chọn email để xem</p>
+                        <div className="text-center max-w-[280px]">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10 flex items-center justify-center">
+                                <svg
+                                    className="w-10 h-10 text-primary/40"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                    />
+                                </svg>
+                            </div>
+                            <h3 className="text-base font-semibold text-text-main mb-2">Chọn email để xem</h3>
+                            <p className="text-sm text-text-secondary mb-4 leading-relaxed">
+                                Chọn một email từ danh sách bên trái để xem nội dung chi tiết
+                            </p>
+                            <div className="flex items-center justify-center gap-4 text-[11px] text-text-secondary">
+                                <div className="flex items-center gap-1.5">
+                                    <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">j</kbd>
+                                    <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">k</kbd>
+                                    <span>di chuyển</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">↵</kbd>
+                                    <span>mở</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

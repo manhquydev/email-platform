@@ -484,9 +484,45 @@ export function InboxManager() {
                         breakpoint={breakpoint}
                         leftPane={
                             <div className="h-full flex flex-col">
+                                {/* Header with quick actions */}
                                 <div className="p-3 border-b border-white/5">
-                                    <h2 className="text-sm font-semibold text-text-main">Hộp thư</h2>
-                                    <p className="text-xs text-text-secondary">{filteredInboxes.length} inboxes</p>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                            <h2 className="text-sm font-semibold text-text-main">Hộp thư</h2>
+                                            <p className="text-xs text-text-secondary">{filteredInboxes.length} inboxes</p>
+                                        </div>
+                                        <button
+                                            className="p-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg text-primary transition-colors"
+                                            onClick={() => setShowCreateModal(true)}
+                                            title="Tạo inbox mới (n)"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {/* Sort/Filter chips */}
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <select
+                                            value={filterBy}
+                                            onChange={(e) => setFilterBy(e.target.value as FilterOption)}
+                                            className="text-[10px] px-2 py-1 rounded-md bg-white/5 border border-white/10 text-text-secondary hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                                        >
+                                            <option value="all">Tất cả</option>
+                                            <option value="active">Đang hoạt động</option>
+                                            <option value="expiring">Sắp hết hạn</option>
+                                            <option value="expired">Đã hết hạn</option>
+                                        </select>
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                            className="text-[10px] px-2 py-1 rounded-md bg-white/5 border border-white/10 text-text-secondary hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                                        >
+                                            <option value="created">Mới nhất</option>
+                                            <option value="name">Tên A-Z</option>
+                                            <option value="ttl">Thời gian</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto">
                                     <InboxSidebar
@@ -511,42 +547,75 @@ export function InboxManager() {
                         middlePane={
                             <div className="h-full flex flex-col">
                                 <div className="p-3 border-b border-white/5">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div>
-                                            <h2 className="text-sm font-semibold text-text-main">
-                                                {activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name}` : 'Tin nhắn'}
-                                            </h2>
-                                            <p className="text-xs text-text-secondary">
-                                                {isSearchMode
-                                                    ? `${searchResults.length} kết quả`
-                                                    : activeInbox
-                                                        ? `${messages.length} messages`
-                                                        : 'Chọn inbox để xem'}
-                                            </p>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            {activeInbox && (
+                                                <>
+                                                    {activeInbox.shareMode === 'PUBLIC' && (
+                                                        <span className="flex-shrink-0 w-2 h-2 rounded-full bg-green-400" title="Công khai" />
+                                                    )}
+                                                    <h2 className="text-sm font-semibold text-text-main truncate">
+                                                        {`${activeInbox.localPart}@${activeInbox.domain?.name}`}
+                                                    </h2>
+                                                </>
+                                            )}
+                                            {!activeInbox && !isSearchMode && (
+                                                <h2 className="text-sm font-semibold text-text-main">Tin nhắn</h2>
+                                            )}
+                                            {isSearchMode && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center">
+                                                        <svg className="w-3 h-3 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                                        </svg>
+                                                    </span>
+                                                    <h2 className="text-sm font-semibold text-text-main">Kết quả tìm kiếm</h2>
+                                                </div>
+                                            )}
                                         </div>
-                                        {activeInbox && !isSearchMode && (
-                                            <button
-                                                className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
-                                                onClick={() => loadMessages(activeInbox.id)}
-                                                title="Refresh"
-                                            >
-                                                <svg className={cn("w-4 h-4", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                        {isSearchMode && (
-                                            <button
-                                                className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
-                                                onClick={clearSearch}
-                                                title="Xóa tìm kiếm"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        )}
+                                        <div className="flex items-center gap-1">
+                                            {activeInbox && !isSearchMode && (
+                                                <>
+                                                    <button
+                                                        className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                        onClick={() => loadMessages(activeInbox.id)}
+                                                        title="Làm mới (r)"
+                                                    >
+                                                        <svg className={cn("w-4 h-4", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                    </button>
+                                                    <button
+                                                        className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                        onClick={() => handleDeleteInbox(activeInbox)}
+                                                        title="Xóa inbox"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </>
+                                            )}
+                                            {isSearchMode && (
+                                                <button
+                                                    className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                    onClick={clearSearch}
+                                                    title="Xóa tìm kiếm"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
+                                    <p className="text-[11px] text-text-secondary mb-2">
+                                        {isSearchMode
+                                            ? `${searchResults.length} kết quả cho "${searchQuery}"`
+                                            : activeInbox
+                                                ? `${messages.length} tin nhắn${messages.filter(m => !m.isRead).length > 0 ? ` • ${messages.filter(m => !m.isRead).length} chưa đọc` : ''}`
+                                                : 'Chọn inbox từ danh sách bên trái'}
+                                    </p>
                                     <EnhancedSearchBar
                                         onSearch={handleSearch}
                                         onClear={clearSearch}

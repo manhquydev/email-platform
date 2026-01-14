@@ -19,6 +19,7 @@ import type { RealtimeEvent } from "../types/realtime";
 import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
 import type { Domain, Inbox, Message, PaginatedResponse, ShareMode } from "../types";
 import { lazy, Suspense } from "react";
+import { SwipeableInboxCard, InboxActionSheet, PullToRefresh } from "../components/mobile";
 
 const CreateInboxModal = lazy(() => import("../components/CreateInboxModal").then(m => ({ default: m.CreateInboxModal })));
 const TransferInboxModal = lazy(() => import("../components/TransferInboxModal").then(m => ({ default: m.TransferInboxModal })));
@@ -64,6 +65,10 @@ export function InboxManager() {
     const [inboxForVisibilityRules, setInboxForVisibilityRules] = useState<Inbox | null>(null);
     const [isBatchDeleting, setIsBatchDeleting] = useState(false);
     const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
+
+    // Mobile-specific state
+    const [inboxForActionSheet, setInboxForActionSheet] = useState<Inbox | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Tabs config
     const tabs = [
@@ -317,6 +322,22 @@ export function InboxManager() {
         navigator.clipboard.writeText(emails);
         toast.success(`Đã sao chép ${selectedInboxIds.size} địa chỉ`);
     };
+
+    // Pull-to-refresh handler for mobile
+    const handlePullRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        try {
+            await loadInboxes();
+            toast.success("Đã làm mới danh sách");
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [loadInboxes]);
+
+    // Mobile long-press handler to show action sheet
+    const handleLongPress = useCallback((inbox: Inbox) => {
+        setInboxForActionSheet(inbox);
+    }, []);
 
     // Keyboard navigation
     useEffect(() => {
@@ -684,46 +705,74 @@ export function InboxManager() {
                                         </button>
                                     </div>
                                 </GlassCard>
-        
-                                {/* Inbox List */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                    {busy && inboxes.length === 0 ? (
-                                        Array(6).fill(0).map((_, i) => <InboxCardSkeleton key={i} />)
-                                    ) : filteredInboxes.length === 0 ? (
-                                        <div className="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
-                                            <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
-                                                <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
-                                                </svg>
+
+                                {/* Inbox List with Pull-to-Refresh for Mobile */}
+                                <PullToRefresh
+                                    onRefresh={handlePullRefresh}
+                                    isRefreshing={isRefreshing}
+                                    disabled={isDesktop}
+                                    className="flex-1"
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                        {busy && inboxes.length === 0 ? (
+                                            Array(6).fill(0).map((_, i) => <InboxCardSkeleton key={i} />)
+                                        ) : filteredInboxes.length === 0 ? (
+                                            <div className="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
+                                                <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
+                                                    <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2">No inboxes found</h3>
+                                                <p className="text-text-secondary max-w-sm mx-auto mb-6">Start by creating your first temporary email inbox to receive messages.</p>
+                                                <button
+                                                    onClick={() => setShowCreateModal(true)}
+                                                    className="px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"
+                                                >
+                                                    Create your first inbox
+                                                </button>
                                             </div>
-                                            <h3 className="text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2">No inboxes found</h3>
-                                            <p className="text-text-secondary max-w-sm mx-auto mb-6">Start by creating your first temporary email inbox to receive messages.</p>
-                                            <button
-                                                onClick={() => setShowCreateModal(true)}
-                                                className="px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"
-                                            >
-                                                Create your first inbox
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        filteredInboxes.map((inbox, index) => (
-                                            <InboxCard
-                                                key={inbox.id}
-                                                inbox={inbox}
-                                                isSelected={selectedInboxIds.has(inbox.id)}
-                                                isActive={index === focusedIndex}
-                                                onSelect={() => setFocusedIndex(index)}
-                                                onToggleSelect={() => handleToggleSelect(inbox.id)}
-                                                onCopy={() => { }}
-                                                onDelete={() => handleDeleteInbox(inbox)}
-                                                onViewMessages={() => handleViewMessages(inbox)}
-                                                onTransfer={() => setInboxToTransfer(inbox)}
-                                                onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
-                                                onVisibilityRules={() => setInboxForVisibilityRules(inbox)}
-                                            />
-                                        ))
-                                    )}
-                                </div>
+                                        ) : (
+                                            filteredInboxes.map((inbox, index) => {
+                                                const email = `${inbox.localPart}@${inbox.domain?.name}`;
+                                                const card = (
+                                                    <InboxCard
+                                                        key={inbox.id}
+                                                        inbox={inbox}
+                                                        isSelected={selectedInboxIds.has(inbox.id)}
+                                                        isActive={index === focusedIndex}
+                                                        onSelect={() => setFocusedIndex(index)}
+                                                        onToggleSelect={() => handleToggleSelect(inbox.id)}
+                                                        onCopy={() => { }}
+                                                        onDelete={() => handleDeleteInbox(inbox)}
+                                                        onViewMessages={() => handleViewMessages(inbox)}
+                                                        onTransfer={() => setInboxToTransfer(inbox)}
+                                                        onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
+                                                        onVisibilityRules={() => setInboxForVisibilityRules(inbox)}
+                                                    />
+                                                );
+
+                                                // Use swipeable card on mobile/tablet
+                                                if (!isDesktop) {
+                                                    return (
+                                                        <SwipeableInboxCard
+                                                            key={inbox.id}
+                                                            email={email}
+                                                            onDelete={() => handleDeleteInbox(inbox)}
+                                                            onCopy={() => handleLongPress(inbox)}
+                                                        >
+                                                            <div onContextMenu={(e) => { e.preventDefault(); handleLongPress(inbox); }}>
+                                                                {card}
+                                                            </div>
+                                                        </SwipeableInboxCard>
+                                                    );
+                                                }
+
+                                                return card;
+                                            })
+                                        )}
+                                    </div>
+                                </PullToRefresh>
         
                                 {/* Footer stats */}
                                 {filteredInboxes.length > 0 && (
@@ -969,6 +1018,35 @@ export function InboxManager() {
                 isLoading={isBatchDeleting}
                 onConfirm={confirmBatchDelete}
                 onCancel={() => setShowBatchDeleteConfirm(false)}
+            />
+
+            {/* Mobile Action Sheet */}
+            <InboxActionSheet
+                isOpen={!!inboxForActionSheet}
+                onClose={() => setInboxForActionSheet(null)}
+                inbox={inboxForActionSheet}
+                onCopy={() => {
+                    if (inboxForActionSheet) {
+                        const email = `${inboxForActionSheet.localPart}@${inboxForActionSheet.domain?.name}`;
+                        navigator.clipboard.writeText(email);
+                        toast.success(`Đã sao chép: ${email}`);
+                    }
+                }}
+                onViewMessages={() => {
+                    if (inboxForActionSheet) handleViewMessages(inboxForActionSheet);
+                }}
+                onTransfer={() => {
+                    if (inboxForActionSheet) setInboxToTransfer(inboxForActionSheet);
+                }}
+                onDelete={() => {
+                    if (inboxForActionSheet) handleDeleteInbox(inboxForActionSheet);
+                }}
+                onShareModeChange={(mode) => {
+                    if (inboxForActionSheet) handleShareModeChange(inboxForActionSheet.id, mode);
+                }}
+                onVisibilityRules={() => {
+                    if (inboxForActionSheet) setInboxForVisibilityRules(inboxForActionSheet);
+                }}
             />
         </FocusStreamLayout>
     );

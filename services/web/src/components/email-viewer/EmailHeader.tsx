@@ -36,7 +36,7 @@ export function EmailHeader({ message, className }: EmailHeaderProps) {
                     </span>
                     <span className="text-text-main">{message.fromAddress}</span>
                     <CopyButton
-                        text={message.fromAddress}
+                        text={message.fromAddress ?? ''}
                         size="sm"
                         variant="ghost"
                         successMessage={`Đã copy: ${message.fromAddress}`}

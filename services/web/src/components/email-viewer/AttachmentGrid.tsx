@@ -9,9 +9,11 @@ import { cn } from '../../utils/cn';
 interface Attachment {
     id: string;
     filename: string;
-    contentType: string;
-    size: number;
+    contentType?: string;
+    mimeType?: string | null;
+    size?: number | null;
     url?: string;
+    storageKey?: string;
 }
 
 interface AttachmentGridProps {
@@ -63,7 +65,8 @@ export function AttachmentGrid({
     if (!attachments || attachments.length === 0) return null;
 
     const handleClick = (attachment: Attachment) => {
-        if (isImage(attachment.contentType) && attachment.url) {
+        const type = attachment.contentType || attachment.mimeType || '';
+        if (isImage(type) && attachment.url) {
             setPreviewImage(attachment);
             onPreview?.(attachment);
         } else {
@@ -117,7 +120,7 @@ export function AttachmentGrid({
                         />
                         <div className="text-center mt-3">
                             <p className="text-white font-medium">{previewImage.filename}</p>
-                            <p className="text-white/60 text-sm">{formatFileSize(previewImage.size)}</p>
+                            <p className="text-white/60 text-sm">{formatFileSize(previewImage.size ?? 0)}</p>
                         </div>
                     </div>
                 </div>
@@ -132,7 +135,8 @@ interface AttachmentItemProps {
 }
 
 function AttachmentItem({ attachment, onClick }: AttachmentItemProps) {
-    const isImg = isImage(attachment.contentType);
+    const type = attachment.contentType || attachment.mimeType || '';
+    const isImg = isImage(type);
     const { icon, color } = getFileIcon(attachment.filename);
 
     return (
@@ -167,7 +171,7 @@ function AttachmentItem({ attachment, onClick }: AttachmentItemProps) {
 
             {/* Size */}
             <p className="text-[10px] text-text-secondary">
-                {formatFileSize(attachment.size)}
+                {formatFileSize(attachment.size ?? 0)}
             </p>
         </button>
     );

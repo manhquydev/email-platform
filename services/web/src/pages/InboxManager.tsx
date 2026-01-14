@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { api, PAGE_SIZE } from "../utils/api";
@@ -13,6 +13,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint";
 import { SplitPaneLayout } from "../components/split-pane/SplitPaneLayout";
 import { InboxSidebar } from "../components/split-pane/InboxSidebar";
 import { MessageViewer } from "../components/email-viewer/MessageViewer";
+import { EnhancedSearchBar } from "../components/search";
 import type { RealtimeEvent } from "../types/realtime";
 
 import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
@@ -484,29 +485,75 @@ export function InboxManager() {
                         }
                         middlePane={
                             <div className="h-full flex flex-col">
-                                <div className="p-3 border-b border-white/5 flex items-center justify-between">
-                                    <div>
-                                        <h2 className="text-sm font-semibold text-text-main">
-                                            {activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name}` : 'Tin nhắn'}
-                                        </h2>
-                                        <p className="text-xs text-text-secondary">
-                                            {activeInbox ? `${messages.length} messages` : 'Chọn inbox để xem'}
-                                        </p>
+                                <div className="p-3 border-b border-white/5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div>
+                                            <h2 className="text-sm font-semibold text-text-main">
+                                                {activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name}` : 'Tin nhắn'}
+                                            </h2>
+                                            <p className="text-xs text-text-secondary">
+                                                {isSearchMode
+                                                    ? `${searchResults.length} kết quả`
+                                                    : activeInbox
+                                                        ? `${messages.length} messages`
+                                                        : 'Chọn inbox để xem'}
+                                            </p>
+                                        </div>
+                                        {activeInbox && !isSearchMode && (
+                                            <button
+                                                className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                onClick={() => loadMessages(activeInbox.id)}
+                                                title="Refresh"
+                                            >
+                                                <svg className={cn("w-4 h-4", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        {isSearchMode && (
+                                            <button
+                                                className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                onClick={clearSearch}
+                                                title="Xóa tìm kiếm"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        )}
                                     </div>
-                                    {activeInbox && (
-                                        <button
-                                            className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
-                                            onClick={() => loadMessages(activeInbox.id)}
-                                            title="Refresh"
-                                        >
-                                            <svg className={cn("w-4 h-4", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                            </svg>
-                                        </button>
-                                    )}
+                                    <EnhancedSearchBar
+                                        onSearch={handleSearch}
+                                        onClear={clearSearch}
+                                        isSearching={isSearching}
+                                        placeholder="Tìm kiếm email..."
+                                        showFilters={true}
+                                    />
                                 </div>
                                 <div className="flex-1 overflow-y-auto">
-                                    {activeInbox ? (
+                                    {isSearchMode ? (
+                                        isSearching ? (
+                                            <div className="p-4 space-y-3">
+                                                {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                                            </div>
+                                        ) : searchResults.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center h-full text-center opacity-60 py-10">
+                                                <div className="w-16 h-16 rounded-full bg-surface/50 flex items-center justify-center mb-4">
+                                                    <svg className="w-8 h-8 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-text-main mb-1">Không tìm thấy kết quả</h3>
+                                                <p className="text-sm text-text-secondary">Thử tìm kiếm với từ khóa khác</p>
+                                            </div>
+                                        ) : (
+                                            <EmailStream
+                                                messages={searchResults}
+                                                selectedMessageId={selectedMessage?.id || null}
+                                                onSelectMessage={handleSelectMessage}
+                                            />
+                                        )
+                                    ) : activeInbox ? (
                                         busy && messages.length === 0 ? (
                                             <div className="p-4 space-y-3">
                                                 {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
@@ -549,7 +596,7 @@ export function InboxManager() {
                 </div>
             ) : (
                 /* Mobile/Tablet: Original Tab-based Layout */
-                <>
+                <Fragment>
                     {/* Tab Navigation */}
                     <div className="sticky top-0 z-30">
                         <TabNavigation
@@ -559,256 +606,257 @@ export function InboxManager() {
                         />
                     </div>
 
-            {/* Tab Content */}
-            <div className="p-4 md:p-6 w-full max-w-7xl mx-auto">
-                {activeTab === 'inboxes' ? (
-                    <div className="flex flex-col gap-4">
-                        {/* Toolbar */}
-                        <GlassCard className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl">
-                            <div className="flex items-center gap-4 w-full md:w-auto">
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className="relative">
-                                        <input
-                                            type="checkbox"
-                                            className="peer sr-only"
-                                            checked={selectedInboxIds.size === filteredInboxes.length && filteredInboxes.length > 0}
-                                            onChange={handleSelectAll}
-                                        />
-                                        <div className="w-5 h-5 rounded border border-white/40 bg-white/10 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50">
-                                            <svg className="w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                            </svg>
+                    {/* Tab Content */}
+                    <div className="p-4 md:p-6 w-full max-w-7xl mx-auto">
+                        {activeTab === 'inboxes' ? (
+                            <div className="flex flex-col gap-4">
+                                {/* Toolbar */}
+                                <GlassCard className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl">
+                                    <div className="flex items-center gap-4 w-full md:w-auto">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    className="peer sr-only"
+                                                    checked={selectedInboxIds.size === filteredInboxes.length && filteredInboxes.length > 0}
+                                                    onChange={handleSelectAll}
+                                                />
+                                                <div className="w-5 h-5 rounded border border-white/40 bg-white/10 peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center group-hover:border-primary/50">
+                                                    <svg className="w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <span className="text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors">Select all</span>
+                                        </label>
+        
+                                        {selectedInboxIds.size > 0 && (
+                                            <div className="flex items-center gap-2 animate-fade-in">
+                                                <button onClick={handleCopyAll} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-text-main transition-colors border border-white/10">
+                                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                                    </svg>
+                                                    Copy ({selectedInboxIds.size})
+                                                </button>
+                                                <button onClick={handleBatchDelete} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-xs font-medium text-red-400 hover:text-red-300 transition-colors border border-red-500/20">
+                                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                    </svg>
+                                                    Delete ({selectedInboxIds.size})
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+        
+                                    <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                                        <div className="flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5">
+                                            <select
+                                                value={filterBy}
+                                                onChange={(e) => setFilterBy(e.target.value as FilterOption)}
+                                                className="bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"
+                                            >
+                                                <option value="all">All Status</option>
+                                                <option value="active">Active</option>
+                                                <option value="expiring">Expiring Soon</option>
+                                                <option value="expired">Expired</option>
+                                            </select>
+                                            <div className="w-px h-4 bg-white/10" />
+                                            <select
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                                className="bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"
+                                            >
+                                                <option value="created">Newest</option>
+                                                <option value="name">Name A-Z</option>
+                                                <option value="ttl">Time Left</option>
+                                            </select>
                                         </div>
-                                    </div>
-                                    <span className="text-sm font-medium text-text-secondary group-hover:text-text-main transition-colors">Select all</span>
-                                </label>
-
-                                {selectedInboxIds.size > 0 && (
-                                    <div className="flex items-center gap-2 animate-fade-in">
-                                        <button onClick={handleCopyAll} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-text-main transition-colors border border-white/10">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                                            </svg>
-                                            Copy ({selectedInboxIds.size})
-                                        </button>
-                                        <button onClick={handleBatchDelete} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-xs font-medium text-red-400 hover:text-red-300 transition-colors border border-red-500/20">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                            </svg>
-                                            Delete ({selectedInboxIds.size})
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-                                <div className="flex items-center gap-2 bg-black/20 p-1 rounded-lg border border-white/5">
-                                    <select
-                                        value={filterBy}
-                                        onChange={(e) => setFilterBy(e.target.value as FilterOption)}
-                                        className="bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"
-                                    >
-                                        <option value="all">All Status</option>
-                                        <option value="active">Active</option>
-                                        <option value="expiring">Expiring Soon</option>
-                                        <option value="expired">Expired</option>
-                                    </select>
-                                    <div className="w-px h-4 bg-white/10" />
-                                    <select
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                        className="bg-transparent text-xs font-medium text-text-secondary hover:text-text-main focus:outline-none focus:text-primary cursor-pointer px-2 py-1 rounded"
-                                    >
-                                        <option value="created">Newest</option>
-                                        <option value="name">Name A-Z</option>
-                                        <option value="ttl">Time Left</option>
-                                    </select>
-                                </div>
-
-                                <button
-                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"
-                                    onClick={() => setShowCreateModal(true)}
-                                >
-                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                    </svg>
-                                    Create New
-                                </button>
-                            </div>
-                        </GlassCard>
-
-                        {/* Inbox List */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {busy && inboxes.length === 0 ? (
-                                Array(6).fill(0).map((_, i) => <InboxCardSkeleton key={i} />)
-                            ) : filteredInboxes.length === 0 ? (
-                                <div className="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
-                                    <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
-                                        <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2">No inboxes found</h3>
-                                    <p className="text-text-secondary max-w-sm mx-auto mb-6">Start by creating your first temporary email inbox to receive messages.</p>
-                                    <button
-                                        onClick={() => setShowCreateModal(true)}
-                                        className="px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"
-                                    >
-                                        Create your first inbox
-                                    </button>
-                                </div>
-                            ) : (
-                                filteredInboxes.map((inbox, index) => (
-                                    <InboxCard
-                                        key={inbox.id}
-                                        inbox={inbox}
-                                        isSelected={selectedInboxIds.has(inbox.id)}
-                                        isActive={index === focusedIndex}
-                                        onSelect={() => setFocusedIndex(index)}
-                                        onToggleSelect={() => handleToggleSelect(inbox.id)}
-                                        onCopy={() => { }}
-                                        onDelete={() => handleDeleteInbox(inbox)}
-                                        onViewMessages={() => handleViewMessages(inbox)}
-                                        onTransfer={() => setInboxToTransfer(inbox)}
-                                        onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
-                                        onVisibilityRules={() => setInboxForVisibilityRules(inbox)}
-                                    />
-                                ))
-                            )}
-                        </div>
-
-                        {/* Footer stats */}
-                        {filteredInboxes.length > 0 && (
-                            <div className="flex items-center justify-center text-xs text-text-secondary py-4">
-                                <span>{filteredInboxes.length} inboxes</span>
-                                {selectedInboxIds.size > 0 && (
-                                    <span className="ml-1">• {selectedInboxIds.size} selected</span>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    /* Messages Tab */
-                    <div className="flex flex-col h-[calc(100vh-140px)]">
-                        {/* Search Mode Header */}
-                        {isSearchMode && (
-                            <GlassCard className="mb-4 p-4 flex items-center justify-between rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h2 className="font-bold text-lg text-text-main">Kết quả tìm kiếm</h2>
-                                        <p className="text-xs text-text-secondary">
-                                            {isSearching ? "Đang tìm kiếm..." : `"${searchQuery}" - ${searchResults.length} kết quả`}
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-main transition-colors text-sm font-medium flex items-center gap-2"
-                                    onClick={clearSearch}
-                                >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    Xóa tìm kiếm
-                                </button>
-                            </GlassCard>
-                        )}
-
-                        {/* Search Results */}
-                        {isSearchMode ? (
-                            <div className="flex-1 overflow-y-auto min-h-0 rounded-2xl bg-surface/20 border border-white/5 backdrop-blur-sm">
-                                {isSearching ? (
-                                    <div className="p-4 space-y-3">
-                                        {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
-                                    </div>
-                                ) : searchResults.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-center opacity-60 py-20">
-                                        <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
-                                            <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-xl font-bold text-text-main mb-2">Không tìm thấy kết quả</h3>
-                                        <p className="text-text-secondary max-w-sm mb-6">Thử tìm kiếm với từ khóa khác</p>
+        
                                         <button
-                                            onClick={clearSearch}
-                                            className="px-6 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                                            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 text-sm font-semibold whitespace-nowrap"
+                                            onClick={() => setShowCreateModal(true)}
                                         >
-                                            Quay lại
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                            </svg>
+                                            Create New
                                         </button>
                                     </div>
-                                ) : (
-                                    <EmailStream
-                                        messages={searchResults}
-                                        selectedMessageId={selectedMessage?.id || null}
-                                        onSelectMessage={handleSelectMessage}
-                                    />
-                                )}
-                            </div>
-                        ) : activeInbox ? (
-                            <div className="flex flex-col h-full">
-                                <GlassCard className="mb-4 p-4 flex items-center justify-between rounded-xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h2 className="font-bold text-lg text-text-main">{activeInbox.localPart}@{activeInbox.domain?.name}</h2>
-                                            <p className="text-xs text-text-secondary">{messages.length} messages</p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        className="p-2 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
-                                        onClick={() => loadMessages(activeInbox.id)}
-                                        title="Refresh"
-                                    >
-                                        <svg className={cn("w-5 h-5", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                    </button>
                                 </GlassCard>
-
-                                <div className="flex-1 overflow-y-auto min-h-0 rounded-2xl bg-surface/20 border border-white/5 backdrop-blur-sm">
-                                    {busy && messages.length === 0 ? (
-                                        <div className="p-4 space-y-3">
-                                            {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+        
+                                {/* Inbox List */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                    {busy && inboxes.length === 0 ? (
+                                        Array(6).fill(0).map((_, i) => <InboxCardSkeleton key={i} />)
+                                    ) : filteredInboxes.length === 0 ? (
+                                        <div className="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
+                                            <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
+                                                <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent mb-2">No inboxes found</h3>
+                                            <p className="text-text-secondary max-w-sm mx-auto mb-6">Start by creating your first temporary email inbox to receive messages.</p>
+                                            <button
+                                                onClick={() => setShowCreateModal(true)}
+                                                className="px-6 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors font-medium"
+                                            >
+                                                Create your first inbox
+                                            </button>
                                         </div>
                                     ) : (
-                                        <EmailStream
-                                            messages={messages}
-                                            selectedMessageId={selectedMessage?.id || null}
-                                            onSelectMessage={handleSelectMessage}
-                                        />
+                                        filteredInboxes.map((inbox, index) => (
+                                            <InboxCard
+                                                key={inbox.id}
+                                                inbox={inbox}
+                                                isSelected={selectedInboxIds.has(inbox.id)}
+                                                isActive={index === focusedIndex}
+                                                onSelect={() => setFocusedIndex(index)}
+                                                onToggleSelect={() => handleToggleSelect(inbox.id)}
+                                                onCopy={() => { }}
+                                                onDelete={() => handleDeleteInbox(inbox)}
+                                                onViewMessages={() => handleViewMessages(inbox)}
+                                                onTransfer={() => setInboxToTransfer(inbox)}
+                                                onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
+                                                onVisibilityRules={() => setInboxForVisibilityRules(inbox)}
+                                            />
+                                        ))
                                     )}
                                 </div>
+        
+                                {/* Footer stats */}
+                                {filteredInboxes.length > 0 && (
+                                    <div className="flex items-center justify-center text-xs text-text-secondary py-4">
+                                        <span>{filteredInboxes.length} inboxes</span>
+                                        {selectedInboxIds.size > 0 && (
+                                            <span className="ml-1">• {selectedInboxIds.size} selected</span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-center opacity-60">
-                                <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
-                                    <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                    </svg>
-                                </div>
-                                <h3 className="text-xl font-bold text-text-main mb-2">Select an inbox</h3>
-                                <p className="text-text-secondary max-w-sm mb-6">Choose an inbox from the list to view its messages.</p>
-                                <button
-                                    onClick={() => setActiveTab('inboxes')}
-                                    className="px-6 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
-                                >
-                                    Go to Inboxes
-                                </button>
+                            /* Messages Tab */
+                            <div className="flex flex-col h-[calc(100vh-140px)]">
+                                {/* Search Mode Header */}
+                                {isSearchMode && (
+                                    <GlassCard className="mb-4 p-4 flex items-center justify-between rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h2 className="font-bold text-lg text-text-main">Kết quả tìm kiếm</h2>
+                                                <p className="text-xs text-text-secondary">
+                                                    {isSearching ? "Đang tìm kiếm..." : `"${searchQuery}" - ${searchResults.length} kết quả`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-main transition-colors text-sm font-medium flex items-center gap-2"
+                                            onClick={clearSearch}
+                                        >
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Xóa tìm kiếm
+                                        </button>
+                                    </GlassCard>
+                                )}
+        
+                                {/* Search Results */}
+                                {isSearchMode ? (
+                                    <div className="flex-1 overflow-y-auto min-h-0 rounded-2xl bg-surface/20 border border-white/5 backdrop-blur-sm">
+                                        {isSearching ? (
+                                            <div className="p-4 space-y-3">
+                                                {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                                            </div>
+                                        ) : searchResults.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center h-full text-center opacity-60 py-20">
+                                                <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
+                                                    <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                                    </svg>
+                                                </div>
+                                                <h3 className="text-xl font-bold text-text-main mb-2">Không tìm thấy kết quả</h3>
+                                                <p className="text-text-secondary max-w-sm mb-6">Thử tìm kiếm với từ khóa khác</p>
+                                                <button
+                                                    onClick={clearSearch}
+                                                    className="px-6 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                                                >
+                                                    Quay lại
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <EmailStream
+                                                messages={searchResults}
+                                                selectedMessageId={selectedMessage?.id || null}
+                                                onSelectMessage={handleSelectMessage}
+                                            />
+                                        )}
+                                    </div>
+                                ) : activeInbox ? (
+                                    <div className="flex flex-col h-full">
+                                        <GlassCard className="mb-4 p-4 flex items-center justify-between rounded-xl">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h2 className="font-bold text-lg text-text-main">{activeInbox.localPart}@{activeInbox.domain?.name}</h2>
+                                                    <p className="text-xs text-text-secondary">{messages.length} messages</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                className="p-2 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                onClick={() => loadMessages(activeInbox.id)}
+                                                title="Refresh"
+                                            >
+                                                <svg className={cn("w-5 h-5", busy && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            </button>
+                                        </GlassCard>
+        
+                                        <div className="flex-1 overflow-y-auto min-h-0 rounded-2xl bg-surface/20 border border-white/5 backdrop-blur-sm">
+                                            {busy && messages.length === 0 ? (
+                                                <div className="p-4 space-y-3">
+                                                    {Array(5).fill(0).map((_, i) => <MessageItemSkeleton key={i} />)}
+                                                </div>
+                                            ) : (
+                                                <EmailStream
+                                                    messages={messages}
+                                                    selectedMessageId={selectedMessage?.id || null}
+                                                    onSelectMessage={handleSelectMessage}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full text-center opacity-60">
+                                        <div className="w-20 h-20 rounded-full bg-surface/50 flex items-center justify-center mb-6">
+                                            <svg className="w-10 h-10 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-text-main mb-2">Select an inbox</h3>
+                                        <p className="text-text-secondary max-w-sm mb-6">Choose an inbox from the list to view its messages.</p>
+                                        <button
+                                            onClick={() => setActiveTab('inboxes')}
+                                            className="px-6 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                                        >
+                                            Go to Inboxes
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
-                )}
-                </>
+                </Fragment>
             )}
 
             {/* Message Detail Overlay - Only for mobile/tablet, desktop uses inline reading pane */}
@@ -922,6 +970,6 @@ export function InboxManager() {
                 onConfirm={confirmBatchDelete}
                 onCancel={() => setShowBatchDeleteConfirm(false)}
             />
-        </FocusStreamLayout >
+        </FocusStreamLayout>
     );
 }

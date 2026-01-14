@@ -5,7 +5,7 @@
  * Mobile: Single column with navigation stack
  */
 
-import { ReactNode, useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { cn } from '../../utils/cn';
 import { usePaneResize } from '../../hooks/usePaneResize';
 import { ResizeHandle } from './ResizeHandle';

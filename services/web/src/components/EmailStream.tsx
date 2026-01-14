@@ -98,10 +98,11 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                                 key={message.id}
                                 className={cn(
                                     "group relative p-4 cursor-pointer transition-all duration-200 border-b border-nebula-border last:border-0",
-                                    "hover:bg-nebula-elevated",
-                                    isUnread && "bg-primary/5",
-                                    isSelected && "bg-primary/10 border-l-4 border-l-primary shadow-[inset_3px_0_0_0_#9333EA]",
-                                    !isSelected && "hover:border-l-4 hover:border-l-primary/50"
+                                    // Nebula hover effect with gradient
+                                    "hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent",
+                                    isUnread && "bg-gradient-to-r from-primary/[0.07] to-transparent",
+                                    isSelected && "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-l-4 border-l-primary shadow-[inset_0_0_25px_rgba(139,92,246,0.08)]",
+                                    !isSelected && "hover:border-l-4 hover:border-l-primary/30"
                                 )}
                                 onClick={() => onSelectMessage(message)}
                                 role="button"
@@ -156,10 +157,10 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
                                         {message.textBody?.substring(0, 120) || 'Không có nội dung xem trước'}
                                     </div>
 
-                                    {/* OTP Badge */}
+                                    {/* OTP Badge - Nebula glow effect */}
                                     {otp && (
                                         <button
-                                            className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-colors border border-primary/20"
+                                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary/15 to-purple-500/10 hover:from-primary/25 hover:to-purple-500/15 text-primary text-xs font-semibold transition-all border border-primary/20 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.25)] active:scale-[0.98]"
                                             onClick={(e) => handleCopyOTP(otp, e)}
                                             title="Nhấn để sao chép OTP"
                                         >

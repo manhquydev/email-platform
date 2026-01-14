@@ -73,9 +73,13 @@ export function InboxSidebarItem({
             <div
                 className={cn(
                     'group relative px-3 py-2.5 cursor-pointer transition-all duration-200',
-                    'border-l-2 border-transparent hover:bg-white/5',
-                    isActive && 'bg-primary/10 border-l-primary',
-                    isExpiringSoon && !isActive && 'bg-amber-500/5'
+                    'border-l-2 border-transparent',
+                    // Nebula hover effect with subtle glow
+                    'hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent',
+                    // Active state with Nebula glow
+                    isActive && 'bg-gradient-to-r from-primary/15 to-primary/5 border-l-primary shadow-[inset_0_0_20px_rgba(139,92,246,0.1)]',
+                    // Expiring soon warning state
+                    isExpiringSoon && !isActive && 'bg-gradient-to-r from-amber-500/10 to-transparent border-l-amber-500/50'
                 )}
                 onClick={onSelect}
                 onContextMenu={handleContextMenu}
@@ -167,17 +171,17 @@ export function InboxSidebarItem({
                 )}
             </div>
 
-            {/* Context Menu */}
+            {/* Context Menu - Nebula Glass Style */}
             {showMenu && (
                 <div
                     ref={menuRef}
-                    className="fixed z-50 min-w-[180px] py-1 bg-bg-secondary border border-white/10 rounded-lg shadow-xl"
+                    className="fixed z-50 min-w-[200px] py-1.5 bg-[var(--nebula-surface)]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black/50"
                     style={{ left: menuPos.x, top: menuPos.y }}
                 >
                     {/* Share Mode Toggle */}
                     {onShareModeChange && (
                         <button
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-white/5 flex items-center gap-2"
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2.5 transition-colors"
                             onClick={() => handleMenuAction(() => onShareModeChange(inbox.shareMode === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC'))}
                         >
                             {inbox.shareMode === 'PUBLIC' ? (
@@ -201,7 +205,7 @@ export function InboxSidebarItem({
                     {/* Visibility Rules */}
                     {onVisibilityRules && (
                         <button
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-white/5 flex items-center gap-2"
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2.5 transition-colors"
                             onClick={() => handleMenuAction(onVisibilityRules)}
                         >
                             <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -215,7 +219,7 @@ export function InboxSidebarItem({
                     {/* Transfer */}
                     {onTransfer && (
                         <button
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-white/5 flex items-center gap-2"
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2.5 transition-colors"
                             onClick={() => handleMenuAction(onTransfer)}
                         >
                             <svg className="w-4 h-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -225,12 +229,12 @@ export function InboxSidebarItem({
                         </button>
                     )}
 
-                    <div className="border-t border-white/5 my-1" />
+                    <div className="border-t border-white/5 my-1.5 mx-2" />
 
                     {/* Delete */}
                     {onDelete && (
                         <button
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-red-500/10 text-red-400 flex items-center gap-2"
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-red-500/10 text-red-400 flex items-center gap-2.5 transition-colors"
                             onClick={() => handleMenuAction(onDelete)}
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

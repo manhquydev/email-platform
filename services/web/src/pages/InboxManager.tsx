@@ -484,15 +484,18 @@ export function InboxManager() {
                         breakpoint={breakpoint}
                         leftPane={
                             <div className="h-full flex flex-col">
-                                {/* Header with quick actions */}
-                                <div className="p-3 border-b border-white/5">
-                                    <div className="flex items-center justify-between mb-2">
+                                {/* Header with quick actions - Nebula glass style */}
+                                <div className="p-3 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+                                    <div className="flex items-center justify-between mb-3">
                                         <div>
-                                            <h2 className="text-sm font-semibold text-text-main">Hộp thư</h2>
-                                            <p className="text-xs text-text-secondary">{filteredInboxes.length} inboxes</p>
+                                            <h2 className="text-sm font-semibold text-text-main flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                                Hộp thư
+                                            </h2>
+                                            <p className="text-[11px] text-text-secondary mt-0.5">{filteredInboxes.length} inboxes</p>
                                         </div>
                                         <button
-                                            className="p-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg text-primary transition-colors"
+                                            className="p-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-primary transition-all hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] active:scale-95"
                                             onClick={() => setShowCreateModal(true)}
                                             title="Tạo inbox mới (n)"
                                         >
@@ -501,12 +504,12 @@ export function InboxManager() {
                                             </svg>
                                         </button>
                                     </div>
-                                    {/* Sort/Filter chips */}
+                                    {/* Sort/Filter chips - Nebula styled */}
                                     <div className="flex items-center gap-1.5 flex-wrap">
                                         <select
                                             value={filterBy}
                                             onChange={(e) => setFilterBy(e.target.value as FilterOption)}
-                                            className="text-[10px] px-2 py-1 rounded-md bg-white/5 border border-white/10 text-text-secondary hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                                            className="text-[10px] px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-text-secondary hover:text-text-main hover:border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 cursor-pointer transition-all"
                                         >
                                             <option value="all">Tất cả</option>
                                             <option value="active">Đang hoạt động</option>
@@ -516,7 +519,7 @@ export function InboxManager() {
                                         <select
                                             value={sortBy}
                                             onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                            className="text-[10px] px-2 py-1 rounded-md bg-white/5 border border-white/10 text-text-secondary hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                                            className="text-[10px] px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-text-secondary hover:text-text-main hover:border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 cursor-pointer transition-all"
                                         >
                                             <option value="created">Mới nhất</option>
                                             <option value="name">Tên A-Z</option>
@@ -524,7 +527,7 @@ export function InboxManager() {
                                         </select>
                                     </div>
                                 </div>
-                                <div className="flex-1 overflow-y-auto">
+                                <div className="flex-1 overflow-y-auto custom-scrollbar">
                                     <InboxSidebar
                                         inboxes={filteredInboxes}
                                         activeInboxId={activeInbox?.id || null}
@@ -546,13 +549,14 @@ export function InboxManager() {
                         }
                         middlePane={
                             <div className="h-full flex flex-col">
-                                <div className="p-3 border-b border-white/5">
+                                {/* Header - Nebula glass style */}
+                                <div className="p-3 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2 min-w-0">
                                             {activeInbox && (
                                                 <>
                                                     {activeInbox.shareMode === 'PUBLIC' && (
-                                                        <span className="flex-shrink-0 w-2 h-2 rounded-full bg-green-400" title="Công khai" />
+                                                        <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" title="Công khai" />
                                                     )}
                                                     <h2 className="text-sm font-semibold text-text-main truncate">
                                                         {`${activeInbox.localPart}@${activeInbox.domain?.name}`}
@@ -560,12 +564,15 @@ export function InboxManager() {
                                                 </>
                                             )}
                                             {!activeInbox && !isSearchMode && (
-                                                <h2 className="text-sm font-semibold text-text-main">Tin nhắn</h2>
+                                                <h2 className="text-sm font-semibold text-text-main flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/50" />
+                                                    Tin nhắn
+                                                </h2>
                                             )}
                                             {isSearchMode && (
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center">
-                                                        <svg className="w-3 h-3 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                                                        <svg className="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                                                         </svg>
                                                     </span>
@@ -577,7 +584,7 @@ export function InboxManager() {
                                             {activeInbox && !isSearchMode && (
                                                 <>
                                                     <button
-                                                        className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                        className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary hover:text-primary transition-all"
                                                         onClick={() => loadMessages(activeInbox.id)}
                                                         title="Làm mới (r)"
                                                     >
@@ -586,7 +593,7 @@ export function InboxManager() {
                                                         </svg>
                                                     </button>
                                                     <button
-                                                        className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                        className="p-1.5 hover:bg-red-500/10 rounded-lg text-text-secondary hover:text-red-400 transition-all"
                                                         onClick={() => handleDeleteInbox(activeInbox)}
                                                         title="Xóa inbox"
                                                     >
@@ -598,7 +605,7 @@ export function InboxManager() {
                                             )}
                                             {isSearchMode && (
                                                 <button
-                                                    className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary transition-colors"
+                                                    className="p-1.5 hover:bg-white/5 rounded-lg text-text-secondary hover:text-text-main transition-all"
                                                     onClick={clearSearch}
                                                     title="Xóa tìm kiếm"
                                                 >
@@ -609,7 +616,7 @@ export function InboxManager() {
                                             )}
                                         </div>
                                     </div>
-                                    <p className="text-[11px] text-text-secondary mb-2">
+                                    <p className="text-[11px] text-text-secondary mb-2.5">
                                         {isSearchMode
                                             ? `${searchResults.length} kết quả cho "${searchQuery}"`
                                             : activeInbox

@@ -22,6 +22,25 @@ const OTP_PATTERNS = [
 
     // Security/Login codes
     /(?:security|login|đăng nhập)[^:]*?[:：]\s*(\d{4,8})/i,
+
+    // Alphanumeric codes (common for some services)
+    /(?:code|mã)[:\s]+([A-Z0-9]{6,8})/i,
+    /(?:verification|xác thực)[:\s]+([A-Z0-9]{6,8})/i,
+
+    // Subject line patterns
+    /(?:^|\s)(\d{6})(?:\s|$)/,  // Standalone 6-digit in subject
+    /mã:\s*(\d{4,8})/i,
+    /code:\s*(\d{4,8})/i,
+
+    // Common service patterns
+    /(?:google|facebook|twitter|microsoft|apple)[^:]*?[:：]\s*(\d{4,8})/i,
+    /(?:telegram|whatsapp|signal)[^:]*?[:：]\s*(\d{4,8})/i,
+
+    // Password reset codes
+    /(?:reset|đặt lại|password|mật khẩu)[^:]*?[:：]\s*(\d{4,8})/i,
+
+    // Bold/emphasized codes in HTML
+    /<(?:b|strong)>\s*(\d{4,8})\s*<\/(?:b|strong)>/i,
 ];
 
 // Patterns that should NOT be considered OTP (false positives)
@@ -44,13 +63,17 @@ export interface OTPResult {
 export function extractOTP(text: string): OTPResult | null {
     if (!text) return null;
 
+    // Limit text length to prevent ReDoS/performance issues (max 5KB)
+    const MAX_LENGTH = 5000;
+    const truncatedText = text.length > MAX_LENGTH ? text.slice(0, MAX_LENGTH) : text;
+
     // Clean the text
-    const cleanText = text.replace(/\s+/g, ' ').trim();
+    const cleanText = truncatedText.replace(/\s+/g, ' ').trim();
 
     // Check for exclusion patterns
     for (const pattern of EXCLUDE_PATTERNS) {
         if (pattern.test(cleanText)) {
-            // Don't immediately exclude, just note it
+            return null;
         }
     }
 

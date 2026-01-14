@@ -12,6 +12,7 @@ import { useRealtimeSubscription } from "../hooks/useRealtimeContext";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { SplitPaneLayout } from "../components/split-pane/SplitPaneLayout";
 import { InboxSidebar } from "../components/split-pane/InboxSidebar";
+import { MessageViewer } from "../components/email-viewer/MessageViewer";
 import type { RealtimeEvent } from "../types/realtime";
 
 import { InboxCardSkeleton, MessageItemSkeleton } from "../components/Skeleton";
@@ -527,31 +528,20 @@ export function InboxManager() {
                         }
                         rightPane={
                             selectedMessage ? (
-                                <div className="h-full flex flex-col">
-                                    <div className="p-4 border-b border-white/5">
-                                        <h2 className="text-lg font-bold text-text-main truncate">{selectedMessage.subject || '(No Subject)'}</h2>
-                                        <div className="flex items-center gap-2 mt-1 text-sm text-text-secondary">
-                                            <span className="font-medium text-primary bg-primary/10 px-2 py-0.5 rounded text-xs">From</span>
-                                            <span className="truncate">{selectedMessage.fromAddress}</span>
-                                            <span className="text-muted">•</span>
-                                            <span className="whitespace-nowrap">{new Date(selectedMessage.receivedAt).toLocaleString('vi-VN')}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 overflow-auto bg-white">
-                                        {selectedMessage.htmlBody ? (
-                                            <iframe
-                                                srcDoc={selectedMessage.htmlBody}
-                                                title="Email content"
-                                                sandbox="allow-same-origin allow-scripts"
-                                                className="w-full h-full border-0"
-                                            />
-                                        ) : (
-                                            <div className="p-6 whitespace-pre-wrap font-mono text-sm text-gray-800">
-                                                {selectedMessage.textBody || 'No content'}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                <MessageViewer
+                                    message={selectedMessage}
+                                    onDelete={() => {
+                                        // Delete message logic
+                                        setSelectedMessage(null);
+                                    }}
+                                    onPin={(isPinned) => {
+                                        // Pin message logic
+                                        setMessages(prev => prev.map(m =>
+                                            m.id === selectedMessage.id ? { ...m, isPinned } : m
+                                        ));
+                                    }}
+                                    variant="pane"
+                                />
                             ) : undefined
                         }
                         showRightPane={!!selectedMessage}

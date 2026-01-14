@@ -33,7 +33,7 @@ Comprehensive UX upgrade for the InboxManager page covering UI improvements, new
 | Phase | Name | Status | Priority | Link |
 |-------|------|--------|----------|------|
 | 01 | Split-Pane Layout | ✅ Complete | High | [phase-01](./phase-01-split-pane-layout.md) |
-| 02 | Enhanced Email Viewer | Pending | High | [phase-02](./phase-02-enhanced-email-viewer.md) |
+| 02 | Enhanced Email Viewer | ✅ Complete | High | [phase-02](./phase-02-enhanced-email-viewer.md) |
 | 03 | Smart Search & Filters | Pending | Medium | [phase-03](./phase-03-smart-search.md) |
 | 04 | Mobile UX Optimization | Pending | Medium | [phase-04](./phase-04-mobile-ux.md) |
 | 05 | Quick Actions & Shortcuts | Pending | Medium | [phase-05](./phase-05-quick-actions.md) |

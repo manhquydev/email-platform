@@ -61,8 +61,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
 
       // Sync to storage for content script using standardized helper
       await storage.setInboxes(response.inboxes);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load inboxes');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load inboxes');
     } finally {
       setLoading(false);
     }
@@ -101,8 +101,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
           await copyToClipboard(email);
         }
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to create inbox');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create inbox');
     } finally {
       setCreating(false);
     }
@@ -125,8 +125,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       // Sync to storage
       const dashboard = await api.getDashboard();
       await storage.setInboxes(dashboard.inboxes);
-    } catch (err: any) {
-      setError(err.message || 'Failed to update inbox');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update inbox');
     } finally {
       setUpdatingId(null);
     }
@@ -148,8 +148,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       // Sync to storage
       const dashboard = await api.getDashboard();
       await storage.setInboxes(dashboard.inboxes);
-    } catch (err: any) {
-      setError(err.message || 'Failed to extend inbox');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to extend inbox');
     } finally {
       setUpdatingId(null);
     }
@@ -165,8 +165,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       // Sync to storage
       const dashboard = await api.getDashboard();
       await storage.setInboxes(dashboard.inboxes);
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete inbox');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete inbox');
     } finally {
       setUpdatingId(null);
     }

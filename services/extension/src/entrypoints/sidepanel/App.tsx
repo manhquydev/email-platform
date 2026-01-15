@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { storage } from '../shared/storage';
-import { api } from '../shared/api';
-import { AuthState } from '../shared/types';
-import Login from './components/Login';
-import InboxList from './components/InboxList';
-import MessageList from './components/MessageList';
-import Settings from './components/Settings';
+import { storage } from '../../shared/storage';
+import { api } from '../../shared/api';
+import { AuthState } from '../../shared/types';
+import Login from '../../components/popup/Login';
+import InboxList from '../../components/popup/InboxList';
+import MessageList from '../../components/popup/MessageList';
+import Settings from '../../components/popup/Settings';
 import { Loader2, Settings as SettingsIcon } from 'lucide-react';
 
 type View =
@@ -44,7 +44,6 @@ function App() {
 
   const handleLoginSuccess = async () => {
     await checkAuth();
-    // Trigger push setup
     chrome.runtime.sendMessage({ type: 'SETUP_PUSH' });
   };
 
@@ -95,13 +94,13 @@ function App() {
   }
 
   return (
-    <div className="w-[400px] min-h-[500px] bg-gray-50 flex flex-col h-screen">
-      {/* Header - Only show on Home view to avoid double headers in sub-views */}
+    <div className="min-h-screen bg-gray-50 flex flex-col h-screen">
+      {/* Header */}
       {currentView.type === 'home' && (
         <header className="bg-white border-b px-4 py-3 flex justify-between items-center shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-primary-600 rounded-md flex items-center justify-center text-white font-bold text-xs">E</div>
-            <h1 className="font-semibold text-gray-800">Ephemera</h1>
+            <h1 className="font-semibold text-gray-800">Ephemera Side Panel</h1>
           </div>
           {auth?.isAuthenticated && (
             <button

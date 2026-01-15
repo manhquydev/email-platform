@@ -1,4 +1,4 @@
-// Push Handler logic to be imported in background script
+import { CONFIG } from '../shared/config';
 
 interface PushPayload {
   type: 'new_message'
@@ -10,33 +10,50 @@ interface PushPayload {
   receivedAt: string
 }
 
-export async function handlePushMessage(payload: PushPayload) {
-   console.log('Handling push message:', payload);
+export async function handlePushMessage(data: PushPayload) {
+   console.log('Handling push message:', data);
 
-   // Show notification
-   const { from, subject, preview, messageId } = payload;
+   try {
+     const title = data.from ? `New Email from ${data.from}` : 'New Email';
+     const options: NotificationOptions = {
+       body: data.subject || data.preview || 'You have received a new message',
+       icon: '/icons/icon128.png',
+       // @ts-ignore
+       data: {
+         inboxId: data.inboxId,
+         messageId: data.messageId
+       }
+     };
 
-   const notificationId = `msg-${messageId}`;
+     // @ts-ignore
+     await self.registration.showNotification(title, options);
 
-   await chrome.notifications.create(notificationId, {
-      type: 'basic',
-      iconUrl: 'icons/icon128.png', // Ensure this path is correct relative to background
-      title: from || 'New Email',
-      message: subject || '(no subject)',
-      contextMessage: preview?.slice(0, 50),
-      priority: 2,
-      requireInteraction: false
-   });
+     // Update badge
+     updateBadge('NEW');
+   } catch (e) {
+     console.error('Error showing notification:', e);
+   }
+}
 
-   // Store metadata for click handling if needed
+export async function handleNotificationClick(event: any) {
+  event.notification.close();
+
+  const data = event.notification.data;
+  if (data && data.inboxId) {
+    const url = `${CONFIG.WEB_URL}/inbox/${data.inboxId}`;
+    // @ts-ignore
+    event.waitUntil(chrome.tabs.create({ url }));
+  } else {
+    // @ts-ignore
+    event.waitUntil(chrome.tabs.create({ url: `${CONFIG.WEB_URL}/dashboard` }));
+  }
 }
 
 export async function updateBadge(text?: string) {
-    // If text provided, set it. Otherwise fetch.
     if (text !== undefined) {
         chrome.action.setBadgeText({ text });
         if (text) {
-             chrome.action.setBadgeBackgroundColor({ color: '#0ea5e9' });
+             chrome.action.setBadgeBackgroundColor({ color: '#ef4444' }); // Red for attention
         }
     }
 }

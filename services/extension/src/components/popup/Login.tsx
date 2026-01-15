@@ -29,8 +29,8 @@ export default function Login({ onSuccess }: LoginProps) {
       } else {
         onSuccess();
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -46,8 +46,8 @@ export default function Login({ onSuccess }: LoginProps) {
     try {
       await api.verify2FA(tempToken, twoFactorCode);
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Verification failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Verification failed');
     } finally {
       setIsLoading(false);
     }
@@ -59,8 +59,8 @@ export default function Login({ onSuccess }: LoginProps) {
     try {
       await api.createAnonymousInbox();
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create anonymous inbox');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create anonymous inbox');
     } finally {
       setIsLoading(false);
     }

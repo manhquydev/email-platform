@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../shared/api';
 import { Message } from '../../shared/types';
 import { ArrowLeft, Loader2, Calendar, User, FileText } from 'lucide-react';
+import DOMPurify from 'dompurify';
 
 interface MessageListProps {
   inboxId: string;
@@ -24,8 +25,8 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
     try {
       const response = await api.getMessages(inboxId);
       setMessages(response.data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load messages');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load messages');
     } finally {
       setLoading(false);
     }
@@ -68,7 +69,7 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
           <div className="prose prose-sm max-w-none">
             {selectedMessage.htmlBody ? (
               <div
-                dangerouslySetInnerHTML={{ __html: selectedMessage.htmlBody }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedMessage.htmlBody) }}
                 className="text-sm text-gray-800"
               />
             ) : (

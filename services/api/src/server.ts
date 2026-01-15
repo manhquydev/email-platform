@@ -45,6 +45,7 @@ import { realtimeEvents } from "./services/realtime-events";
 import realtimeWsRoutes from "./routes/realtime-ws";
 import realtimeSseRoutes from "./routes/realtime-sse";
 import pushRoutes from "./routes/push";
+import { extensionRoutes } from "./routes/extension";
 
 // ... existing imports ...
 
@@ -113,6 +114,10 @@ export const buildServer = () => {
     origin: (origin, cb) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return cb(null, true);
+      // Allow Chrome/Firefox extensions
+      if (origin.startsWith("chrome-extension://") || origin.startsWith("moz-extension://")) {
+        return cb(null, true);
+      }
       const allowed = [appConfig.webUrl, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"];
       if (allowed.includes(origin)) {
         cb(null, true);
@@ -261,6 +266,9 @@ export const buildServer = () => {
   app.register(realtimeWsRoutes);
   app.register(realtimeSseRoutes);
   app.register(pushRoutes);
+
+  // Extension routes
+  app.register(extensionRoutes);
 
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);

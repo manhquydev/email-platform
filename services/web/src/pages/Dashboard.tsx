@@ -295,7 +295,7 @@ export function Dashboard() {
                     )}>
                     {/* Toolbar */}
                     <div className="h-16 px-4 border-b border-nebula-border flex items-center justify-between shrink-0 bg-nebula-surface/90 backdrop-blur-md">
-                        <div className="flex items-center gap-3 overflow-hidden w-full">
+                        <div className="flex items-center gap-3 w-full">
                             {/* Inbox Selector - Always visible now since Sidebar is gone */}
                             <div className="w-full max-w-[280px]">
                                 <InboxSelector

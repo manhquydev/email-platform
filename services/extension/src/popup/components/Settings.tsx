@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, LogOut, ExternalLink, Shield, CreditCard } from 'lucide-react';
+import { ArrowLeft, LogOut, ExternalLink, Shield, CreditCard, Bell, BellOff, Loader2 } from 'lucide-react';
 import { api } from '../../shared/api';
 import { User } from '../../shared/types';
 import { storage } from '../../shared/storage';
+import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from '../../shared/push-subscription';
 
 interface SettingsProps {
   onBack: () => void;
@@ -11,9 +12,12 @@ interface SettingsProps {
 
 export default function Settings({ onBack, onLogout }: SettingsProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
 
   useEffect(() => {
     loadUser();
+    checkNotificationStatus();
   }, []);
 
   const loadUser = async () => {
@@ -24,6 +28,30 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
       const profile = await api.getMe();
       setUser(profile.user);
     }
+  };
+
+  const checkNotificationStatus = async () => {
+      const isSubscribed = await isPushSubscribed();
+      setNotificationsEnabled(isSubscribed);
+  };
+
+  const toggleNotifications = async () => {
+      setNotifLoading(true);
+      try {
+          if (notificationsEnabled) {
+              await unsubscribeFromPush();
+              setNotificationsEnabled(false);
+          } else {
+              const success = await subscribeToPush();
+              if (success) {
+                  setNotificationsEnabled(true);
+              }
+          }
+      } catch (e) {
+          console.error('Failed to toggle notifications', e);
+      } finally {
+          setNotifLoading(false);
+      }
   };
 
   return (
@@ -70,6 +98,30 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
             Manage Account <ExternalLink className="w-3 h-3" />
           </a>
         </div>
+
+        {/* Notifications Toggle */}
+        <button
+          onClick={toggleNotifications}
+          disabled={notifLoading}
+          className="w-full flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+             {notificationsEnabled ? (
+                <div className="p-2 bg-green-100 text-green-600 rounded-full">
+                   <Bell className="w-4 h-4" />
+                </div>
+             ) : (
+                <div className="p-2 bg-gray-100 text-gray-500 rounded-full">
+                   <BellOff className="w-4 h-4" />
+                </div>
+             )}
+             <div className="text-left">
+                <div className="text-sm font-medium text-gray-900">Push Notifications</div>
+                <div className="text-xs text-gray-500">{notificationsEnabled ? 'On' : 'Off'}</div>
+             </div>
+          </div>
+          {notifLoading && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+        </button>
 
         {/* Links Section */}
         <div className="space-y-2">

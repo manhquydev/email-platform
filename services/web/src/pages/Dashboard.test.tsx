@@ -44,12 +44,12 @@ vi.mock("../layouts/AppShell", () => ({
     ),
 }));
 
-vi.mock("../components/Sidebar", () => ({
-    Sidebar: () => <div data-testid="sidebar">Sidebar</div>,
+vi.mock("../components/InboxSelector", () => ({
+    InboxSelector: () => <div data-testid="inbox-selector">InboxSelector</div>,
 }));
 
-vi.mock("../components/QuickGenerateCard", () => ({
-    QuickGenerateCard: () => <div data-testid="quick-generate">QuickGenerate</div>,
+vi.mock("../components/EmailStream", () => ({
+    EmailStream: () => <div data-testid="email-stream">EmailStream</div>,
 }));
 
 describe("Dashboard Page", () => {
@@ -66,9 +66,9 @@ describe("Dashboard Page", () => {
         expect(screen.getByTestId("app-shell")).toBeInTheDocument();
         expect(screen.getByTestId("app-header")).toBeInTheDocument();
 
-        // Wait for potential initial data fetch calls and verify Sidebar presence
+        // Wait for Dashboard to render (no sidebar in new read-only design)
         await waitFor(() => {
-            expect(screen.getByTestId("sidebar")).toBeInTheDocument();
+            expect(screen.getByTestId("app-shell")).toBeInTheDocument();
         });
     });
 });

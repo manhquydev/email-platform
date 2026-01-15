@@ -296,7 +296,7 @@ describe("EmailStream - Labels Display", () => {
             />
         );
 
-        expect(screen.getByText("Chưa có email")).toBeInTheDocument();
+        expect(screen.getByText("Hộp thư trống")).toBeInTheDocument();
     });
 
     it("should group messages by time (Today, Yesterday, This Week, Earlier)", () => {
@@ -413,7 +413,7 @@ describe("EmailStream - Message Display", () => {
 
         // Unread messages should have special styling
         const messageElement = screen.getByText("Test Subject").closest('[role="button"]');
-        expect(messageElement).toHaveClass("bg-primary/5");
+        expect(messageElement.className).toContain("from-primary");
     });
 
     it("should highlight selected message", () => {
@@ -428,7 +428,7 @@ describe("EmailStream - Message Display", () => {
         );
 
         const messageElement = screen.getByText("Test Subject").closest('[role="button"]');
-        expect(messageElement).toHaveClass("bg-primary/5");
+        expect(messageElement.className).toContain("from-primary");
     });
 
     it("should display placeholder text for messages without subject", () => {
@@ -471,8 +471,8 @@ describe("EmailStream - Message Display", () => {
             />
         );
 
-        // The body should be truncated to 100 characters
-        const previewText = screen.getByText("A".repeat(100));
+        // The body should be truncated to 120 characters (component uses substring(0, 120))
+        const previewText = screen.getByText("A".repeat(120));
         expect(previewText).toBeInTheDocument();
     });
 

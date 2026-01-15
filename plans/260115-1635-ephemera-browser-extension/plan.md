@@ -56,3 +56,27 @@ Build a Chrome Web Store extension (Manifest V3) that integrates with Ephemera e
 - [ ] Auto-fill works on major sites
 - [ ] Real-time notifications < 5s latency
 - [ ] 4.0+ star rating target
+
+## Validation Summary
+
+**Validated:** 2026-01-15
+**Questions asked:** 8
+
+### Confirmed Decisions
+
+| Decision | User Choice |
+|----------|-------------|
+| Anonymous Mode | Yes, implement for MVP (24h TTL, 10/hour limit) |
+| Content Script Scope | All HTTP/HTTPS sites |
+| Rate Limits | 10/hour anonymous, 50/hour authenticated |
+| 2FA Support | Yes, support TOTP in extension login flow |
+| Notifications | Web Push API (real-time) |
+| Auto-fill Icon Position | Inside field, right edge |
+| Freemium Limit | 5 inboxes free |
+| Store Regions | Worldwide launch |
+
+### Action Items
+
+- [ ] Add TOTP input step to login form in Phase 2
+- [ ] Ensure freemium limit (5 inboxes) enforced in popup UI
+- [ ] Document worldwide region selection in Phase 7 store listing

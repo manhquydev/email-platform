@@ -31,7 +31,7 @@ Build a Chrome Web Store extension (Manifest V3) that integrates with Ephemera e
 | 4 | Content Script & Auto-fill | Completed | 3-4d | [phase-04](./phase-04-content-script.md) |
 | 5 | Backend API Endpoints | Completed | 2-3d | [phase-05](./phase-05-api-endpoints.md) |
 | 6 | Real-time Notifications | Completed | 2-3d | [phase-06](./phase-06-notifications.md) |
-| 7 | Store Submission | Pending | 3-4d | [phase-07](./phase-07-store-submission.md) |
+| 7 | Store Submission | Completed | 3-4d | [phase-07](./phase-07-store-submission.md) |
 
 ## Technical Stack
 

@@ -77,6 +77,7 @@ Build a Chrome Web Store extension (Manifest V3) that integrates with Ephemera e
 
 ### Action Items
 
-- [ ] Add TOTP input step to login form in Phase 2
-- [ ] Ensure freemium limit (5 inboxes) enforced in popup UI
+- [x] Add TOTP input step to login form in Phase 2
+- [x] Ensure freemium limit (5 inboxes) enforced in popup UI
+- [x] Implement Anonymous Mode (24h TTL, 10/hour limit)
 - [ ] Document worldwide region selection in Phase 7 store listing

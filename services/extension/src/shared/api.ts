@@ -128,6 +128,12 @@ class ApiClient {
     });
   }
 
+  async deleteInbox(inboxId: string) {
+    return this.request(`/inboxes/${inboxId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Legacy/Full API support
   async getMessages(inboxId: string, limit = 10) {
     return this.request<{ data: Message[] }>(`/inboxes/${inboxId}/messages?limit=${limit}`);

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, LogOut, ExternalLink, Shield, CreditCard, Bell, BellOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, LogOut, ExternalLink, Shield, CreditCard, Bell, BellOff, Loader2, Copy } from 'lucide-react';
 import { api } from '../../shared/api';
 import { User } from '../../shared/types';
 import { storage } from '../../shared/storage';
 import { CONFIG } from '../../shared/config';
+import { cn } from '../../utils/cn';
 import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from '../../shared/push-subscription';
 
 interface SettingsProps {
@@ -14,12 +15,19 @@ interface SettingsProps {
 export default function Settings({ onBack, onLogout }: SettingsProps) {
   const [user, setUser] = useState<User | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [autoCopy, setAutoCopy] = useState(true);
   const [notifLoading, setNotifLoading] = useState(false);
 
   useEffect(() => {
     loadUser();
     checkNotificationStatus();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    const settings = await storage.getSettings();
+    setAutoCopy(settings.autoCopy);
+  };
 
   const loadUser = async () => {
     const auth = await storage.getAuth();
@@ -53,6 +61,12 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
       } finally {
           setNotifLoading(false);
       }
+  };
+
+  const toggleAutoCopy = async () => {
+    const newVal = !autoCopy;
+    setAutoCopy(newVal);
+    await storage.updateSettings({ autoCopy: newVal });
   };
 
   return (
@@ -122,6 +136,34 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
              </div>
           </div>
           {notifLoading && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+        </button>
+
+        {/* Auto-Copy Toggle */}
+        <button
+          onClick={toggleAutoCopy}
+          className="w-full flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "p-2 rounded-full",
+              autoCopy ? "bg-primary-100 text-primary-600" : "bg-gray-100 text-gray-500"
+            )}>
+              <Copy className="w-4 h-4" />
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-medium text-gray-900">Auto-copy Address</div>
+              <div className="text-xs text-gray-500">{autoCopy ? 'Enabled' : 'Disabled'}</div>
+            </div>
+          </div>
+          <div className={cn(
+            "w-8 h-4 rounded-full transition-colors relative",
+            autoCopy ? "bg-primary-500" : "bg-gray-300"
+          )}>
+            <div className={cn(
+              "absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform",
+              autoCopy ? "right-0.5" : "left-0.5"
+            )} />
+          </div>
         </button>
 
         {/* Links Section */}

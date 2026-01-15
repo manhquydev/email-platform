@@ -40,6 +40,17 @@ export const storage = {
     await storage.set('auth', { token: null, user: null, isAuthenticated: false, isAnonymous: false });
   },
 
+  // Settings helpers
+  getSettings: async () => {
+    const settings = await storage.get('settings');
+    return settings || { theme: 'light', autoCopy: true, notificationsEnabled: true };
+  },
+
+  updateSettings: async (updates: Partial<StorageData['settings']>) => {
+    const current = await storage.getSettings();
+    await storage.set('settings', { ...current, ...updates });
+  },
+
   // Device ID for anonymous tracking
   getDeviceId: async () => {
     let deviceId = await storage.get('deviceId');

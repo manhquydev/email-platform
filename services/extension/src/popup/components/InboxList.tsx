@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../shared/api';
 import { Inbox } from '../../shared/types';
 import { storage } from '../../shared/storage';
-import { Plus, Copy, RefreshCw, Loader2, Mail, Clock, Sparkles, ExternalLink } from 'lucide-react';
+import { Plus, Copy, RefreshCw, Loader2, Mail, Clock, Sparkles, ExternalLink, CalendarPlus, Trash2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CONFIG } from '../../shared/config';
 
@@ -17,6 +17,22 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<{ totalInboxes: number; limit: number } | null>(null);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTimeLeft = (expiresAt: string | null) => {
+    if (!expiresAt) return null;
+    const diff = new Date(expiresAt).getTime() - now;
+    if (diff <= 0) return 'Expired';
+
+    const minutes = Math.floor(diff / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    return `${minutes}m ${seconds}s`;
+  };
 
   const fetchInboxes = async () => {
     setLoading(true);
@@ -77,9 +93,12 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
         const dashboard = await api.getDashboard();
         await storage.setInboxes(dashboard.inboxes);
 
-        // Also copy to clipboard
+        // Also copy to clipboard if enabled
+        const settings = await storage.getSettings();
         const email = newInboxData.address || `${newInboxData.localPart}@${newInboxData.domain?.name || newInboxData.domain}`;
-        await copyToClipboard(email);
+        if (settings.autoCopy) {
+          await copyToClipboard(email);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to create inbox');
@@ -107,6 +126,46 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       await storage.setInboxes(dashboard.inboxes);
     } catch (err: any) {
       setError(err.message || 'Failed to update inbox');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleExtendInbox = async (inbox: Inbox) => {
+    if (!inbox.expiresAt) return;
+    setUpdatingId(inbox.id);
+    try {
+      const currentExpires = new Date(inbox.expiresAt).getTime();
+      const newExpiresAt = new Date(currentExpires + 10 * 60 * 1000).toISOString();
+
+      await api.updateInbox(inbox.id, { expiresAt: newExpiresAt });
+
+      setInboxes(prev => prev.map(i =>
+        i.id === inbox.id ? { ...i, expiresAt: newExpiresAt } : i
+      ));
+
+      // Sync to storage
+      const dashboard = await api.getDashboard();
+      await storage.setInboxes(dashboard.inboxes);
+    } catch (err: any) {
+      setError(err.message || 'Failed to extend inbox');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleDeleteInbox = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this inbox?')) return;
+    setUpdatingId(id);
+    try {
+      await api.deleteInbox(id);
+      setInboxes(prev => prev.filter(i => i.id !== id));
+
+      // Sync to storage
+      const dashboard = await api.getDashboard();
+      await storage.setInboxes(dashboard.inboxes);
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete inbox');
     } finally {
       setUpdatingId(null);
     }
@@ -188,8 +247,19 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                     {inbox.localPart}
                     <span className="text-gray-500 font-normal">@{typeof inbox.domain === 'string' ? inbox.domain : inbox.domain.name}</span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {inbox._count?.messages || 0} messages
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
+                    <span>{inbox._count?.messages || 0} messages</span>
+                    {inbox.expiresAt && (
+                      <span className={cn(
+                        "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium",
+                        (new Date(inbox.expiresAt).getTime() - now) < 300000
+                          ? "bg-red-50 text-red-600 animate-pulse"
+                          : "bg-blue-50 text-blue-600"
+                      )}>
+                        <Clock className="w-2.5 h-2.5" />
+                        {formatTimeLeft(inbox.expiresAt)}
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="flex gap-1">
@@ -221,6 +291,24 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                     ) : (
                       <Sparkles className="w-3.5 h-3.5" />
                     )}
+                  </button>
+                  {inbox.expiresAt && (
+                    <button
+                      onClick={() => handleExtendInbox(inbox)}
+                      disabled={updatingId === inbox.id}
+                      className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50"
+                      title="Extend +10m"
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteInbox(inbox.id)}
+                    disabled={updatingId === inbox.id}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                    title="Delete Inbox"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>

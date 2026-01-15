@@ -123,7 +123,10 @@ export default function InboxList() {
               </div>
 
               <div className="flex gap-2">
-                 <button className="flex-1 text-xs py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded text-center transition-colors">
+                 <button
+                   onClick={() => onSelectInbox(inbox.id, inbox.address)}
+                   className="flex-1 text-xs py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded text-center transition-colors"
+                 >
                    View Messages
                  </button>
                  <a

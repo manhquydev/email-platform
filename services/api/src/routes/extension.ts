@@ -60,12 +60,13 @@ export async function extensionRoutes(app: FastifyInstance) {
     const user = request.user as { userId: string; role: string; tier?: string };
 
     // Check limits
-    const limit = TIER_LIMITS[user.tier || "FREE"] || TIER_LIMITS["FREE"];
+    const tierKey = (user.tier || "FREE") as keyof typeof TIER_LIMITS;
+    const limit = TIER_LIMITS[tierKey] || TIER_LIMITS["FREE"];
     const currentCount = await prisma.inbox.count({
       where: { ownerId: user.userId, deletedAt: null }
     });
 
-    if (currentCount >= limit.maxInboxes) {
+    if (currentCount >= limit.inboxes) {
       return reply.status(403).send({
         error: "Inbox limit reached",
         upgradeUrl: "https://manhquy.click/pricing"

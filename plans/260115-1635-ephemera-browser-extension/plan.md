@@ -25,12 +25,12 @@ Build a Chrome Web Store extension (Manifest V3) that integrates with Ephemera e
 
 | # | Phase | Status | Effort | Link |
 |---|-------|--------|--------|------|
-| 1 | Project Setup | Pending | 3-4d | [phase-01](./phase-01-project-setup.md) |
-| 2 | Authentication & State | Pending | 2-3d | [phase-02](./phase-02-authentication.md) |
-| 3 | Popup UI | Pending | 4-5d | [phase-03](./phase-03-popup-ui.md) |
-| 4 | Content Script & Auto-fill | Pending | 3-4d | [phase-04](./phase-04-content-script.md) |
-| 5 | Backend API Endpoints | Pending | 2-3d | [phase-05](./phase-05-api-endpoints.md) |
-| 6 | Real-time Notifications | Pending | 2-3d | [phase-06](./phase-06-notifications.md) |
+| 1 | Project Setup | Completed | 3-4d | [phase-01](./phase-01-project-setup.md) |
+| 2 | Authentication & State | Completed | 2-3d | [phase-02](./phase-02-authentication.md) |
+| 3 | Popup UI | Completed | 4-5d | [phase-03](./phase-03-popup-ui.md) |
+| 4 | Content Script & Auto-fill | Completed | 3-4d | [phase-04](./phase-04-content-script.md) |
+| 5 | Backend API Endpoints | Completed | 2-3d | [phase-05](./phase-05-api-endpoints.md) |
+| 6 | Real-time Notifications | Completed | 2-3d | [phase-06](./phase-06-notifications.md) |
 | 7 | Store Submission | Pending | 3-4d | [phase-07](./phase-07-store-submission.md) |
 
 ## Technical Stack

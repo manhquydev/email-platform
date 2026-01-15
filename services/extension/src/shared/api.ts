@@ -93,6 +93,23 @@ class ApiClient {
   async getMessages(inboxId: string, limit = 10) {
     return this.request<{ data: Message[] }>(`/inboxes/${inboxId}/messages?limit=${limit}`);
   }
+
+  // Push Notifications
+  async getVapidKey() {
+    return this.request<{ vapidPublicKey: string }>('/push/vapid-key');
+  }
+
+  async subscribePush(subscription: PushSubscription) {
+    // Serialize subscription
+    const json = subscription.toJSON();
+    return this.request('/push/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({
+        endpoint: json.endpoint,
+        keys: json.keys
+      })
+    });
+  }
 }
 
 export const api = new ApiClient();

@@ -13,8 +13,8 @@ interface InboxSelectorProps {
     selectedInboxId: string;
     onSelectDomain: (id: string) => void;
     onSelectInbox: (id: string) => void;
-    onCreateInbox: (domainId: string, localPart: string, expiresAt?: number) => Promise<void>;
-    onDeleteInbox: (inbox: Inbox) => void;
+    onCreateInbox?: (domainId: string, localPart: string, expiresAt?: number) => Promise<void>;
+    onDeleteInbox?: (inbox: Inbox) => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user: any;
     token: string | null;
@@ -27,7 +27,7 @@ export function InboxSelector({
     selectedInboxId,
     onSelectDomain,
     onSelectInbox,
-    onCreateInbox: _onCreateInbox, // eslint-disable-line @typescript-eslint/no-unused-vars
+    onCreateInbox,
     onDeleteInbox,
     user,
     token
@@ -128,16 +128,18 @@ export function InboxSelector({
                                 )}
                             </div>
 
-                            {/* Quick Generate */}
-                            <QuickGenerateCard
-                                domains={domains}
-                                token={token}
-                                onInboxCreated={(newId) => {
-                                    if (activeDomain) onSelectDomain(activeDomain.id); // Refresh
-                                    onSelectInbox(newId);
-                                    setIsOpen(false);
-                                }}
-                            />
+                            {/* Quick Generate - Only show if creation is enabled via prop */}
+                            {onCreateInbox && (
+                                <QuickGenerateCard
+                                    domains={domains}
+                                    token={token}
+                                    onInboxCreated={(newId) => {
+                                        if (activeDomain) onSelectDomain(activeDomain.id); // Refresh
+                                        onSelectInbox(newId);
+                                        setIsOpen(false);
+                                    }}
+                                />
+                            )}
                         </div>
 
                         {/* Inbox List */}
@@ -170,13 +172,15 @@ export function InboxSelector({
                                     </div>
                                     <div className="flex items-center gap-2 ml-auto">
                                         {selectedInboxId === inbox.id && <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onDeleteInbox(inbox); }}
-                                            className="p-1 rounded-md text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors opacity-0 group-hover:opacity-100"
-                                            title="Xóa hộp thư"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
+                                        {onDeleteInbox && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onDeleteInbox(inbox); }}
+                                                className="p-1 rounded-md text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                title="Xóa hộp thư"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        )}
                                     </div>
                                 </button>
                             ))}

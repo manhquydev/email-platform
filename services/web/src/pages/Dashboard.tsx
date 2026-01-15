@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -10,15 +9,12 @@ import { InboxSelector } from "../components/InboxSelector";
 import { Loading } from "../components/Loading";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { AppShell } from "../layouts/AppShell";
-import { Sidebar } from "../components/Sidebar";
 import { extractOTP } from "../utils/otpExtractor";
-import { ConfirmationModal } from "../components/ConfirmationModal";
 import { OnboardingHints } from "../components/OnboardingHints";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { EmailStream } from "../components/EmailStream";
 import { cn } from "../utils/cn";
-import { clarityTrack } from "../hooks/useClarity";
 import { useRealtimeSubscription } from "../hooks/useRealtimeContext";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 import type { RealtimeEvent } from "../types/realtime";
@@ -35,8 +31,6 @@ export function Dashboard() {
     const navigate = useNavigate();
     const [busy, setBusy] = useState(false);
 
-    
-
     // Data
     const [domains, setDomains] = useState<Domain[]>([]);
     const [inboxes, setInboxes] = useState<Inbox[]>([]);
@@ -52,7 +46,6 @@ export function Dashboard() {
     const [messageOffset, setMessageOffset] = useState(0);
     const [messageTotal, setMessageTotal] = useState(0);
 
-    
     // Sync state with URL params
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -68,8 +61,6 @@ export function Dashboard() {
 
         if (inboxId && inboxId !== selectedInbox) {
             setSelectedInbox(inboxId);
-        } else if (!inboxId && selectedInbox) {
-            // Keep selected inbox state unless explicitly cleared?
         }
 
         if (q !== null && q !== messageSearch) {
@@ -81,9 +72,6 @@ export function Dashboard() {
 
     // UI States
     const [showCompose, setShowCompose] = useState(false);
-    const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-    const activeDomain = domains.find(d => d.id === selectedDomain);
-    const activeInbox = inboxes.find(i => i.id === selectedInbox);
     const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
     const [composeInitialValues, setComposeInitialValues] = useState<{
         initialSubject?: string;
@@ -93,15 +81,11 @@ export function Dashboard() {
     }>({});
     const searchInputRef = useRef<HTMLInputElement>(null);
 
-    const [domainToDelete, setDomainToDelete] = useState<Domain | null>(null);
-    const [inboxToDelete, setInboxToDelete] = useState<Inbox | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
-
     const isAdmin = user?.role === "ADMIN";
     const outboundEnabled = String(window.env?.OUTBOUND_ENABLED ?? import.meta.env.VITE_OUTBOUND_ENABLED ?? "false").toLowerCase() === "true";
     const canSendOutbound = outboundEnabled && isAdmin;
 
-// --- Loaders ---
+    // --- Loaders ---
     const loadDomains = useCallback(async () => {
         if (!token) return;
         try {
@@ -131,10 +115,6 @@ export function Dashboard() {
         setBusy(true);
         try {
             const params = new URLSearchParams({ limit: "100" });
-            // Fetch all inboxes accessible to user (personal view)
-            // If we want to allow admins to see ALL system inboxes, check isAdmin.
-            // But for the selector context, users usually want THEIR inboxes.
-            // Aligning with FocusDashboard logic:
             params.append("personal", "true");
 
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
@@ -205,13 +185,11 @@ export function Dashboard() {
 
         if (event.type === "email.new") {
             const payload = event.payload as unknown as EmailNewPayload;
-            // Only update if it belongs to current inbox
             if (payload.inboxId === selectedInbox) {
                 toast.success(`Có email mới từ ${payload.from || "Unknown"}: ${payload.subject || "(No Subject)"}`, {
                     position: "bottom-right",
                     duration: 4000
                 });
-                // Refresh messages
                 loadMessages(selectedInbox, { background: true });
             }
         } else if (event.type === "email.read") {
@@ -231,7 +209,6 @@ export function Dashboard() {
         }
     }, [selectedInbox, selectedMessage, loadMessages]);
 
-    
     // --- Effects ---
     useEffect(() => { loadDomains(); }, [loadDomains]);
     useEffect(() => { loadInboxes(); }, [loadInboxes]);
@@ -248,89 +225,6 @@ export function Dashboard() {
         const t = setTimeout(() => { if (selectedInbox) loadMessages(selectedInbox); }, 500);
         return () => clearTimeout(t);
     }, [messageSearch, selectedInbox, loadMessages]);
-
-    // Polling removed - now using realtime updates via useDashboardData hook
-
-    // --- Actions ---
-    const createDomain = async (name: string) => {
-        setBusy(true);
-        try {
-            await api("/domains", { method: "POST", token, body: { name } });
-            clarityTrack("domain_created");
-            toast.success("Đã thêm tên miền");
-            await loadDomains();
-        } catch (e) {
-            toast.error("Lỗi thêm tên miền: " + (e as Error).message);
-        } finally { setBusy(false); }
-    };
-
-    const verifyDomain = async (domainId: string, verifyToken: string) => {
-        setBusy(true);
-        try {
-            await api(`/domains/${domainId}/verify`, { method: "POST", token, body: { token: verifyToken } });
-            clarityTrack("domain_verified");
-            toast.success("Đã xác thực tên miền!");
-            await loadDomains();
-        } catch (error) { toast.error("Lỗi xác thực: " + (error as Error).message); } finally { setBusy(false); }
-    };
-
-    const deleteDomain = async (domain: Domain) => setDomainToDelete(domain);
-    const confirmDeleteDomain = async () => {
-        if (!domainToDelete) return;
-        setIsDeleting(true);
-        try {
-            await api(`/domains/${domainToDelete.id}`, { method: "DELETE", token });
-            toast.success("Đã xóa tên miền");
-            if (selectedDomain === domainToDelete.id) setSelectedDomain("");
-            setDomainToDelete(null);
-            await loadDomains();
-        } catch (error) { toast.error("Lỗi xóa tên miền: " + (error as Error).message); } finally { setIsDeleting(false); }
-    };
-
-    const createInbox = async (domainId: string, localPart: string, expiresAt?: number) => {
-        setBusy(true);
-        try {
-            const domain = domains.find(d => d.id === domainId);
-            if (!domain) return;
-            await api("/inboxes", {
-                method: "POST", token,
-                body: { domainId, localPart, expiresAt: expiresAt ? new Date(Date.now() + expiresAt).toISOString() : null }
-            });
-            toast.success("Đã tạo hộp thư mới");
-            await loadInboxes();
-        } catch (e) { toast.error("Lỗi: " + (e as Error).message); } finally { setBusy(false); }
-    };
-
-    const deleteInbox = async (inbox: Inbox) => setInboxToDelete(inbox);
-    const confirmDeleteInbox = async () => {
-        if (!inboxToDelete) return;
-        setIsDeleting(true);
-        try {
-            await api(`/inboxes/${inboxToDelete.id}`, { method: "DELETE", token });
-            toast.success("Đã xóa hộp thư");
-            setInboxes(prev => prev.filter(i => i.id !== inboxToDelete.id));
-            if (selectedInbox === inboxToDelete.id) {
-                setSelectedInbox("");
-                setMessages([]);
-                setSelectedMessage(null);
-            }
-            setInboxToDelete(null);
-        } catch (e) { toast.error("Lỗi xóa hộp thư: " + (e as Error).message); } finally { setIsDeleting(false); }
-    };
-
-    const handleExtendInbox = async (inboxId: string) => {
-        if (!token) return;
-        setBusy(true);
-        try {
-            const inbox = inboxes.find(i => i.id === inboxId);
-            if (!inbox) return;
-            const currentExpiresAt = inbox.expiresAt ? new Date(inbox.expiresAt).getTime() : Date.now();
-            const newExpiresAt = new Date(currentExpiresAt + 10 * 60 * 1000).toISOString();
-            await api(`/inboxes/${inboxId}`, { method: "PATCH", body: JSON.stringify({ expiresAt: newExpiresAt }), token });
-            toast.success("Đã gia hạn thêm 10 phút!");
-            if (selectedDomain) loadInboxes();
-        } catch { toast.error("Lỗi gia hạn inbox"); } finally { setBusy(false); }
-    };
 
     const handleSelectMessage = async (msg: Message) => {
         setSelectedMessage(msg);
@@ -351,11 +245,12 @@ export function Dashboard() {
     const handleDeleteMessage = useCallback(async (msgId: string) => {
         try {
             setBusy(true);
+            await api(`/messages/${msgId}`, { method: "DELETE", token });
             setMessages(prev => prev.filter(m => m.id !== msgId));
             if (selectedMessage?.id === msgId) setSelectedMessage(null);
             toast.success("Đã xóa email");
         } catch { toast.error("Không thể xóa email"); } finally { setBusy(false); }
-    }, [selectedMessage]);
+    }, [selectedMessage, token]);
 
     const handleTogglePin = async (msgId: string, isPinned: boolean) => {
         setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned } : m));
@@ -363,8 +258,6 @@ export function Dashboard() {
         try { await api(`/messages/${msgId}/pin`, { method: "PATCH", token, body: { isPinned } }); toast.success(isPinned ? "Đã ghim email" : "Đã bỏ ghim"); }
         catch { toast.error("Không thể cập nhật"); }
     };
-
-
 
     const copyOTP = (otp: string) => {
         navigator.clipboard.writeText(otp);
@@ -386,57 +279,25 @@ export function Dashboard() {
         enabled: !showCompose && !showKeyboardHelp,
     });
 
-
-
-
     return (
         <AppShell>
-            {/* 2-Pane Layout (Gmail style): Sidebar (260px) | Main Content (flex) */}
+            {/* 2-Pane Layout (Gmail style): Sidebar (Removed) | Main Content (flex) */}
             <div className="flex-1 flex h-full w-full">
 
-                {/* Pane 1: Sidebar (Desktop only - hidden on tablet) */}
-                <div className="hidden lg:flex w-[260px] h-full p-2 flex-shrink-0">
-                    <Sidebar
-                        domains={domains}
-                        inboxes={inboxes}
-                        selectedDomainId={selectedDomain}
-                        selectedInboxId={selectedInbox}
-                        currentUserId={user?.id}
-                        onSelectDomain={setSelectedDomain}
-                        onSelectInbox={(id) => navigate(`?inboxId=${id}`)}
-                        onCreateDomain={createDomain}
-                        onCreateInbox={createInbox}
-                        onVerifyDomain={verifyDomain}
-                        onDeleteDomain={deleteDomain}
-                        onDeleteInbox={deleteInbox}
-                        onExtendInbox={handleExtendInbox}
-                        isAdmin={isAdmin}
-                        busy={busy}
-                    />
-                </div>
-
-                {/* Pane 2: Message List */}
+                {/* Pane 2: Message List - Adjusted width for no sidebar */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
                     className={cn(
                         "flex flex-col h-full bg-nebula-elevated/50 border-r border-nebula-border",
-                        selectedMessage ? "hidden md:flex md:w-[320px] lg:w-[360px]" : "w-full md:w-[320px] lg:w-[360px] flex-shrink-0"
+                        selectedMessage ? "hidden md:flex md:w-[360px] lg:w-[400px]" : "w-full md:w-[360px] lg:w-[400px] flex-shrink-0"
                     )}>
                     {/* Toolbar */}
                     <div className="h-16 px-4 border-b border-nebula-border flex items-center justify-between shrink-0 bg-nebula-surface/90 backdrop-blur-md">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="lg:hidden shrink-0 text-nebula-text"
-                                onClick={() => setShowMobileSidebar(true)}
-                                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>}
-                            />
-
-                            {/* Mobile/Tablet: Inbox Selector */}
-                            <div className="lg:hidden w-full">
+                        <div className="flex items-center gap-3 overflow-hidden w-full">
+                            {/* Inbox Selector - Always visible now since Sidebar is gone */}
+                            <div className="w-full max-w-[280px]">
                                 <InboxSelector
                                     domains={domains}
                                     inboxes={inboxes}
@@ -444,42 +305,13 @@ export function Dashboard() {
                                     selectedInboxId={selectedInbox}
                                     onSelectDomain={setSelectedDomain}
                                     onSelectInbox={(id) => navigate(`?inboxId=${id}`)}
-                                    onCreateInbox={createInbox}
-                                    onDeleteInbox={deleteInbox}
+                                    // No create/delete props passed
                                     user={user}
                                     token={token}
                                 />
                             </div>
-
-                            {/* Desktop: Static Header */}
-                            <div className="hidden lg:flex flex-col">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
-                                    <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider">Hộp thư</span>
-                                    <span className="text-[10px] text-nebula-text-muted">•</span>
-                                    <span className="text-[10px] font-medium text-nebula-text-muted">{activeDomain?.name}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-bold text-nebula-text">
-                                        {activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name || activeDomain?.name}` : "Chọn hộp thư"}
-                                    </span>
-                                </div>
-                            </div>
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                className="hidden shrink-0 gap-2 ml-2"
-                                onClick={async () => {
-                                    if (!selectedDomain) return toast.error("Chưa chọn tên miền");
-                                    const randomName = Math.random().toString(36).substring(2, 10);
-                                    await createInbox(selectedDomain, randomName);
-                                }}
-                                icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>}
-                            >
-                                Tạo Inbox
-                            </Button>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -498,19 +330,26 @@ export function Dashboard() {
                                     Soạn thư
                                 </Button>
                             )}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate('/app/manager')}
-                                className="ml-1 text-text-secondary hover:text-primary"
-                                title="Quản lý inbox"
-                            >
-                                <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span className="hidden sm:inline">Quản lý</span>
-                            </Button>
+
+                            {/* Enhanced Manager Button */}
+                            <div className="group relative ml-1">
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => navigate('/app/manager')}
+                                    className="shadow-lg shadow-primary/20 hover:shadow-primary/30 shrink-0 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90"
+                                    title="Quản lý inbox và tên miền"
+                                >
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span className="hidden sm:inline font-semibold">Quản lý</span>
+                                </Button>
+                                <div className="absolute right-0 top-full mt-2 w-48 p-2 bg-nebula-elevated border border-nebula-border rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-xs text-nebula-text-muted">
+                                    Đi tới trang quản lý hộp thư và tên miền
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -771,59 +610,7 @@ export function Dashboard() {
                     )}
                 </motion.div>
 
-                {/* Mobile Sidebar Drawer - Also shown on tablet */}
-                <AnimatePresence>
-                    {showMobileSidebar && (
-                        <div className="fixed inset-0 z-50 lg:hidden flex">
-                            {/* Backdrop */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                                onClick={() => setShowMobileSidebar(false)}
-                            />
-                            {/* Sidebar Panel */}
-                            <motion.div
-                                initial={{ x: "-100%" }}
-                                animate={{ x: 0 }}
-                                exit={{ x: "-100%" }}
-                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                                className="relative w-[300px] h-full bg-nebula-surface border-r border-nebula-border shadow-2xl flex flex-col"
-                            >
-                                <div className="p-4 border-b border-nebula-border flex justify-between items-center">
-                                    <span className="font-bold text-lg">Menu</span>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setShowMobileSidebar(false)}
-                                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>}
-                                    />
-                                </div>
-                                <Sidebar
-                                    domains={domains}
-                                    inboxes={inboxes}
-                                    selectedDomainId={selectedDomain}
-                                    selectedInboxId={selectedInbox}
-                                    currentUserId={user?.id}
-                                    onSelectDomain={setSelectedDomain}
-                                    onSelectInbox={(id) => {
-                                        navigate(`?inboxId=${id}`);
-                                        setShowMobileSidebar(false);
-                                    }}
-                                    onCreateDomain={createDomain}
-                                    onCreateInbox={createInbox}
-                                    onVerifyDomain={verifyDomain}
-                                    onDeleteDomain={deleteDomain}
-                                    onDeleteInbox={deleteInbox}
-                                    onExtendInbox={handleExtendInbox}
-                                    isAdmin={isAdmin}
-                                    busy={busy}
-                                />
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
+                {/* Mobile Sidebar Removed */}
 
                 {/* Modals */}
                 {showCompose && (
@@ -843,27 +630,7 @@ export function Dashboard() {
                     </Suspense>
                 )}
 
-                <ConfirmationModal
-                    isOpen={!!domainToDelete}
-                    title="Xóa tên miền"
-                    message={`Tất cả hộp thư thuộc ${domainToDelete?.name} sẽ bị xóa.`}
-                    confirmLabel="Xóa vĩnh viễn"
-                    isDestructive
-                    isLoading={isDeleting}
-                    onConfirm={confirmDeleteDomain}
-                    onCancel={() => setDomainToDelete(null)}
-                />
-
-                <ConfirmationModal
-                    isOpen={!!inboxToDelete}
-                    title="Xóa hộp thư"
-                    message="Hành động này không thể hoàn tác."
-                    confirmLabel="Xóa"
-                    isDestructive
-                    isLoading={isDeleting}
-                    onConfirm={confirmDeleteInbox}
-                    onCancel={() => setInboxToDelete(null)}
-                />
+                {/* ConfirmationModals removed */}
 
                 {/* Onboarding Wizard for new users */}
                 <OnboardingHints />

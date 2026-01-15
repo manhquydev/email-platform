@@ -556,6 +556,16 @@ export function InboxManager() {
                                                 </svg>
                                             </button>
                                             <button
+                                                className="p-2 hover:bg-white/5 rounded-xl text-text-secondary hover:text-cyan-400 transition-all"
+                                                onClick={() => navigate('/app/domains')}
+                                                title="Quản lý tên miền"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+                                                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </button>
+                                            <button
                                                 className="p-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-primary transition-all hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] active:scale-95"
                                                 onClick={() => setShowCreateModal(true)}
                                                 title="Tạo inbox mới (n)"

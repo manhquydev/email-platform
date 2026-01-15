@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Ephemera - Temporary Email",
+  "version": "0.1.0",
+  "description": "Create disposable email addresses instantly. Protect your privacy and avoid spam.",
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "Ephemera"
+  },
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/index.ts"],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": [
+    "storage",
+    "alarms",
+    "clipboardWrite",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://api.manhquy.click/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

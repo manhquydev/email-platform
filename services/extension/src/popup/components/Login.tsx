@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../../shared/api';
+import { CONFIG } from '../../shared/config';
 import { Loader2, ShieldCheck, UserCircle } from 'lucide-react';
 
 interface LoginProps {
@@ -184,7 +185,7 @@ export default function Login({ onSuccess }: LoginProps) {
         </button>
 
         <div className="text-center text-xs text-gray-500">
-          Don't have an account? <a href="https://manhquy.click/register" target="_blank" rel="noreferrer" className="text-primary-600 hover:underline">Sign up</a>
+          Don't have an account? <a href={`${CONFIG.WEB_URL}/register`} target="_blank" rel="noreferrer" className="text-primary-600 hover:underline">Sign up</a>
         </div>
       </div>
     </div>

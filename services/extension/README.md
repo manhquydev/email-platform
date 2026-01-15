@@ -4,10 +4,14 @@ A Chrome Extension (Manifest V3) for Ephemera Temporary Email service.
 
 ## Features
 - **Quick Inbox Creation**: Generate a disposable email in one click.
-- **Auto-fill**: Automatically detect email fields on websites and fill them with your disposable email.
-- **Inbox Management**: View your active inboxes and copy addresses.
-- **Message Preview**: Read emails directly in the popup.
-- **Real-time Notifications**: Receive push notifications when a new email arrives.
+- **Auto-fill**: Automatically detect email fields on websites and fill them with your disposable email via a custom dropdown.
+- **Inbox Management**: View, extend (+10m), or delete inboxes directly from the popup.
+- **Permanence Toggle**: Switch inboxes between Temporary and Permanent states.
+- **Real-time Sync**: Automatic data synchronization between popup, background, and content scripts.
+- **Live Countdown**: Ticking timers for temporary inboxes to track expiration.
+- **Message Preview**: Read and manage emails directly in the popup.
+- **Real-time Notifications**: Receive native notifications for new incoming emails with unread badges.
+- **Customizable Settings**: Toggle Auto-copy to clipboard and notification preferences.
 
 ## Development Setup
 

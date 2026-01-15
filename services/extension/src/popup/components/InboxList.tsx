@@ -18,6 +18,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<{ totalInboxes: number; limit: number } | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -171,9 +172,13 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
     }
   };
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, id?: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      if (id) {
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
     } catch (err) {
       console.error('Failed to copy', err);
     }
@@ -266,12 +271,19 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                   <button
                     onClick={() => {
                       const domainName = typeof inbox.domain === 'string' ? inbox.domain : inbox.domain.name;
-                      copyToClipboard(`${inbox.localPart}@${domainName}`);
+                      copyToClipboard(`${inbox.localPart}@${domainName}`, inbox.id);
                     }}
-                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
+                    className={cn(
+                      "p-1.5 rounded-md transition-colors",
+                      copiedId === inbox.id ? "text-green-600 bg-green-50" : "text-gray-400 hover:text-primary-600 hover:bg-primary-50"
+                    )}
                     title="Copy Address"
                   >
-                    <Copy className="w-3.5 h-3.5" />
+                    {copiedId === inbox.id ? (
+                      <span className="text-[10px] font-bold px-1">Copied!</span>
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
                   </button>
                   <button
                     onClick={() => handleTogglePermanent(inbox)}

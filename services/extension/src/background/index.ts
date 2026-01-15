@@ -60,9 +60,10 @@ async function pollForMessages() {
               showNotification(newestMessage, inbox.address);
               await chrome.storage.local.set({ [STORAGE_KEY_LAST_MESSAGE_ID]: newestMessage.id });
 
-              // Update badge
-              chrome.action.setBadgeText({ text: '!' });
-              chrome.action.setBadgeBackgroundColor({ color: '#0ea5e9' });
+              // Update badge with unread count
+              const totalUnread = dashboard.stats.totalUnread;
+              chrome.action.setBadgeText({ text: totalUnread > 9 ? '9+' : totalUnread.toString() });
+              chrome.action.setBadgeBackgroundColor({ color: '#ef4444' }); // Red for unread
               break; // Only notify for the newest one in this poll cycle
             }
           }
@@ -84,7 +85,8 @@ function showNotification(message: any, email: string) {
     title: `New Email for ${email}`,
     message: message.subject || '(No Subject)',
     contextMessage: `From: ${message.from}`,
-    priority: 2
+    priority: 2,
+    requireInteraction: true // Keep notification visible until user interacts
   });
 }
 

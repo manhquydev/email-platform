@@ -10,6 +10,7 @@ Ephemera is a high-performance, secure, and user-friendly email platform designe
 - Ensure robust security through API key management, 2FA, and domain verification.
 - Provide a scalable and extensible architecture for future growth.
 - Offer a seamless user experience with a modern frontend and intuitive design.
+- **Phase 1 Enhancements**: Migrate browser extension to WXT framework, integrate Chrome Side Panel API, and enhance security with DOMPurify sanitization.
 
 ## 2. Core Features & Capabilities
 
@@ -48,18 +49,22 @@ Ephemera is a high-performance, secure, and user-friendly email platform designe
 - Security headers (Helmet).
 - Audit logging.
 - Abuse reporting.
+- **Content Sanitization**: DOMPurify for sanitizing email content in web and extension.
 
 ### 2.7. Integrations
 - Telegram Bot for notifications and account linking.
 - Prometheus for metrics.
+- **Browser Extension**: WXT-based extension with Side Panel support and real-time push notifications.
 
 ## 3. Tech Stack Summary
 
 - **Backend**: Node.js, Fastify, Prisma (ORM)
 - **Frontend**: React, react-router-dom, Tailwind CSS, Framer Motion
+- **Browser Extension**: WXT Framework, React, Chrome Side Panel API, Service Workers
 - **Database**: PostgreSQL, Redis
 - **Infrastructure**: Docker, Caddy (Reverse Proxy), Prometheus, Grafana, Mailpit
-- **Other**: JWT, TOTP, Stripe API, Telegram Bot API
+- **Security**: DOMPurify, JWT, TOTP, AES-256-GCM
+- **Other**: Stripe API, Telegram Bot API
 
 ## 4. User Personas & Use Cases
 

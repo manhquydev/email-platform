@@ -1,5 +1,11 @@
 {
   "dependencies": {
-    "@fastify/websocket": "^11.2.0"
+    "@fastify/websocket": "^11.2.0",
+    "@types/webextension-polyfill": "^0.12.4",
+    "webextension-polyfill": "^0.12.0"
+  },
+  "devDependencies": {
+    "@wxt-dev/module-react": "^1.1.5",
+    "wxt": "^0.20.13"
   }
 }

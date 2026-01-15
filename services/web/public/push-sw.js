@@ -28,6 +28,26 @@ self.addEventListener('push', function(event) {
   }
 });
 
+// Handle subscription change (token rotation)
+self.addEventListener('pushsubscriptionchange', function(event) {
+  console.log('[Service Worker]: Push subscription has expired. Resubscribing...');
+  event.waitUntil(
+    self.registration.pushManager.subscribe(event.oldSubscription.options)
+      .then(function(newSubscription) {
+        console.log('[Service Worker]: New subscription created. Notifying app...');
+        // Send message to all client windows to update their backend registration
+        return self.clients.matchAll({ type: 'window' }).then(clients => {
+          clients.forEach(client => {
+            client.postMessage({
+              type: 'PUSH_SUBSCRIPTION_CHANGE',
+              subscription: JSON.parse(JSON.stringify(newSubscription))
+            });
+          });
+        });
+      })
+  );
+});
+
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 import { realtimeEvents } from "../services/realtime-events";
+import { TeamService } from "../services/team.service";
 
 export async function inboxRoutes(app: FastifyInstance) {
   app.get("/inboxes", { preHandler: app.authenticate }, async (request, reply) => {
@@ -10,6 +11,7 @@ export async function inboxRoutes(app: FastifyInstance) {
       .object({
         domain: z.string().optional(),
         search: z.string().optional(),
+        teamId: z.string().uuid().optional(),
         limit: z.coerce.number().min(1).max(200).optional(),
         offset: z.coerce.number().min(0).optional(),
         personal: z.enum(["true", "false"]).optional(),
@@ -22,18 +24,37 @@ export async function inboxRoutes(app: FastifyInstance) {
     const user = request.user as { userId: string; role: string };
     const isAdmin = user.role === "ADMIN";
     const isPersonal = query.data.personal === "true";
+    const teamId = query.data.teamId;
 
     const domainFilter = query.data.domain;
-    const where = {
-      deletedAt: null,
-      // Filter by owner - users only see their own inboxes
-      // Admins see all UNLESS they explicitly ask for their personal ones
-      ...((isAdmin && !isPersonal) ? {} : { ownerId: user.userId }),
-      ...(domainFilter ? { domain: { name: domainFilter } } : {}),
-      ...(query.data.search
-        ? { localPart: { contains: query.data.search, mode: "insensitive" as const } }
-        : {}),
-    };
+
+    let where: any = { deletedAt: null };
+
+    if (isAdmin && !isPersonal && !teamId) {
+      // Admins seeing everything
+    } else if (teamId) {
+      // Filter by specific team access
+      const isMember = await TeamService.hasTeamRole(user.userId, teamId, ["OWNER", "ADMIN", "MEMBER", "VIEWER"]);
+      if (!isMember && !isAdmin) {
+        return reply.status(403).send({ error: "Not a member of this team" });
+      }
+
+      const teamInboxes = await prisma.teamInbox.findMany({
+        where: { teamId },
+        select: { inboxId: true }
+      });
+      where.id = { in: teamInboxes.map(ti => ti.inboxId) };
+    } else if (isPersonal) {
+      // Explicitly only personal inboxes
+      where.ownerId = user.userId;
+    } else {
+      // Normal view: personal + shared via teams
+      const accessibleInboxIds = await TeamService.getAccessibleInboxIds(user.userId);
+      where.OR = [
+        { ownerId: user.userId },
+        { id: { in: accessibleInboxIds } }
+      ];
+    }
     const [inboxes, total] = await Promise.all([
       prisma.inbox.findMany({
         where,
@@ -140,8 +161,27 @@ export async function inboxRoutes(app: FastifyInstance) {
 
     const user = request.user as { userId: string; role: string };
 
-    // Check permission: inbox owner or admin (NOT domain owner - ownership is per-inbox)
-    if (inbox.ownerId !== user.userId && user.role !== "ADMIN") {
+    // Check permission: inbox owner, admin, or team member with appropriate role
+    const isOwner = inbox.ownerId === user.userId;
+    const isAdmin = user.role === "ADMIN";
+
+    let hasTeamPermission = false;
+    if (!isOwner && !isAdmin) {
+      // Find teams that have access to this inbox
+      const teamInboxes = await prisma.teamInbox.findMany({
+        where: { inboxId: inbox.id },
+        select: { teamId: true }
+      });
+
+      for (const ti of teamInboxes) {
+        if (await TeamService.hasTeamRole(user.userId, ti.teamId, ["ADMIN", "OWNER"])) {
+          hasTeamPermission = true;
+          break;
+        }
+      }
+    }
+
+    if (!isOwner && !isAdmin && !hasTeamPermission) {
       return reply.status(403).send({ error: "Not authorized to delete this inbox" });
     }
 
@@ -185,8 +225,26 @@ export async function inboxRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: "Inbox not found" });
     }
 
-    // Permission check: Admin OR Owner
-    if (user.role !== "ADMIN" && inbox.ownerId !== user.userId) {
+    // Permission check: Admin OR Owner OR Team Admin/Owner
+    const isOwner = inbox.ownerId === user.userId;
+    const isAdmin = user.role === "ADMIN";
+
+    let hasTeamPermission = false;
+    if (!isOwner && !isAdmin) {
+      const teamInboxes = await prisma.teamInbox.findMany({
+        where: { inboxId: inbox.id },
+        select: { teamId: true }
+      });
+
+      for (const ti of teamInboxes) {
+        if (await TeamService.hasTeamRole(user.userId, ti.teamId, ["ADMIN", "OWNER"])) {
+          hasTeamPermission = true;
+          break;
+        }
+      }
+    }
+
+    if (!isAdmin && !isOwner && !hasTeamPermission) {
       return reply.status(403).send({ error: "Not authorized to update this inbox" });
     }
 

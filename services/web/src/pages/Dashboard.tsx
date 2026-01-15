@@ -33,11 +33,13 @@ export function Dashboard() {
 
     // Data
     const [domains, setDomains] = useState<Domain[]>([]);
+    const [teams, setTeams] = useState<Team[]>([]);
     const [inboxes, setInboxes] = useState<Inbox[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
 
     // Selection
     const [selectedDomain, setSelectedDomain] = useState<string>("");
+    const [selectedTeam, setSelectedTeam] = useState<string>("");
     const [selectedInbox, setSelectedInbox] = useState<string>("");
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
@@ -98,6 +100,16 @@ export function Dashboard() {
         }
     }, [token]);
 
+    const loadTeams = useCallback(async () => {
+        if (!token) return;
+        try {
+            const res = await api<{ teams: Team[] }>("/teams", { token });
+            setTeams(res.teams || []);
+        } catch (e) {
+            console.error("Failed to load teams", e);
+        }
+    }, [token]);
+
     // Auto-select domain effect
     useEffect(() => {
         if (domains.length > 0 && !selectedDomain) {
@@ -115,8 +127,10 @@ export function Dashboard() {
         setBusy(true);
         try {
             const params = new URLSearchParams({ limit: "100" });
-            params.append("personal", "true");
-
+            if (selectedTeam) {
+                params.append("teamId", selectedTeam);
+            }
+            // Removed strict personal=true to include shared team inboxes
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);
         } catch (e) {
@@ -125,7 +139,7 @@ export function Dashboard() {
         } finally {
             setBusy(false);
         }
-    }, [token]);
+    }, [token, selectedTeam]);
 
     // Auto-select inbox effect
     useEffect(() => {
@@ -211,6 +225,7 @@ export function Dashboard() {
 
     // --- Effects ---
     useEffect(() => { loadDomains(); }, [loadDomains]);
+    useEffect(() => { loadTeams(); }, [loadTeams]);
     useEffect(() => { loadInboxes(); }, [loadInboxes]);
     useEffect(() => {
         if (selectedInbox) {
@@ -300,10 +315,13 @@ export function Dashboard() {
                             <div className="w-full max-w-[280px]">
                                 <InboxSelector
                                     domains={domains}
+                                    teams={teams}
                                     inboxes={inboxes}
                                     selectedDomainId={selectedDomain}
+                                    selectedTeamId={selectedTeam}
                                     selectedInboxId={selectedInbox}
                                     onSelectDomain={setSelectedDomain}
+                                    onSelectTeam={setSelectedTeam}
                                     onSelectInbox={(id) => navigate(`?inboxId=${id}`)}
                                     // No create/delete props passed
                                     user={user}

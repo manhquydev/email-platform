@@ -224,7 +224,7 @@ describe('FeatureName', () => {
 
 ### Input Validation
 - Validate all inputs with Zod
-- Sanitize HTML content
+- **HTML Sanitization**: ALWAYS use `DOMPurify.sanitize()` before rendering untrusted HTML content via `dangerouslySetInnerHTML`.
 - Use parameterized queries (Prisma handles this)
 
 ### Authentication
@@ -241,3 +241,22 @@ describe('FeatureName', () => {
 - Never commit `.env` files
 - Use environment variables for secrets
 - Encrypt PII at rest when required
+
+## 7. Extension Patterns (WXT)
+
+### Framework
+- Use **WXT** framework for browser extension development.
+- Entrypoints are located in `src/entrypoints/`.
+
+### Messaging & Storage
+- Use `chrome.runtime.sendMessage` and `chrome.runtime.onMessage` for communication between components.
+- Use `chrome.storage.local` for persistence, wrapped in a shared utility.
+
+### Background & Side Panel
+- Background logic in `background.ts` using `defineBackground`.
+- Side Panel API integration for persistent UI across tabs.
+- Use Alarms API for periodic background tasks (e.g., polling).
+
+### Push Notifications
+- Implement Web Push API in the Service Worker.
+- Use a dedicated push handler for managing notification display and click actions.

@@ -209,6 +209,76 @@ export async function domainRoutes(app: FastifyInstance) {
     return { domain: updated };
   });
 
+  // Setup DKIM for a domain
+  app.post("/domains/:id/dkim", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({ selector: z.string().min(1).default("ephemera") }).safeParse(request.body);
+
+    if (!params.success || !body.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to manage DKIM for this domain" });
+    }
+
+    try {
+      const { DkimService } = await import("../services/dkim.service");
+      const dkim = await DkimService.setupDkim(domain.id, body.data.selector);
+
+      await recordAudit(user.userId, "DOMAIN_DKIM_SETUP", { domainId: domain.id, selector: dkim.selector });
+
+      return {
+        selector: dkim.selector,
+        publicKey: dkim.publicKey,
+        dnsRecord: `${dkim.selector}._domainkey.${domain.name} IN TXT "v=DKIM1; k=rsa; p=${dkim.publicKey}"`
+      };
+    } catch (err) {
+      request.log.error(err, "DKIM setup error");
+      return reply.status(500).send({ error: "Failed to setup DKIM" });
+    }
+  });
+
+  // Get DKIM info for a domain
+  app.get("/domains/:id/dkim", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid ID" });
+    }
+
+    const domain = await prisma.domain.findUnique({
+      where: { id: params.data.id },
+      include: { dkim: true }
+    });
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to view DKIM for this domain" });
+    }
+
+    if (!domain.dkim) {
+      return { enabled: false };
+    }
+
+    return {
+      enabled: true,
+      selector: domain.dkim.selector,
+      publicKey: domain.dkim.publicKey,
+      dnsRecord: `${domain.dkim.selector}._domainkey.${domain.name} IN TXT "v=DKIM1; k=rsa; p=${domain.dkim.publicKey}"`,
+      rotatedAt: domain.dkim.rotatedAt,
+      createdAt: domain.dkim.createdAt
+    };
+  });
+
   app.delete("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {

@@ -32,6 +32,7 @@ const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.S
 const MyDomains = lazy(() => import("./pages/MyDomains").then(m => ({ default: m.MyDomains })));
 const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default: m.Forwarding })));
 const Plans = lazy(() => import("./pages/Plans").then(m => ({ default: m.Plans })));
+const Teams = lazy(() => import("./pages/Teams").then(m => ({ default: m.Teams })));
 const InboxViewer = lazy(() => import("./pages/InboxViewer").then(m => ({ default: m.InboxViewer })));
 
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -98,6 +99,7 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/my-domains" element={<MyDomains />} />
                     <Route path="/forwarding" element={<Forwarding />} />
+                    <Route path="/teams" element={<Teams />} />
                     <Route path="/plans" element={<Plans />} />
                   </Route>
 

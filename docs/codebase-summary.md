@@ -42,6 +42,17 @@ email-platform/
 │   │   ├── cron/
 │   │   ├── README.md
 │   │   └── server.js
+│   ├── extension/
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   ├── entrypoints/
+│   │   │   │   ├── background.ts
+│   │   │   │   ├── popup/
+│   │   │   │   └── sidepanel/
+│   │   │   ├── hooks/
+│   │   │   └── utils/
+│   │   ├── wxt.config.ts
+│   │   └── package.json
 │   ├── web/
 │   │   ├── public/
 │   │   ├── src/

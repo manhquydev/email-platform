@@ -2,6 +2,8 @@ import nodemailer from "nodemailer";
 import { appConfig } from "../config";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
+import { prisma } from "../lib/prisma";
+import { decrypt } from "../utils/encryption";
 
 export class OutboundService {
     private transporter: nodemailer.Transporter;
@@ -77,9 +79,34 @@ export class OutboundService {
         // Generate proper message ID
         const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${mailDomain}>`;
 
+        // Fetch DKIM configuration for the domain
+        let dkimOptions = undefined;
+        try {
+            const domainName = mailFromAddress.split("@")[1];
+            if (domainName) {
+                const domainRecord = await prisma.domain.findUnique({
+                    where: { name: domainName },
+                    include: { dkim: true }
+                });
+
+                if (domainRecord?.dkim) {
+                    dkimOptions = {
+                        domainName: domainRecord.name,
+                        keySelector: domainRecord.dkim.selector,
+                        privateKey: decrypt(domainRecord.dkim.privateKey)
+                    };
+                    console.log(`[OutboundService] Applying DKIM signature for ${domainName} with selector ${dkimOptions.keySelector}`);
+                }
+            }
+        } catch (dkimErr) {
+            console.error("[OutboundService] Failed to fetch/decrypt DKIM config:", dkimErr);
+            // Continue sending without DKIM if it fails
+        }
+
         try {
             const info = await this.transporter.sendMail({
                 from: `"${mailFromName}" <${mailFromAddress}>`,
+                dkim: dkimOptions,
                 to,
                 replyTo: options?.replyTo,
                 subject,

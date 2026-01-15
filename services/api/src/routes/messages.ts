@@ -9,6 +9,7 @@ import { promises as fs } from "fs";
 import { recordAudit } from "../utils/audit";
 import Mailbuild from "mailbuild";
 import { realtimeEvents } from "../services/realtime-events";
+import { TeamService } from "../services/team.service";
 
 export const messageRoutes = async (app: FastifyInstance) => {
   app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
@@ -25,7 +26,15 @@ export const messageRoutes = async (app: FastifyInstance) => {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
+    const userId = (request.user as any).userId;
     const { inboxId, limit, offset, q, hasAttachments } = query.data;
+
+    // Check access to inbox
+    const hasAccess = await TeamService.canAccessInbox(userId, inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized access to this inbox" });
+    }
+
     const where = {
       inboxId,
       deletedAt: null,
@@ -84,6 +93,12 @@ export const messageRoutes = async (app: FastifyInstance) => {
     const inbox = await prisma.inbox.findUnique({ where: { id: params.data.id, deletedAt: null } });
     if (!inbox) {
       return reply.status(404).send({ error: "Inbox not found" });
+    }
+
+    const userId = (request.user as any).userId;
+    const hasAccess = await TeamService.canAccessInbox(userId, inbox.id);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized access to this inbox" });
     }
 
     const where = {
@@ -151,10 +166,16 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const { q, domain, from, hasAttachment, isRead, after, limit = 50, offset = 0 } = query.data;
+    const userId = (request.user as any).userId;
+    const isAdmin = (request.user as any).role === "ADMIN";
+
+    // Get all accessible inbox IDs for the user
+    const accessibleInboxIds = await TeamService.getAccessibleInboxIds(userId);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       deletedAt: null,
+      ...(!isAdmin ? { inboxId: { in: accessibleInboxIds } } : {}),
     };
 
     // Domain filter
@@ -258,7 +279,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const userId = (request.user as any).userId;
-    if (message.inbox.ownerId !== userId) {
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
       return reply.status(403).send({ error: "Unauthorized" });
     }
 
@@ -280,7 +302,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const userId = (request.user as any).userId;
-    if (existing.inbox.ownerId !== userId) {
+    const hasAccess = await TeamService.canAccessInbox(userId, existing.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
       return reply.status(403).send({ error: "Unauthorized" });
     }
 
@@ -315,7 +338,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const userId = (request.user as any).userId;
-    if (existing.inbox.ownerId !== userId) {
+    const hasAccess = await TeamService.canAccessInbox(userId, existing.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
       return reply.status(403).send({ error: "Unauthorized" });
     }
 
@@ -353,7 +377,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const userId = (request.user as any).userId;
-    if (existing.inbox.ownerId !== userId) {
+    const hasAccess = await TeamService.canAccessInbox(userId, existing.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
       return reply.status(403).send({ error: "Unauthorized" });
     }
 
@@ -386,7 +411,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const userId = (request.user as any).userId;
-    if (existing.inbox.ownerId !== userId) {
+    const hasAccess = await TeamService.canAccessInbox(userId, existing.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
       return reply.status(403).send({ error: "Unauthorized" });
     }
 
@@ -411,7 +437,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
     });
     if (!attachment) return reply.status(404).send("Not found");
     const userId = (request.user as any)?.userId ?? null;
-    if (attachment.message.inbox.ownerId !== userId) return reply.status(403).send("Unauthorized");
+    const hasAccess = await TeamService.canAccessInbox(userId, attachment.message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") return reply.status(403).send("Unauthorized");
 
     try {
       const stream = await storageService.getReadStream(attachment.storageKey);
@@ -441,7 +468,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const userId = (request.user as any).userId;
-    if (message.inbox.ownerId !== userId) {
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
       return reply.status(403).send({ error: "Unauthorized" });
     }
 

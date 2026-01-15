@@ -157,6 +157,7 @@ export function Sidebar({
                     {inboxes.map(inbox => {
                         const fullEmail = `${inbox.localPart}@${inbox.domain?.name || activeDomain?.name || ''}`;
                         const isSelected = selectedInboxId === inbox.id;
+                        const isShared = inbox.ownerId !== currentUserId;
 
                         return (
                             <div
@@ -168,12 +169,20 @@ export function Sidebar({
                                 }`}
                                 onClick={() => onSelectInbox(inbox.id)}
                             >
-                                <svg className={`w-4 h-4 shrink-0 ${isSelected ? 'text-primary' : 'text-nebula-text-muted'}`} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <div className="relative">
+                                    <svg className={`w-4 h-4 shrink-0 ${isSelected ? 'text-primary' : 'text-nebula-text-muted'}`} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    {isShared && (
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-nebula-violet rounded-full border border-nebula-surface" title="Hộp thư chung" />
+                                    )}
+                                </div>
 
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-medium truncate">{fullEmail}</div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="text-sm font-medium truncate">{fullEmail}</div>
+                                        {isShared && <span className="text-[9px] px-1 bg-nebula-violet/10 text-nebula-violet rounded border border-nebula-violet/20 font-bold uppercase">Team</span>}
+                                    </div>
                                     {inbox.expiresAt && <CountdownTimer expiresAt={inbox.expiresAt} className="text-[10px]" />}
                                 </div>
 

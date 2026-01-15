@@ -101,8 +101,8 @@ export function InboxManager() {
         setBusy(true);
         try {
             const params = new URLSearchParams({
-                limit: "100",
-                personal: "true" // Fetch all personal inboxes across all domains
+                limit: "100"
+                // Removed strict personal: "true" to include shared team inboxes
             });
             const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
             setInboxes(res?.data || []);

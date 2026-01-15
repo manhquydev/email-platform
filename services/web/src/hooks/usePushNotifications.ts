@@ -15,10 +15,23 @@ export function usePushNotifications() {
             setIsSupported(true);
             // Check initial status
             isPushSubscribed().then(setIsSubscribed).finally(() => setIsLoading(false));
+
+            // Listen for subscription changes from service worker
+            const handleMessage = (event: MessageEvent) => {
+                if (event.data?.type === 'PUSH_SUBSCRIPTION_CHANGE' && token) {
+                    console.log('[Push Hook]: Received subscription change, re-syncing...');
+                    subscribeToPush(token).then(success => {
+                        if (success) setIsSubscribed(true);
+                    });
+                }
+            };
+
+            navigator.serviceWorker.addEventListener('message', handleMessage);
+            return () => navigator.serviceWorker.removeEventListener('message', handleMessage);
         } else {
             setIsLoading(false);
         }
-    }, []);
+    }, [token]);
 
     const subscribe = useCallback(async () => {
         if (!token) return;

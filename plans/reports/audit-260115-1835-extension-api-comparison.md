@@ -94,11 +94,13 @@ Kiểm tra toàn diện extension so với plan đã phát hiện **2 lỗi crit
 1. Extension gọi `/extension/dashboard` nhưng route không tồn tại (404)
 2. CSS không load nên UI không hiển thị đúng
 3. Error handling có thể đã stringify response thành "true"
+4. **Vite build sử dụng absolute paths** (`/assets/`) thay vì relative paths - Chrome extension không có domain root nên assets không load được
 
 **Fixes Applied:**
 1. Register extension routes in `server.ts`
 2. Add CORS for chrome-extension:// origins
 3. Add `postcss.config.js` for Tailwind compilation
+4. **Add `base: ''` to vite.config.ts** for relative asset paths
 
 ---
 
@@ -108,6 +110,7 @@ Kiểm tra toàn diện extension so với plan đã phát hiện **2 lỗi crit
 |--------|-------------|
 | `c273c4c` | fix(extension): add missing postcss.config.js for Tailwind CSS |
 | `5383993` | fix(api): register extension routes and allow extension CORS origins |
+| `baa99e0` | fix(extension): use relative paths for Chrome extension assets |
 
 ---
 

@@ -15,6 +15,7 @@ interface InboxCardProps {
     onViewMessages: () => void;
     onTransfer?: () => void;
     onExtend?: () => void;
+    onTogglePermanent?: () => void;
     onShareModeChange?: (shareMode: 'PUBLIC' | 'PRIVATE') => void;
     onVisibilityRules?: () => void;
 }
@@ -30,6 +31,7 @@ export function InboxCard({
     onViewMessages,
     onTransfer,
     onExtend,
+    onTogglePermanent,
     onShareModeChange,
     onVisibilityRules
 }: InboxCardProps) {
@@ -179,7 +181,30 @@ export function InboxCard({
                             </svg>
                         </button>
                     )}
-                    {onExtend && (
+                    {onTogglePermanent && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onTogglePermanent(); }}
+                            className={cn(
+                                "p-1.5 rounded-lg transition-colors",
+                                !inbox.expiresAt
+                                    ? "text-amber-400 hover:bg-amber-400/10"
+                                    : "text-purple-400 hover:bg-purple-500/10"
+                            )}
+                            title={!inbox.expiresAt ? "Chuyển sang Có hạn (24h)" : "Chuyển sang Vĩnh viễn"}
+                            aria-label="Chuyển đổi trạng thái vĩnh viễn"
+                        >
+                            {!inbox.expiresAt ? (
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            ) : (
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+                                </svg>
+                            )}
+                        </button>
+                    )}
+                    {onExtend && inbox.expiresAt && (
                         <button
                             onClick={(e) => { e.stopPropagation(); onExtend(); }}
                             className="p-1.5 rounded-lg text-text-secondary hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors"

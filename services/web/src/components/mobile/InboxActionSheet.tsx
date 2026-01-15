@@ -16,6 +16,7 @@ interface InboxActionSheetProps {
     onViewMessages: () => void;
     onTransfer: () => void;
     onExtend: () => void;
+    onTogglePermanent: () => void;
     onDelete: () => void;
     onShareModeChange: (mode: ShareMode) => void;
     onVisibilityRules: () => void;
@@ -57,6 +58,7 @@ export function InboxActionSheet({
     onViewMessages,
     onTransfer,
     onExtend,
+    onTogglePermanent,
     onDelete,
     onShareModeChange,
     onVisibilityRules,
@@ -144,16 +146,35 @@ export function InboxActionSheet({
                     onClick={() => handleAction(onTransfer)}
                 />
 
-                {/* Extend TTL */}
+                {/* Toggle Permanent */}
                 <ActionItem
                     icon={
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        !inbox.expiresAt ? (
+                            <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        ) : (
+                            <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+                            </svg>
+                        )
                     }
-                    label="Gia hạn +10 phút"
-                    onClick={() => handleAction(onExtend)}
+                    label={!inbox.expiresAt ? 'Chuyển sang Có hạn (24h)' : 'Chuyển sang Vĩnh viễn'}
+                    onClick={() => handleAction(onTogglePermanent)}
                 />
+
+                {/* Extend TTL */}
+                {inbox.expiresAt && (
+                    <ActionItem
+                        icon={
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        }
+                        label="Gia hạn +10 phút"
+                        onClick={() => handleAction(onExtend)}
+                    />
+                )}
 
                 {/* Divider */}
                 <div className="border-t border-white/5 my-2" />

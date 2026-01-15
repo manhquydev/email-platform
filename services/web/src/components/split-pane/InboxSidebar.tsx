@@ -18,6 +18,7 @@ interface InboxSidebarItemProps {
     onDelete?: () => void;
     onTransfer?: () => void;
     onExtend?: () => void;
+    onTogglePermanent?: () => void;
     onShareModeChange?: (mode: ShareMode) => void;
     onVisibilityRules?: () => void;
     /** Compact mode shows minimal info */
@@ -32,6 +33,7 @@ export function InboxSidebarItem({
     onDelete,
     onTransfer,
     onExtend,
+    onTogglePermanent,
     onShareModeChange,
     onVisibilityRules,
     compact = false,
@@ -233,8 +235,32 @@ export function InboxSidebarItem({
                         </button>
                     )}
 
+                    {/* Toggle Permanent */}
+                    {onTogglePermanent && (
+                        <button
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+                            onClick={() => handleMenuAction(onTogglePermanent)}
+                        >
+                            {!inbox.expiresAt ? (
+                                <>
+                                    <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Chuyển sang Có hạn (24h)</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+                                    </svg>
+                                    <span>Chuyển sang Vĩnh viễn</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+
                     {/* Extend TTL */}
-                    {onExtend && (
+                    {onExtend && inbox.expiresAt && (
                         <button
                             className="w-full px-3 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2.5 transition-colors"
                             onClick={() => handleMenuAction(onExtend)}
@@ -274,6 +300,7 @@ interface InboxSidebarProps {
     onDeleteInbox?: (inbox: Inbox) => void;
     onTransferInbox?: (inbox: Inbox) => void;
     onExtendInbox?: (inbox: Inbox) => void;
+    onTogglePermanent?: (inbox: Inbox) => void;
     onShareModeChange?: (inboxId: string, mode: ShareMode) => void;
     onVisibilityRules?: (inbox: Inbox) => void;
     /** Show in compact mode (icon-only when collapsed) */
@@ -292,6 +319,7 @@ export function InboxSidebar({
     onDeleteInbox,
     onTransferInbox,
     onExtendInbox,
+    onTogglePermanent,
     onShareModeChange,
     onVisibilityRules,
     compact = false,
@@ -347,6 +375,7 @@ export function InboxSidebar({
                     onDelete={() => onDeleteInbox?.(inbox)}
                     onTransfer={() => onTransferInbox?.(inbox)}
                     onExtend={() => onExtendInbox?.(inbox)}
+                    onTogglePermanent={() => onTogglePermanent?.(inbox)}
                     onShareModeChange={(mode) => onShareModeChange?.(inbox.id, mode)}
                     onVisibilityRules={() => onVisibilityRules?.(inbox)}
                     compact={compact}

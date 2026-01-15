@@ -348,6 +348,39 @@ export function InboxManager() {
             setBusy(false);
         }
     };
+
+    const handleTogglePermanent = async (inboxId: string) => {
+        if (!token) return;
+        setBusy(true);
+        try {
+            const inbox = inboxes.find(i => i.id === inboxId);
+            if (!inbox) return;
+
+            const isPermanent = !inbox.expiresAt;
+            // If permanent, set to 24h from now. If temporary, set to null (permanent)
+            const newExpiresAt = isPermanent
+                ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                : null;
+
+            await api(`/inboxes/${inboxId}`, {
+                method: "PATCH",
+                body: { expiresAt: newExpiresAt },
+                token
+            });
+
+            // Update local state
+            setInboxes(prev => prev.map(i => i.id === inboxId ? { ...i, expiresAt: newExpiresAt } : i));
+            if (activeInbox?.id === inboxId) {
+                setActiveInbox(prev => prev ? { ...prev, expiresAt: newExpiresAt } : null);
+            }
+
+            toast.success(isPermanent ? "Đã chuyển sang Có hạn (24h)" : "Đã chuyển sang Vĩnh viễn");
+        } catch {
+            toast.error("Lỗi chuyển đổi trạng thái hộp thư");
+        } finally {
+            setBusy(false);
+        }
+    };
     // Pull-to-refresh handler for mobile
     const handlePullRefresh = useCallback(async () => {
         setIsRefreshing(true);
@@ -613,6 +646,7 @@ export function InboxManager() {
                                         onDeleteInbox={handleDeleteInbox}
                                         onTransferInbox={(inbox) => setInboxToTransfer(inbox)}
                                         onExtendInbox={(inbox) => handleExtendInbox(inbox.id)}
+                                        onTogglePermanent={(inbox) => handleTogglePermanent(inbox.id)}
                                         onShareModeChange={handleShareModeChange}
                                         onVisibilityRules={(inbox) => setInboxForVisibilityRules(inbox)}
                                         isLoading={busy && inboxes.length === 0}
@@ -901,6 +935,7 @@ export function InboxManager() {
                                                         onViewMessages={() => handleViewMessages(inbox)}
                                                         onTransfer={() => setInboxToTransfer(inbox)}
                                                         onExtend={() => handleExtendInbox(inbox.id)}
+                                                        onTogglePermanent={() => handleTogglePermanent(inbox.id)}
                                                         onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
                                                         onVisibilityRules={() => setInboxForVisibilityRules(inbox)}
                                                     />
@@ -1194,6 +1229,9 @@ export function InboxManager() {
                 }}
                 onExtend={() => {
                     if (inboxForActionSheet) handleExtendInbox(inboxForActionSheet.id);
+                }}
+                onTogglePermanent={() => {
+                    if (inboxForActionSheet) handleTogglePermanent(inboxForActionSheet.id);
                 }}
                 onDelete={() => {
                     if (inboxForActionSheet) handleDeleteInbox(inboxForActionSheet);

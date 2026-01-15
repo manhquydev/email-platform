@@ -335,7 +335,7 @@ export function InboxManager() {
             if (!inbox) return;
             const currentExpiresAt = inbox.expiresAt ? new Date(inbox.expiresAt).getTime() : Date.now();
             const newExpiresAt = new Date(currentExpiresAt + 10 * 60 * 1000).toISOString();
-            await api(`/inboxes/${inboxId}`, { method: "PATCH", body: JSON.stringify({ expiresAt: newExpiresAt }), token });
+            await api(`/inboxes/${inboxId}`, { method: "PATCH", body: { expiresAt: newExpiresAt }, token });
             // Update local state
             setInboxes(prev => prev.map(i => i.id === inboxId ? { ...i, expiresAt: newExpiresAt } : i));
             if (activeInbox?.id === inboxId) {
@@ -557,7 +557,7 @@ export function InboxManager() {
                                             </button>
                                             <button
                                                 className="p-2 hover:bg-white/5 rounded-xl text-text-secondary hover:text-cyan-400 transition-all"
-                                                onClick={() => navigate('/app/domains')}
+                                                onClick={() => navigate('/my-domains')}
                                                 title="Quản lý tên miền"
                                             >
                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

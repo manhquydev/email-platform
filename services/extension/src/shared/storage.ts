@@ -1,10 +1,5 @@
 import { StorageData } from './types';
 
-const DEFAULT_SETTINGS = {
-  theme: 'light' as const,
-  autoCopy: true,
-};
-
 export const storage = {
   get: async <K extends keyof StorageData>(key: K): Promise<StorageData[K] | null> => {
     const result = await chrome.storage.local.get(key);

@@ -1,4 +1,4 @@
-interface DetectedField {
+export interface DetectedField {
   element: HTMLInputElement
   id: string
   rect: DOMRect
@@ -39,7 +39,7 @@ function isVisible(el: HTMLElement): boolean {
   const style = getComputedStyle(el)
   if (style.display === 'none') return false
   if (style.visibility === 'hidden') return false
-  if (parseFloat(style.opacity) === '0') return false
+  if (parseFloat(style.opacity) === 0) return false
 
   const rect = el.getBoundingClientRect()
   if (rect.width === 0 || rect.height === 0) return false

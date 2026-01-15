@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../../shared/api';
 import { Message } from '../../shared/types';
 import { ArrowLeft, Loader2, Calendar, User, FileText } from 'lucide-react';

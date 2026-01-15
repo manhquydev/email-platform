@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../../shared/api';
 import { Inbox } from '../../shared/types';
-import { Plus, Copy, Trash2, RefreshCw, Loader2, Mail } from 'lucide-react';
+import { Plus, Copy, RefreshCw, Loader2, Mail } from 'lucide-react';
 
-export default function InboxList() {
+interface InboxListProps {
+  onSelectInbox: (id: string, email: string) => void;
+}
+
+export default function InboxList({ onSelectInbox }: InboxListProps) {
   const [inboxes, setInboxes] = useState<Inbox[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -12,8 +16,17 @@ export default function InboxList() {
   const fetchInboxes = async () => {
     setLoading(true);
     try {
-      const response = await api.getInboxes();
-      setInboxes(response.data);
+      const response = await api.getDashboard();
+      setInboxes(response.inboxes.map(inbox => ({
+        id: inbox.id,
+        localPart: inbox.localPart,
+        domainId: '',
+        domain: { id: '', name: inbox.domain, isPublic: true },
+        ownerId: '',
+        createdAt: inbox.createdAt,
+        expiresAt: inbox.expiresAt,
+        _count: { messages: inbox.unreadCount }
+      })));
     } catch (err: any) {
       setError(err.message || 'Failed to load inboxes');
     } finally {
@@ -28,11 +41,23 @@ export default function InboxList() {
   const handleCreateInbox = async () => {
     setCreating(true);
     try {
-      const newInbox = await api.createRandomInbox();
-      // Add to list immediately
-      setInboxes([newInbox, ...inboxes]);
-      // Also copy to clipboard
-      await copyToClipboard(`${newInbox.localPart}@${newInbox.domain.name}`);
+      const response = await api.createQuickInbox();
+      if (response.success && response.inbox) {
+        const newInbox = response.inbox;
+        // Add to list immediately
+        setInboxes([{
+          id: newInbox.id,
+          localPart: newInbox.localPart,
+          domainId: '',
+          domain: { id: '', name: newInbox.domain?.name || newInbox.domain, isPublic: true },
+          ownerId: '',
+          createdAt: newInbox.createdAt,
+          expiresAt: newInbox.expiresAt,
+          _count: { messages: 0 }
+        }, ...inboxes]);
+        // Also copy to clipboard
+        await copyToClipboard(`${newInbox.localPart}@${newInbox.domain?.name || newInbox.domain}`);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to create inbox');
     } finally {
@@ -124,7 +149,7 @@ export default function InboxList() {
 
               <div className="flex gap-2">
                  <button
-                   onClick={() => onSelectInbox(inbox.id, inbox.address)}
+                   onClick={() => onSelectInbox(inbox.id, `${inbox.localPart}@${inbox.domain.name}`)}
                    className="flex-1 text-xs py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded text-center transition-colors"
                  >
                    View Messages

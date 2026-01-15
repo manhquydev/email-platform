@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { storage } from '../shared/storage';
 import { api } from '../shared/api';
 import { AuthState } from '../shared/types';

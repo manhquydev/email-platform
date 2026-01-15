@@ -14,7 +14,7 @@ export async function handlePushMessage(payload: PushPayload) {
    console.log('Handling push message:', payload);
 
    // Show notification
-   const { from, subject, preview, messageId, inboxId } = payload;
+   const { from, subject, preview, messageId } = payload;
 
    const notificationId = `msg-${messageId}`;
 

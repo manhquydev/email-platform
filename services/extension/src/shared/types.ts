@@ -49,5 +49,6 @@ export interface StorageData {
   settings: {
     theme: 'light' | 'dark';
     autoCopy: boolean;
+    notificationsEnabled?: boolean;
   };
 }

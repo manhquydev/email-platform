@@ -46,7 +46,7 @@ async function pollForMessages() {
 }
 
 // Handle messages from content scripts or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'CREATE_INBOX') {
     // Handle background inbox creation
     api.createQuickInbox()

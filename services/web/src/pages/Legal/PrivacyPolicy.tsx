@@ -148,8 +148,33 @@ export function PrivacyPolicy() {
                         </p>
                     </section>
 
+                    <section className="mb-8 p-6 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                        <h2 className="flex items-center gap-2 !text-blue-400">
+                            <span className="material-symbols-outlined">extension</span>
+                            8. Browser Extension
+                        </h2>
+                        <p className="!text-blue-300/80">
+                            <strong>Tiện ích mở rộng Ephemera cho trình duyệt thu thập và xử lý:</strong>
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2 mt-2 !text-blue-300/70">
+                            <li><strong>Dữ liệu xác thực:</strong> Token đăng nhập lưu trữ cục bộ trong browser storage</li>
+                            <li><strong>Địa chỉ email tạm thời:</strong> Các inbox bạn tạo qua extension</li>
+                            <li><strong>Tin nhắn email:</strong> Nội dung email nhận được tại các địa chỉ đó</li>
+                        </ul>
+                        <h3 className="text-lg font-semibold mt-4 mb-2 !text-blue-300">Quyền Extension</h3>
+                        <ul className="list-disc pl-6 space-y-2 !text-blue-300/70">
+                            <li><strong>Storage:</strong> Lưu trạng thái đăng nhập và cài đặt</li>
+                            <li><strong>Notifications:</strong> Thông báo khi có email mới</li>
+                            <li><strong>Clipboard:</strong> Sao chép địa chỉ email</li>
+                            <li><strong>Host permissions:</strong> Chỉ giao tiếp với Ephemera API</li>
+                        </ul>
+                        <p className="mt-4 text-sm !text-blue-300/60">
+                            Content script phát hiện các trường nhập email để tự động điền - <em>không đọc hoặc lưu trữ bất kỳ dữ liệu trang web nào khác</em>.
+                        </p>
+                    </section>
+
                     <section className="mb-8">
-                        <h2>8. Chuyển dữ liệu quốc tế</h2>
+                        <h2>10. Chuyển dữ liệu quốc tế</h2>
                         <p>
                             Dữ liệu của bạn có thể được xử lý tại các máy chủ đặt bên ngoài quốc gia của bạn.
                             Chúng tôi đảm bảo các biện pháp bảo vệ thích hợp được áp dụng cho các hoạt động chuyển dữ liệu đó.
@@ -157,7 +182,7 @@ export function PrivacyPolicy() {
                     </section>
 
                     <section className="mb-8">
-                        <h2>9. Quyền riêng tư của trẻ em</h2>
+                        <h2>11. Quyền riêng tư của trẻ em</h2>
                         <p>
                             Dịch vụ của chúng tôi không dành cho trẻ em dưới 13 tuổi. Chúng tôi không cố ý
                             thu thập thông tin cá nhân từ trẻ em.
@@ -165,7 +190,7 @@ export function PrivacyPolicy() {
                     </section>
 
                     <section className="mb-8">
-                        <h2>10. Liên hệ với chúng tôi</h2>
+                        <h2>12. Liên hệ với chúng tôi</h2>
                         <p>
                             Đối với các thắc mắc liên quan đến quyền riêng tư, hãy liên hệ với đội ngũ Bảo vệ Dữ liệu của chúng tôi tại
                             <a href="mailto:privacy@manhquy.click" className="ml-1 text-nebula-violet dark:text-nebula-violet-light hover:underline">privacy@manhquy.click</a>.

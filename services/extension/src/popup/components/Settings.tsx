@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, LogOut, ExternalLink, Shield, CreditCard, Bell, BellOff, Loader2 } from 'lucide-react';
 import { api } from '../../shared/api';
 import { User } from '../../shared/types';

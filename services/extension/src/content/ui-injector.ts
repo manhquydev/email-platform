@@ -19,7 +19,7 @@ export function injectUI(fields: DetectedField[]) {
   })
 }
 
-function createIconWrapper(input: HTMLInputElement): HTMLElement {
+function createIconWrapper(_input: HTMLInputElement): HTMLElement {
   // Create container with Shadow DOM for style isolation
   const container = document.createElement('div')
   container.className = 'ephemera-icon-container'

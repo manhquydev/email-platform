@@ -1,5 +1,5 @@
 import { storage } from './storage';
-import { Inbox, Message, User } from './types';
+import { Message, User } from './types';
 
 const API_URL = 'https://api.manhquy.click';
 

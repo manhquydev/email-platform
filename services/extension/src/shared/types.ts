@@ -6,19 +6,21 @@ export interface User {
 }
 
 export interface Domain {
-  id: string;
+  id?: string;
   name: string;
-  isPublic: boolean;
+  isPublic?: boolean;
 }
 
 export interface Inbox {
   id: string;
   localPart: string;
-  domainId: string;
-  domain: Domain;
-  ownerId: string;
+  domainId?: string;
+  domain: string | Domain;
+  address?: string;
+  ownerId?: string;
   createdAt: string;
   expiresAt: string | null;
+  unreadCount?: number;
   _count?: {
     messages: number;
   };
@@ -41,11 +43,14 @@ export interface AuthState {
   token: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  isAnonymous?: boolean;
 }
 
 export interface StorageData {
   auth: AuthState;
+  deviceId: string;
   inboxes: Inbox[];
+  last_message_id?: string;
   settings: {
     theme: 'light' | 'dark';
     autoCopy: boolean;

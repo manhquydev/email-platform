@@ -3,6 +3,7 @@ import { ArrowLeft, LogOut, ExternalLink, Shield, CreditCard, Bell, BellOff, Loa
 import { api } from '../../shared/api';
 import { User } from '../../shared/types';
 import { storage } from '../../shared/storage';
+import { CONFIG } from '../../shared/config';
 import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from '../../shared/push-subscription';
 
 interface SettingsProps {
@@ -90,7 +91,7 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
           </div>
 
           <a
-            href="https://manhquy.click/dashboard/settings"
+            href={`${CONFIG.WEB_URL}/dashboard/settings`}
             target="_blank"
             rel="noreferrer"
             className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1 font-medium"
@@ -128,7 +129,7 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">Links</h3>
           <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 overflow-hidden">
             <a
-              href="https://manhquy.click/dashboard"
+              href={`${CONFIG.WEB_URL}/dashboard`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors text-sm text-gray-700"
@@ -137,7 +138,7 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
               <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
             </a>
             <a
-              href="https://manhquy.click/privacy"
+              href={`${CONFIG.WEB_URL}/privacy`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors text-sm text-gray-700"

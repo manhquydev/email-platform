@@ -1,7 +1,8 @@
 import { storage } from './storage';
 import { Message, User } from './types';
+import { CONFIG } from './config';
 
-const API_URL = 'https://api.manhquy.click';
+const API_URL = CONFIG.API_URL;
 
 export interface DashboardData {
   user: {
@@ -62,9 +63,26 @@ class ApiClient {
   }
 
   async login(email: string, password: string) {
-    const data = await this.request<{ token: string; user: User }>('/auth/login', {
+    const data = await this.request<{
+      token?: string;
+      user?: User;
+      requires2FA?: boolean;
+      tempToken?: string;
+    }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    });
+
+    if (data.token && data.user) {
+      await storage.setAuth(data.token, data.user);
+    }
+    return data;
+  }
+
+  async verify2FA(tempToken: string, code: string) {
+    const data = await this.request<{ token: string; user: User }>('/auth/2fa/verify', {
+      method: 'POST',
+      body: JSON.stringify({ tempToken, code }),
     });
     await storage.setAuth(data.token, data.user);
     return data;
@@ -86,6 +104,27 @@ class ApiClient {
   async createQuickInbox() {
     return this.request<{ success: boolean; inbox: any }>('/extension/quick-inbox', {
       method: 'POST'
+    });
+  }
+
+  async createAnonymousInbox() {
+    const deviceId = await storage.getDeviceId();
+    const data = await this.request<{ success: boolean; token: string; inbox: any }>('/extension/anonymous-inbox', {
+      method: 'POST',
+      body: JSON.stringify({ deviceId })
+    });
+
+    if (data.token) {
+      // For anonymous, we don't have a full user object, but we set isAuthenticated=true
+      await storage.setAuth(data.token, { id: 'anonymous', email: 'anonymous@ephemera', role: 'USER' } as any, true);
+    }
+    return data;
+  }
+
+  async updateInbox(inboxId: string, data: { expiresAt?: string | null }) {
+    return this.request(`/inboxes/${inboxId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
     });
   }
 

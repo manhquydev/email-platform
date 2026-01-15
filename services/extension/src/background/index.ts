@@ -1,8 +1,10 @@
 import { storage } from '../shared/storage';
 import { api } from '../shared/api';
+import { CONFIG } from '../shared/config';
 
 // Alarm names
 const ALARM_POLL_MESSAGES = 'poll_messages';
+const STORAGE_KEY_LAST_MESSAGE_ID = 'last_message_id';
 
 // Setup alarms on install
 chrome.runtime.onInstalled.addListener(async () => {
@@ -30,19 +32,60 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
 async function pollForMessages() {
   const auth = await storage.getAuth();
-  if (!auth.isAuthenticated || !auth.user) return;
+  if (!auth.isAuthenticated || !auth.token) return;
 
   try {
-    // Get list of inboxes from storage to know what to poll
-    // Or fetch fresh list
-    // For MVP, we might just log or skip complex polling logic until we have the UI ready
-    console.log('Polling for new messages...');
+    // 1. Fetch fresh dashboard data to sync inboxes and check unread count
+    const dashboard = await api.getDashboard();
 
-    // Logic to check for new messages and show notification
-    // ...
+    // Sync inboxes to storage for content script access
+    if (dashboard.inboxes) {
+      await storage.setInboxes(dashboard.inboxes);
+    }
+
+    if (dashboard.stats.totalUnread > 0) {
+      // 2. Fetch recent messages for each inbox to find the newest one
+      // For MVP, we'll just check the first few inboxes
+      for (const inbox of dashboard.inboxes.slice(0, 5)) {
+        if (inbox.unreadCount > 0) {
+          const messagesResponse = await api.getMessages(inbox.id, 5);
+          const messages = messagesResponse.data;
+
+          if (messages && messages.length > 0) {
+            const newestMessage = messages[0];
+            const lastSeenId = (await chrome.storage.local.get(STORAGE_KEY_LAST_MESSAGE_ID))[STORAGE_KEY_LAST_MESSAGE_ID];
+
+            if (newestMessage.id !== lastSeenId && !newestMessage.isRead) {
+              // New unread message found!
+              showNotification(newestMessage, inbox.address);
+              await chrome.storage.local.set({ [STORAGE_KEY_LAST_MESSAGE_ID]: newestMessage.id });
+
+              // Update badge
+              chrome.action.setBadgeText({ text: '!' });
+              chrome.action.setBadgeBackgroundColor({ color: '#0ea5e9' });
+              break; // Only notify for the newest one in this poll cycle
+            }
+          }
+        }
+      }
+    } else {
+      // Clear badge if no unread
+      chrome.action.setBadgeText({ text: '' });
+    }
   } catch (error) {
     console.error('Polling failed:', error);
   }
+}
+
+function showNotification(message: any, email: string) {
+  chrome.notifications.create(message.id, {
+    type: 'basic',
+    iconUrl: 'public/icons/icon128.png',
+    title: `New Email for ${email}`,
+    message: message.subject || '(No Subject)',
+    contextMessage: `From: ${message.from}`,
+    priority: 2
+  });
 }
 
 // Handle messages from content scripts or popup
@@ -50,8 +93,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'CREATE_INBOX') {
     // Handle background inbox creation
     api.createQuickInbox()
-      .then(response => {
-        if (response.success) {
+      .then(async response => {
+        if (response.success && response.inbox) {
+            // Update storage immediately after creation
+            const dashboard = await api.getDashboard();
+            await storage.setInboxes(dashboard.inboxes);
             sendResponse({ success: true, inbox: response.inbox });
         } else {
             sendResponse({ success: false, error: 'Failed' });
@@ -59,6 +105,16 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       })
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true; // Keep channel open for async response
+  }
+
+  if (message.type === 'GET_INBOXES') {
+    api.getDashboard()
+      .then(async dashboard => {
+        await storage.setInboxes(dashboard.inboxes);
+        sendResponse({ success: true, inboxes: dashboard.inboxes });
+      })
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
   }
 
   if (message.type === 'SETUP_PUSH') {
@@ -153,14 +209,14 @@ function urlBase64ToUint8Array(base64String: string) {
   // Best practice: Open a tab to the inbox
 
   if (event.notification.data && event.notification.data.inboxId) {
-    const url = `https://manhquy.click/inbox/${event.notification.data.inboxId}`;
+    const url = `${CONFIG.WEB_URL}/inbox/${event.notification.data.inboxId}`;
     event.waitUntil(
       chrome.tabs.create({ url })
     );
   } else {
     // Default open
     event.waitUntil(
-        chrome.tabs.create({ url: 'https://manhquy.click/dashboard' })
+        chrome.tabs.create({ url: `${CONFIG.WEB_URL}/dashboard` })
     );
   }
 });

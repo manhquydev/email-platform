@@ -9,7 +9,10 @@ const EMAIL_SELECTORS = [
   'input[name*="email" i]',
   'input[id*="email" i]',
   'input[placeholder*="email" i]',
-  'input[autocomplete="email"]'
+  'input[autocomplete="email"]',
+  'input[aria-label*="email" i]',
+  'input[name="user_email"]',
+  'input[name="identifier"]'
 ]
 
 export function detectEmailFields(): DetectedField[] {
@@ -23,10 +26,14 @@ export function detectEmailFields(): DetectedField[] {
       if (!isVisible(el)) return
       if (el.disabled || el.readOnly) return
 
+      // Filter out search inputs and hidden inputs
+      const type = el.getAttribute('type')?.toLowerCase();
+      if (type === 'hidden' || type === 'search' || type === 'submit') return;
+
       seen.add(el)
       fields.push({
         element: el,
-        id: el.id || el.name || `ephemera-${fields.length}`,
+        id: el.id || el.name || `ephemera-${Math.random().toString(36).substr(2, 9)}`,
         rect: el.getBoundingClientRect()
       })
     })

@@ -17,6 +17,7 @@ interface InboxSidebarItemProps {
     onCopy?: () => void;
     onDelete?: () => void;
     onTransfer?: () => void;
+    onExtend?: () => void;
     onShareModeChange?: (mode: ShareMode) => void;
     onVisibilityRules?: () => void;
     /** Compact mode shows minimal info */
@@ -30,6 +31,7 @@ export function InboxSidebarItem({
     onCopy,
     onDelete,
     onTransfer,
+    onExtend,
     onShareModeChange,
     onVisibilityRules,
     compact = false,
@@ -231,6 +233,19 @@ export function InboxSidebarItem({
                         </button>
                     )}
 
+                    {/* Extend TTL */}
+                    {onExtend && (
+                        <button
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+                            onClick={() => handleMenuAction(onExtend)}
+                        >
+                            <svg className="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Gia hạn +10 phút</span>
+                        </button>
+                    )}
+
                     <div className="border-t border-white/5 my-1.5 mx-2" />
 
                     {/* Delete */}
@@ -258,6 +273,7 @@ interface InboxSidebarProps {
     onCopyEmail?: (email: string) => void;
     onDeleteInbox?: (inbox: Inbox) => void;
     onTransferInbox?: (inbox: Inbox) => void;
+    onExtendInbox?: (inbox: Inbox) => void;
     onShareModeChange?: (inboxId: string, mode: ShareMode) => void;
     onVisibilityRules?: (inbox: Inbox) => void;
     /** Show in compact mode (icon-only when collapsed) */
@@ -275,6 +291,7 @@ export function InboxSidebar({
     onCopyEmail,
     onDeleteInbox,
     onTransferInbox,
+    onExtendInbox,
     onShareModeChange,
     onVisibilityRules,
     compact = false,
@@ -329,6 +346,7 @@ export function InboxSidebar({
                     }}
                     onDelete={() => onDeleteInbox?.(inbox)}
                     onTransfer={() => onTransferInbox?.(inbox)}
+                    onExtend={() => onExtendInbox?.(inbox)}
                     onShareModeChange={(mode) => onShareModeChange?.(inbox.id, mode)}
                     onVisibilityRules={() => onVisibilityRules?.(inbox)}
                     compact={compact}

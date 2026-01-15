@@ -7,6 +7,14 @@ import { Button } from './ui/Button';
 import { cn } from '../utils/cn';
 import { generateRandomName } from '../utils/random';
 
+// TTL options in milliseconds (null = permanent)
+const TTL_OPTIONS = [
+    { label: '10 phút', value: 10 * 60 * 1000 },
+    { label: '1 giờ', value: 60 * 60 * 1000 },
+    { label: '24 giờ', value: 24 * 60 * 60 * 1000 },
+    { label: 'Vĩnh viễn', value: null },
+] as const;
+
 interface QuickGenerateCardProps {
     domains: Domain[];
     token: string | null;
@@ -17,6 +25,7 @@ export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGener
     const [loading, setLoading] = useState(false);
     const [generatedEmail, setGeneratedEmail] = useState<string | null>(null);
     const [selectedDomainId, setSelectedDomainId] = useState<string>('');
+    const [ttlMs, setTtlMs] = useState<number | null>(10 * 60 * 1000); // Default 10 minutes
     const { copy, copied } = useCopyEmail();
 
     // Get verified domains only
@@ -41,7 +50,7 @@ export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGener
                 body: {
                     domainId: activeDomain.id,
                     localPart,
-                    expiresAt: null, // Permanent by default
+                    expiresAt: ttlMs ? new Date(Date.now() + ttlMs).toISOString() : null,
                 },
             });
 
@@ -60,7 +69,7 @@ export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGener
         } finally {
             setLoading(false);
         }
-    }, [token, activeDomain, copy, onInboxCreated]);
+    }, [token, activeDomain, copy, onInboxCreated, ttlMs]);
 
     const handleCopy = useCallback(() => {
         if (generatedEmail) {
@@ -152,6 +161,27 @@ export function QuickGenerateCard({ domains, token, onInboxCreated }: QuickGener
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                                 </svg>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-text-secondary ml-1">Thời hạn:</label>
+                        <div className="flex gap-1.5 flex-wrap">
+                            {TTL_OPTIONS.map(opt => (
+                                <button
+                                    key={opt.label}
+                                    type="button"
+                                    onClick={() => setTtlMs(opt.value)}
+                                    className={cn(
+                                        "px-2.5 py-1.5 text-xs rounded-lg border transition-all",
+                                        ttlMs === opt.value
+                                            ? "bg-primary/20 border-primary/50 text-primary font-medium"
+                                            : "bg-black/20 border-white/10 text-text-secondary hover:border-white/20"
+                                    )}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
 

@@ -325,6 +325,29 @@ export function InboxManager() {
         toast.success(`Đã sao chép ${selectedInboxIds.size} địa chỉ`);
     };
 
+
+    // Extend inbox TTL by 10 minutes
+    const handleExtendInbox = async (inboxId: string) => {
+        if (!token) return;
+        setBusy(true);
+        try {
+            const inbox = inboxes.find(i => i.id === inboxId);
+            if (!inbox) return;
+            const currentExpiresAt = inbox.expiresAt ? new Date(inbox.expiresAt).getTime() : Date.now();
+            const newExpiresAt = new Date(currentExpiresAt + 10 * 60 * 1000).toISOString();
+            await api(`/inboxes/${inboxId}`, { method: "PATCH", body: JSON.stringify({ expiresAt: newExpiresAt }), token });
+            // Update local state
+            setInboxes(prev => prev.map(i => i.id === inboxId ? { ...i, expiresAt: newExpiresAt } : i));
+            if (activeInbox?.id === inboxId) {
+                setActiveInbox(prev => prev ? { ...prev, expiresAt: newExpiresAt } : null);
+            }
+            toast.success("Đã gia hạn thêm 10 phút!");
+        } catch {
+            toast.error("Lỗi gia hạn inbox");
+        } finally {
+            setBusy(false);
+        }
+    };
     // Pull-to-refresh handler for mobile
     const handlePullRefresh = useCallback(async () => {
         setIsRefreshing(true);
@@ -579,6 +602,7 @@ export function InboxManager() {
                                         }}
                                         onDeleteInbox={handleDeleteInbox}
                                         onTransferInbox={(inbox) => setInboxToTransfer(inbox)}
+                                        onExtendInbox={(inbox) => handleExtendInbox(inbox.id)}
                                         onShareModeChange={handleShareModeChange}
                                         onVisibilityRules={(inbox) => setInboxForVisibilityRules(inbox)}
                                         isLoading={busy && inboxes.length === 0}
@@ -866,6 +890,7 @@ export function InboxManager() {
                                                         onDelete={() => handleDeleteInbox(inbox)}
                                                         onViewMessages={() => handleViewMessages(inbox)}
                                                         onTransfer={() => setInboxToTransfer(inbox)}
+                                                        onExtend={() => handleExtendInbox(inbox.id)}
                                                         onShareModeChange={(shareMode) => handleShareModeChange(inbox.id, shareMode)}
                                                         onVisibilityRules={() => setInboxForVisibilityRules(inbox)}
                                                     />
@@ -1156,6 +1181,9 @@ export function InboxManager() {
                 }}
                 onTransfer={() => {
                     if (inboxForActionSheet) setInboxToTransfer(inboxForActionSheet);
+                }}
+                onExtend={() => {
+                    if (inboxForActionSheet) handleExtendInbox(inboxForActionSheet.id);
                 }}
                 onDelete={() => {
                     if (inboxForActionSheet) handleDeleteInbox(inboxForActionSheet);

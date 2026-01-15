@@ -14,6 +14,7 @@ interface InboxCardProps {
     onDelete: () => void;
     onViewMessages: () => void;
     onTransfer?: () => void;
+    onExtend?: () => void;
     onShareModeChange?: (shareMode: 'PUBLIC' | 'PRIVATE') => void;
     onVisibilityRules?: () => void;
 }
@@ -28,6 +29,7 @@ export function InboxCard({
     onDelete,
     onViewMessages,
     onTransfer,
+    onExtend,
     onShareModeChange,
     onVisibilityRules
 }: InboxCardProps) {
@@ -174,6 +176,18 @@ export function InboxCard({
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                        </button>
+                    )}
+                    {onExtend && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onExtend(); }}
+                            className="p-1.5 rounded-lg text-text-secondary hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors"
+                            title="Gia hạn +10 phút"
+                            aria-label="Gia hạn inbox"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </button>
                     )}

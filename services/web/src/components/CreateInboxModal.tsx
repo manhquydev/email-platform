@@ -25,10 +25,22 @@ const generateRandomName = () => {
     return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${nouns[Math.floor(Math.random() * nouns.length)]}-${rand}`;
 };
 
+
+// TTL options in milliseconds (null = permanent)
+const TTL_OPTIONS = [
+    { label: '5 phút', value: 5 * 60 * 1000 },
+    { label: '10 phút', value: 10 * 60 * 1000 },
+    { label: '30 phút', value: 30 * 60 * 1000 },
+    { label: '1 giờ', value: 60 * 60 * 1000 },
+    { label: '24 giờ', value: 24 * 60 * 60 * 1000 },
+    { label: 'Vĩnh viễn', value: null },
+] as const;
+
 export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: CreateInboxModalProps) {
     const [loading, setLoading] = useState(false);
     const [localPart, setLocalPart] = useState(generateRandomName());
     const [selectedDomainId, setSelectedDomainId] = useState<string>(domains.find(d => d.isPublic)?.id || domains[0]?.id || '');
+    const [ttlMs, setTtlMs] = useState<number | null>(10 * 60 * 1000); // Default 10 minutes
 
     const { modalRef, modalProps } = useModalAccessibility({
         isOpen: true,
@@ -49,7 +61,11 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
             const res = await api<{ inbox: Inbox }>('/inboxes', {
                 method: 'POST',
                 token,
-                body: { domainId: activeDomain.id, localPart: localPart.trim() }
+                body: {
+                    domainId: activeDomain.id,
+                    localPart: localPart.trim(),
+                    expiresAt: ttlMs ? new Date(Date.now() + ttlMs).toISOString() : null
+                }
             });
 
             // Manually attach domain since API might not return included relation
@@ -175,6 +191,35 @@ export function CreateInboxModal({ domains, token, onClose, onInboxCreated }: Cr
                                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-tertiary">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* TTL Select */}
+                                        <div className="space-y-2">
+                                            <label htmlFor="ttl" className="text-sm font-medium text-text-secondary ml-1">Thời hạn</label>
+                                            <div className="relative">
+                                                <select
+                                                    id="ttl"
+                                                    value={ttlMs === null ? 'null' : String(ttlMs)}
+                                                    onChange={(e) => setTtlMs(e.target.value === 'null' ? null : Number(e.target.value))}
+                                                    className={cn(
+                                                        "w-full h-[46px] px-4 bg-nebula-elevated border border-nebula-border rounded-xl",
+                                                        "text-nebula-text outline-none transition-all duration-200",
+                                                        "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
+                                                        "appearance-none cursor-pointer"
+                                                    )}
+                                                >
+                                                    {TTL_OPTIONS.map(opt => (
+                                                        <option key={opt.label} value={opt.value === null ? 'null' : String(opt.value)} className="bg-nebula-surface text-nebula-text">
+                                                            {opt.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-tertiary">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 </div>
                                             </div>

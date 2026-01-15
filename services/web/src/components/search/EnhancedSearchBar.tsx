@@ -86,6 +86,18 @@ export function EnhancedSearchBar({
             } else {
                 next.add(filterId);
             }
+
+            // Auto-execute search with updated filters
+            const filterQuery = buildFilterQuery(next, DEFAULT_FILTERS);
+            const combinedQuery = [query, filterQuery].filter(Boolean).join(' ').trim();
+
+            if (combinedQuery) {
+                onSearch(combinedQuery);
+            } else if (next.size === 0 && !query) {
+                // All filters cleared and no query - trigger clear
+                onClear?.();
+            }
+
             return next;
         });
     };

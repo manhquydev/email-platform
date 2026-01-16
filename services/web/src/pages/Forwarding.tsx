@@ -5,25 +5,9 @@ import { getFriendlyErrorMessage } from "../utils/errorMapping";
 import toast from "react-hot-toast";
 
 import { ConfirmationModal } from "../components/ConfirmationModal";
-
-interface ForwardingRule {
-    id: string;
-    name: string;
-    inboxId: string | null;
-    conditions: {
-        senderDomains?: string[];
-        containsOTP?: boolean;
-        subjectContains?: string;
-    };
-    forwardTo: string;
-    isActive: boolean;
-    forwardCount: number;
-    lastForwardAt: string | null;
-    inbox?: {
-        localPart: string;
-        domain: { name: string };
-    };
-}
+import { DestinationSelector } from "../components/forwarding/DestinationSelector";
+import { ForwardingConditionBuilder } from "../components/forwarding/ForwardingConditionBuilder";
+import type { ForwardingRule, ForwardCondition, ForwardDestinationType } from "../types";
 
 export function Forwarding() {
     const { token } = useAuth();
@@ -37,17 +21,34 @@ export function Forwarding() {
     const [verifyStep, setVerifyStep] = useState<"idle" | "pending" | "code">("idle");
     const [verifyBusy, setVerifyBusy] = useState(false);
 
-    // Rule form
+    // Rule form - enhanced with multi-destination support
     const [showRuleModal, setShowRuleModal] = useState(false);
     const [editingRule, setEditingRule] = useState<ForwardingRule | null>(null);
-    const [ruleForm, setRuleForm] = useState({
+    const [ruleForm, setRuleForm] = useState<{
+        name: string;
+        destinationType: ForwardDestinationType;
+        forwardTo: string;
+        telegramChatId: string;
+        discordWebhookUrl: string;
+        webhookUrl: string;
+        webhookSecret: string;
+        conditions: ForwardCondition[];
+        matchType: 'ALL' | 'ANY';
+        priority: number;
+    }>({
         name: "",
+        destinationType: "EMAIL",
         forwardTo: "",
-        senderDomains: "",
-        containsOTP: false,
-        subjectContains: "",
+        telegramChatId: "",
+        discordWebhookUrl: "",
+        webhookUrl: "",
+        webhookSecret: "",
+        conditions: [],
+        matchType: "ALL",
+        priority: 50,
     });
     const [ruleBusy, setRuleBusy] = useState(false);
+    const [telegramLinked, setTelegramLinked] = useState(false);
 
     const [emailToDelete, setEmailToDelete] = useState<string | null>(null);
     const [ruleToDelete, setRuleToDelete] = useState<ForwardingRule | null>(null);
@@ -57,12 +58,14 @@ export function Forwarding() {
         if (!token) return;
         setLoading(true);
         try {
-            const [emailsRes, rulesRes] = await Promise.all([
+            const [emailsRes, rulesRes, telegramRes] = await Promise.all([
                 api<{ emails: string[] }>("/forwarding/emails", { token }),
                 api<{ rules: ForwardingRule[] }>("/forwarding/rules", { token }),
+                api<{ linked: boolean }>("/telegram/status", { token }).catch(() => ({ linked: false })),
             ]);
             setVerifiedEmails(emailsRes.emails);
             setRules(rulesRes.rules);
+            setTelegramLinked(telegramRes.linked);
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
@@ -136,57 +139,86 @@ export function Forwarding() {
         }
     };
 
-    // Rules Management
+    // Rules Management - Enhanced for multi-destination
     const openRuleModal = (rule?: ForwardingRule) => {
         if (rule) {
             setEditingRule(rule);
             setRuleForm({
                 name: rule.name,
-                forwardTo: rule.forwardTo,
-                senderDomains: rule.conditions.senderDomains?.join(", ") || "",
-                containsOTP: rule.conditions.containsOTP || false,
-                subjectContains: rule.conditions.subjectContains || "",
+                destinationType: rule.destinationType || "EMAIL",
+                forwardTo: rule.forwardTo || "",
+                telegramChatId: rule.telegramChatId || "",
+                discordWebhookUrl: rule.discordWebhookUrl || "",
+                webhookUrl: rule.webhookUrl || "",
+                webhookSecret: rule.webhookSecret || "",
+                conditions: Array.isArray(rule.conditions) ? rule.conditions : [],
+                matchType: rule.matchType || "ALL",
+                priority: rule.priority || 50,
             });
         } else {
             setEditingRule(null);
             setRuleForm({
                 name: "",
+                destinationType: "EMAIL",
                 forwardTo: verifiedEmails[0] || "",
-                senderDomains: "",
-                containsOTP: false,
-                subjectContains: "",
+                telegramChatId: "",
+                discordWebhookUrl: "",
+                webhookUrl: "",
+                webhookSecret: "",
+                conditions: [],
+                matchType: "ALL",
+                priority: 50,
             });
         }
         setShowRuleModal(true);
     };
 
     const saveRule = async () => {
-        if (!ruleForm.name || !ruleForm.forwardTo) {
-            toast.error("Vui lòng nhập tên quy tắc và email đích");
+        if (!ruleForm.name) {
+            toast.error("Vui lòng nhập tên quy tắc");
             return;
         }
+        // Validate destination based on type
+        if (ruleForm.destinationType === "EMAIL" && !ruleForm.forwardTo) {
+            toast.error("Vui lòng chọn email đích");
+            return;
+        }
+        if (ruleForm.destinationType === "DISCORD" && !ruleForm.discordWebhookUrl) {
+            toast.error("Vui lòng nhập Discord webhook URL");
+            return;
+        }
+        if (ruleForm.destinationType === "WEBHOOK" && !ruleForm.webhookUrl) {
+            toast.error("Vui lòng nhập webhook URL");
+            return;
+        }
+
         setRuleBusy(true);
         try {
-            const conditions = {
-                senderDomains: ruleForm.senderDomains
-                    ? ruleForm.senderDomains.split(",").map(s => s.trim()).filter(Boolean)
-                    : undefined,
-                containsOTP: ruleForm.containsOTP || undefined,
-                subjectContains: ruleForm.subjectContains || undefined,
+            const payload = {
+                name: ruleForm.name,
+                destinationType: ruleForm.destinationType,
+                forwardTo: ruleForm.destinationType === "EMAIL" ? ruleForm.forwardTo : null,
+                telegramChatId: ruleForm.destinationType === "TELEGRAM" ? ruleForm.telegramChatId || "linked" : null,
+                discordWebhookUrl: ruleForm.destinationType === "DISCORD" ? ruleForm.discordWebhookUrl : null,
+                webhookUrl: ruleForm.destinationType === "WEBHOOK" ? ruleForm.webhookUrl : null,
+                webhookSecret: ruleForm.destinationType === "WEBHOOK" ? ruleForm.webhookSecret : null,
+                conditions: ruleForm.conditions,
+                matchType: ruleForm.matchType,
+                priority: ruleForm.priority,
             };
 
             if (editingRule) {
                 await api(`/forwarding/rules/${editingRule.id}`, {
                     method: "PATCH",
                     token,
-                    body: { name: ruleForm.name, forwardTo: ruleForm.forwardTo, conditions }
+                    body: payload
                 });
                 toast.success("Đã cập nhật quy tắc");
             } else {
                 await api("/forwarding/rules", {
                     method: "POST",
                     token,
-                    body: { name: ruleForm.name, forwardTo: ruleForm.forwardTo, conditions }
+                    body: payload
                 });
                 toast.success("Đã tạo quy tắc mới");
             }
@@ -432,24 +464,28 @@ export function Forwarding() {
                                                             )}
                                                         </div>
                                                         <p className="text-sm mb-2" style={{ color: 'var(--nebula-text-muted)' }}>
-                                                            → {rule.forwardTo}
+                                                            {rule.destinationType === 'EMAIL' && `📧 → ${rule.forwardTo}`}
+                                                            {rule.destinationType === 'TELEGRAM' && '✈️ → Telegram'}
+                                                            {rule.destinationType === 'DISCORD' && '💬 → Discord'}
+                                                            {rule.destinationType === 'WEBHOOK' && `🔗 → ${rule.webhookUrl?.substring(0, 30)}...`}
                                                         </p>
 
                                                         {/* Conditions */}
                                                         <div className="flex flex-wrap gap-1.5 mb-2">
-                                                            {rule.conditions.senderDomains && rule.conditions.senderDomains.length > 0 && (
-                                                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--nebula-glow-cyan)', color: 'var(--nebula-cyan)' }}>
-                                                                    🌐 {rule.conditions.senderDomains.join(", ")}
-                                                                </span>
-                                                            )}
-                                                            {rule.conditions.containsOTP && (
-                                                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--nebula-glow-violet)', color: 'var(--nebula-violet)' }}>
-                                                                    🔢 Chứa OTP
-                                                                </span>
-                                                            )}
-                                                            {rule.conditions.subjectContains && (
-                                                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--nebula-glow-pink)', color: 'var(--nebula-pink)' }}>
-                                                                    📝 "{rule.conditions.subjectContains}"
+                                                            {Array.isArray(rule.conditions) && rule.conditions.length > 0 ? (
+                                                                <>
+                                                                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--nebula-glow-cyan)', color: 'var(--nebula-cyan)' }}>
+                                                                        {rule.conditions.length} điều kiện ({rule.matchType === 'ALL' ? 'AND' : 'OR'})
+                                                                    </span>
+                                                                    {rule.conditions.some(c => c.operator === 'CONTAINS_OTP') && (
+                                                                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--nebula-glow-violet)', color: 'var(--nebula-violet)' }}>
+                                                                            🔢 OTP
+                                                                        </span>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--nebula-elevated)', color: 'var(--nebula-text-muted)' }}>
+                                                                    Tất cả email
                                                                 </span>
                                                             )}
                                                         </div>
@@ -521,10 +557,10 @@ export function Forwarding() {
                     </div>
                 </div>
 
-                {/* Rule Modal */}
+                {/* Rule Modal - Enhanced with multi-destination */}
                 {showRuleModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-nebula-fade-in">
-                        <div className="glass-card-elevated w-full max-w-md animate-nebula-scale-in">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-nebula-fade-in overflow-y-auto">
+                        <div className="glass-card-elevated w-full max-w-2xl animate-nebula-scale-in my-4">
                             <div className="glass-card-header">
                                 <h3 className="font-semibold" style={{ color: 'var(--nebula-text)' }}>
                                     {editingRule ? "Sửa quy tắc" : "Tạo quy tắc mới"}
@@ -536,68 +572,78 @@ export function Forwarding() {
                                 </button>
                             </div>
 
-                            <div className="glass-card-body space-y-4">
+                            <div className="glass-card-body space-y-6 max-h-[70vh] overflow-y-auto">
+                                {/* Rule Name */}
                                 <div>
                                     <label className="label-nebula">Tên quy tắc *</label>
                                     <input
                                         type="text"
                                         value={ruleForm.name}
                                         onChange={(e) => setRuleForm({ ...ruleForm, name: e.target.value })}
-                                        placeholder="VD: Chuyển tiếp OTP"
+                                        placeholder="VD: Chuyển tiếp OTP từ Google"
                                         className="input-nebula"
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="label-nebula">Email đích *</label>
-                                    <select
-                                        value={ruleForm.forwardTo}
-                                        onChange={(e) => setRuleForm({ ...ruleForm, forwardTo: e.target.value })}
-                                        className="input-nebula"
-                                    >
-                                        {verifiedEmails.map((email) => (
-                                            <option key={email} value={email}>{email}</option>
-                                        ))}
-                                    </select>
+                                {/* Destination Selector */}
+                                <div className="pt-4" style={{ borderTop: '1px solid var(--nebula-border)' }}>
+                                    <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--nebula-text)' }}>
+                                        Đích chuyển tiếp
+                                    </h4>
+                                    <DestinationSelector
+                                        value={{
+                                            type: ruleForm.destinationType,
+                                            forwardTo: ruleForm.forwardTo,
+                                            telegramChatId: ruleForm.telegramChatId,
+                                            discordWebhookUrl: ruleForm.discordWebhookUrl,
+                                            webhookUrl: ruleForm.webhookUrl,
+                                            webhookSecret: ruleForm.webhookSecret,
+                                        }}
+                                        onChange={(config) => setRuleForm({
+                                            ...ruleForm,
+                                            destinationType: config.type,
+                                            forwardTo: config.forwardTo || "",
+                                            telegramChatId: config.telegramChatId || "",
+                                            discordWebhookUrl: config.discordWebhookUrl || "",
+                                            webhookUrl: config.webhookUrl || "",
+                                            webhookSecret: config.webhookSecret || "",
+                                        })}
+                                        verifiedEmails={verifiedEmails}
+                                        telegramLinked={telegramLinked}
+                                    />
                                 </div>
 
+                                {/* Conditions Builder */}
                                 <div className="pt-4" style={{ borderTop: '1px solid var(--nebula-border)' }}>
-                                    <p className="text-sm font-medium mb-3" style={{ color: 'var(--nebula-text)' }}>Điều kiện (tùy chọn)</p>
+                                    <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--nebula-text)' }}>
+                                        Điều kiện lọc (tùy chọn)
+                                    </h4>
+                                    <ForwardingConditionBuilder
+                                        conditions={ruleForm.conditions}
+                                        matchType={ruleForm.matchType}
+                                        onChange={(conditions) => setRuleForm({ ...ruleForm, conditions })}
+                                        onMatchTypeChange={(matchType) => setRuleForm({ ...ruleForm, matchType })}
+                                    />
+                                </div>
 
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="label-nebula">Domain người gửi</label>
-                                            <input
-                                                type="text"
-                                                value={ruleForm.senderDomains}
-                                                onChange={(e) => setRuleForm({ ...ruleForm, senderDomains: e.target.value })}
-                                                placeholder="VD: google.com, facebook.com"
-                                                className="input-nebula text-sm"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="label-nebula">Tiêu đề chứa</label>
-                                            <input
-                                                type="text"
-                                                value={ruleForm.subjectContains}
-                                                onChange={(e) => setRuleForm({ ...ruleForm, subjectContains: e.target.value })}
-                                                placeholder="VD: verification, OTP"
-                                                className="input-nebula text-sm"
-                                            />
-                                        </div>
-
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={ruleForm.containsOTP}
-                                                onChange={(e) => setRuleForm({ ...ruleForm, containsOTP: e.target.checked })}
-                                                className="rounded"
-                                                style={{ accentColor: 'var(--nebula-violet)' }}
-                                            />
-                                            <span className="text-sm" style={{ color: 'var(--nebula-text)' }}>Chỉ chuyển tiếp email chứa mã OTP</span>
-                                        </label>
+                                {/* Priority */}
+                                <div className="pt-4" style={{ borderTop: '1px solid var(--nebula-border)' }}>
+                                    <div className="flex items-center justify-between">
+                                        <label className="label-nebula">Độ ưu tiên</label>
+                                        <span className="text-sm font-mono" style={{ color: 'var(--nebula-violet)' }}>{ruleForm.priority}</span>
                                     </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={ruleForm.priority}
+                                        onChange={(e) => setRuleForm({ ...ruleForm, priority: parseInt(e.target.value) })}
+                                        className="w-full"
+                                        style={{ accentColor: 'var(--nebula-violet)' }}
+                                    />
+                                    <p className="text-xs mt-1" style={{ color: 'var(--nebula-text-muted)' }}>
+                                        Quy tắc có độ ưu tiên cao sẽ được kiểm tra trước
+                                    </p>
                                 </div>
                             </div>
 

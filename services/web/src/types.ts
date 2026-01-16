@@ -185,18 +185,48 @@ export interface Notification {
 // FORWARDING RULES
 // ==================
 
+export type ForwardDestinationType = 'EMAIL' | 'TELEGRAM' | 'DISCORD' | 'WEBHOOK';
+export type ForwardConditionField = 'FROM' | 'TO' | 'SUBJECT' | 'BODY' | 'HEADER' | 'HAS_ATTACHMENT';
+export type ForwardConditionOperator = 'EQUALS' | 'CONTAINS' | 'NOT_CONTAINS' | 'STARTS_WITH' | 'ENDS_WITH' | 'REGEX' | 'CONTAINS_OTP' | 'EXISTS';
+
+export interface ForwardCondition {
+    id?: string;
+    field: ForwardConditionField;
+    operator: ForwardConditionOperator;
+    value: string | null;
+    headerName?: string;
+    caseSensitive?: boolean;
+}
+
 export interface ForwardingRule {
     id: string;
     userId: string;
-    inboxId?: string;
+    inboxId?: string | null;
     name: string;
-    conditions: Record<string, unknown>;
-    forwardTo: string;
+    // Destination
+    destinationType: ForwardDestinationType;
+    forwardTo?: string | null;
+    telegramChatId?: string | null;
+    discordWebhookUrl?: string | null;
+    webhookUrl?: string | null;
+    webhookSecret?: string | null;
+    // Conditions
+    conditions: ForwardCondition[];
+    matchType: 'ALL' | 'ANY';
+    priority: number;
+    // Status
     isActive: boolean;
     forwardCount: number;
-    lastForwardAt?: string;
+    lastForwardAt?: string | null;
     createdAt: string;
     updatedAt: string;
+    // Relations
+    inbox?: {
+        id: string;
+        localPart: string;
+        domain: { name: string };
+    };
+    _count?: { logs: number };
 }
 
 // ==================

@@ -16,7 +16,7 @@ import { Button } from "../components/ui/Button";
 import { EmailStream } from "../components/EmailStream";
 import { cn } from "../utils/cn";
 import { useRealtimeSubscription } from "../hooks/useRealtimeContext";
-import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
+import type { Domain, Inbox, Message, PaginatedResponse, Team } from "../types";
 import type { RealtimeEvent } from "../types/realtime";
 import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
 

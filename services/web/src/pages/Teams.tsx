@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api";
-import type { Team, TeamMember, TeamRole } from "../types";
+import type { Team, TeamRole, Inbox } from "../types";
 import toast from "react-hot-toast";
 
 export function Teams() {
-    const { token, user } = useAuth();
+    const { token, user: _user } = useAuth();
     const [teams, setTeams] = useState<Team[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);

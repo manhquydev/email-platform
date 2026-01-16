@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../utils/cn";
 import { ThemeToggle } from "./ThemeToggle";
-import { QuickGenerateCard } from "./QuickGenerateCard";
 import { CountdownTimer } from "./CountdownTimer";
 import type { Domain, Inbox, Team } from "../types";
 
@@ -33,10 +32,10 @@ export function InboxSelector({
     onSelectDomain,
     onSelectTeam,
     onSelectInbox,
-    onCreateInbox,
-    onDeleteInbox,
+    onCreateInbox: _onCreateInbox,
+    onDeleteInbox: _onDeleteInbox,
     user,
-    token
+    token: _token
 }: InboxSelectorProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);

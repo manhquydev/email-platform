@@ -375,6 +375,12 @@ export async function forwardMessageIfMatched(
         const conditions = rule.conditions as ForwardConditions;
 
         if (matchesConditions(message, conditions)) {
+            // Skip if no forward destination (legacy rules with EMAIL type need forwardTo)
+            if (!rule.forwardTo) {
+                console.log(`[Forwarder] Rule ${rule.id} has no forwardTo, skipping legacy forward`);
+                continue;
+            }
+
             try {
                 // Extract OTP if present
                 const otpResult = extractOTP(message.textBody || "");

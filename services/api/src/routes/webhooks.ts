@@ -1,7 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
-import { generateWebhookSecret, triggerWebhook } from '../services/webhookService';
+import { generateWebhookSecret, triggerWebhook, getAvailableEvents, WEBHOOK_EVENTS, signPayload } from '../services/webhookService';
+import crypto from 'crypto';
 
 // SSRF Protection: Block internal network URLs
 const isInternalUrl = (urlString: string): boolean => {
@@ -42,6 +43,37 @@ const isInternalUrl = (urlString: string): boolean => {
 };
 
 export async function webhookRoutes(app: FastifyInstance) {
+    // List available webhook events
+    app.get('/webhooks/events', async () => {
+        return {
+            events: getAvailableEvents(),
+        };
+    });
+
+    // Verify webhook signature (utility endpoint)
+    app.post('/webhooks/verify-signature', async (request, reply) => {
+        const bodySchema = z.object({
+            payload: z.string(),
+            signature: z.string(),
+            secret: z.string(),
+        });
+
+        const parsed = bodySchema.safeParse(request.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'Invalid request' });
+        }
+
+        const { payload, signature, secret } = parsed.data;
+        const expectedSignature = `sha256=${signPayload(payload, secret)}`;
+
+        const isValid = crypto.timingSafeEqual(
+            Buffer.from(signature),
+            Buffer.from(expectedSignature)
+        );
+
+        return { valid: isValid };
+    });
+
     // List all webhooks for the user
     app.get('/webhooks', { preHandler: app.authenticate }, async (request) => {
         const user = request.user as { userId: string };

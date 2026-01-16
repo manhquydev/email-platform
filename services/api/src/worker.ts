@@ -16,9 +16,11 @@ import { syncMessageToMaildir } from './services/maildirSync';
 import { processFiltersForMessage } from './services/emailFilters';
 import { notifyNewEmail, notifyInboxTelegramSubscribers } from './services/telegram';
 import { forwardMessageIfMatched } from './services/emailForwarder';
-import { triggerWebhook } from './services/webhookService';
+import { processForwardingRules } from './services/forwarding';
+import { triggerWebhook, triggerEmailReceivedWebhook } from './services/webhookService';
 import { anonymizeIp } from './utils/ip-anonymizer';
 import { sanitizeHtml, sanitizeHeaders } from './utils/email-sanitizer';
+import { extractOTP } from './utils/otpExtractor';
 import { evaluateMessage as evaluateVisibility, type EmailData } from './services/visibility-engine';
 import { realtimeEvents } from './services/realtime-events';
 import { pushNotification } from './services/push-notification';
@@ -247,6 +249,12 @@ export const setupEmailWorker = (logger: Logger) => {
                     throw new Error(`Email rejected as spam (score: ${spamResult.score})`);
                 }
 
+                // Extract OTP from email content
+                const otpResult = extractOTP(textBody || htmlBody || '');
+                if (otpResult) {
+                    logger.info({ otp: otpResult.code, confidence: otpResult.confidence }, 'OTP extracted from email');
+                }
+
                 const message = await prisma.message.create({
                     data: {
                         inboxId: inbox.id,
@@ -264,6 +272,10 @@ export const setupEmailWorker = (logger: Logger) => {
                         dmarcResult: spamResult.dmarc,
                         size: rawContent.length,
                         sourceIp: anonymizeIp(sourceIp),
+                        // OTP extraction data
+                        extractedOtp: otpResult?.code || null,
+                        otpConfidence: otpResult?.confidence || null,
+                        otpExtractedAt: otpResult ? new Date() : null,
                     },
                 });
 
@@ -314,6 +326,8 @@ export const setupEmailWorker = (logger: Logger) => {
                                     fromAddress: fromAddress ?? null,
                                     subject: message.subject,
                                     textBody,
+                                    extractedOtp: message.extractedOtp,
+                                    otpConfidence: message.otpConfidence,
                                 });
                                 logger.info({ messageId: message.id, visibility: visibilityResult.action }, 'sent inbox Telegram notification');
                             } else {
@@ -323,30 +337,23 @@ export const setupEmailWorker = (logger: Logger) => {
                             logger.warn({ err: inboxTelegramErr }, 'failed to send inbox Telegram notifications');
                         }
 
-                        // Release 3: Email Forwarding
+                        // Release 3: Email Forwarding (Legacy)
                         try {
                             await forwardMessageIfMatched(messageWithRelations as any);
                         } catch (forwardErr) {
-                            logger.warn({ err: forwardErr }, 'failed to forward email');
+                            logger.warn({ err: forwardErr }, 'failed to forward email (legacy)');
                         }
 
-                        // Release 4: Webhooks
+                        // Release 3+: Enhanced Forwarding Rules (multi-destination)
                         try {
-                            if (messageWithRelations.inbox.ownerId) {
-                                await triggerWebhook(messageWithRelations.inbox.ownerId, 'email.received', {
-                                    id: message.id,
-                                    inboxId: message.inboxId,
-                                    from: fromAddress,
-                                    to: toAddress,
-                                    subject: message.subject,
-                                    receivedAt: message.receivedAt,
-                                    size: message.size,
-                                    spf: spamResult.spf,
-                                    dkim: spamResult.dkim,
-                                    dmarc: spamResult.dmarc,
-                                    spamScore: spamResult.score,
-                                });
-                            }
+                            await processForwardingRules(messageWithRelations as any);
+                        } catch (forwardRulesErr) {
+                            logger.warn({ err: forwardRulesErr }, 'failed to process forwarding rules');
+                        }
+
+                        // Release 4: Webhooks (enhanced with OTP)
+                        try {
+                            await triggerEmailReceivedWebhook(messageWithRelations as any);
                         } catch (webhookErr) {
                             logger.warn({ err: webhookErr }, 'failed to trigger webhook');
                         }

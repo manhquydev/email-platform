@@ -10,6 +10,7 @@ import { recordAudit } from "../utils/audit";
 import Mailbuild from "mailbuild";
 import { realtimeEvents } from "../services/realtime-events";
 import { TeamService } from "../services/team.service";
+import { outboundService } from "../services/outbound";
 
 export const messageRoutes = async (app: FastifyInstance) => {
   app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
@@ -532,5 +533,375 @@ export const messageRoutes = async (app: FastifyInstance) => {
     reply.header("Content-Disposition", `attachment; filename="${filename}"`);
 
     return reply.send(emlContent);
+  });
+
+  // Reply to a message
+  app.post("/messages/:id/reply", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const bodySchema = z.object({
+      text: z.string().optional(),
+      html: z.string().optional(),
+      subject: z.string().optional(),
+      replyAll: z.boolean().optional().default(false),
+    });
+
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid message ID" });
+    }
+
+    const body = bodySchema.safeParse(request.body);
+    if (!body.success) {
+      return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+    }
+
+    if (!body.data.text && !body.data.html) {
+      return reply.status(400).send({ error: "Reply must have text or html content" });
+    }
+
+    const userId = (request.user as any).userId;
+
+    // Get original message
+    const originalMessage = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: {
+        inbox: { include: { domain: true } },
+        attachments: { where: { deletedAt: null } },
+      },
+    });
+
+    if (!originalMessage) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    // Check access to inbox
+    const hasAccess = await TeamService.canAccessInbox(userId, originalMessage.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    // Check if domain is verified and owned
+    const domain = originalMessage.inbox.domain;
+    if (domain.ownerId !== userId && !domain.isPublic) {
+      return reply.status(403).send({ error: "Cannot send from this domain" });
+    }
+
+    if (domain.status !== "VERIFIED") {
+      return reply.status(403).send({ error: "Domain not verified for sending" });
+    }
+
+    // Build reply addresses
+    const fromAddress = `${originalMessage.inbox.localPart}@${domain.name}`;
+    const toAddress = originalMessage.fromAddress;
+
+    if (!toAddress) {
+      return reply.status(400).send({ error: "Original message has no sender address to reply to" });
+    }
+
+    // Build subject (add Re: if not already present)
+    let replySubject = body.data.subject || originalMessage.subject || "";
+    if (!replySubject.toLowerCase().startsWith("re:")) {
+      replySubject = `Re: ${replySubject}`;
+    }
+
+    // Build threading headers
+    const inReplyTo = originalMessage.messageId;
+    const references = originalMessage.messageId;
+
+    // Credit check and deduction
+    const CREDIT_COST = 1;
+    const { CreditService } = await import("../services/credit.service");
+    const { CreditTransactionType } = await import("@prisma/client");
+
+    try {
+      await CreditService.deductCredits(
+        userId,
+        CREDIT_COST,
+        CreditTransactionType.USAGE,
+        `Reply to ${toAddress}`,
+        { originalMessageId: originalMessage.id, subject: replySubject }
+      );
+    } catch (error: any) {
+      if (error.message === "Insufficient credits") {
+        return reply.status(402).send({ error: "Insufficient credits. Please top up your account." });
+      }
+      throw error;
+    }
+
+    // Create outbound message record
+    const outboundMsg = await prisma.outboundMessage.create({
+      data: {
+        userId,
+        domainId: domain.id,
+        inboxId: originalMessage.inbox.id,
+        fromAddress,
+        toAddress,
+        subject: replySubject,
+        messageId: `tmp-${Date.now()}-${Math.random().toString(36).substring(2)}`,
+        status: "SENDING",
+        inReplyTo,
+        replyToMessageId: originalMessage.id,
+      },
+    });
+
+    // Send email
+    try {
+      const info = await outboundService.sendEmail(
+        fromAddress,
+        toAddress,
+        replySubject,
+        body.data.text,
+        body.data.html,
+        undefined, // No attachments for now
+        {
+          headers: {
+            "In-Reply-To": inReplyTo || "",
+            "References": references || "",
+          },
+        }
+      );
+
+      // Update record with real Message-ID and SENT status
+      await prisma.outboundMessage.update({
+        where: { id: outboundMsg.id },
+        data: {
+          messageId: info.messageId,
+          status: "SENT",
+          sentAt: new Date(),
+        },
+      });
+
+      await recordAudit(userId, "EMAIL_REPLY_SENT", {
+        msgId: info.messageId,
+        outboundMessageId: outboundMsg.id,
+        originalMessageId: originalMessage.id,
+        from: fromAddress,
+        to: toAddress,
+        cost: CREDIT_COST,
+      });
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+
+      return {
+        ok: true,
+        messageId: info.messageId,
+        outboundId: outboundMsg.id,
+        remainingCredits: (user?.credits || 0),
+      };
+    } catch (err: any) {
+      // Update record to FAILED
+      await prisma.outboundMessage.update({
+        where: { id: outboundMsg.id },
+        data: {
+          status: "FAILED",
+          bounceMessage: err.message,
+        },
+      }).catch(() => {});
+
+      // Refund credits
+      await CreditService.addCredits(
+        userId,
+        CREDIT_COST,
+        CreditTransactionType.REFUND,
+        `Refund for failed reply to ${toAddress}`,
+        { error: err.message, outboundId: outboundMsg.id }
+      );
+
+      request.log.error(err, "Failed to send reply");
+      return reply.status(500).send({ error: "Failed to send reply", details: err.message });
+    }
+  });
+
+  // Forward a message to another address
+  app.post("/messages/:id/forward", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const bodySchema = z.object({
+      to: z.string().email(),
+      text: z.string().optional(),
+      html: z.string().optional(),
+      includeAttachments: z.boolean().optional().default(false),
+    });
+
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid message ID" });
+    }
+
+    const body = bodySchema.safeParse(request.body);
+    if (!body.success) {
+      return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+    }
+
+    const userId = (request.user as any).userId;
+
+    // Get original message
+    const originalMessage = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: {
+        inbox: { include: { domain: true } },
+        attachments: { where: { deletedAt: null } },
+      },
+    });
+
+    if (!originalMessage) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    // Check access to inbox
+    const hasAccess = await TeamService.canAccessInbox(userId, originalMessage.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    // Check if domain is verified
+    const domain = originalMessage.inbox.domain;
+    if (domain.ownerId !== userId && !domain.isPublic) {
+      return reply.status(403).send({ error: "Cannot forward from this domain" });
+    }
+
+    if (domain.status !== "VERIFIED") {
+      return reply.status(403).send({ error: "Domain not verified for sending" });
+    }
+
+    const fromAddress = `${originalMessage.inbox.localPart}@${domain.name}`;
+    const toAddress = body.data.to;
+
+    // Build forward subject
+    let forwardSubject = originalMessage.subject || "";
+    if (!forwardSubject.toLowerCase().startsWith("fwd:")) {
+      forwardSubject = `Fwd: ${forwardSubject}`;
+    }
+
+    // Build forward body
+    const forwardHeader = `
+---------- Forwarded message ----------
+From: ${originalMessage.fromAddress || "unknown"}
+Date: ${originalMessage.receivedAt.toISOString()}
+Subject: ${originalMessage.subject || "(no subject)"}
+To: ${originalMessage.toAddress || "unknown"}
+`;
+
+    const textBody = body.data.text
+      ? `${body.data.text}\n\n${forwardHeader}\n${originalMessage.textBody || ""}`
+      : `${forwardHeader}\n${originalMessage.textBody || ""}`;
+
+    const htmlBody = body.data.html
+      ? `${body.data.html}<br><br><hr>${forwardHeader.replace(/\n/g, "<br>")}<br>${originalMessage.htmlBody || originalMessage.textBody || ""}`
+      : originalMessage.htmlBody
+        ? `<hr>${forwardHeader.replace(/\n/g, "<br>")}<br>${originalMessage.htmlBody}`
+        : undefined;
+
+    // Handle attachments if requested
+    let attachments: any[] = [];
+    if (body.data.includeAttachments && originalMessage.attachments.length > 0) {
+      for (const att of originalMessage.attachments) {
+        try {
+          const stream = await storageService.getReadStream(att.storageKey);
+          const chunks: Buffer[] = [];
+          for await (const chunk of stream as any) {
+            chunks.push(Buffer.from(chunk));
+          }
+          attachments.push({
+            filename: att.filename,
+            content: Buffer.concat(chunks),
+            contentType: att.mimeType || "application/octet-stream",
+          });
+        } catch (err) {
+          request.log.warn({ attachmentId: att.id, err }, "Failed to include attachment in forward");
+        }
+      }
+    }
+
+    // Credit check and deduction
+    const CREDIT_COST = 1;
+    const { CreditService } = await import("../services/credit.service");
+    const { CreditTransactionType } = await import("@prisma/client");
+
+    try {
+      await CreditService.deductCredits(
+        userId,
+        CREDIT_COST,
+        CreditTransactionType.USAGE,
+        `Forward to ${toAddress}`,
+        { originalMessageId: originalMessage.id, subject: forwardSubject }
+      );
+    } catch (error: any) {
+      if (error.message === "Insufficient credits") {
+        return reply.status(402).send({ error: "Insufficient credits. Please top up your account." });
+      }
+      throw error;
+    }
+
+    // Create outbound message record
+    const outboundMsg = await prisma.outboundMessage.create({
+      data: {
+        userId,
+        domainId: domain.id,
+        inboxId: originalMessage.inbox.id,
+        fromAddress,
+        toAddress,
+        subject: forwardSubject,
+        messageId: `tmp-${Date.now()}-${Math.random().toString(36).substring(2)}`,
+        status: "SENDING",
+        replyToMessageId: originalMessage.id,
+      },
+    });
+
+    // Send email
+    try {
+      const info = await outboundService.sendEmail(
+        fromAddress,
+        toAddress,
+        forwardSubject,
+        textBody,
+        htmlBody,
+        attachments.length > 0 ? attachments : undefined
+      );
+
+      await prisma.outboundMessage.update({
+        where: { id: outboundMsg.id },
+        data: {
+          messageId: info.messageId,
+          status: "SENT",
+          sentAt: new Date(),
+        },
+      });
+
+      await recordAudit(userId, "EMAIL_FORWARDED", {
+        msgId: info.messageId,
+        outboundMessageId: outboundMsg.id,
+        originalMessageId: originalMessage.id,
+        from: fromAddress,
+        to: toAddress,
+        cost: CREDIT_COST,
+        attachmentCount: attachments.length,
+      });
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+
+      return {
+        ok: true,
+        messageId: info.messageId,
+        outboundId: outboundMsg.id,
+        remainingCredits: (user?.credits || 0),
+      };
+    } catch (err: any) {
+      await prisma.outboundMessage.update({
+        where: { id: outboundMsg.id },
+        data: {
+          status: "FAILED",
+          bounceMessage: err.message,
+        },
+      }).catch(() => {});
+
+      await CreditService.addCredits(
+        userId,
+        CREDIT_COST,
+        CreditTransactionType.REFUND,
+        `Refund for failed forward to ${toAddress}`,
+        { error: err.message, outboundId: outboundMsg.id }
+      );
+
+      request.log.error(err, "Failed to forward message");
+      return reply.status(500).send({ error: "Failed to forward message", details: err.message });
+    }
   });
 }

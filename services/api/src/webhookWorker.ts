@@ -91,9 +91,11 @@ export const setupWebhookWorker = (logger: { info: any, error: any, warn: any })
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Ephemera-Signature': signature,
                         'X-Ephemera-Event': payload.event,
-                        'X-Ephemera-Idempotency-Key': payload.idempotencyKey,
+                        'X-Ephemera-Delivery': payload.idempotencyKey,
+                        'X-Ephemera-Signature': `sha256=${signature}`,
+                        'X-Ephemera-Timestamp': payload.timestamp,
+                        'User-Agent': 'Ephemera-Webhook/1.0',
                     },
                     body: payloadString,
                     signal: controller.signal,

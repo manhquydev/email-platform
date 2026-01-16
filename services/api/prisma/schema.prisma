@@ -191,6 +191,12 @@ model Message {
   isRead       Boolean        @default(false)
   isPinned     Boolean        @default(false)
   snoozedUntil DateTime?
+
+  // OTP extraction data
+  extractedOtp   String?
+  otpConfidence  String?   // high, medium, low
+  otpExtractedAt DateTime?
+
   abuseReports AbuseReport[]
   attachments  Attachment[]
   inbox        Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
@@ -200,6 +206,7 @@ model Message {
   @@index([sourceIp, receivedAt])
   @@index([deletedAt])
   @@index([isPinned])
+  @@index([extractedOtp])
 }
 
 model Attachment {
@@ -334,18 +341,60 @@ model ForwardingRule {
   userId        String
   inboxId       String?
   name          String    @default("Unnamed Rule")
-  conditions    Json      @default("{}")
-  forwardTo     String
+
+  // Destination configuration
+  destinationType   ForwardDestinationType @default(EMAIL)
+  forwardTo         String?                // For EMAIL
+  telegramChatId    String?                // For TELEGRAM
+  discordWebhookUrl String?                // For DISCORD
+  webhookUrl        String?                // For WEBHOOK
+  webhookSecret     String?                // For WEBHOOK signature
+
+  // Matching configuration
+  conditions    Json            @default("[]")
+  matchType     FilterMatchType @default(ALL)
+  priority      Int             @default(50)
+
+  // Status
   isActive      Boolean   @default(true)
   forwardCount  Int       @default(0)
   lastForwardAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  inbox         Inbox?    @relation(fields: [inboxId], references: [id], onDelete: Cascade)
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations
+  inbox         Inbox?          @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs          ForwardingLog[]
 
   @@index([userId, isActive])
   @@index([inboxId])
+  @@index([priority])
+}
+
+model ForwardingLog {
+  id              String   @id @default(uuid())
+  ruleId          String
+  messageId       String
+  status          String   // SUCCESS, FAILED
+  destination     String
+  destinationType String
+  duration        Int?
+  error           String?
+  createdAt       DateTime @default(now())
+
+  rule ForwardingRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([messageId])
+  @@index([createdAt])
+}
+
+enum ForwardDestinationType {
+  EMAIL
+  TELEGRAM
+  DISCORD
+  WEBHOOK
 }
 
 model ForwardVerification {
@@ -667,6 +716,10 @@ model OutboundMessage {
   metadata      Json?
   createdAt     DateTime       @default(now())
 
+  // Reply/Forward tracking
+  inReplyTo        String? // In-Reply-To header value
+  replyToMessageId String? // Reference to original Message.id
+
   user   User   @relation(fields: [userId], references: [id])
   domain Domain @relation(fields: [domainId], references: [id])
 
@@ -676,6 +729,7 @@ model OutboundMessage {
   @@index([espMessageId])
   @@index([toAddress])
   @@index([createdAt])
+  @@index([replyToMessageId])
 }
 
 // Prevents sending to invalid/complaining addresses

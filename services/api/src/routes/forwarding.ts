@@ -1,20 +1,45 @@
 /**
  * Email Forwarding Routes
  * Handles forwarding rules management and email verification
+ * Enhanced with multi-destination support (Email, Telegram, Discord, Webhook)
  */
 
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { prisma } from "../lib/prisma";
 import {
     sendForwardVerification,
     confirmForwardVerification,
     getVerifiedEmails,
     removeVerifiedEmail,
-    createForwardingRule,
-    getForwardingRules,
-    updateForwardingRule,
-    deleteForwardingRule,
 } from "../services/emailForwarder";
+import { getForwardingStats } from "../services/forwarding";
+
+// Schema for conditions
+const conditionSchema = z.object({
+    id: z.string().optional(),
+    field: z.enum(['FROM', 'TO', 'SUBJECT', 'BODY', 'HEADER', 'HAS_ATTACHMENT']),
+    operator: z.enum(['EQUALS', 'CONTAINS', 'NOT_CONTAINS', 'STARTS_WITH', 'ENDS_WITH', 'REGEX', 'CONTAINS_OTP', 'EXISTS']),
+    value: z.string().nullable(),
+    headerName: z.string().optional(),
+    caseSensitive: z.boolean().optional(),
+});
+
+// Schema for creating/updating rules
+const ruleBodySchema = z.object({
+    name: z.string().min(1).max(100),
+    inboxId: z.string().nullable().optional(),
+    destinationType: z.enum(['EMAIL', 'TELEGRAM', 'DISCORD', 'WEBHOOK']).default('EMAIL'),
+    forwardTo: z.string().email().nullable().optional(),
+    telegramChatId: z.string().nullable().optional(),
+    discordWebhookUrl: z.string().url().nullable().optional(),
+    webhookUrl: z.string().url().nullable().optional(),
+    webhookSecret: z.string().nullable().optional(),
+    conditions: z.array(conditionSchema).default([]),
+    matchType: z.enum(['ALL', 'ANY']).default('ALL'),
+    priority: z.number().min(0).max(100).default(50),
+    isActive: z.boolean().default(true),
+});
 
 export async function forwardingRoutes(app: FastifyInstance) {
     // Get verified forward emails
@@ -79,63 +104,98 @@ export async function forwardingRoutes(app: FastifyInstance) {
     // Get forwarding rules
     app.get("/forwarding/rules", { preHandler: app.authenticate }, async (request) => {
         const user = request.user as { userId: string };
-        const rules = await getForwardingRules(user.userId);
+        const rules = await prisma.forwardingRule.findMany({
+            where: { userId: user.userId },
+            orderBy: { priority: 'desc' },
+            include: {
+                inbox: {
+                    select: { id: true, localPart: true, domain: { select: { name: true } } }
+                },
+                _count: { select: { logs: true } }
+            }
+        });
         return { rules };
     });
 
-    // Create forwarding rule
+    // Create forwarding rule (enhanced)
     app.post("/forwarding/rules", { preHandler: app.authenticate }, async (request, reply) => {
         const user = request.user as { userId: string };
 
-        const bodySchema = z.object({
-            name: z.string().min(1).max(100),
-            inboxId: z.string().optional(),
-            conditions: z.object({
-                senderDomains: z.array(z.string()).optional(),
-                containsOTP: z.boolean().optional(),
-                subjectContains: z.string().optional(),
-            }).optional().default({}),
-            forwardTo: z.string().email(),
+        const parsed = ruleBodySchema.safeParse(request.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: "Invalid data", details: parsed.error.issues });
+        }
+
+        const data = parsed.data;
+
+        // Validate destination based on type
+        if (data.destinationType === 'EMAIL' && !data.forwardTo) {
+            return reply.status(400).send({ error: "Email destination required" });
+        }
+        if (data.destinationType === 'TELEGRAM' && !data.telegramChatId) {
+            return reply.status(400).send({ error: "Telegram chat ID required" });
+        }
+        if (data.destinationType === 'DISCORD' && !data.discordWebhookUrl) {
+            return reply.status(400).send({ error: "Discord webhook URL required" });
+        }
+        if (data.destinationType === 'WEBHOOK' && !data.webhookUrl) {
+            return reply.status(400).send({ error: "Webhook URL required" });
+        }
+
+        // Verify inbox ownership if specified
+        if (data.inboxId) {
+            const inbox = await prisma.inbox.findFirst({
+                where: { id: data.inboxId, ownerId: user.userId }
+            });
+            if (!inbox) {
+                return reply.status(400).send({ error: "Inbox not found or not owned" });
+            }
+        }
+
+        const rule = await prisma.forwardingRule.create({
+            data: {
+                userId: user.userId,
+                name: data.name,
+                inboxId: data.inboxId || null,
+                destinationType: data.destinationType,
+                forwardTo: data.forwardTo || null,
+                telegramChatId: data.telegramChatId || null,
+                discordWebhookUrl: data.discordWebhookUrl || null,
+                webhookUrl: data.webhookUrl || null,
+                webhookSecret: data.webhookSecret || null,
+                conditions: data.conditions,
+                matchType: data.matchType,
+                priority: data.priority,
+                isActive: data.isActive,
+            }
         });
 
-        const parsed = bodySchema.safeParse(request.body);
-        if (!parsed.success) {
-            return reply.status(400).send({ error: "Dữ liệu không hợp lệ", details: parsed.error.issues });
-        }
-
-        const result = await createForwardingRule(user.userId, parsed.data);
-        if (!result.success) {
-            return reply.status(400).send({ error: result.error });
-        }
-
-        return { success: true, ruleId: result.ruleId };
+        return { success: true, ruleId: rule.id };
     });
 
-    // Update forwarding rule
+    // Update forwarding rule (enhanced)
     app.patch("/forwarding/rules/:id", { preHandler: app.authenticate }, async (request, reply) => {
         const user = request.user as { userId: string };
         const { id } = request.params as { id: string };
 
-        const bodySchema = z.object({
-            name: z.string().min(1).max(100).optional(),
-            conditions: z.object({
-                senderDomains: z.array(z.string()).optional(),
-                containsOTP: z.boolean().optional(),
-                subjectContains: z.string().optional(),
-            }).optional(),
-            forwardTo: z.string().email().optional(),
-            isActive: z.boolean().optional(),
+        const updateSchema = ruleBodySchema.partial();
+        const parsed = updateSchema.safeParse(request.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: "Invalid data" });
+        }
+
+        const rule = await prisma.forwardingRule.findFirst({
+            where: { id, userId: user.userId }
         });
 
-        const parsed = bodySchema.safeParse(request.body);
-        if (!parsed.success) {
-            return reply.status(400).send({ error: "Dữ liệu không hợp lệ" });
+        if (!rule) {
+            return reply.status(404).send({ error: "Rule not found" });
         }
 
-        const result = await updateForwardingRule(user.userId, id, parsed.data);
-        if (!result.success) {
-            return reply.status(400).send({ error: result.error });
-        }
+        await prisma.forwardingRule.update({
+            where: { id },
+            data: parsed.data
+        });
 
         return { success: true };
     });
@@ -145,11 +205,78 @@ export async function forwardingRoutes(app: FastifyInstance) {
         const user = request.user as { userId: string };
         const { id } = request.params as { id: string };
 
-        const result = await deleteForwardingRule(user.userId, id);
-        if (!result.success) {
-            return reply.status(400).send({ error: result.error });
+        const rule = await prisma.forwardingRule.findFirst({
+            where: { id, userId: user.userId }
+        });
+
+        if (!rule) {
+            return reply.status(404).send({ error: "Rule not found" });
         }
 
+        await prisma.forwardingRule.delete({ where: { id } });
         return { success: true };
+    });
+
+    // Get forwarding logs for a rule
+    app.get("/forwarding/rules/:id/logs", { preHandler: app.authenticate }, async (request, reply) => {
+        const user = request.user as { userId: string };
+        const { id } = request.params as { id: string };
+
+        const rule = await prisma.forwardingRule.findFirst({
+            where: { id, userId: user.userId }
+        });
+
+        if (!rule) {
+            return reply.status(404).send({ error: "Rule not found" });
+        }
+
+        const logs = await prisma.forwardingLog.findMany({
+            where: { ruleId: id },
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+        });
+
+        return { logs };
+    });
+
+    // Get forwarding stats for user
+    app.get("/forwarding/stats", { preHandler: app.authenticate }, async (request) => {
+        const user = request.user as { userId: string };
+        return await getForwardingStats(user.userId);
+    });
+
+    // Test a forwarding rule
+    app.post("/forwarding/rules/:id/test", { preHandler: app.authenticate }, async (request, reply) => {
+        const user = request.user as { userId: string };
+        const { id } = request.params as { id: string };
+
+        const rule = await prisma.forwardingRule.findFirst({
+            where: { id, userId: user.userId }
+        });
+
+        if (!rule) {
+            return reply.status(404).send({ error: "Rule not found" });
+        }
+
+        // Create test message data (not persisted)
+        const testData = {
+            id: `test-${Date.now()}`,
+            fromAddress: "test@example.com",
+            toAddress: "you@domain.com",
+            subject: "Test Forwarding - OTP: 123456",
+            textBody: "This is a test message. Your verification code is 123456.",
+            receivedAt: new Date(),
+        };
+
+        return {
+            success: true,
+            message: "Test mode - rule configuration validated",
+            testData,
+            ruleConfig: {
+                destinationType: (rule as any).destinationType,
+                matchType: (rule as any).matchType,
+                conditionsCount: Array.isArray(rule.conditions) ? (rule.conditions as any[]).length : 0,
+            }
+        };
     });
 }

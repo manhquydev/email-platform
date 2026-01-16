@@ -82,6 +82,8 @@ export async function notifyInboxTelegramSubscribers(
         fromAddress: string | null;
         subject: string | null;
         textBody: string | null;
+        extractedOtp?: string | null;
+        otpConfidence?: string | null;
     }
 ): Promise<void> {
     const links = await prisma.inboxTelegramLink.findMany({
@@ -98,13 +100,32 @@ export async function notifyInboxTelegramSubscribers(
     const safeSubject = escapeHtml(message.subject || "(no subject)");
     const safePreview = escapeHtml((message.textBody || "").slice(0, PREVIEW_LENGTH));
 
-    const text = `📧 <b>New Email</b>
+    // Check for OTP - use pre-extracted or extract from content
+    const otp = message.extractedOtp || extractOTP(message.textBody || '')?.code;
+
+    let text = `📧 <b>New Email</b>
 
 <b>To:</b> ${inboxEmail}
 <b>From:</b> ${safeFrom}
-<b>Subject:</b> ${safeSubject}
+<b>Subject:</b> ${safeSubject}`;
+
+    // Add prominent OTP section if detected
+    if (otp) {
+        text += `
+
+🔢 <b>OTP Code:</b> <code>${otp}</code>`;
+    }
+
+    text += `
 
 <i>${safePreview}${(message.textBody?.length || 0) > PREVIEW_LENGTH ? "..." : ""}</i>`;
+
+    // Build inline keyboard with OTP copy button if available
+    const inlineKeyboard: any[][] = [];
+    if (otp) {
+        inlineKeyboard.push([{ text: `📋 Copy: ${otp}`, callback_data: `copy_otp:${otp}` }]);
+    }
+    inlineKeyboard.push([{ text: "View Email", url: viewUrl }]);
 
     // Process all notifications in parallel
     await Promise.allSettled(
@@ -116,7 +137,7 @@ export async function notifyInboxTelegramSubscribers(
                 success = await sendTelegramMessage(link.telegramChatId, text, {
                     parseMode: "HTML",
                     replyMarkup: {
-                        inline_keyboard: [[{ text: "View Email", url: viewUrl }]],
+                        inline_keyboard: inlineKeyboard,
                     },
                 });
                 if (!success) {

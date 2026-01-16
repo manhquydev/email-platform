@@ -265,18 +265,95 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: "Not authorized to view DKIM for this domain" });
     }
 
-    if (!domain.dkim) {
-      return { enabled: false };
+    try {
+      const { DkimService } = await import("../services/dkim.service");
+      const dkimInfo = await DkimService.getDkimInfo(domain.id);
+      return {
+        ...dkimInfo,
+        domainName: domain.name,
+      };
+    } catch (err) {
+      request.log.error(err, "DKIM info error");
+      return reply.status(500).send({ error: "Failed to get DKIM info" });
+    }
+  });
+
+  // Rotate DKIM key for a domain
+  app.post("/domains/:id/dkim/rotate", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid ID" });
     }
 
-    return {
-      enabled: true,
-      selector: domain.dkim.selector,
-      publicKey: domain.dkim.publicKey,
-      dnsRecord: `${domain.dkim.selector}._domainkey.${domain.name} IN TXT "v=DKIM1; k=rsa; p=${domain.dkim.publicKey}"`,
-      rotatedAt: domain.dkim.rotatedAt,
-      createdAt: domain.dkim.createdAt
-    };
+    const domain = await prisma.domain.findUnique({ where: { id: params.data.id } });
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to rotate DKIM for this domain" });
+    }
+
+    try {
+      const { DkimService } = await import("../services/dkim.service");
+      const dkim = await DkimService.rotateDkimKey(domain.id);
+
+      await recordAudit(user.userId, "DOMAIN_DKIM_ROTATED", { domainId: domain.id, selector: dkim.selector });
+
+      return {
+        success: true,
+        selector: dkim.selector,
+        dnsRecord: dkim.dnsRecord,
+        dnsHost: `${dkim.selector}._domainkey.${domain.name}`,
+        message: "DKIM key rotated. Please update your DNS record.",
+      };
+    } catch (err) {
+      request.log.error(err, "DKIM rotate error");
+      return reply.status(500).send({ error: "Failed to rotate DKIM key" });
+    }
+  });
+
+  // Verify DKIM DNS record
+  app.post("/domains/:id/dkim/verify", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid ID" });
+    }
+
+    const domain = await prisma.domain.findUnique({
+      where: { id: params.data.id },
+      include: { dkim: true }
+    });
+    if (!domain) {
+      return reply.status(404).send({ error: "Domain not found" });
+    }
+
+    const user = request.user as { userId: string; role: string };
+    if (domain.ownerId !== user.userId && user.role !== "ADMIN") {
+      return reply.status(403).send({ error: "Not authorized to verify DKIM for this domain" });
+    }
+
+    if (!domain.dkim) {
+      return reply.status(400).send({ error: "DKIM not configured for this domain" });
+    }
+
+    try {
+      const { DkimService } = await import("../services/dkim.service");
+      const result = await DkimService.verifyDkimDns(domain.name, domain.dkim.selector);
+
+      return {
+        valid: result.valid,
+        selector: domain.dkim.selector,
+        dnsHost: `${domain.dkim.selector}._domainkey.${domain.name}`,
+        found: result.found,
+        expected: result.expected,
+        error: result.error,
+      };
+    } catch (err) {
+      request.log.error(err, "DKIM verify error");
+      return reply.status(500).send({ error: "Failed to verify DKIM DNS" });
+    }
   });
 
   app.delete("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {

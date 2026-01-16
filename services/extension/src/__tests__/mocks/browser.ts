@@ -4,6 +4,39 @@
  */
 import { vi } from 'vitest';
 
+/** Mock translations for testing - matches _locales/en/messages.json */
+const mockMessages: Record<string, string> = {
+  extName: 'Ephemera - Temporary Email',
+  extDescription: 'Create disposable email addresses instantly. Protect your privacy and avoid spam.',
+  signIn: 'Sign In',
+  email: 'Email',
+  emailAddress: 'Email Address',
+  password: 'Password',
+  loginFailed: 'Login failed',
+  activeInboxes: 'Active Inboxes',
+  createNewInbox: 'Create New Inbox',
+  generateNew: 'Generate New Email',
+  copied: 'Copied!',
+  viewMessages: 'View Messages',
+  dashboard: 'Dashboard',
+  settings: 'Settings',
+  logout: 'Log Out',
+  noInboxes: 'No inboxes yet',
+  createFirstInbox: 'Create your first inbox',
+  loading: 'Loading...',
+  signInRequired: 'Sign in Required',
+  signInRequiredDesc: 'Please sign in to your Ephemera account to use temporary emails.',
+  goAnonymous: 'Go Anonymous',
+  secureEntry: 'Secure Entry',
+  newToEphemera: 'New to Ephemera?',
+  createAccount: 'Create Account',
+  securityCheck: 'Security Check',
+  verifyAndContinue: 'Verify & Continue',
+  backToLogin: 'Back to Login',
+  expired: 'Expired',
+  refresh: 'Refresh',
+};
+
 export const mockBrowser = {
   storage: {
     local: {
@@ -45,7 +78,7 @@ export const mockBrowser = {
     clear: vi.fn(),
   },
   i18n: {
-    getMessage: vi.fn((key: string) => key),
+    getMessage: vi.fn((key: string) => mockMessages[key] || key),
     getUILanguage: vi.fn(() => 'en'),
   },
 };

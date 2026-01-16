@@ -5,8 +5,9 @@ export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    name: 'Ephemera - Temporary Email',
-    description: 'Create disposable email addresses instantly. Protect your privacy and avoid spam.',
+    name: '__MSG_extName__',
+    description: '__MSG_extDescription__',
+    default_locale: 'en',
     version: '0.1.0',
     permissions: [
       'storage',

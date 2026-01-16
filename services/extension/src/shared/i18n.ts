@@ -5,11 +5,43 @@ import browser from 'webextension-polyfill';
  * Wraps browser.i18n.getMessage for type-safe translations.
  */
 
+/** Available message keys from _locales/en/messages.json */
+export type MessageKey =
+  | 'extName'
+  | 'extDescription'
+  | 'signIn'
+  | 'email'
+  | 'emailAddress'
+  | 'password'
+  | 'loginFailed'
+  | 'activeInboxes'
+  | 'createNewInbox'
+  | 'generateNew'
+  | 'copied'
+  | 'viewMessages'
+  | 'dashboard'
+  | 'settings'
+  | 'logout'
+  | 'noInboxes'
+  | 'createFirstInbox'
+  | 'loading'
+  | 'signInRequired'
+  | 'signInRequiredDesc'
+  | 'goAnonymous'
+  | 'secureEntry'
+  | 'newToEphemera'
+  | 'createAccount'
+  | 'securityCheck'
+  | 'verifyAndContinue'
+  | 'backToLogin'
+  | 'expired'
+  | 'refresh';
+
 /**
  * Get a translated message by key.
  * Falls back to the key itself if translation not found.
  */
-export function t(key: string, substitutions?: string | string[]): string {
+export function t(key: MessageKey, substitutions?: string | string[]): string {
   try {
     const message = browser.i18n.getMessage(key, substitutions);
     return message || key;

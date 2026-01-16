@@ -1,12 +1,13 @@
 ---
 title: "Extension Improvements"
 description: "Enhance browser extension with comprehensive testing, i18n, and store publishing"
-status: pending
+status: completed
 priority: P2
 effort: 12h
 branch: main
 tags: [extension, testing, i18n, chrome-web-store]
 created: 2026-01-16
+completed: 2026-01-17
 ---
 
 # Extension Improvements Plan
@@ -33,8 +34,8 @@ Enhance the Ephemera browser extension with comprehensive testing, international
 |-------|-------------|--------|--------|
 | [Phase 01](./phase-01-unit-testing.md) | Unit Tests for Components & API | 4h | ✅ Completed |
 | [Phase 02](./phase-02-e2e-testing.md) | E2E Testing with Playwright | 3h | ✅ Completed |
-| [Phase 03](./phase-03-i18n-localization.md) | Full i18n Localization | 3h | ⬜ Pending |
-| [Phase 04](./phase-04-store-publishing.md) | Chrome Web Store Publishing | 2h | ⬜ Pending |
+| [Phase 03](./phase-03-i18n-localization.md) | Full i18n Localization | 3h | ✅ Completed |
+| [Phase 04](./phase-04-store-publishing.md) | Chrome Web Store Publishing | 2h | ✅ Ready |
 
 ## Success Criteria
 

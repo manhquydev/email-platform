@@ -13,7 +13,15 @@ import { recordAudit } from "../utils/audit";
 import { TIER_LIMITS } from "./billing";
 
 export async function authRoutes(app: FastifyInstance) {
-  app.post("/auth/register", async (request, reply) => {
+  // Stricter rate limit for registration (prevent spam accounts)
+  app.post("/auth/register", {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: "1 hour"
+      }
+    }
+  }, async (request, reply) => {
     const bodySchema = z.object({
       email: z.string().email(),
       password: z.string().min(6),
@@ -124,8 +132,15 @@ export async function authRoutes(app: FastifyInstance) {
     return { ok: true, message: "Email verified successfully" };
   });
 
-  // Resend verification email
-  app.post("/auth/resend-verification", async (request, reply) => {
+  // Resend verification email - prevent SMTP abuse
+  app.post("/auth/resend-verification", {
+    config: {
+      rateLimit: {
+        max: 3,
+        timeWindow: "15 minutes"
+      }
+    }
+  }, async (request, reply) => {
     const bodySchema = z.object({
       email: z.string().email(),
     });
@@ -173,7 +188,15 @@ export async function authRoutes(app: FastifyInstance) {
     return { ok: true, message: "Verification email sent successfully" };
   });
 
-  app.post("/auth/login", async (request, reply) => {
+  // Login rate limit - prevent brute force
+  app.post("/auth/login", {
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: "5 minutes"
+      }
+    }
+  }, async (request, reply) => {
     const bodySchema = z.object({
       email: z.string().email(),
       password: z.string().min(6),
@@ -192,10 +215,57 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
+    // Account lockout check - 5 failed attempts = 15 min lockout
+    const MAX_FAILED_ATTEMPTS = 5;
+    const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const remainingMs = user.lockedUntil.getTime() - Date.now();
+      const remainingMins = Math.ceil(remainingMs / 60000);
+      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "account_locked" });
+      return reply.status(423).send({
+        error: `Account is temporarily locked. Try again in ${remainingMins} minute(s).`,
+        lockedUntil: user.lockedUntil.toISOString()
+      });
+    }
+
     const ok = await verifyPassword(password, user.passwordHash);
     if (!ok) {
-      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "invalid_password" });
+      // Increment failed attempts
+      const newFailedAttempts = user.failedLoginAttempts + 1;
+      const shouldLock = newFailedAttempts >= MAX_FAILED_ATTEMPTS;
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: newFailedAttempts,
+          lockedUntil: shouldLock ? new Date(Date.now() + LOCKOUT_DURATION_MS) : null,
+        }
+      });
+
+      await recordAudit(user.id, "LOGIN_FAILED", {
+        email: user.email,
+        ip: request.ip,
+        reason: shouldLock ? "account_locked_max_attempts" : "invalid_password",
+        failedAttempts: newFailedAttempts
+      });
+
+      if (shouldLock) {
+        return reply.status(423).send({
+          error: "Too many failed attempts. Account locked for 15 minutes.",
+          lockedUntil: new Date(Date.now() + LOCKOUT_DURATION_MS).toISOString()
+        });
+      }
+
       return reply.status(401).send({ error: "Invalid credentials" });
+    }
+
+    // Successful password - reset lockout counters
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null }
+      });
     }
 
     // Check email verification (dynamic setting from DB)
@@ -581,5 +651,114 @@ export async function authRoutes(app: FastifyInstance) {
     });
 
     return { ok: true };
+  });
+
+  // Forgot Password - Request password reset email
+  app.post("/auth/forgot-password", {
+    config: {
+      rateLimit: {
+        max: 3,
+        timeWindow: "15 minutes"
+      }
+    }
+  }, async (request, reply) => {
+    const bodySchema = z.object({
+      email: z.string().email(),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid email" });
+    }
+
+    const { email } = parsed.data;
+
+    // Always return success to prevent email enumeration
+    const successResponse = { ok: true, message: "If an account exists, a password reset link has been sent." };
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || user.isDisabled) {
+      return successResponse;
+    }
+
+    // Generate reset token
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Store token hash in verificationToken field (reusing existing field)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        verificationToken: tokenHash,
+        verificationTokenExpiresAt: expiresAt,
+      }
+    });
+
+    // Send reset email
+    try {
+      const resetUrl = `${appConfig.webUrl}/reset-password?token=${rawToken}`;
+      await outboundService.sendPasswordResetEmail(email, resetUrl);
+      request.log.info({ email }, "Password reset email sent");
+    } catch (err) {
+      request.log.error(err, "Failed to send password reset email");
+    }
+
+    await recordAudit(user.id, "PASSWORD_RESET_REQUESTED", { ip: request.ip });
+
+    return successResponse;
+  });
+
+  // Reset Password - Complete password reset with token
+  app.post("/auth/reset-password", {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: "5 minutes"
+      }
+    }
+  }, async (request, reply) => {
+    const bodySchema = z.object({
+      token: z.string().min(1),
+      newPassword: z.string().min(6),
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload" });
+    }
+
+    const { token, newPassword } = parsed.data;
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await prisma.user.findFirst({
+      where: {
+        verificationToken: tokenHash,
+        verificationTokenExpiresAt: { gt: new Date() },
+      }
+    });
+
+    if (!user) {
+      return reply.status(400).send({ error: "Invalid or expired reset token" });
+    }
+
+    if (user.isDisabled) {
+      return reply.status(403).send({ error: "Account is disabled" });
+    }
+
+    // Update password and clear token
+    const passwordHash = await hashPassword(newPassword);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+      }
+    });
+
+    await recordAudit(user.id, "PASSWORD_RESET_COMPLETED", { ip: request.ip });
+
+    return { ok: true, message: "Password has been reset successfully" };
   });
 }

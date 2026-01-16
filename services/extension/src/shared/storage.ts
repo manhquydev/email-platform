@@ -1,18 +1,19 @@
 import { StorageData } from './types';
 import { normalizeInboxes } from './utils';
+import browser from 'webextension-polyfill';
 
 export const storage = {
   get: async <K extends keyof StorageData>(key: K): Promise<StorageData[K] | null> => {
-    const result = await chrome.storage.local.get(key);
-    return result[key] || null;
+    const result = await browser.storage.local.get(key);
+    return (result[key] as StorageData[K]) || null;
   },
 
   set: async <K extends keyof StorageData>(key: K, value: StorageData[K]): Promise<void> => {
-    await chrome.storage.local.set({ [key]: value });
+    await browser.storage.local.set({ [key]: value });
   },
 
   remove: async (key: keyof StorageData): Promise<void> => {
-    await chrome.storage.local.remove(key);
+    await browser.storage.local.remove(key);
   },
 
   // Helper for inboxes with normalization
@@ -21,7 +22,7 @@ export const storage = {
     await storage.set('inboxes', normalized);
 
     // Notify other parts of the extension that inboxes have changed
-    chrome.runtime.sendMessage({ type: 'INBOXES_UPDATED', inboxes: normalized }).catch(() => {
+    browser.runtime.sendMessage({ type: 'INBOXES_UPDATED', inboxes: normalized }).catch(() => {
       // Ignore errors if no listeners are active
     });
   },
@@ -51,11 +52,14 @@ export const storage = {
     await storage.set('settings', { ...current, ...updates });
   },
 
-  // Device ID for anonymous tracking
+  // Device ID for anonymous tracking - uses cryptographically secure random
   getDeviceId: async () => {
     let deviceId = await storage.get('deviceId');
     if (!deviceId) {
-      deviceId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      // Use crypto.randomUUID() for secure random ID generation
+      deviceId = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 15)}`;
       await storage.set('deviceId', deviceId);
     }
     return deviceId;

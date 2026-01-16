@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { api } from '../../shared/api';
+import { analytics } from '../../shared/analytics';
 import { CONFIG } from '../../shared/config';
-import { Loader2, ShieldCheck, UserCircle } from 'lucide-react';
+import { Loader2, ShieldCheck, UserCircle, Mail, Lock, LogIn, Sparkles } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 interface LoginProps {
   onSuccess: () => void;
@@ -27,6 +29,7 @@ export default function Login({ onSuccess }: LoginProps) {
         setRequires2FA(true);
         setTempToken(res.tempToken);
       } else {
+        analytics.track('login_success', { method: 'password' });
         onSuccess();
       }
     } catch (err: unknown) {
@@ -45,6 +48,7 @@ export default function Login({ onSuccess }: LoginProps) {
 
     try {
       await api.verify2FA(tempToken, twoFactorCode);
+      analytics.track('login_success', { method: '2fa' });
       onSuccess();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Verification failed');
@@ -58,6 +62,7 @@ export default function Login({ onSuccess }: LoginProps) {
     setError(null);
     try {
       await api.createAnonymousInbox();
+      analytics.track('inbox_created_anonymous');
       onSuccess();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create anonymous inbox');
@@ -68,31 +73,31 @@ export default function Login({ onSuccess }: LoginProps) {
 
   if (requires2FA) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center h-full">
-        <div className="w-full max-w-xs space-y-6">
-          <div className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-4">
-              <ShieldCheck className="w-6 h-6" />
+      <div className="p-6 flex flex-col items-center justify-center h-full animate-in fade-in zoom-in-95 duration-300">
+        <div className="w-full max-w-xs space-y-8">
+          <div className="text-center space-y-3">
+            <div className="mx-auto w-16 h-16 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-primary-500/10">
+              <ShieldCheck className="w-8 h-8" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Two-Factor Auth</h2>
-            <p className="text-sm text-gray-500">Enter the 6-digit code from your app</p>
+            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Security Check</h2>
+            <p className="text-xs text-slate-500 font-medium">Enter the verification code from your authenticator app</p>
           </div>
 
-          <form onSubmit={handleVerify2FA} className="space-y-4">
-            <div>
+          <form onSubmit={handleVerify2FA} className="space-y-6">
+            <div className="relative group">
               <input
                 type="text"
                 required
                 value={twoFactorCode}
                 onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full px-3 py-3 border border-gray-300 rounded-md text-center text-2xl font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-4 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-center text-3xl font-black tracking-[0.4em] focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all text-slate-800 dark:text-white"
                 placeholder="000000"
                 autoFocus
               />
             </div>
 
             {error && (
-              <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+              <div className="p-3 bg-red-50/50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs rounded-xl border border-red-100 dark:border-red-800/30 backdrop-blur-sm text-center">
                 {error}
               </div>
             )}
@@ -100,15 +105,15 @@ export default function Login({ onSuccess }: LoginProps) {
             <button
               type="submit"
               disabled={isLoading || twoFactorCode.length < 6}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white rounded-2xl shadow-lg shadow-primary-500/20 text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify Code'}
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify & Continue'}
             </button>
 
             <button
               type="button"
               onClick={() => setRequires2FA(false)}
-              className="w-full text-xs text-gray-500 hover:text-gray-700"
+              className="w-full text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors uppercase tracking-widest"
             >
               Back to Login
             </button>
@@ -119,40 +124,47 @@ export default function Login({ onSuccess }: LoginProps) {
   }
 
   return (
-    <div className="p-6 flex flex-col items-center justify-center h-full">
-      <div className="w-full max-w-xs space-y-6">
-        <div className="text-center space-y-2">
-          <h2 className="text-xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="text-sm text-gray-500">Sign in to manage your disposable emails</p>
+    <div className="p-8 flex flex-col items-center justify-center h-full animate-in fade-in duration-500">
+      <div className="w-full max-w-xs space-y-8">
+        <div className="text-center space-y-3">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-primary-500/30 mb-6">E</div>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Ephemera</h2>
+          <p className="text-xs text-slate-500 font-medium">Your gateway to instant, secure digital identities</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="you@example.com"
-            />
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all dark:text-white"
+                placeholder="name@domain.com"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="••••••••"
-            />
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Password</label>
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all dark:text-white"
+                placeholder="••••••••"
+              />
+            </div>
           </div>
 
           {error && (
-            <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+            <div className="p-3 bg-red-50/50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-xl border border-red-100 dark:border-red-800/30 backdrop-blur-sm">
               {error}
             </div>
           )}
@@ -160,34 +172,37 @@ export default function Login({ onSuccess }: LoginProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl shadow-xl shadow-slate-900/10 text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-4 h-4" />}
+            Sign In
           </button>
         </form>
 
-        <div className="relative py-2">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-gray-50 px-2 text-gray-500">Or continue as</span>
-          </div>
+        <div className="relative flex items-center py-2">
+          <div className="flex-1 border-t border-slate-100 dark:border-slate-800"></div>
+          <span className="px-3 text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">Secure Entry</span>
+          <div className="flex-1 border-t border-slate-100 dark:border-slate-800"></div>
         </div>
 
         <button
           onClick={handleAnonymous}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2.5 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 group"
         >
-          {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserCircle className="w-5 h-5" />}
-          Anonymous Mode
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Sparkles className="w-4 h-4 text-amber-500 group-hover:animate-pulse" />
+          )}
+          Go Anonymous
         </button>
 
-        <div className="text-center text-xs text-gray-500">
-          Don't have an account? <a href={`${CONFIG.WEB_URL}/register`} target="_blank" rel="noreferrer" className="text-primary-600 hover:underline">Sign up</a>
-        </div>
+        <p className="text-center text-[11px] text-slate-400 font-medium">
+          New to Ephemera? <a href={`${CONFIG.WEB_URL}/register`} target="_blank" rel="noreferrer" className="text-primary-600 dark:text-primary-400 font-bold hover:underline">Create Account</a>
+        </p>
       </div>
     </div>
   );
 }
+

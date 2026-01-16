@@ -10,6 +10,9 @@ export interface SpamCheckResult {
     action: 'no action' | 'greylist' | 'add header' | 'rewrite subject' | 'soft reject' | 'reject';
     symbols: Record<string, { score: number; description?: string }>;
     messageId?: string;
+    spf?: 'pass' | 'fail' | 'softfail' | 'neutral' | 'none' | 'error';
+    dkim?: 'pass' | 'fail' | 'none' | 'error';
+    dmarc?: 'pass' | 'fail' | 'quarantine' | 'reject' | 'none';
 }
 
 const RSPAMD_URL = process.env.RSPAMD_URL || 'http://rspamd:11333';
@@ -62,14 +65,37 @@ export async function checkSpam(
 
         const score = result.score || 0;
         const requiredScore = result.required_score || SPAM_THRESHOLD;
+        const symbols = result.symbols || {};
+
+        // Extract Authentication Results (SPF, DKIM, DMARC)
+        let spf: SpamCheckResult['spf'] = 'none';
+        if (symbols['R_SPF_ALLOW']) spf = 'pass';
+        else if (symbols['R_SPF_FAIL']) spf = 'fail';
+        else if (symbols['R_SPF_SOFTFAIL']) spf = 'softfail';
+        else if (symbols['R_SPF_NEUTRAL']) spf = 'neutral';
+        else if (symbols['R_SPF_DNSFAIL']) spf = 'error';
+
+        let dkim: SpamCheckResult['dkim'] = 'none';
+        if (symbols['R_DKIM_ALLOW']) dkim = 'pass';
+        else if (symbols['R_DKIM_REJECT']) dkim = 'fail';
+        else if (symbols['R_DKIM_TEMPFAIL']) dkim = 'error';
+
+        let dmarc: SpamCheckResult['dmarc'] = 'none';
+        if (symbols['DMARC_POLICY_ALLOW']) dmarc = 'pass';
+        else if (symbols['DMARC_POLICY_REJECT']) dmarc = 'reject';
+        else if (symbols['DMARC_POLICY_QUARANTINE']) dmarc = 'quarantine';
+        else if (symbols['DMARC_POLICY_SOFTFAIL']) dmarc = 'fail';
 
         return {
             score,
             requiredScore,
             isSpam: score >= requiredScore,
             action: (result.action || 'no action') as SpamCheckResult['action'],
-            symbols: result.symbols || {},
+            symbols,
             messageId: result['message-id'],
+            spf,
+            dkim,
+            dmarc
         };
     } catch (error) {
         console.error('Rspamd spam check error:', error);

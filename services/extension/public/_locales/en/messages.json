@@ -1,0 +1,421 @@
+{
+  "extensionName": {
+    "message": "Ephemera",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Disposable email addresses for privacy protection",
+    "description": "Extension description"
+  },
+
+  "common_loading": {
+    "message": "Loading...",
+    "description": "Generic loading text"
+  },
+  "common_error": {
+    "message": "An error occurred",
+    "description": "Generic error message"
+  },
+  "common_retry": {
+    "message": "Try Again",
+    "description": "Retry button text"
+  },
+  "common_cancel": {
+    "message": "Cancel",
+    "description": "Cancel button text"
+  },
+  "common_save": {
+    "message": "Save",
+    "description": "Save button text"
+  },
+  "common_close": {
+    "message": "Close",
+    "description": "Close button text"
+  },
+  "common_back": {
+    "message": "Back",
+    "description": "Back button text"
+  },
+  "common_next": {
+    "message": "Next",
+    "description": "Next button text"
+  },
+  "common_copy": {
+    "message": "Copy",
+    "description": "Copy button text"
+  },
+  "common_copied": {
+    "message": "Copied!",
+    "description": "Copied confirmation text"
+  },
+  "common_refresh": {
+    "message": "Refresh",
+    "description": "Refresh button text"
+  },
+
+  "header_title": {
+    "message": "Ephemera",
+    "description": "Header title"
+  },
+  "header_openSidePanel": {
+    "message": "Open in Side Panel",
+    "description": "Side panel button tooltip"
+  },
+  "header_settings": {
+    "message": "Settings",
+    "description": "Settings button tooltip"
+  },
+
+  "inbox_activeInboxes": {
+    "message": "Active Inboxes",
+    "description": "Active inboxes section title"
+  },
+  "inbox_usage": {
+    "message": "Usage",
+    "description": "Usage label"
+  },
+  "inbox_createNew": {
+    "message": "Create New Inbox",
+    "description": "Create inbox button"
+  },
+  "inbox_createRandom": {
+    "message": "Create Random Email",
+    "description": "Create random inbox button"
+  },
+  "inbox_createCustom": {
+    "message": "Create Custom Inbox",
+    "description": "Create custom inbox button"
+  },
+  "inbox_noInboxes": {
+    "message": "No inboxes yet",
+    "description": "Empty state message"
+  },
+  "inbox_createFirst": {
+    "message": "Create your first inbox",
+    "description": "Empty state CTA"
+  },
+  "inbox_viewMessages": {
+    "message": "View Messages",
+    "description": "View messages button"
+  },
+  "inbox_dashboard": {
+    "message": "Dashboard",
+    "description": "Dashboard link"
+  },
+  "inbox_copyAddress": {
+    "message": "Copy Address",
+    "description": "Copy address button tooltip"
+  },
+  "inbox_showQR": {
+    "message": "Show QR Code",
+    "description": "Show QR code button tooltip"
+  },
+  "inbox_makePermanent": {
+    "message": "Make Permanent",
+    "description": "Make permanent button tooltip"
+  },
+  "inbox_makeTemporary": {
+    "message": "Switch to Temporary (24h)",
+    "description": "Make temporary button tooltip"
+  },
+  "inbox_expired": {
+    "message": "Expired",
+    "description": "Expired status"
+  },
+
+  "createModal_title": {
+    "message": "Create New Inbox",
+    "description": "Create modal title"
+  },
+  "createModal_random": {
+    "message": "Random",
+    "description": "Random mode label"
+  },
+  "createModal_custom": {
+    "message": "Custom",
+    "description": "Custom mode label"
+  },
+  "createModal_emailPrefix": {
+    "message": "Email Prefix",
+    "description": "Email prefix label"
+  },
+  "createModal_domain": {
+    "message": "Domain",
+    "description": "Domain label"
+  },
+  "createModal_preview": {
+    "message": "Preview",
+    "description": "Preview label"
+  },
+  "createModal_randomHint": {
+    "message": "A random email address will be generated automatically.",
+    "description": "Random mode hint"
+  },
+  "createModal_creating": {
+    "message": "Creating...",
+    "description": "Creating loading text"
+  },
+
+  "messages_title": {
+    "message": "$EMAIL$",
+    "description": "Messages view title",
+    "placeholders": {
+      "email": {
+        "content": "$1",
+        "example": "user@example.com"
+      }
+    }
+  },
+  "messages_count": {
+    "message": "$COUNT$ messages",
+    "description": "Message count",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "messages_search": {
+    "message": "Search messages...",
+    "description": "Search placeholder"
+  },
+  "messages_empty": {
+    "message": "Your inbox is empty",
+    "description": "Empty inbox message"
+  },
+  "messages_emptyHint": {
+    "message": "Messages will appear here when received",
+    "description": "Empty inbox hint"
+  },
+  "messages_checkNew": {
+    "message": "Check for messages",
+    "description": "Check for messages button"
+  },
+  "messages_noMatch": {
+    "message": "No matching messages",
+    "description": "No search results message"
+  },
+  "messages_noMatchHint": {
+    "message": "Try a different search term",
+    "description": "No search results hint"
+  },
+  "messages_noSubject": {
+    "message": "(No Subject)",
+    "description": "No subject placeholder"
+  },
+
+  "qr_title": {
+    "message": "QR Code",
+    "description": "QR modal title"
+  },
+  "qr_copyEmail": {
+    "message": "Copy Email",
+    "description": "Copy email button"
+  },
+  "qr_download": {
+    "message": "Download",
+    "description": "Download button"
+  },
+  "qr_hint": {
+    "message": "Scan this QR code with your phone to quickly access this email address",
+    "description": "QR code hint"
+  },
+
+  "settings_title": {
+    "message": "Settings",
+    "description": "Settings page title"
+  },
+  "settings_appearance": {
+    "message": "Appearance",
+    "description": "Appearance section title"
+  },
+  "settings_themeLight": {
+    "message": "Light",
+    "description": "Light theme option"
+  },
+  "settings_themeDark": {
+    "message": "Dark",
+    "description": "Dark theme option"
+  },
+  "settings_themeSystem": {
+    "message": "System",
+    "description": "System theme option"
+  },
+  "settings_preferences": {
+    "message": "Preferences",
+    "description": "Preferences section title"
+  },
+  "settings_notifications": {
+    "message": "Push Notifications",
+    "description": "Notifications setting title"
+  },
+  "settings_notificationsDesc": {
+    "message": "Get alerted for new messages",
+    "description": "Notifications setting description"
+  },
+  "settings_autoCopy": {
+    "message": "Auto-copy Address",
+    "description": "Auto-copy setting title"
+  },
+  "settings_autoCopyDesc": {
+    "message": "Copy on creation",
+    "description": "Auto-copy setting description"
+  },
+  "settings_shareInvite": {
+    "message": "Share & Invite",
+    "description": "Share section title"
+  },
+  "settings_shareEphemera": {
+    "message": "Share Ephemera",
+    "description": "Share button title"
+  },
+  "settings_shareDesc": {
+    "message": "Invite friends to try Ephemera",
+    "description": "Share button description"
+  },
+  "settings_linkCopied": {
+    "message": "Link copied!",
+    "description": "Link copied confirmation"
+  },
+  "settings_supportLegal": {
+    "message": "Support & Legal",
+    "description": "Support section title"
+  },
+  "settings_mainDashboard": {
+    "message": "Main Dashboard",
+    "description": "Dashboard link"
+  },
+  "settings_privacyTerms": {
+    "message": "Privacy & Terms",
+    "description": "Privacy link"
+  },
+  "settings_manageAccount": {
+    "message": "Manage Account",
+    "description": "Manage account link"
+  },
+  "settings_signOut": {
+    "message": "Sign Out",
+    "description": "Sign out button"
+  },
+  "settings_version": {
+    "message": "Ephemera Engine v$VERSION$",
+    "description": "Version text",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "0.1.0"
+      }
+    }
+  },
+
+  "onboarding_step1Title": {
+    "message": "Create Your First Inbox",
+    "description": "Onboarding step 1 title"
+  },
+  "onboarding_step1Desc": {
+    "message": "Click the button above to generate a random disposable email address. Use it for signups, trials, or anywhere you need a temporary email.",
+    "description": "Onboarding step 1 description"
+  },
+  "onboarding_step2Title": {
+    "message": "Auto-fill on Any Website",
+    "description": "Onboarding step 2 title"
+  },
+  "onboarding_step2Desc": {
+    "message": "When you're on a signup form, right-click any email field and select \"Fill with Ephemera\" to instantly insert your temporary email.",
+    "description": "Onboarding step 2 description"
+  },
+  "onboarding_step3Title": {
+    "message": "Use Side Panel for Quick Access",
+    "description": "Onboarding step 3 title"
+  },
+  "onboarding_step3Desc": {
+    "message": "Pin the Side Panel for always-on access. Check messages while browsing without switching tabs or opening the popup.",
+    "description": "Onboarding step 3 description"
+  },
+  "onboarding_stepOf": {
+    "message": "Step $CURRENT$ of $TOTAL$",
+    "description": "Step counter",
+    "placeholders": {
+      "current": {
+        "content": "$1",
+        "example": "1"
+      },
+      "total": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
+  },
+  "onboarding_getStarted": {
+    "message": "Get Started",
+    "description": "Get started button"
+  },
+  "onboarding_dontShowAgain": {
+    "message": "Don't show this again",
+    "description": "Don't show again checkbox"
+  },
+
+  "login_title": {
+    "message": "Welcome to Ephemera",
+    "description": "Login page title"
+  },
+  "login_email": {
+    "message": "Email",
+    "description": "Email field label"
+  },
+  "login_password": {
+    "message": "Password",
+    "description": "Password field label"
+  },
+  "login_signIn": {
+    "message": "Sign In",
+    "description": "Sign in button"
+  },
+  "login_signingIn": {
+    "message": "Signing in...",
+    "description": "Signing in loading text"
+  },
+  "login_tryAnonymous": {
+    "message": "Try Anonymously",
+    "description": "Anonymous login button"
+  },
+  "login_or": {
+    "message": "or",
+    "description": "Or divider text"
+  },
+
+  "error_failedLoad": {
+    "message": "Failed to load",
+    "description": "Generic load error"
+  },
+  "error_failedCreate": {
+    "message": "Failed to create inbox",
+    "description": "Create inbox error"
+  },
+  "error_failedUpdate": {
+    "message": "Failed to update inbox",
+    "description": "Update inbox error"
+  },
+  "error_failedDelete": {
+    "message": "Failed to delete inbox",
+    "description": "Delete inbox error"
+  },
+  "error_unauthorized": {
+    "message": "Session expired. Please sign in again.",
+    "description": "Unauthorized error"
+  },
+  "error_network": {
+    "message": "Network error. Please check your connection.",
+    "description": "Network error"
+  },
+
+  "errorBoundary_title": {
+    "message": "Something went wrong",
+    "description": "Error boundary title"
+  },
+  "errorBoundary_message": {
+    "message": "An unexpected error occurred. Please try refreshing.",
+    "description": "Error boundary message"
+  }
+}

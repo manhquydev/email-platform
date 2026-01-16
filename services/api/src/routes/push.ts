@@ -21,9 +21,15 @@ const pushRoutes: FastifyPluginAsync = async (app) => {
     return { vapidPublicKey: key };
   });
 
-  // Subscribe to push notifications
+  // Subscribe to push notifications (rate limited to prevent abuse)
   app.post('/push/subscribe', {
     preHandler: [app.authenticate],
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: '1 hour'
+      }
+    }
   }, async (request, reply) => {
     const result = subscribeSchema.safeParse(request.body);
     if (!result.success) {

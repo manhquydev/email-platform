@@ -1,0 +1,62 @@
+name: Extension Distribution
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/extension/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          cd services/extension
+          npm install
+
+      - name: Check Types
+        run: |
+          cd services/extension
+          npm run compile
+
+      - name: Build Chrome (MV3)
+        run: |
+          cd services/extension
+          npx wxt build
+
+      - name: Build Firefox (MV2)
+        run: |
+          cd services/extension
+          npx wxt build -b firefox
+
+      - name: Build Safari (MV2)
+        run: |
+          cd services/extension
+          npx wxt build -b safari
+
+      - name: Package Extensions
+        run: |
+          cd services/extension
+          npx wxt zip
+          npx wxt zip -b firefox
+          npx wxt zip -b safari
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ephemera-Extensions
+          path: |
+            services/extension/.output/*.zip
+          retention-days: 7

@@ -41,6 +41,7 @@ export interface Message {
 
 export interface AuthState {
   token: string | null;
+  refreshToken?: string | null;
   user: User | null;
   isAuthenticated: boolean;
   isAnonymous?: boolean;
@@ -52,7 +53,7 @@ export interface StorageData {
   inboxes: Inbox[];
   last_message_id?: string;
   settings: {
-    theme: 'light' | 'dark';
+    theme: 'light' | 'dark' | 'system';
     autoCopy: boolean;
     notificationsEnabled?: boolean;
   };

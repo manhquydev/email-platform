@@ -7,6 +7,7 @@ import { prisma } from "./lib/prisma";
 import { appConfig } from "./config";
 import { hashPassword } from "./utils/password";
 import { runRetentionSweep } from "./retention";
+import { runDomainVerificationSweep } from "./services/domain-verification.service";
 import cron from "node-cron";
 import { runAutomatedCleanup } from "./utils/cleanup";
 import { syncPostfixRelayDomains } from "./utils/postfix-sync";
@@ -91,25 +92,65 @@ const main = async () => {
     runRetentionSweep(app.log);
   }, appConfig.retentionSweepMinutes * 60 * 1000);
 
+  // Periodic domain verification sweep (every 15 minutes)
+  const domainVerificationInterval = setInterval(() => {
+    runDomainVerificationSweep(app.log);
+  }, 15 * 60 * 1000);
+
   // Daily deep cleanup at 3:00 AM
   const cleanupJob = cron.schedule("0 3 * * *", () => {
     runAutomatedCleanup().catch(err => app.log.error({ err }, "Daily cleanup failed"));
   });
 
   const close = async () => {
-    app.log.info("shutting down...");
-    clearInterval(retentionInterval);
+    app.log.info("Graceful shutdown initiated...");
+
+    // 1. Stop accepting new requests
+    app.log.info("Stopping HTTP server...");
     await app.close();
-    smtp.close();
+
+    // 2. Stop scheduled tasks
+    app.log.info("Stopping scheduled tasks...");
+    clearInterval(retentionInterval);
+    clearInterval(domainVerificationInterval);
     cleanupJob.stop();
-    await worker.close();
-    await webhookWorker.close();
+
+    // 3. Stop SMTP server
+    app.log.info("Stopping SMTP server...");
+    smtp.close();
+
+    // 4. Wait for workers to finish active jobs
+    app.log.info("Waiting for workers to complete...");
+    await Promise.all([
+      worker.close(),
+      webhookWorker.close(),
+    ]);
+
+    // 5. Disconnect database
+    app.log.info("Disconnecting database...");
     await prisma.$disconnect();
+
+    app.log.info("Graceful shutdown complete.");
     process.exit(0);
   };
 
-  process.on("SIGINT", close);
-  process.on("SIGTERM", close);
+  // Handle termination signals
+  let isShuttingDown = false;
+  const handleSignal = (signal: string) => {
+    if (isShuttingDown) {
+      app.log.warn(`Received ${signal} during shutdown, forcing exit...`);
+      process.exit(1);
+    }
+    isShuttingDown = true;
+    app.log.info(`Received ${signal}, starting graceful shutdown...`);
+    close().catch(err => {
+      app.log.error({ err }, "Error during shutdown");
+      process.exit(1);
+    });
+  };
+
+  process.on("SIGINT", () => handleSignal("SIGINT"));
+  process.on("SIGTERM", () => handleSignal("SIGTERM"));
 };
 
 main().catch((err) => {

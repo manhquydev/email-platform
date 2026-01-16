@@ -7,8 +7,15 @@ import { outboundService } from "../services/outbound";
 import { recordAudit } from "../utils/audit";
 
 export async function magicLinkRoutes(app: FastifyInstance) {
-    // 1. Request Magic Link
-    app.post("/auth/magic-link/request", async (request, reply) => {
+    // 1. Request Magic Link - Strict rate limit to prevent SMTP spam
+    app.post("/auth/magic-link/request", {
+        config: {
+            rateLimit: {
+                max: 3,
+                timeWindow: "15 minutes"
+            }
+        }
+    }, async (request, reply) => {
         const bodySchema = z.object({
             email: z.string().email(),
         });
@@ -64,8 +71,15 @@ export async function magicLinkRoutes(app: FastifyInstance) {
         return { ok: true, message: "If an account exists, a login link has been sent." };
     });
 
-    // 2. Verify Magic Link
-    app.post("/auth/magic-link/verify", async (request, reply) => {
+    // 2. Verify Magic Link - Rate limit to prevent brute force
+    app.post("/auth/magic-link/verify", {
+        config: {
+            rateLimit: {
+                max: 10,
+                timeWindow: "5 minutes"
+            }
+        }
+    }, async (request, reply) => {
         const bodySchema = z.object({
             token: z.string(),
         });

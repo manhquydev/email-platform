@@ -39,6 +39,8 @@ model User {
   twoFactorSecret            String?
   twoFactorBackupCodes       String[]
   isDisabled                 Boolean                @default(false)
+  failedLoginAttempts        Int                    @default(0)
+  lockedUntil                DateTime?
   auditLogs                  AuditLog[]
   authenticatorAccounts      AuthenticatorAccount[]
   domains                    Domain[]
@@ -66,11 +68,13 @@ model ApiKey {
   prefix     String // First 8 chars for display
   name       String
   lastUsedAt DateTime?
+  expiresAt  DateTime? // Optional expiration date for the API key
   createdAt  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([expiresAt])
 }
 
 model CreditTransaction {
@@ -136,6 +140,9 @@ model Domain {
   inboxes            Inbox[]
   dkim               DomainDkim?
   outboundMsgs       OutboundMessage[]
+
+  @@index([ownerId])
+  @@index([status])
 }
 
 model Inbox {
@@ -175,6 +182,9 @@ model Message {
   htmlBody     String?
   headers      Json?
   spamScore    Float?
+  spfResult    String?
+  dkimResult   String?
+  dmarcResult  String?
   size         Int?
   sourceIp     String?
   deletedAt    DateTime?
@@ -202,6 +212,8 @@ model Attachment {
   createdAt  DateTime  @default(now())
   deletedAt  DateTime?
   message    Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
 }
 
 model AuditLog {
@@ -211,6 +223,10 @@ model AuditLog {
   meta      Json?
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }
 
 model Rule {
@@ -814,13 +830,15 @@ model MessageVisibilityAudit {
 
 // Phase 10: Browser Push Notifications
 model PushSubscription {
-  id        String   @id @default(uuid())
-  userId    String
-  endpoint  String   @unique
-  p256dh    String   // Public key
-  auth      String   // Auth secret
-  userAgent String?
-  createdAt DateTime @default(now())
+  id                 String    @id @default(uuid())
+  userId             String
+  endpoint           String    @unique
+  p256dh             String    // Public key
+  auth               String    // Auth secret
+  userAgent          String?
+  createdAt          DateTime  @default(now())
+  lastSuccessfulSend DateTime? // Track for stale subscription pruning
 
   @@index([userId])
+  @@index([lastSuccessfulSend])
 }

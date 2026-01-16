@@ -14,12 +14,28 @@ const EMAIL_SELECTORS = [
   'input[aria-labelledby*="email" i]',
   'input[name="user_email"]',
   'input[name="identifier"]',
+  'input[name*="login" i]',
+  'input[id*="login" i]',
   'input[data-testid*="email" i]',
   'input[data-qa*="email" i]',
+  'input[type="text"][id*="user" i]',
+  'input[type="text"][name*="user" i]',
 ];
 
 // Keywords that suggest an email field in labels or nearby text
-const EMAIL_KEYWORDS = ['email', 'e-mail', 'mail address', 'electronic mail'];
+const EMAIL_KEYWORDS = [
+  'email',
+  'e-mail',
+  'mail address',
+  'electronic mail',
+  'username',
+  'user name',
+  'địa chỉ email', // Vietnamese support
+  'tên đăng nhập',
+];
+
+// Contextual keywords for fuzzy matching/proximity
+const CONTEXT_KEYWORDS = ['sign up', 'register', 'create account', 'login', 'sign in'];
 
 export function detectEmailFields(root: ParentNode = document): DetectedField[] {
   const fields: DetectedField[] = [];
@@ -76,7 +92,7 @@ function mapToDetectedField(el: HTMLInputElement): DetectedField {
 }
 
 function hasEmailLabel(input: HTMLInputElement): boolean {
-  // Check associated <label> elements
+  // 1. Check associated <label> elements
   const labels = input.labels;
   if (labels && labels.length > 0) {
     for (let i = 0; i < labels.length; i++) {
@@ -84,21 +100,43 @@ function hasEmailLabel(input: HTMLInputElement): boolean {
     }
   }
 
-  // Check aria-label
-  const ariaLabel = input.getAttribute('aria-label');
-  if (containsEmailKeyword(ariaLabel)) return true;
+  // 2. Check aria-label
+  if (containsEmailKeyword(input.getAttribute('aria-label'))) return true;
 
-  // Check placeholder
-  const placeholder = input.getAttribute('placeholder');
-  if (containsEmailKeyword(placeholder)) return true;
+  // 3. Check aria-description
+  if (containsEmailKeyword(input.getAttribute('aria-description'))) return true;
+
+  // 4. Resolve aria-labelledby
+  const labelledBy = input.getAttribute('aria-labelledby');
+  if (labelledBy) {
+    const labelEl = document.getElementById(labelledBy);
+    if (labelEl && containsEmailKeyword(labelEl.textContent)) return true;
+  }
+
+  // 5. Check placeholder
+  if (containsEmailKeyword(input.getAttribute('placeholder'))) return true;
+
+  // 6. Proximity Check: Check text immediately preceding the input
+  const previousText = input.previousSibling?.textContent;
+  if (containsEmailKeyword(previousText ?? null)) return true;
+
+  // Check parent's text if it's short (common for <td> or <div> wrappers)
+  const parentText = input.parentElement?.textContent;
+  if (parentText && parentText.length < 50 && containsEmailKeyword(parentText)) return true;
 
   return false;
 }
 
 function containsEmailKeyword(text: string | null): boolean {
   if (!text) return false;
-  const lowerText = text.toLowerCase();
-  return EMAIL_KEYWORDS.some((keyword) => lowerText.includes(keyword));
+  // Normalize: lowercase, remove extra spaces/punctuation
+  const normalized = text.toLowerCase().replace(/[^a-z0-9\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/g, ' ');
+
+  return EMAIL_KEYWORDS.some((keyword) => {
+    // Exact match or contains as a word
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    return normalized.includes(keyword) || regex.test(normalized);
+  });
 }
 
 function isVisible(el: HTMLElement): boolean {

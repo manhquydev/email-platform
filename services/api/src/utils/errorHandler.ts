@@ -14,11 +14,10 @@ export const errorHandler = (error: FastifyError, request: FastifyRequest, reply
         message = error.message;
         code = error.code ?? "BAD_REQUEST";
     } else {
-        // [DEBUG] Temporarily allow showing error messages in production to debug 500 errors
-        message = error.message;
-        // if (process.env.NODE_ENV !== "production") {
-        //     message = error.message;
-        // }
+        // In production, hide internal error details to prevent information leakage
+        if (process.env.NODE_ENV !== "production") {
+            message = error.message;
+        }
     }
 
     // Prisma errors (P2002, P2025 etc) handling could be added here if needed

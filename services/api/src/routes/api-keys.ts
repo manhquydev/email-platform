@@ -16,6 +16,7 @@ export async function apiKeysRoutes(app: FastifyInstance) {
                 name: true,
                 prefix: true,
                 lastUsedAt: true,
+                expiresAt: true,
                 createdAt: true,
             }
         });
@@ -27,6 +28,7 @@ export async function apiKeysRoutes(app: FastifyInstance) {
         const userId = (req.user as any).userId;
         const schema = z.object({
             name: z.string().min(1).max(50),
+            expiresAt: z.string().datetime().optional(), // Optional expiration date
         });
 
         const parsed = schema.safeParse(req.body);
@@ -46,16 +48,18 @@ export async function apiKeysRoutes(app: FastifyInstance) {
                 name: parsed.data.name,
                 prefix,
                 keyHash,
+                expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null,
             }
         });
 
-        await recordAudit(userId, "CREATE_API_KEY", { keyId: apiKey.id, name: apiKey.name });
+        await recordAudit(userId, "CREATE_API_KEY", { keyId: apiKey.id, name: apiKey.name, expiresAt: apiKey.expiresAt });
 
         return {
             apiKey: {
                 id: apiKey.id,
                 name: apiKey.name,
                 prefix: apiKey.prefix,
+                expiresAt: apiKey.expiresAt,
                 createdAt: apiKey.createdAt,
                 key: key // RETURN ONLY ONCE
             }

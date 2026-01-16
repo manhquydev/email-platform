@@ -4,6 +4,10 @@ import { CONFIG } from './config';
 
 const API_URL = CONFIG.API_URL;
 
+// Token refresh state to prevent concurrent refresh attempts
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
 export interface DashboardData {
   user: {
     id: string;
@@ -38,7 +42,58 @@ class ApiClient {
     return headers;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  /**
+   * Attempt to refresh the access token using the refresh token.
+   * Returns true if refresh was successful, false otherwise.
+   */
+  private async refreshToken(): Promise<boolean> {
+    // Prevent concurrent refresh attempts
+    if (isRefreshing && refreshPromise) {
+      return refreshPromise;
+    }
+
+    isRefreshing = true;
+    refreshPromise = (async () => {
+      try {
+        const auth = await storage.getAuth();
+        if (!auth.refreshToken) {
+          return false;
+        }
+
+        const response = await fetch(`${API_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: auth.refreshToken }),
+        });
+
+        if (!response.ok) {
+          await storage.clearAuth();
+          return false;
+        }
+
+        const data = await response.json();
+        if (data.token) {
+          // Update tokens in storage
+          await storage.set('auth', {
+            ...auth,
+            token: data.token,
+            refreshToken: data.refreshToken || auth.refreshToken,
+          });
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      } finally {
+        isRefreshing = false;
+        refreshPromise = null;
+      }
+    })();
+
+    return refreshPromise;
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}, retryOnUnauth = true): Promise<T> {
     const headers = await this.getHeaders();
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
@@ -48,8 +103,14 @@ class ApiClient {
       },
     });
 
-    if (response.status === 401) {
-      // Token expired or invalid
+    if (response.status === 401 && retryOnUnauth) {
+      // Attempt token refresh
+      const refreshed = await this.refreshToken();
+      if (refreshed) {
+        // Retry the request with new token
+        return this.request<T>(endpoint, options, false);
+      }
+      // Refresh failed, clear auth
       await storage.clearAuth();
       throw new Error('Unauthorized');
     }
@@ -131,6 +192,19 @@ class ApiClient {
   async deleteInbox(inboxId: string) {
     return this.request(`/inboxes/${inboxId}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Domain listing for inbox creation
+  async getDomains() {
+    return this.request<{ domains: Array<{ id: string; name: string; isPublic: boolean }> }>('/extension/domains');
+  }
+
+  // Custom inbox creation with prefix and domain
+  async createCustomInbox(localPart: string, domainId?: string) {
+    return this.request<{ success: boolean; inbox: any }>('/extension/quick-inbox', {
+      method: 'POST',
+      body: JSON.stringify({ localPart, domainId }),
     });
   }
 

@@ -2,7 +2,7 @@ import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from "fastify"
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import rateLimit from "@fastify/rate-limit";
-import { register as promRegister, collectDefaultMetrics, Histogram } from "prom-client";
+import { register as promRegister, collectDefaultMetrics, Histogram, Counter } from "prom-client";
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
@@ -61,28 +61,43 @@ declare module "fastify" {
 }
 
 export const buildServer = () => {
-  const loggerConfig = process.env.NODE_ENV === "production"
-    ? {
-      level: "info",
-      file: appConfig.storageDir + "/logs/app.log" // This requires pino-destination or similar, simpler to just use transport or rely on stdout.
-    }
-    : true; // Default pretty print for dev
-
-  // Using stdout is best practice for Docker, but we can configure pino to transport to a file if requested.
-  // For simplicity and standard docker practices, we will stick to stdout but strict format.
+  const isProduction = process.env.NODE_ENV === "production";
 
   const app = Fastify({
     trustProxy: appConfig.trustProxy,
+    // Request timeout to prevent resource exhaustion (30 seconds)
+    requestTimeout: 30000,
+    // Connection timeout for slow clients
+    connectionTimeout: 10000,
+    // Body size limit
+    bodyLimit: 10 * 1024 * 1024, // 10MB
     logger: {
-      level: process.env.LOG_LEVEL || "info",
-      transport: process.env.NODE_ENV !== "production" ? {
+      level: process.env.LOG_LEVEL || (isProduction ? "info" : "debug"),
+      // Structured JSON logging for production, pretty for dev
+      transport: !isProduction ? {
         target: "pino-pretty",
         options: {
           translateTime: "HH:MM:ss Z",
           ignore: "pid,hostname",
         },
       } : undefined,
-    }
+      // Redact sensitive fields from logs
+      redact: [
+        "req.headers.authorization",
+        "req.headers['x-api-key']",
+        "req.headers.cookie",
+        "req.headers['x-forwarded-for']",
+        "body.password",
+        "body.newPassword",
+        "body.currentPassword",
+        "body.token",
+        "body.secret",
+        "body.code",
+        "body.tempToken",
+      ],
+    },
+    // Generate request IDs for better traceability
+    requestIdHeader: "x-request-id",
   });
 
   app.setErrorHandler(errorHandler);
@@ -100,7 +115,25 @@ export const buildServer = () => {
 
   app.register(helmet, {
     global: true,
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for Swagger UI
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "http:"], // Allow images from email content/avatars
+        connectSrc: ["'self'", "ws:", "wss:"], // Allow WebSocket/SSE
+        frameSrc: ["'none'"], // Prevent clickjacking
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
   });
   app.register(multipart, { attachFieldsToBody: false, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
@@ -161,6 +194,19 @@ export const buildServer = () => {
     httpRequestDuration = promRegister.getSingleMetric("http_request_duration_seconds") as Histogram<string>;
   }
 
+  // Security event counters for monitoring and alerting
+  let securityEventsCounter: Counter<string>;
+  try {
+    securityEventsCounter = new Counter({
+      name: "security_events_total",
+      help: "Total count of security-relevant events",
+      labelNames: ["event_type", "outcome"],
+    });
+  } catch (e) {
+    securityEventsCounter = promRegister.getSingleMetric("security_events_total") as Counter<string>;
+  }
+
+  // Track 4xx and 5xx responses as potential security events
   app.addHook("onResponse", (request, reply, done) => {
     const route = request.routeOptions.url || request.url;
     if (route) {
@@ -168,6 +214,16 @@ export const buildServer = () => {
         .labels(request.method, route, reply.statusCode.toString())
         .observe(reply.elapsedTime / 1000);
     }
+
+    // Track authentication failures (401) and authorization failures (403)
+    if (reply.statusCode === 401) {
+      securityEventsCounter.labels("auth_failure", "rejected").inc();
+    } else if (reply.statusCode === 403) {
+      securityEventsCounter.labels("authorization_failure", "rejected").inc();
+    } else if (reply.statusCode === 429) {
+      securityEventsCounter.labels("rate_limit", "blocked").inc();
+    }
+
     done();
   });
 
@@ -187,6 +243,11 @@ export const buildServer = () => {
       });
 
       if (keyRecord) {
+        // Check if API key has expired
+        if (keyRecord.expiresAt && keyRecord.expiresAt < new Date()) {
+          return reply.status(401).send({ error: "API Key has expired" });
+        }
+
         request.user = {
           userId: keyRecord.userId,
           role: keyRecord.user.role,

@@ -1,6 +1,8 @@
 import { storage } from '../shared/storage';
 import { api } from '../shared/api';
+import { analytics } from '../shared/analytics';
 import { handlePushMessage, handleNotificationClick, updateBadge } from '../background/push-handler';
+import browser from 'webextension-polyfill';
 
 export default defineBackground(() => {
   // Alarm names
@@ -8,18 +10,14 @@ export default defineBackground(() => {
   const STORAGE_KEY_LAST_MESSAGE_ID = 'last_message_id';
 
   // Setup alarms and context menus on install
-  chrome.runtime.onInstalled.addListener(async () => {
+  browser.runtime.onInstalled.addListener(async () => {
     console.log('Ephemera Extension Installed');
 
-    // Create context menu for email fields
-    chrome.contextMenus.create({
-      id: 'fill-ephemera-email',
-      title: 'Fill with Ephemera Email',
-      contexts: ['editable'],
-    });
+    // Setup initial context menus
+    await setupContextMenus();
 
     // Create an alarm to poll for new messages every 1 minute
-    chrome.alarms.create(ALARM_POLL_MESSAGES, {
+    browser.alarms.create(ALARM_POLL_MESSAGES, {
       periodInMinutes: 1
     });
 
@@ -33,144 +31,152 @@ export default defineBackground(() => {
     }
   });
 
-  // Handle Alarms
-  chrome.alarms.onAlarm.addListener(async (alarm) => {
-    if (alarm.name === ALARM_POLL_MESSAGES) {
-      await pollForMessages();
-    }
-  });
+  async function setupContextMenus() {
+    await browser.contextMenus.removeAll();
 
-  async function pollForMessages() {
-    const auth = await storage.getAuth();
-    if (!auth.isAuthenticated || !auth.token) return;
+    // Parent Menu
+    browser.contextMenus.create({
+      id: 'ephemera-parent',
+      title: 'Ephemera',
+      contexts: ['editable'],
+    });
 
-    try {
-      const dashboard = await api.getDashboard();
+    // Quick Actions
+    browser.contextMenus.create({
+      id: 'generate-new',
+      parentId: 'ephemera-parent',
+      title: 'Generate New Email',
+      contexts: ['editable'],
+    });
 
-      if (dashboard.inboxes) {
-        await storage.setInboxes(dashboard.inboxes);
-      }
+    browser.contextMenus.create({
+      id: 'sep-1',
+      parentId: 'ephemera-parent',
+      type: 'separator',
+      contexts: ['editable'],
+    });
 
-      if (dashboard.stats.totalUnread > 0) {
-        for (const inbox of dashboard.inboxes.slice(0, 5)) {
-          if (inbox.unreadCount > 0) {
-            const messagesResponse = await api.getMessages(inbox.id, 5);
-            const messages = messagesResponse.data;
-
-            if (messages && messages.length > 0) {
-              const newestMessage = messages[0];
-              const storageResult = await chrome.storage.local.get(STORAGE_KEY_LAST_MESSAGE_ID);
-              const lastSeenId = storageResult[STORAGE_KEY_LAST_MESSAGE_ID];
-
-              if (newestMessage.id !== lastSeenId && !newestMessage.isRead) {
-                // Use refined push handler logic even for poll notifications
-                await handlePushMessage({
-                  type: 'new_message',
-                  messageId: newestMessage.id,
-                  inboxId: inbox.id,
-                  from: newestMessage.from,
-                  subject: newestMessage.subject,
-                  preview: newestMessage.textBody?.substring(0, 100) || '',
-                  receivedAt: newestMessage.receivedAt
-                });
-                await chrome.storage.local.set({ [STORAGE_KEY_LAST_MESSAGE_ID]: newestMessage.id });
-                break;
-              }
-            }
-          }
-        }
-      } else {
-        await updateBadge('');
-      }
-    } catch (error) {
-      console.error('Polling failed:', error);
+    // Existing Inboxes (will be populated dynamically)
+    const result = await browser.storage.local.get('inboxes');
+    const inboxes = (result.inboxes as any[]) || [];
+    if (inboxes.length === 0) {
+      browser.contextMenus.create({
+        id: 'no-inboxes',
+        parentId: 'ephemera-parent',
+        title: 'No active inboxes',
+        enabled: false,
+        contexts: ['editable'],
+      });
+    } else {
+      inboxes.slice(0, 8).forEach((inbox: any) => {
+        const email = inbox.address || `${inbox.localPart}@${typeof inbox.domain === 'string' ? inbox.domain : inbox.domain.name}`;
+        browser.contextMenus.create({
+          id: `fill-${inbox.id}`,
+          parentId: 'ephemera-parent',
+          title: email,
+          contexts: ['editable'],
+        });
+      });
     }
   }
 
   // Handle Context Menu Clicks
-  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId === 'fill-ephemera-email' && tab?.id) {
-      try {
-        const result = await chrome.storage.local.get(['inboxes', 'auth']);
-        const inboxes = result.inboxes || [];
-        const auth = result.auth;
+  browser.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (!tab?.id) return;
 
-        if (!auth?.isAuthenticated) {
-          chrome.notifications.create('login-required', {
-            type: 'basic',
-            iconUrl: '/icons/icon128.png',
-            title: 'Sign in Required',
-            message: 'Please sign in to your Ephemera account to use this feature.',
-          });
-          return;
-        }
+    try {
+      const result = await browser.storage.local.get(['auth', 'inboxes']);
+      const auth = result.auth as any;
+      const inboxes = (result.inboxes as any[]) || [];
 
-        let emailToFill = '';
-        if (inboxes.length > 0) {
-          const first = inboxes[0];
-          emailToFill = first.address || `${first.localPart}@${typeof first.domain === 'string' ? first.domain : first.domain.name}`;
-        } else {
-          const response = await api.createQuickInbox();
-          if (response.success && response.inbox) {
-            const inbox = response.inbox;
-            emailToFill = inbox.address || `${inbox.localPart}@${typeof inbox.domain === 'string' ? inbox.domain : (inbox.domain?.name || 'domain')}`;
-            const dashboard = await api.getDashboard();
-            await storage.setInboxes(dashboard.inboxes);
-          }
-        }
-
-        if (emailToFill) {
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: (email) => {
-              const activeEl = document.activeElement as HTMLInputElement;
-              if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
-                activeEl.value = email;
-                activeEl.dispatchEvent(new Event('input', { bubbles: true }));
-                activeEl.dispatchEvent(new Event('change', { bubbles: true }));
-              }
-            },
-            args: [emailToFill],
-          });
-        }
-      } catch (error) {
-        console.error('Context menu action failed:', error);
+      if (!auth?.isAuthenticated) {
+        browser.notifications.create('login-required', {
+          type: 'basic',
+          iconUrl: '/icons/icon128.png',
+          title: 'Sign in Required',
+          message: 'Please sign in to your Ephemera account to use this feature.',
+        });
+        return;
       }
+
+      let emailToFill = '';
+
+      if (info.menuItemId === 'generate-new') {
+        const response = await api.createQuickInbox();
+        if (response.success && response.inbox) {
+          analytics.track('inbox_created_quick', { context: 'context_menu' });
+          const inbox = response.inbox;
+          emailToFill = inbox.address || `${inbox.localPart}@${typeof inbox.domain === 'string' ? inbox.domain : (inbox.domain?.name || 'domain')}`;
+
+          // Sync and refresh menus
+          const dashboard = await api.getDashboard();
+          await storage.setInboxes(dashboard.inboxes);
+          await setupContextMenus();
+        }
+      } else if (String(info.menuItemId).startsWith('fill-')) {
+        const menuItemId = info.menuItemId as string;
+        const inboxId = menuItemId.replace('fill-', '');
+        analytics.track('settings_updated', { setting: 'context_menu_fill' });
+        const targetInbox = inboxes.find((i: any) => i.id === inboxId);
+        if (targetInbox) {
+          emailToFill = targetInbox.address || `${targetInbox.localPart}@${typeof targetInbox.domain === 'string' ? targetInbox.domain : targetInbox.domain.name}`;
+        }
+      }
+
+      if (emailToFill) {
+        browser.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: (email: string) => {
+            const activeEl = document.activeElement as HTMLInputElement;
+            if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+              activeEl.value = email;
+              activeEl.dispatchEvent(new Event('input', { bubbles: true }));
+              activeEl.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          },
+          args: [emailToFill],
+        });
+      }
+    } catch (error) {
+      console.error('Context menu action failed:', error);
     }
   });
 
   // Handle messages
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  browser.runtime.onMessage.addListener((message: any, _sender: any) => {
     if (message.type === 'CREATE_INBOX') {
-      api.createQuickInbox()
+      analytics.track('inbox_created_quick', { context: 'content_script_dropdown' });
+      return api.createQuickInbox()
         .then(async response => {
           if (response.success && response.inbox) {
               const dashboard = await api.getDashboard();
               await storage.setInboxes(dashboard.inboxes);
-              sendResponse({ success: true, inbox: response.inbox });
+              return { success: true, inbox: response.inbox };
           } else {
-              sendResponse({ success: false, error: 'Failed' });
+              return { success: false, error: 'Failed' };
           }
         })
-        .catch(error => sendResponse({ success: false, error: error.message }));
-      return true;
+        .catch(error => ({ success: false, error: error.message }));
     }
 
     if (message.type === 'GET_INBOXES') {
-      api.getDashboard()
+      return api.getDashboard()
         .then(async dashboard => {
           await storage.setInboxes(dashboard.inboxes);
-          sendResponse({ success: true, inboxes: dashboard.inboxes });
+          return { success: true, inboxes: dashboard.inboxes };
         })
-        .catch(error => sendResponse({ success: false, error: error.message }));
-      return true;
+        .catch(error => ({ success: false, error: error.message }));
     }
 
     if (message.type === 'SETUP_PUSH') {
-      setupPushNotification()
-        .then(() => sendResponse({ success: true }))
-        .catch(err => sendResponse({ success: false, error: err.message }));
-      return true;
+      return setupPushNotification()
+        .then(() => ({ success: true }))
+        .catch(err => ({ success: false, error: err.message }));
+    }
+
+    if (message.type === 'TRACK_EVENT') {
+      analytics.track(message.event, message.metadata);
+      return Promise.resolve({ success: true });
     }
   });
 

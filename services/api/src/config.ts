@@ -1,6 +1,30 @@
 import { config as loadEnv } from "dotenv";
+import { z } from "zod";
 
 loadEnv();
+
+// Zod schema for environment variable validation
+const envSchema = z.object({
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
+  TOTP_ENCRYPTION_KEY: z.string().length(64, "TOTP_ENCRYPTION_KEY must be exactly 64 hex characters").regex(/^[0-9a-fA-F]+$/, "TOTP_ENCRYPTION_KEY must be valid hex").optional(),
+  HTTP_PORT: z.string().regex(/^\d+$/).optional(),
+  SMTP_PORT: z.string().regex(/^\d+$/).optional(),
+  NODE_ENV: z.enum(["development", "production", "test"]).optional(),
+});
+
+// Validate environment variables in production
+const isProduction = process.env.NODE_ENV === "production";
+if (isProduction) {
+  const result = envSchema.safeParse(process.env);
+  if (!result.success) {
+    console.error("❌ Invalid environment variables:");
+    result.error.issues.forEach(issue => {
+      console.error(`  - ${issue.path.join(".")}: ${issue.message}`);
+    });
+    process.exit(1);
+  }
+}
 
 const required = (name: string, fallback?: string) => {
   const value = process.env[name] ?? fallback;

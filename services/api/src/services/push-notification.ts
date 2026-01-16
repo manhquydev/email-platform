@@ -58,6 +58,11 @@ class PushNotificationService {
               urgency: 'normal',
             }
           );
+          // Track successful send for stale subscription pruning
+          await prisma.pushSubscription.update({
+            where: { id: sub.id },
+            data: { lastSuccessfulSend: new Date() },
+          });
         } catch (err: any) {
           // Remove invalid subscriptions (410 Gone, 404 Not Found)
           if (err.statusCode === 410 || err.statusCode === 404) {
@@ -80,7 +85,14 @@ class PushNotificationService {
 
   async sendEmailNotification(
     userId: string,
-    email: { from: string | null; subject: string | null; inboxId: string }
+    email: {
+      from: string | null;
+      subject: string | null;
+      inboxId: string;
+      spf?: string | null;
+      dkim?: string | null;
+      dmarc?: string | null;
+    }
   ): Promise<void> {
     await this.sendToUser(userId, {
       title: email.from || 'New Email',
@@ -92,6 +104,9 @@ class PushNotificationService {
         type: 'email.new',
         inboxId: email.inboxId,
         url: `/dashboard?inboxId=${email.inboxId}`,
+        spf: email.spf,
+        dkim: email.dkim,
+        dmarc: email.dmarc,
       },
     });
   }

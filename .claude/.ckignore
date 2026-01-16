@@ -5,7 +5,8 @@
 # JS/TS
 node_modules
 dist
-build
+# build (Allowed for extension build verification)
+!build
 .next
 .nuxt
 

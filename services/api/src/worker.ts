@@ -236,6 +236,9 @@ export const setupEmailWorker = (logger: Logger) => {
                 logger.info({
                     spamScore: spamResult.score,
                     action: spamResult.action,
+                    spf: spamResult.spf,
+                    dkim: spamResult.dkim,
+                    dmarc: spamResult.dmarc,
                     symbols: formatSpamSymbols(spamResult)
                 }, 'spam check result');
 
@@ -256,6 +259,9 @@ export const setupEmailWorker = (logger: Logger) => {
                         htmlBody,
                         headers: sanitizeHeaders(headersToObject(mail.headers as Map<string, string | string[] | undefined>)),
                         spamScore: spamResult.score,
+                        spfResult: spamResult.spf,
+                        dkimResult: spamResult.dkim,
+                        dmarcResult: spamResult.dmarc,
                         size: rawContent.length,
                         sourceIp: anonymizeIp(sourceIp),
                     },
@@ -335,6 +341,10 @@ export const setupEmailWorker = (logger: Logger) => {
                                     subject: message.subject,
                                     receivedAt: message.receivedAt,
                                     size: message.size,
+                                    spf: spamResult.spf,
+                                    dkim: spamResult.dkim,
+                                    dmarc: spamResult.dmarc,
+                                    spamScore: spamResult.score,
                                 });
                             }
                         } catch (webhookErr) {
@@ -352,6 +362,9 @@ export const setupEmailWorker = (logger: Logger) => {
                                         from: fromAddress ?? null,
                                         subject: message.subject ?? null,
                                         receivedAt: message.receivedAt.toISOString(),
+                                        spf: spamResult.spf,
+                                        dkim: spamResult.dkim,
+                                        dmarc: spamResult.dmarc,
                                     }
                                 );
                                 logger.info({ messageId: message.id }, 'published realtime email.new event');
@@ -369,6 +382,9 @@ export const setupEmailWorker = (logger: Logger) => {
                                         from: fromAddress ?? null,
                                         subject: message.subject ?? null,
                                         inboxId: inbox.id,
+                                        spf: spamResult.spf,
+                                        dkim: spamResult.dkim,
+                                        dmarc: spamResult.dmarc,
                                     }
                                 );
                                 logger.info({ messageId: message.id }, 'sent browser push notification');
@@ -381,7 +397,7 @@ export const setupEmailWorker = (logger: Logger) => {
                     logger.warn({ err: maildirErr }, 'failed to sync message to Maildir');
                 }
 
-                logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: spamResult.score }, "stored inbound email via worker");
+                logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: spamResult.score, spf: spamResult.spf, dkim: spamResult.dkim, dmarc: spamResult.dmarc }, "stored inbound email via worker");
 
                 // Process email filters
                 try {

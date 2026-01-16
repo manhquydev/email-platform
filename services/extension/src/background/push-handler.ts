@@ -1,4 +1,5 @@
 import { CONFIG } from '../shared/config';
+import browser from 'webextension-polyfill';
 
 interface PushPayload {
   type: 'new_message'
@@ -42,18 +43,18 @@ export async function handleNotificationClick(event: any) {
   if (data && data.inboxId) {
     const url = `${CONFIG.WEB_URL}/inbox/${data.inboxId}`;
     // @ts-ignore
-    event.waitUntil(chrome.tabs.create({ url }));
+    event.waitUntil(browser.tabs.create({ url }));
   } else {
     // @ts-ignore
-    event.waitUntil(chrome.tabs.create({ url: `${CONFIG.WEB_URL}/dashboard` }));
+    event.waitUntil(browser.tabs.create({ url: `${CONFIG.WEB_URL}/dashboard` }));
   }
 }
 
 export async function updateBadge(text?: string) {
     if (text !== undefined) {
-        chrome.action.setBadgeText({ text });
+        browser.action.setBadgeText({ text });
         if (text) {
-             chrome.action.setBadgeBackgroundColor({ color: '#ef4444' }); // Red for attention
+             browser.action.setBadgeBackgroundColor({ color: '#ef4444' }); // Red for attention
         }
     }
 }

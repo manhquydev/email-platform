@@ -1,8 +1,65 @@
 import { DetectedField } from './field-detector';
 import { CONFIG } from '../shared/config';
+import { Inbox, StorageData } from '../shared/types';
+import browser from 'webextension-polyfill';
 
 const ICON_SIZE = 24;
 const injectedFields = new WeakSet<HTMLInputElement>();
+let currentTheme: 'light' | 'dark' = 'light';
+
+// Initialize theme from storage
+browser.storage.local.get('settings').then((result) => {
+  const settings = result.settings as StorageData['settings'] | undefined;
+  const theme = settings?.theme || 'system';
+  updateTheme(theme);
+});
+
+// Listen for theme changes
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.settings) {
+    const newValue = changes.settings.newValue as StorageData['settings'];
+    if (newValue) {
+      updateTheme(newValue.theme);
+    }
+  }
+});
+
+// Listen for system theme changes
+const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+const handleSystemThemeChange = () => {
+  browser.storage.local.get('settings').then((result) => {
+    const settings = result.settings as StorageData['settings'] | undefined;
+    if (settings?.theme === 'system') {
+      updateTheme('system');
+    }
+  });
+};
+
+if (mediaQuery.addEventListener) {
+  mediaQuery.addEventListener('change', handleSystemThemeChange);
+} else {
+  mediaQuery.addListener(handleSystemThemeChange);
+}
+
+function updateTheme(theme: 'light' | 'dark' | 'system') {
+  if (theme === 'system') {
+    currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  } else {
+    currentTheme = theme;
+  }
+
+  // Update any active dropdowns
+  if (activeDropdown) {
+    const shadow = activeDropdown.shadowRoot;
+    if (shadow) {
+      const wrapper = shadow.querySelector('.wrapper');
+      if (wrapper) {
+        if (currentTheme === 'dark') wrapper.classList.add('dark');
+        else wrapper.classList.remove('dark');
+      }
+    }
+  }
+}
 
 export function injectUI(fields: DetectedField[]) {
   // Use requestIdleCallback to avoid blocking the main thread
@@ -26,7 +83,7 @@ export function injectUI(fields: DetectedField[]) {
 }
 
 // Global listener for inbox updates
-chrome.runtime.onMessage.addListener((message) => {
+browser.runtime.onMessage.addListener((message: any) => {
   if (message.type === 'INBOXES_UPDATED' && activeDropdown && activeInput) {
     // Refresh the active dropdown if it's open
     const iconWrapper = document.querySelector('.ephemera-icon-container') as HTMLElement;
@@ -152,19 +209,20 @@ function showDropdown(input: HTMLInputElement, iconWrapper: HTMLElement) {
 
   activeInput = input;
 
-  chrome.storage.local.get(['inboxes', 'auth'], (result) => {
-    const auth = result.auth;
+  // Track dropdown opening
+  browser.runtime.sendMessage({ type: 'TRACK_EVENT', event: 'settings_updated', metadata: { setting: 'content_script_dropdown_open' } });
+
+  browser.storage.local.get(['inboxes', 'auth']).then((result) => {
+    const auth = result.auth as StorageData['auth'] | undefined;
+    let dropdown: HTMLElement;
+
     if (!auth || !auth.isAuthenticated) {
-      const dropdown = createLoginRequiredDropdown();
-      document.body.appendChild(dropdown);
-      activeDropdown = dropdown;
-      positionDropdown(dropdown, iconWrapper);
-      setupCloseHandler(dropdown, iconWrapper);
-      return;
+      dropdown = createLoginRequiredDropdown();
+    } else {
+      const inboxes = (result.inboxes as Inbox[]) || [];
+      dropdown = createDropdown(inboxes, input);
     }
 
-    const inboxes = result.inboxes || [];
-    const dropdown = createDropdown(inboxes, input);
     document.body.appendChild(dropdown);
     activeDropdown = dropdown;
     positionDropdown(dropdown, iconWrapper);
@@ -194,6 +252,7 @@ function positionDropdown(dropdown: HTMLElement, iconWrapper: HTMLElement) {
 function setupCloseHandler(dropdown: HTMLElement, iconWrapper: HTMLElement) {
   const closeHandler = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
+    // Check if click is inside the dropdown container or the icon
     if (!dropdown.contains(target) && !iconWrapper.contains(target)) {
       dropdown.remove();
       activeDropdown = null;
@@ -201,35 +260,50 @@ function setupCloseHandler(dropdown: HTMLElement, iconWrapper: HTMLElement) {
       document.removeEventListener('mousedown', closeHandler);
     }
   };
+  // Use capture to handle clicks before other listeners
   setTimeout(() => document.addEventListener('mousedown', closeHandler), 0);
 }
 
 function createLoginRequiredDropdown(): HTMLElement {
   const container = document.createElement('div');
-  container.className = 'ephemera-dropdown-container';
+  container.className = 'ephemera-dropdown-root';
   container.style.cssText = `
     position: absolute;
     z-index: 2147483647;
     width: 260px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    animation: ephemera-slide-up 0.2s ease-out;
-    padding: 24px;
-    text-align: center;
+    pointer-events: auto;
   `;
 
   const shadow = container.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = `
+    :host {
+      all: initial;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      text-align: center;
+      animation: ephemera-slide-up 0.2s ease-out;
+      transition: all 0.3s ease;
+    }
+    .wrapper.dark {
+      background: #0f172a;
+      border-color: #1e293b;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
     @keyframes ephemera-slide-up {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .title { font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 16px; }
-    .desc { color: #64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+    .title { font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 16px; transition: color 0.3s; }
+    .wrapper.dark .title { color: #f1f5f9; }
+    .desc { color: #64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5; transition: color 0.3s; }
+    .wrapper.dark .desc { color: #94a3b8; }
     .btn {
       display: block;
       width: 100%;
@@ -252,55 +326,61 @@ function createLoginRequiredDropdown(): HTMLElement {
     }
   `;
 
-  const content = document.createElement('div');
-  content.innerHTML = `
+  const wrapper = document.createElement('div');
+  wrapper.className = `wrapper ${currentTheme === 'dark' ? 'dark' : ''}`;
+  wrapper.innerHTML = `
     <div class="title">Sign in Required</div>
     <div class="desc">Please sign in to your Ephemera account to use temporary emails.</div>
     <button class="btn">Sign In / Sign Up</button>
   `;
 
-  content.querySelector('.btn')?.addEventListener('click', () => {
+  wrapper.querySelector('.btn')?.addEventListener('click', () => {
     window.open(`${CONFIG.WEB_URL}/login`, '_blank');
   });
 
   shadow.appendChild(style);
-  shadow.appendChild(content);
+  shadow.appendChild(wrapper);
   return container;
-}
-
-interface Inbox {
-  id: string;
-  localPart: string;
-  address?: string;
-  domain: { name: string } | string;
 }
 
 function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement {
   const container = document.createElement('div');
-  container.className = 'ephemera-dropdown-container';
+  container.className = 'ephemera-dropdown-root';
   container.style.cssText = `
     position: absolute;
     z-index: 2147483647;
     width: 260px;
-    max-height: 380px;
-    overflow-y: auto;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    animation: ephemera-slide-up 0.2s ease-out;
   `;
 
   const shadow = container.attachShadow({ mode: 'open' });
-
   const style = document.createElement('style');
   style.textContent = `
+    :host {
+      all: initial;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      animation: ephemera-slide-up 0.2s ease-out;
+      overflow: hidden;
+      max-height: 380px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    .wrapper.dark {
+      background: #0f172a;
+      border-color: #1e293b;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
     @keyframes ephemera-slide-up {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .list { padding: 8px; }
+    .list { padding: 8px; overflow-y: auto; }
     .item {
       padding: 10px 14px;
       color: #334155;
@@ -315,17 +395,18 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
       align-items: center;
       gap: 10px;
     }
+    .wrapper.dark .item { color: #cbd5e1; }
     .item:hover {
       background: #f1f5f9;
       color: #0ea5e9;
     }
-    .item-icon {
-      flex-shrink: 0;
-      color: #94a3b8;
+    .wrapper.dark .item:hover {
+      background: #1e293b;
+      color: #38bdf8;
     }
-    .item:hover .item-icon {
-      color: #0ea5e9;
-    }
+    .item-icon { flex-shrink: 0; color: #94a3b8; }
+    .item:hover .item-icon { color: #0ea5e9; }
+    .wrapper.dark .item:hover .item-icon { color: #38bdf8; }
     .create {
       margin-top: 6px;
       color: #0ea5e9;
@@ -333,9 +414,17 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
       background: #f0f9ff;
       border: 1.5px dashed #bae6fd;
     }
+    .wrapper.dark .create {
+      background: #0c4a6e;
+      border-color: #075985;
+      color: #38bdf8;
+    }
     .create:hover {
       background: #e0f2fe;
       border-style: solid;
+    }
+    .wrapper.dark .create:hover {
+      background: #075985;
     }
     .header {
       padding: 12px 14px 6px;
@@ -344,23 +433,27 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.06em;
+      transition: color 0.3s;
     }
-    .no-data {
-      padding: 24px;
-      text-align: center;
-      color: #94a3b8;
-      font-size: 14px;
-    }
+    .wrapper.dark .header { color: #64748b; }
+    .no-data { padding: 24px; text-align: center; color: #94a3b8; font-size: 14px; }
     .footer {
-      margin-top: 6px;
-      padding-top: 6px;
+      margin-top: auto;
+      padding: 8px;
       border-top: 1px solid #f1f5f9;
+      background: #f8fafc;
+      transition: all 0.3s ease;
     }
-    .link-item {
-      color: #64748b;
-      font-weight: 500;
+    .wrapper.dark .footer {
+      border-top-color: #1e293b;
+      background: #1e293b;
     }
+    .link-item { color: #64748b; font-weight: 500; }
+    .wrapper.dark .link-item { color: #94a3b8; }
   `;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = `wrapper ${currentTheme === 'dark' ? 'dark' : ''}`;
 
   const list = document.createElement('div');
   list.className = 'list';
@@ -373,7 +466,6 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
 
     inboxes.slice(0, 8).forEach((inbox) => {
       const email = inbox.address || `${inbox.localPart}@${typeof inbox.domain === 'string' ? inbox.domain : inbox.domain.name}`;
-
       const item = document.createElement('div');
       item.className = 'item';
       item.innerHTML = `
@@ -403,9 +495,9 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
     createItem.style.opacity = '0.7';
     createItem.style.pointerEvents = 'none';
 
-    chrome.runtime.sendMessage({ type: 'CREATE_INBOX' }, (response) => {
+    browser.runtime.sendMessage({ type: 'CREATE_INBOX' }).then((response: any) => {
       if (response && response.success && response.inbox) {
-        const inbox = response.inbox;
+        const inbox = response.inbox as Inbox;
         const domainName = typeof inbox.domain === 'string' ? inbox.domain : (inbox.domain?.name || 'domain');
         const email = inbox.address || `${inbox.localPart}@${domainName}`;
         fillField(input, email);
@@ -422,7 +514,6 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
 
   const footer = document.createElement('div');
   footer.className = 'footer';
-
   const dashboardItem = document.createElement('div');
   dashboardItem.className = 'item link-item';
   dashboardItem.innerHTML = `
@@ -433,10 +524,11 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
     window.open(`${CONFIG.WEB_URL}/dashboard`, '_blank');
   });
   footer.appendChild(dashboardItem);
-  list.appendChild(footer);
 
+  wrapper.appendChild(list);
+  wrapper.appendChild(footer);
   shadow.appendChild(style);
-  shadow.appendChild(list);
+  shadow.appendChild(wrapper);
 
   return container;
 }

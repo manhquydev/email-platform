@@ -25,8 +25,19 @@ export default defineConfig({
     action: {
       default_title: 'Ephemera',
     },
+    browser_specific_settings: {
+      gecko: {
+        id: 'extension@ephemera.io',
+        strict_min_version: '109.0',
+      },
+    },
     side_panel: {
       default_path: 'entrypoints/sidepanel/index.html',
     },
   },
+  vite: () => ({
+    build: {
+      chunkSizeWarningLimit: 600,
+    },
+  }),
 });

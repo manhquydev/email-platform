@@ -1,19 +1,26 @@
 # Ephemera Browser Extension
 
-A Chrome Extension (Manifest V3) for Ephemera Temporary Email service.
+A modernized, multi-browser extension for the Ephemera Temporary Email service. Built with **WXT** (Web Extension Toolbox) for cross-browser compatibility and high-performance development.
 
-## Features
-- **Quick Inbox Creation**: Generate a disposable email in one click.
-- **Auto-fill**: Automatically detect email fields on websites and fill them with your disposable email via a custom dropdown.
-- **Inbox Management**: View, extend (+10m), or delete inboxes directly from the popup.
-- **Permanence Toggle**: Switch inboxes between Temporary and Permanent states.
-- **Real-time Sync**: Automatic data synchronization between popup, background, and content scripts.
-- **Live Countdown**: Ticking timers for temporary inboxes to track expiration.
-- **Message Preview**: Read and manage emails directly in the popup.
-- **Real-time Notifications**: Receive native notifications for new incoming emails with unread badges.
-- **Customizable Settings**: Toggle Auto-copy to clipboard and notification preferences.
+## 🚀 Key Features
 
-## Development Setup
+- **Multi-browser Support**: Optimized for Chrome (MV3), Firefox (MV2), and Safari.
+- **Side Panel Interface**: Persistent productivity interface for managing digital identities while browsing.
+- **Contextual Intelligence**: Automatically detects email fields on any website and provides a Shadow DOM-isolated dropdown for instant filling.
+- **Glassmorphism & Material 3 UI**: Modern 2026 aesthetics with full support for Light, Dark, and System theme modes.
+- **Anonymous Mode**: Create temporary inboxes without an account using privacy-safe device identifiers.
+- **Real-time Synchronization**: Instant data sync between background processes, popups, and content scripts via `browser.storage`.
+- **Privacy-focused Analytics**: Lightweight usage tracking to improve features without compromising user data.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [WXT](https://wxt.dev/) (Web Extension Toolbox)
+- **UI Library**: React 18 with TailwindCSS
+- **Icons**: Lucide React
+- **Polyfills**: `webextension-polyfill` for unified `browser.*` namespace
+- **Style Isolation**: Shadow DOM for all injected UI components
+
+## 📦 Development Setup
 
 1. **Install Dependencies**
    ```bash
@@ -21,42 +28,44 @@ A Chrome Extension (Manifest V3) for Ephemera Temporary Email service.
    npm install
    ```
 
-2. **Development Mode (Hot Reload)**
+2. **Run in Development Mode**
    ```bash
+   # Chrome
    npm run dev
+
+   # Firefox
+   npm run dev:firefox
    ```
-   This will output a `dist` directory.
 
-3. **Load in Chrome**
-   - Open Chrome and go to `chrome://extensions`
-   - Enable "Developer mode" (top right)
-   - Click "Load unpacked"
-   - Select the `services/extension/dist` folder
+## 🏗️ Production Builds
 
-## Building for Production
+Generate distribution-ready packages for any target browser:
 
 ```bash
+# Build for Chrome (Manifest V3)
 npm run build
+
+# Build for Firefox
+npm run build:firefox
+
+# Build for Safari
+npm run build:safari
 ```
-This generates a production-ready build in `dist`.
 
-## Architecture
-- **Manifest V3**: Uses Service Workers (`src/background`) instead of background pages.
-- **React 19**: Popup UI (`src/popup`) built with React and TailwindCSS.
-- **CRXJS**: Vite plugin for seamless extension development.
-- **Content Script**: (`src/content`) Handles DOM interaction for auto-fill.
+Packages are output to the `.output/` directory, organized by target.
 
-## Permissions
-- `storage`: For saving auth token and state.
-- `alarms`: For periodic polling (fallback).
-- `notifications`: For showing native notifications.
-- `activeTab` & `scripting`: For auto-fill functionality.
-- `clipboardWrite`: To copy email addresses.
+## 🔒 Permissions
 
-## backend Integration
-The extension communicates with the Ephemera API (`api.manhquy.click`).
-Specific endpoints used:
-- `/auth/login`, `/auth/me`
-- `/extension/quick-inbox`
-- `/extension/dashboard`
-- `/push/subscribe`
+- `storage`: Unified state management and theme persistence.
+- `alarms`: Reliable background polling and countdown timers.
+- `notifications`: Native alerts for incoming emails.
+- `sidePanel`: Persistent sidebar productivity interface.
+- `scripting` & `activeTab`: Dynamic UI injection and field detection.
+- `contextMenus`: Contextual actions for quick inbox generation.
+
+## 📡 Backend Integration
+
+The extension integrates with the Ephemera API (`https://api.manhquy.click`).
+- **Standard Auth**: Email/Password and 2FA support.
+- **Anonymous Auth**: Session-less inbox creation via `deviceId`.
+- **Push Service**: Secure subscription to incoming message events.

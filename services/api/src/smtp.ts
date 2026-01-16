@@ -21,6 +21,13 @@ export const startSmtpServer = (logger: Logger, port = appConfig.smtpPort) => {
   const server = new SMTPServer({
     disabledCommands: ["AUTH"],
     logger: false,
+    // Security: Connection limits and timeouts
+    maxClients: 100, // Maximum concurrent connections
+    socketTimeout: 60000, // 60 seconds socket timeout
+    closeTimeout: 30000, // 30 seconds to close connection gracefully
+    size: 25 * 1024 * 1024, // 25MB max message size
+    // Prevent banner grabbing attacks
+    banner: "ESMTP",
     async onData(stream, session, callback) {
       try {
         const rawDir = await ensureRawStorageDir();

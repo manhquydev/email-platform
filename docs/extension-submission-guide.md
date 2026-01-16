@@ -11,19 +11,17 @@ Run the build command to generate the production artifacts:
 cd services/extension
 npm run build
 ```
-This will create a `dist` directory. Zip this directory:
+This will create a `.output/chrome-mv3` directory. Alternatively, generate a production-ready zip file directly:
 ```bash
-# On Mac/Linux
-zip -r extension.zip dist
-# On Windows
-# Right-click 'dist' folder -> Send to -> Compressed (zipped) folder
+npm run zip
 ```
+This will create a `.zip` file in the `.output` directory.
 
 ## 2. Store Assets
 You need to prepare the following images:
-- **Store Icon**: 128x128px PNG
-- **Screenshot 1**: 1280x800px or 640x400px JPEG/PNG (Main UI)
-- **Screenshot 2**: 1280x800px (Auto-fill feature)
+- **Store Icon**: 128x128px PNG (use `services/extension/store-assets/icon128.png`)
+- **Screenshot 1**: 1280x800px or 640x400px JPEG/PNG (Main Side Panel UI)
+- **Screenshot 2**: 1280x800px (Auto-fill context menu feature)
 - **Marquee Tile**: 440x280px (Promotional banner)
 
 ## 3. Developer Dashboard

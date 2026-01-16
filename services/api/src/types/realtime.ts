@@ -20,6 +20,9 @@ export interface EmailNewEvent extends BaseEvent {
     from: string | null;
     subject: string | null;
     receivedAt: string;
+    spf?: string | null;
+    dkim?: string | null;
+    dmarc?: string | null;
   };
 }
 

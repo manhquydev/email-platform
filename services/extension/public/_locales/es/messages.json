@@ -1,0 +1,374 @@
+{
+  "extensionName": {
+    "message": "Ephemera",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Direcciones de correo desechables para proteger tu privacidad",
+    "description": "Extension description"
+  },
+
+  "common_loading": {
+    "message": "Cargando...",
+    "description": "Generic loading text"
+  },
+  "common_error": {
+    "message": "Ocurrió un error",
+    "description": "Generic error message"
+  },
+  "common_retry": {
+    "message": "Reintentar",
+    "description": "Retry button text"
+  },
+  "common_cancel": {
+    "message": "Cancelar",
+    "description": "Cancel button text"
+  },
+  "common_save": {
+    "message": "Guardar",
+    "description": "Save button text"
+  },
+  "common_close": {
+    "message": "Cerrar",
+    "description": "Close button text"
+  },
+  "common_back": {
+    "message": "Volver",
+    "description": "Back button text"
+  },
+  "common_next": {
+    "message": "Siguiente",
+    "description": "Next button text"
+  },
+  "common_copy": {
+    "message": "Copiar",
+    "description": "Copy button text"
+  },
+  "common_copied": {
+    "message": "¡Copiado!",
+    "description": "Copied confirmation text"
+  },
+  "common_refresh": {
+    "message": "Actualizar",
+    "description": "Refresh button text"
+  },
+
+  "header_title": {
+    "message": "Ephemera",
+    "description": "Header title"
+  },
+  "header_openSidePanel": {
+    "message": "Abrir en panel lateral",
+    "description": "Side panel button tooltip"
+  },
+  "header_settings": {
+    "message": "Configuración",
+    "description": "Settings button tooltip"
+  },
+
+  "inbox_activeInboxes": {
+    "message": "Bandejas activas",
+    "description": "Active inboxes section title"
+  },
+  "inbox_usage": {
+    "message": "Uso",
+    "description": "Usage label"
+  },
+  "inbox_createNew": {
+    "message": "Crear nueva bandeja",
+    "description": "Create inbox button"
+  },
+  "inbox_createRandom": {
+    "message": "Crear correo aleatorio",
+    "description": "Create random inbox button"
+  },
+  "inbox_createCustom": {
+    "message": "Crear bandeja personalizada",
+    "description": "Create custom inbox button"
+  },
+  "inbox_noInboxes": {
+    "message": "Sin bandejas aún",
+    "description": "Empty state message"
+  },
+  "inbox_createFirst": {
+    "message": "Crea tu primera bandeja",
+    "description": "Empty state CTA"
+  },
+  "inbox_viewMessages": {
+    "message": "Ver mensajes",
+    "description": "View messages button"
+  },
+  "inbox_dashboard": {
+    "message": "Panel",
+    "description": "Dashboard link"
+  },
+  "inbox_copyAddress": {
+    "message": "Copiar dirección",
+    "description": "Copy address button tooltip"
+  },
+  "inbox_showQR": {
+    "message": "Mostrar código QR",
+    "description": "Show QR code button tooltip"
+  },
+  "inbox_makePermanent": {
+    "message": "Hacer permanente",
+    "description": "Make permanent button tooltip"
+  },
+  "inbox_makeTemporary": {
+    "message": "Cambiar a temporal (24h)",
+    "description": "Make temporary button tooltip"
+  },
+  "inbox_expired": {
+    "message": "Expirado",
+    "description": "Expired status"
+  },
+
+  "createModal_title": {
+    "message": "Crear nueva bandeja",
+    "description": "Create modal title"
+  },
+  "createModal_random": {
+    "message": "Aleatorio",
+    "description": "Random mode label"
+  },
+  "createModal_custom": {
+    "message": "Personalizado",
+    "description": "Custom mode label"
+  },
+  "createModal_emailPrefix": {
+    "message": "Prefijo de correo",
+    "description": "Email prefix label"
+  },
+  "createModal_domain": {
+    "message": "Dominio",
+    "description": "Domain label"
+  },
+  "createModal_preview": {
+    "message": "Vista previa",
+    "description": "Preview label"
+  },
+  "createModal_randomHint": {
+    "message": "Se generará automáticamente una dirección de correo aleatoria.",
+    "description": "Random mode hint"
+  },
+  "createModal_creating": {
+    "message": "Creando...",
+    "description": "Creating loading text"
+  },
+
+  "messages_count": {
+    "message": "$COUNT$ mensajes",
+    "description": "Message count",
+    "placeholders": { "count": { "content": "$1", "example": "5" } }
+  },
+  "messages_search": {
+    "message": "Buscar mensajes...",
+    "description": "Search placeholder"
+  },
+  "messages_empty": {
+    "message": "Tu bandeja está vacía",
+    "description": "Empty inbox message"
+  },
+  "messages_emptyHint": {
+    "message": "Los mensajes aparecerán aquí cuando se reciban",
+    "description": "Empty inbox hint"
+  },
+  "messages_checkNew": {
+    "message": "Buscar mensajes",
+    "description": "Check for messages button"
+  },
+  "messages_noMatch": {
+    "message": "Sin mensajes coincidentes",
+    "description": "No search results message"
+  },
+  "messages_noMatchHint": {
+    "message": "Prueba con otro término de búsqueda",
+    "description": "No search results hint"
+  },
+  "messages_noSubject": {
+    "message": "(Sin asunto)",
+    "description": "No subject placeholder"
+  },
+
+  "qr_title": {
+    "message": "Código QR",
+    "description": "QR modal title"
+  },
+  "qr_copyEmail": {
+    "message": "Copiar correo",
+    "description": "Copy email button"
+  },
+  "qr_download": {
+    "message": "Descargar",
+    "description": "Download button"
+  },
+  "qr_hint": {
+    "message": "Escanea este código QR con tu teléfono para acceder rápidamente a esta dirección de correo",
+    "description": "QR code hint"
+  },
+
+  "settings_title": {
+    "message": "Configuración",
+    "description": "Settings page title"
+  },
+  "settings_appearance": {
+    "message": "Apariencia",
+    "description": "Appearance section title"
+  },
+  "settings_themeLight": {
+    "message": "Claro",
+    "description": "Light theme option"
+  },
+  "settings_themeDark": {
+    "message": "Oscuro",
+    "description": "Dark theme option"
+  },
+  "settings_themeSystem": {
+    "message": "Sistema",
+    "description": "System theme option"
+  },
+  "settings_preferences": {
+    "message": "Preferencias",
+    "description": "Preferences section title"
+  },
+  "settings_notifications": {
+    "message": "Notificaciones push",
+    "description": "Notifications setting title"
+  },
+  "settings_notificationsDesc": {
+    "message": "Recibe alertas de nuevos mensajes",
+    "description": "Notifications setting description"
+  },
+  "settings_autoCopy": {
+    "message": "Auto-copiar dirección",
+    "description": "Auto-copy setting title"
+  },
+  "settings_autoCopyDesc": {
+    "message": "Copiar al crear",
+    "description": "Auto-copy setting description"
+  },
+  "settings_shareInvite": {
+    "message": "Compartir e invitar",
+    "description": "Share section title"
+  },
+  "settings_shareEphemera": {
+    "message": "Compartir Ephemera",
+    "description": "Share button title"
+  },
+  "settings_shareDesc": {
+    "message": "Invita a amigos a probar Ephemera",
+    "description": "Share button description"
+  },
+  "settings_linkCopied": {
+    "message": "¡Enlace copiado!",
+    "description": "Link copied confirmation"
+  },
+  "settings_supportLegal": {
+    "message": "Soporte y legal",
+    "description": "Support section title"
+  },
+  "settings_mainDashboard": {
+    "message": "Panel principal",
+    "description": "Dashboard link"
+  },
+  "settings_privacyTerms": {
+    "message": "Privacidad y términos",
+    "description": "Privacy link"
+  },
+  "settings_manageAccount": {
+    "message": "Gestionar cuenta",
+    "description": "Manage account link"
+  },
+  "settings_signOut": {
+    "message": "Cerrar sesión",
+    "description": "Sign out button"
+  },
+
+  "onboarding_step1Title": {
+    "message": "Crea tu primera bandeja",
+    "description": "Onboarding step 1 title"
+  },
+  "onboarding_step1Desc": {
+    "message": "Haz clic en el botón de arriba para generar una dirección de correo desechable aleatoria. Úsala para registros, pruebas o donde necesites un correo temporal.",
+    "description": "Onboarding step 1 description"
+  },
+  "onboarding_step2Title": {
+    "message": "Auto-rellenar en cualquier sitio web",
+    "description": "Onboarding step 2 title"
+  },
+  "onboarding_step2Desc": {
+    "message": "Cuando estés en un formulario de registro, haz clic derecho en cualquier campo de correo y selecciona \"Rellenar con Ephemera\" para insertar tu correo temporal al instante.",
+    "description": "Onboarding step 2 description"
+  },
+  "onboarding_step3Title": {
+    "message": "Usa el panel lateral para acceso rápido",
+    "description": "Onboarding step 3 title"
+  },
+  "onboarding_step3Desc": {
+    "message": "Fija el panel lateral para acceso permanente. Revisa mensajes mientras navegas sin cambiar de pestaña ni abrir el popup.",
+    "description": "Onboarding step 3 description"
+  },
+  "onboarding_getStarted": {
+    "message": "Comenzar",
+    "description": "Get started button"
+  },
+  "onboarding_dontShowAgain": {
+    "message": "No mostrar de nuevo",
+    "description": "Don't show again checkbox"
+  },
+
+  "login_title": {
+    "message": "Bienvenido a Ephemera",
+    "description": "Login page title"
+  },
+  "login_email": {
+    "message": "Correo electrónico",
+    "description": "Email field label"
+  },
+  "login_password": {
+    "message": "Contraseña",
+    "description": "Password field label"
+  },
+  "login_signIn": {
+    "message": "Iniciar sesión",
+    "description": "Sign in button"
+  },
+  "login_signingIn": {
+    "message": "Iniciando sesión...",
+    "description": "Signing in loading text"
+  },
+  "login_tryAnonymous": {
+    "message": "Probar anónimamente",
+    "description": "Anonymous login button"
+  },
+  "login_or": {
+    "message": "o",
+    "description": "Or divider text"
+  },
+
+  "error_failedLoad": {
+    "message": "Error al cargar",
+    "description": "Generic load error"
+  },
+  "error_failedCreate": {
+    "message": "Error al crear bandeja",
+    "description": "Create inbox error"
+  },
+  "error_unauthorized": {
+    "message": "Sesión expirada. Por favor inicia sesión de nuevo.",
+    "description": "Unauthorized error"
+  },
+  "error_network": {
+    "message": "Error de red. Verifica tu conexión.",
+    "description": "Network error"
+  },
+
+  "errorBoundary_title": {
+    "message": "Algo salió mal",
+    "description": "Error boundary title"
+  },
+  "errorBoundary_message": {
+    "message": "Ocurrió un error inesperado. Por favor intenta refrescar.",
+    "description": "Error boundary message"
+  }
+}

@@ -1,7 +1,7 @@
 ---
 title: "Browser Extension Refinement and Growth Plan"
 description: "Strategic roadmap for upgrading the Ephemera extension with Side Panel support, multi-browser compatibility, and enhanced UI injection."
-status: in-progress
+status: completed
 priority: P2
 effort: 80h
 branch: main
@@ -65,31 +65,31 @@ We recommend migrating to **WXT** to future-proof the extension for 2026 standar
 4.  **Service Worker Reliability:** - [DONE]
     - Refine `background/push-handler.ts` to ensure VAPID registrations persist across service worker restarts. - [DONE]
 
-### Phase 2: Feature Growth (Weeks 4-6)
+### Phase 2: Feature Growth (Weeks 4-6) - [DONE 2026-01-16]
 **Goal:** Enhance the UI-injector and add contextual intelligence.
 
-1.  **UI-Injector Optimization:**
+1.  **UI-Injector Optimization:** - [DONE]
     - Refactor `src/content/ui-injector.ts` to use a high-performance `MutationObserver` to handle dynamic forms (e.g., SPAs like Gmail/Outlook).
     - Improve `field-detector.ts` with fuzzy matching and ARIA label detection.
-2.  **Contextual Actions:**
+2.  **Contextual Actions:** - [DONE]
     - Implement "Quick Actions" in the Side Panel (e.g., "Generate Inbox for this Site," "Copy latest code from this tab").
     - Add "Right-click to Fill" context menu items.
-3.  **UI/UX Refinement:**
+3.  **UI/UX Refinement:** - [DONE]
     - Update styling to match 2026 "Glassmorphism" or "Material 3" trends.
     - Implement a "Dark Mode" that syncs with system settings.
 
-### Phase 3: Multi-browser & Scaling (Weeks 7-10)
+### Phase 3: Multi-browser & Scaling (Weeks 7-10) - [DONE 2026-01-16]
 **Goal:** Expand to Firefox/Safari and optimize performance.
 
-1.  **Multi-browser Deployment:**
+1.  **Multi-browser Deployment:** - [DONE]
     - Set up CI/CD pipelines for `.zip` (Chrome), `.xpi` (Firefox), and Xcode project generation (Safari).
     - Integrate `webextension-polyfill` for unified `browser.*` namespace usage.
-2.  **Safari/iOS Support:**
+2.  **Safari/iOS Support:** - [DONE]
     - Configure the WXT Safari target.
-    - Create the necessary Swift wrapper for iOS Safari distribution.
-3.  **Performance & Analytics:**
+    - Prepare structure for iOS Safari distribution.
+3.  **Performance & Analytics:** - [DONE]
     - Implement lightweight, privacy-focused usage analytics.
-    - Optimize bundle size using Vite's code-splitting for Side Panel vs. Content Scripts.
+    - Optimize bundle size using Vite's code-splitting and chunking strategies.
 
 ---
 

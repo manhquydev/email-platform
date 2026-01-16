@@ -273,9 +273,9 @@ export async function forwardingRoutes(app: FastifyInstance) {
             message: "Test mode - rule configuration validated",
             testData,
             ruleConfig: {
-                destinationType: (rule as any).destinationType,
-                matchType: (rule as any).matchType,
-                conditionsCount: Array.isArray(rule.conditions) ? (rule.conditions as any[]).length : 0,
+                destinationType: rule.destinationType,
+                matchType: rule.matchType,
+                conditionsCount: Array.isArray(rule.conditions) ? rule.conditions.length : 0,
             }
         };
     });

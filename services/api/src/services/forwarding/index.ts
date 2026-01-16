@@ -124,10 +124,14 @@ async function processRule(
     });
   }
 
-  console.log(
-    `[Forwarding] Rule ${rule.id}: ${result.success ? "SUCCESS" : "FAILED"} -> ${destination}`,
-    result.error ? `Error: ${result.error}` : ""
-  );
+  // Log result (using structured logging would be better in production)
+  if (!result.success) {
+    // Only log errors, not successes to reduce noise
+    console.error(
+      `[Forwarding] Rule ${rule.id}: FAILED -> ${destination}`,
+      `Error: ${result.error}`
+    );
+  }
 }
 
 /**

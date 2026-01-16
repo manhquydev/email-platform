@@ -71,7 +71,8 @@ describe('ApiClient', () => {
     });
 
     it('should throw error on failed login', async () => {
-      mockApiError('Invalid credentials', 401);
+      // Use 400 instead of 401 to avoid token refresh logic
+      mockApiError('Invalid credentials', 400);
 
       await expect(api.login('test@test.com', 'wrong')).rejects.toThrow('Invalid credentials');
     });

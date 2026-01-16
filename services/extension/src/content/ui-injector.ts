@@ -1,6 +1,7 @@
 import { DetectedField } from './field-detector';
 import { CONFIG } from '../shared/config';
 import { Inbox, StorageData } from '../shared/types';
+import { safeSendMessage } from '../shared/utils';
 import browser from 'webextension-polyfill';
 
 const ICON_SIZE = 24;
@@ -210,7 +211,7 @@ function showDropdown(input: HTMLInputElement, iconWrapper: HTMLElement) {
   activeInput = input;
 
   // Track dropdown opening
-  browser.runtime.sendMessage({ type: 'TRACK_EVENT', event: 'settings_updated', metadata: { setting: 'content_script_dropdown_open' } });
+  safeSendMessage({ type: 'TRACK_EVENT', event: 'settings_updated', metadata: { setting: 'content_script_dropdown_open' } });
 
   browser.storage.local.get(['inboxes', 'auth']).then((result) => {
     const auth = result.auth as StorageData['auth'] | undefined;
@@ -495,7 +496,7 @@ function createDropdown(inboxes: Inbox[], input: HTMLInputElement): HTMLElement 
     createItem.style.opacity = '0.7';
     createItem.style.pointerEvents = 'none';
 
-    browser.runtime.sendMessage({ type: 'CREATE_INBOX' }).then((response: any) => {
+    safeSendMessage({ type: 'CREATE_INBOX' }).then((response: any) => {
       if (response && response.success && response.inbox) {
         const inbox = response.inbox as Inbox;
         const domainName = typeof inbox.domain === 'string' ? inbox.domain : (inbox.domain?.name || 'domain');

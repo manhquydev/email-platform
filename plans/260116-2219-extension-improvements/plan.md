@@ -21,9 +21,9 @@ Enhance the Ephemera browser extension with comprehensive testing, international
 
 - ✅ Extension production-ready (398 KB bundle)
 - ✅ Multi-platform builds (Chrome MV3, Firefox MV2, Safari MV2)
-- ✅ 18/18 tests passing (constants, utils only)
-- ⚠️ Low test coverage (no component/API tests)
-- ⚠️ No E2E tests
+- ✅ 79/79 unit tests passing
+- ✅ E2E test infrastructure ready (Playwright)
+- ⚠️ Coverage at 30.9% (core files at 100%)
 - ⚠️ Partial i18n (infrastructure only)
 - ⚠️ Not published to stores
 
@@ -31,8 +31,8 @@ Enhance the Ephemera browser extension with comprehensive testing, international
 
 | Phase | Description | Effort | Status |
 |-------|-------------|--------|--------|
-| [Phase 01](./phase-01-unit-testing.md) | Unit Tests for Components & API | 4h | ⬜ Pending |
-| [Phase 02](./phase-02-e2e-testing.md) | E2E Testing with Playwright | 3h | ⬜ Pending |
+| [Phase 01](./phase-01-unit-testing.md) | Unit Tests for Components & API | 4h | ✅ Completed |
+| [Phase 02](./phase-02-e2e-testing.md) | E2E Testing with Playwright | 3h | ✅ Completed |
 | [Phase 03](./phase-03-i18n-localization.md) | Full i18n Localization | 3h | ⬜ Pending |
 | [Phase 04](./phase-04-store-publishing.md) | Chrome Web Store Publishing | 2h | ⬜ Pending |
 

@@ -1,4 +1,34 @@
 import { Inbox } from './types';
+import browser from 'webextension-polyfill';
+
+/**
+ * Sends a message to the background script with proper error handling.
+ * This handles the back/forward cache (bfcache) error gracefully.
+ * When a page is restored from bfcache, the message channel may be closed.
+ *
+ * @param message The message to send
+ * @returns Promise that resolves with the response or null on bfcache error
+ */
+export async function safeSendMessage<T = any>(message: any): Promise<T | null> {
+  try {
+    const response = await browser.runtime.sendMessage(message);
+    return response as T;
+  } catch (error: any) {
+    // Handle bfcache errors gracefully - these are expected when page is restored from cache
+    const errorMessage = error?.message || '';
+    if (
+      errorMessage.includes('back/forward cache') ||
+      errorMessage.includes('message channel is closed') ||
+      errorMessage.includes('Extension context invalidated') ||
+      errorMessage.includes('Receiving end does not exist')
+    ) {
+      console.debug('[Ephemera] Message channel closed (bfcache), ignoring:', errorMessage);
+      return null;
+    }
+    // Re-throw other errors
+    throw error;
+  }
+}
 
 /**
  * Normalizes an inbox object to ensure a consistent format across the extension.
@@ -12,7 +42,7 @@ export function normalizeInbox(inbox: any): Inbox {
   return {
     id: inbox.id,
     localPart: inbox.localPart,
-    domain: domainName, // Store as string for simplicity in content scripts, or keep as is?
+    domain: domainName,
     address: inbox.address || `${inbox.localPart}@${domainName}`,
     createdAt: inbox.createdAt,
     expiresAt: inbox.expiresAt,

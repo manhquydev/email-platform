@@ -17,7 +17,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "postinstall": "wxt prepare",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:e2e": "playwright test --config=e2e/playwright.config.ts",
+    "test:e2e:headed": "playwright test --config=e2e/playwright.config.ts --headed"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -31,8 +33,10 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/chrome": "^0.0.260",
     "@types/dompurify": "^3.0.5",
     "@types/node": "^20.11.24",

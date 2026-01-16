@@ -1,376 +1,91 @@
 {
-  "extensionName": {
-    "message": "Ephemera",
+  "extName": {
+    "message": "Ephemera - Email Tạm Thời",
     "description": "Extension name"
   },
-  "extensionDescription": {
-    "message": "Địa chỉ email tạm thời để bảo vệ quyền riêng tư",
+  "extDescription": {
+    "message": "Tạo địa chỉ email dùng một lần ngay lập tức. Bảo vệ quyền riêng tư và tránh spam.",
     "description": "Extension description"
   },
-
-  "common_loading": {
-    "message": "Đang tải...",
-    "description": "Generic loading text"
-  },
-  "common_error": {
-    "message": "Đã xảy ra lỗi",
-    "description": "Generic error message"
-  },
-  "common_retry": {
-    "message": "Thử lại",
-    "description": "Retry button text"
-  },
-  "common_cancel": {
-    "message": "Hủy",
-    "description": "Cancel button text"
-  },
-  "common_save": {
-    "message": "Lưu",
-    "description": "Save button text"
-  },
-  "common_close": {
-    "message": "Đóng",
-    "description": "Close button text"
-  },
-  "common_back": {
-    "message": "Quay lại",
-    "description": "Back button text"
-  },
-  "common_next": {
-    "message": "Tiếp theo",
-    "description": "Next button text"
-  },
-  "common_copy": {
-    "message": "Sao chép",
-    "description": "Copy button text"
-  },
-  "common_copied": {
-    "message": "Đã sao chép!",
-    "description": "Copied confirmation text"
-  },
-  "common_refresh": {
-    "message": "Làm mới",
-    "description": "Refresh button text"
-  },
-
-  "header_title": {
-    "message": "Ephemera",
-    "description": "Header title"
-  },
-  "header_openSidePanel": {
-    "message": "Mở trong Side Panel",
-    "description": "Side panel button tooltip"
-  },
-  "header_settings": {
-    "message": "Cài đặt",
-    "description": "Settings button tooltip"
-  },
-
-  "inbox_activeInboxes": {
-    "message": "Hộp thư đang hoạt động",
-    "description": "Active inboxes section title"
-  },
-  "inbox_usage": {
-    "message": "Sử dụng",
-    "description": "Usage label"
-  },
-  "inbox_createNew": {
-    "message": "Tạo hộp thư mới",
-    "description": "Create inbox button"
-  },
-  "inbox_createRandom": {
-    "message": "Tạo email ngẫu nhiên",
-    "description": "Create random inbox button"
-  },
-  "inbox_createCustom": {
-    "message": "Tạo hộp thư tùy chỉnh",
-    "description": "Create custom inbox button"
-  },
-  "inbox_noInboxes": {
-    "message": "Chưa có hộp thư nào",
-    "description": "Empty state message"
-  },
-  "inbox_createFirst": {
-    "message": "Tạo hộp thư đầu tiên",
-    "description": "Empty state CTA"
-  },
-  "inbox_viewMessages": {
-    "message": "Xem tin nhắn",
-    "description": "View messages button"
-  },
-  "inbox_dashboard": {
-    "message": "Bảng điều khiển",
-    "description": "Dashboard link"
-  },
-  "inbox_copyAddress": {
-    "message": "Sao chép địa chỉ",
-    "description": "Copy address button tooltip"
-  },
-  "inbox_showQR": {
-    "message": "Hiển thị mã QR",
-    "description": "Show QR code button tooltip"
-  },
-  "inbox_makePermanent": {
-    "message": "Đặt vĩnh viễn",
-    "description": "Make permanent button tooltip"
-  },
-  "inbox_makeTemporary": {
-    "message": "Chuyển sang tạm thời (24h)",
-    "description": "Make temporary button tooltip"
-  },
-  "inbox_expired": {
-    "message": "Đã hết hạn",
-    "description": "Expired status"
-  },
-
-  "createModal_title": {
-    "message": "Tạo hộp thư mới",
-    "description": "Create modal title"
-  },
-  "createModal_random": {
-    "message": "Ngẫu nhiên",
-    "description": "Random mode label"
-  },
-  "createModal_custom": {
-    "message": "Tùy chỉnh",
-    "description": "Custom mode label"
-  },
-  "createModal_emailPrefix": {
-    "message": "Tiền tố email",
-    "description": "Email prefix label"
-  },
-  "createModal_domain": {
-    "message": "Tên miền",
-    "description": "Domain label"
-  },
-  "createModal_preview": {
-    "message": "Xem trước",
-    "description": "Preview label"
-  },
-  "createModal_randomHint": {
-    "message": "Địa chỉ email ngẫu nhiên sẽ được tạo tự động.",
-    "description": "Random mode hint"
-  },
-  "createModal_creating": {
-    "message": "Đang tạo...",
-    "description": "Creating loading text"
-  },
-
-  "messages_count": {
-    "message": "$COUNT$ tin nhắn",
-    "description": "Message count",
-    "placeholders": {
-      "count": { "content": "$1", "example": "5" }
-    }
-  },
-  "messages_search": {
-    "message": "Tìm kiếm tin nhắn...",
-    "description": "Search placeholder"
-  },
-  "messages_empty": {
-    "message": "Hộp thư trống",
-    "description": "Empty inbox message"
-  },
-  "messages_emptyHint": {
-    "message": "Tin nhắn sẽ xuất hiện ở đây khi nhận được",
-    "description": "Empty inbox hint"
-  },
-  "messages_checkNew": {
-    "message": "Kiểm tra tin nhắn",
-    "description": "Check for messages button"
-  },
-  "messages_noMatch": {
-    "message": "Không tìm thấy tin nhắn phù hợp",
-    "description": "No search results message"
-  },
-  "messages_noMatchHint": {
-    "message": "Thử từ khóa khác",
-    "description": "No search results hint"
-  },
-  "messages_noSubject": {
-    "message": "(Không có chủ đề)",
-    "description": "No subject placeholder"
-  },
-
-  "qr_title": {
-    "message": "Mã QR",
-    "description": "QR modal title"
-  },
-  "qr_copyEmail": {
-    "message": "Sao chép Email",
-    "description": "Copy email button"
-  },
-  "qr_download": {
-    "message": "Tải xuống",
-    "description": "Download button"
-  },
-  "qr_hint": {
-    "message": "Quét mã QR này bằng điện thoại để truy cập nhanh địa chỉ email",
-    "description": "QR code hint"
-  },
-
-  "settings_title": {
-    "message": "Cài đặt",
-    "description": "Settings page title"
-  },
-  "settings_appearance": {
-    "message": "Giao diện",
-    "description": "Appearance section title"
-  },
-  "settings_themeLight": {
-    "message": "Sáng",
-    "description": "Light theme option"
-  },
-  "settings_themeDark": {
-    "message": "Tối",
-    "description": "Dark theme option"
-  },
-  "settings_themeSystem": {
-    "message": "Hệ thống",
-    "description": "System theme option"
-  },
-  "settings_preferences": {
-    "message": "Tùy chọn",
-    "description": "Preferences section title"
-  },
-  "settings_notifications": {
-    "message": "Thông báo đẩy",
-    "description": "Notifications setting title"
-  },
-  "settings_notificationsDesc": {
-    "message": "Nhận thông báo khi có tin nhắn mới",
-    "description": "Notifications setting description"
-  },
-  "settings_autoCopy": {
-    "message": "Tự động sao chép",
-    "description": "Auto-copy setting title"
-  },
-  "settings_autoCopyDesc": {
-    "message": "Sao chép khi tạo",
-    "description": "Auto-copy setting description"
-  },
-  "settings_shareInvite": {
-    "message": "Chia sẻ & Mời",
-    "description": "Share section title"
-  },
-  "settings_shareEphemera": {
-    "message": "Chia sẻ Ephemera",
-    "description": "Share button title"
-  },
-  "settings_shareDesc": {
-    "message": "Mời bạn bè dùng thử Ephemera",
-    "description": "Share button description"
-  },
-  "settings_linkCopied": {
-    "message": "Đã sao chép liên kết!",
-    "description": "Link copied confirmation"
-  },
-  "settings_supportLegal": {
-    "message": "Hỗ trợ & Pháp lý",
-    "description": "Support section title"
-  },
-  "settings_mainDashboard": {
-    "message": "Bảng điều khiển chính",
-    "description": "Dashboard link"
-  },
-  "settings_privacyTerms": {
-    "message": "Quyền riêng tư & Điều khoản",
-    "description": "Privacy link"
-  },
-  "settings_manageAccount": {
-    "message": "Quản lý tài khoản",
-    "description": "Manage account link"
-  },
-  "settings_signOut": {
-    "message": "Đăng xuất",
-    "description": "Sign out button"
-  },
-
-  "onboarding_step1Title": {
-    "message": "Tạo hộp thư đầu tiên",
-    "description": "Onboarding step 1 title"
-  },
-  "onboarding_step1Desc": {
-    "message": "Nhấp vào nút ở trên để tạo địa chỉ email tạm thời ngẫu nhiên. Sử dụng cho đăng ký, dùng thử, hoặc bất cứ đâu bạn cần email tạm thời.",
-    "description": "Onboarding step 1 description"
-  },
-  "onboarding_step2Title": {
-    "message": "Tự động điền trên mọi trang web",
-    "description": "Onboarding step 2 title"
-  },
-  "onboarding_step2Desc": {
-    "message": "Khi bạn ở trên form đăng ký, nhấp chuột phải vào ô email và chọn \"Điền với Ephemera\" để chèn email tạm thời ngay lập tức.",
-    "description": "Onboarding step 2 description"
-  },
-  "onboarding_step3Title": {
-    "message": "Sử dụng Side Panel để truy cập nhanh",
-    "description": "Onboarding step 3 title"
-  },
-  "onboarding_step3Desc": {
-    "message": "Ghim Side Panel để luôn truy cập được. Kiểm tra tin nhắn trong khi duyệt web mà không cần chuyển tab hay mở popup.",
-    "description": "Onboarding step 3 description"
-  },
-  "onboarding_getStarted": {
-    "message": "Bắt đầu",
-    "description": "Get started button"
-  },
-  "onboarding_dontShowAgain": {
-    "message": "Không hiển thị lại",
-    "description": "Don't show again checkbox"
-  },
-
-  "login_title": {
-    "message": "Chào mừng đến Ephemera",
-    "description": "Login page title"
-  },
-  "login_email": {
-    "message": "Email",
-    "description": "Email field label"
-  },
-  "login_password": {
-    "message": "Mật khẩu",
-    "description": "Password field label"
-  },
-  "login_signIn": {
-    "message": "Đăng nhập",
-    "description": "Sign in button"
-  },
-  "login_signingIn": {
-    "message": "Đang đăng nhập...",
-    "description": "Signing in loading text"
-  },
-  "login_tryAnonymous": {
-    "message": "Dùng thử ẩn danh",
-    "description": "Anonymous login button"
-  },
-  "login_or": {
-    "message": "hoặc",
-    "description": "Or divider text"
-  },
-
-  "error_failedLoad": {
-    "message": "Không thể tải",
-    "description": "Generic load error"
-  },
-  "error_failedCreate": {
-    "message": "Không thể tạo hộp thư",
-    "description": "Create inbox error"
-  },
-  "error_unauthorized": {
-    "message": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
-    "description": "Unauthorized error"
-  },
-  "error_network": {
-    "message": "Lỗi mạng. Vui lòng kiểm tra kết nối.",
-    "description": "Network error"
-  },
-
-  "errorBoundary_title": {
-    "message": "Đã xảy ra lỗi",
-    "description": "Error boundary title"
-  },
-  "errorBoundary_message": {
-    "message": "Đã xảy ra lỗi không mong muốn. Vui lòng thử làm mới.",
-    "description": "Error boundary message"
+  "signIn": {
+    "message": "Đăng nhập"
+  },
+  "email": {
+    "message": "Email"
+  },
+  "emailAddress": {
+    "message": "Địa chỉ Email"
+  },
+  "password": {
+    "message": "Mật khẩu"
+  },
+  "loginFailed": {
+    "message": "Đăng nhập thất bại"
+  },
+  "activeInboxes": {
+    "message": "Hộp thư đang hoạt động"
+  },
+  "createNewInbox": {
+    "message": "Tạo hộp thư mới"
+  },
+  "generateNew": {
+    "message": "Tạo email mới"
+  },
+  "copied": {
+    "message": "Đã sao chép!"
+  },
+  "viewMessages": {
+    "message": "Xem tin nhắn"
+  },
+  "dashboard": {
+    "message": "Bảng điều khiển"
+  },
+  "settings": {
+    "message": "Cài đặt"
+  },
+  "logout": {
+    "message": "Đăng xuất"
+  },
+  "noInboxes": {
+    "message": "Chưa có hộp thư nào"
+  },
+  "createFirstInbox": {
+    "message": "Tạo hộp thư đầu tiên"
+  },
+  "loading": {
+    "message": "Đang tải..."
+  },
+  "signInRequired": {
+    "message": "Cần đăng nhập"
+  },
+  "signInRequiredDesc": {
+    "message": "Vui lòng đăng nhập vào tài khoản Ephemera để sử dụng email tạm thời."
+  },
+  "goAnonymous": {
+    "message": "Ẩn danh"
+  },
+  "secureEntry": {
+    "message": "Đăng nhập an toàn"
+  },
+  "newToEphemera": {
+    "message": "Mới sử dụng Ephemera?"
+  },
+  "createAccount": {
+    "message": "Tạo tài khoản"
+  },
+  "securityCheck": {
+    "message": "Xác minh bảo mật"
+  },
+  "verifyAndContinue": {
+    "message": "Xác minh & Tiếp tục"
+  },
+  "backToLogin": {
+    "message": "Quay lại đăng nhập"
+  },
+  "expired": {
+    "message": "Đã hết hạn"
+  },
+  "refresh": {
+    "message": "Làm mới"
   }
 }

@@ -1,24 +1,20 @@
-/**
- * OTPHighlight Component
- * Displays extracted OTP code with copy functionality
- */
-
+import React from "react";
 import { Button } from "../ui/Button";
 
-interface OTPHighlightProps {
+interface OTPHighlightCardProps {
     otp: string;
     onCopy: (otp: string) => void;
 }
 
-export function OTPHighlight({ otp, onCopy }: OTPHighlightProps) {
+export const OTPHighlightCard: React.FC<OTPHighlightCardProps> = ({ otp, onCopy }) => {
     return (
-        <div className="mb-8 p-6 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-between">
+        <div className="mb-8 p-6 bg-nebula-violet/10 border border-nebula-violet/20 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white text-2xl shadow-lg shadow-primary/20">
-                    <span className="material-symbols-outlined text-3xl">pin</span>
+                <div className="w-12 h-12 rounded-xl bg-nebula-violet flex items-center justify-center text-white text-2xl shadow-lg shadow-nebula-violet/20">
+                    <span className="material-symbols-outlined">pin</span>
                 </div>
                 <div>
-                    <div className="text-sm text-primary font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
+                    <div className="text-sm text-nebula-violet font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
                     <div className="text-3xl font-bold text-nebula-text font-mono tracking-widest">{otp}</div>
                 </div>
             </div>
@@ -31,4 +27,6 @@ export function OTPHighlight({ otp, onCopy }: OTPHighlightProps) {
             </Button>
         </div>
     );
-}
+};
+
+export default OTPHighlightCard;

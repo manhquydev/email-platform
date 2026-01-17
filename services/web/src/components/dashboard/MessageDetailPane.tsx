@@ -4,6 +4,7 @@
  */
 
 import { motion } from "framer-motion";
+import DOMPurify from "dompurify";
 import { Button } from "../ui/Button";
 import { GlassCard } from "../ui/GlassCard";
 import { OTPHighlight } from "./OTPHighlight";
@@ -147,8 +148,8 @@ export function MessageDetailPane({
                             {message.htmlBody ? (
                                 <div className="prose dark:prose-invert max-w-none">
                                     <iframe
-                                        srcDoc={message.htmlBody}
-                                        sandbox="allow-same-origin allow-scripts"
+                                        srcDoc={DOMPurify.sanitize(message.htmlBody, { ALLOWED_TAGS: ["p","br","b","i","u","strong","em","a","ul","ol","li","h1","h2","h3","h4","h5","h6","blockquote","pre","code","table","thead","tbody","tr","td","th","img","span","div","hr"], ALLOWED_ATTR: ["href","src","alt","title","class","style","target","rel","width","height"], ALLOW_DATA_ATTR: false })}
+                                        sandbox=""
                                         title="Email content"
                                         className="w-full min-h-[400px] border-none bg-nebula-surface rounded-lg"
                                     />

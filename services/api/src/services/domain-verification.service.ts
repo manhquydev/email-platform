@@ -42,7 +42,7 @@ export const runDomainVerificationSweep = async (log: { info: Function; error: F
             await recordAudit({ userId: domain.ownerId, action: "DOMAIN_VERIFIED", meta: {
               domainId: domain.id,
               name: domain.name,
-              method: "background_worker"
+              method: "background_worker" } });
             });
           }
 

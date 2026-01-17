@@ -155,7 +155,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
       ruleId: rule.id,
       inboxId,
       ruleName: rule.name,
-      ruleType: rule.ruleType,
+      ruleType: rule.ruleType } });
     });
 
     return reply.status(201).send({ rule });
@@ -205,7 +205,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
     await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_UPDATED', meta: {
       ruleId: id,
       inboxId: ownership.inbox.id,
-      changes: Object.keys(parsed.data),
+      changes: Object.keys(parsed.data) } });
     });
 
     return { rule: updated };
@@ -231,7 +231,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
     await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_DELETED', meta: {
       ruleId: id,
       inboxId: ownership.inbox.id,
-      ruleName: ownership.rule.name,
+      ruleName: ownership.rule.name } });
     });
 
     return { success: true };
@@ -339,7 +339,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
       ruleId: rule.id,
       inboxId,
       templateId: template.id,
-      templateName: template.name,
+      templateName: template.name } });
     });
 
     return reply.status(201).send({ rule });

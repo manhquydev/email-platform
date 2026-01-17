@@ -522,7 +522,7 @@ export function Dashboard() {
                                     if (otp) return (
                                         <div className="mb-8 p-6 bg-nebula-violet/10 border border-nebula-violet/20 rounded-2xl flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-nebula-violet flex items-center justify-center text-white text-2xl shadow-lg shadow-nebula-violet/20">
+                                                <div className="w-12 h-12 rounded-xl bg-nebula-violet flex items-center justify-center text-white shadow-lg shadow-nebula-violet/20">
                                                     🔢
                                                 </div>
                                                 <div>

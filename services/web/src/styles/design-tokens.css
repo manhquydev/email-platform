@@ -1,0 +1,319 @@
+/**
+ * Design Tokens - Phase 3 Design Guidelines
+ * Additional CSS custom properties for consistent design
+ */
+
+:root {
+  /* ============================================
+     OTP & VERIFICATION TOKENS
+     ============================================ */
+  --color-otp-bg: rgba(139, 92, 246, 0.1);
+  --color-otp-border: rgba(139, 92, 246, 0.2);
+  --color-otp-text: var(--nebula-violet);
+
+  /* ============================================
+     COMPONENT RADIUS TOKENS
+     ============================================ */
+  --radius-card: 1rem;
+  --radius-button: 0.5rem;
+  --radius-input: 0.375rem;
+  --radius-badge: 9999px;
+  --radius-modal: 1.5rem;
+
+  /* ============================================
+     SPACING TOKENS
+     ============================================ */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* ============================================
+     Z-INDEX TOKENS
+     ============================================ */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 300;
+  --z-popover: 400;
+  --z-tooltip: 500;
+  --z-toast: 600;
+}
+
+/* ============================================
+   TYPOGRAPHY SCALE
+   Consistent heading and body text classes
+   ============================================ */
+
+.heading-1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+.heading-2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+.heading-3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+.heading-4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+.heading-5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  font-family: 'Inter', sans-serif;
+}
+
+.heading-6 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  font-family: 'Inter', sans-serif;
+}
+
+.body-lg {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.body-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.body-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  letter-spacing: 0.01em;
+}
+
+.overline {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ============================================
+   INTERACTIVE CURSOR STATES
+   Classes for proper cursor feedback
+   ============================================ */
+
+/* Interactive Card - Clickable cards with hover effects */
+.interactive-card {
+  cursor: pointer;
+  transition: all var(--duration-normal, 250ms) var(--ease-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.interactive-card:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
+}
+
+/* Interactive List Item - For list-based navigation */
+.interactive-list-item {
+  cursor: pointer;
+  transition: background-color var(--duration-fast, 150ms) var(--ease-smooth);
+}
+
+.interactive-list-item:hover {
+  background-color: var(--color-primary-light, rgba(99, 102, 241, 0.08));
+}
+
+.interactive-list-item:active {
+  background-color: var(--color-primary-light, rgba(99, 102, 241, 0.12));
+}
+
+/* Interactive Button - Enhanced button states */
+.interactive-btn {
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) var(--ease-smooth);
+}
+
+.interactive-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.interactive-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.interactive-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Interactive Link - Text links with underline animation */
+.interactive-link {
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+  color: var(--color-primary);
+  transition: color var(--duration-fast, 150ms) var(--ease-smooth);
+}
+
+.interactive-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: currentColor;
+  transition: width var(--duration-fast, 150ms) var(--ease-smooth);
+}
+
+.interactive-link:hover::after {
+  width: 100%;
+}
+
+/* Interactive Icon Button - For icon-only buttons */
+.interactive-icon-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-button);
+  transition: all var(--duration-fast, 150ms) var(--ease-smooth);
+}
+
+.interactive-icon-btn:hover:not(:disabled) {
+  background-color: var(--color-primary-light, rgba(99, 102, 241, 0.1));
+  color: var(--color-primary);
+}
+
+.interactive-icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Draggable - Items that can be dragged */
+.draggable {
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+/* Resizable - Items that can be resized */
+.resizable {
+  cursor: nwse-resize;
+}
+
+/* Wait State - Loading or processing */
+.cursor-wait {
+  cursor: wait;
+}
+
+/* Help State - Additional information available */
+.cursor-help {
+  cursor: help;
+}
+
+/* Text Selection */
+.selectable-text {
+  cursor: text;
+  user-select: text;
+}
+
+.non-selectable {
+  cursor: default;
+  user-select: none;
+}
+
+/* Zoom States */
+.cursor-zoom-in {
+  cursor: zoom-in;
+}
+
+.cursor-zoom-out {
+  cursor: zoom-out;
+}
+
+/* ============================================
+   FOCUS VISIBLE STATES
+   Enhanced focus indicators for accessibility
+   ============================================ */
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary);
+}
+
+.focus-ring-inset:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================ */
+
+@media (max-width: 768px) {
+  .heading-1 {
+    font-size: 1.875rem;
+  }
+
+  .heading-2 {
+    font-size: 1.5rem;
+  }
+
+  .heading-3 {
+    font-size: 1.25rem;
+  }
+
+  .heading-4 {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .heading-1 {
+    font-size: 1.5rem;
+  }
+
+  .heading-2 {
+    font-size: 1.25rem;
+  }
+
+  .heading-3 {
+    font-size: 1.125rem;
+  }
+}

@@ -5,7 +5,7 @@ declare module "@fastify/jwt" {
   interface FastifyJWT {
     payload: {
       userId: string;
-      role: UserRole;
+      role?: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
       type?: "access" | "refresh";
@@ -18,7 +18,7 @@ declare module "@fastify/jwt" {
     };
     user: {
       userId: string;
-      role: UserRole;
+      role?: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
       type?: "access" | "refresh";
@@ -31,7 +31,7 @@ declare module "@fastify/jwt" {
 // Helper types for request handlers
 export interface AuthenticatedUser {
   userId: string;
-  role: UserRole;
+  role?: UserRole;
   tier?: SubscriptionTier;
   pending2FA?: boolean;
       type?: "access" | "refresh";

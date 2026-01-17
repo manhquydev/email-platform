@@ -95,6 +95,9 @@ This is a high-level estimate. A precise count would require running a LOC tool.
 - **`services/api/services/*`**: Business logic and service implementations (e.g., StripeService, OutboundService).
 - **`services/api/schemas/*`**: Data validation schemas (likely Zod).
 - **`services/web/src/components/*`**: Reusable UI components.
+- **`services/web/src/components/ErrorBoundary/*`**: Error boundary components (SectionErrorBoundary, FeatureErrorBoundary).
+- **`services/web/src/components/skeletons/*`**: Loading skeleton components (MessageListSkeleton, MessageDetailSkeleton, PageSkeleton).
+- **`services/web/src/hooks/useAppToast.ts`**: Custom toast notification hook.
 - **`services/web/src/pages/*`**: Top-level page components.
 - **`services/web/src/contexts/*`**: React context providers (Auth, Theme).
 - **`Dockerfile` (root, api, web)**: Containerization definitions.

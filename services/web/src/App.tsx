@@ -5,10 +5,6 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { RealtimeProvider } from "./context/RealtimeContext";
 import { LandingPage } from "./pages/LandingPage";
-import { Features } from "./pages/Features";
-import { API } from "./pages/API";
-import { Pricing } from "./pages/Pricing";
-import { Docs } from "./pages/Docs";
 import { TermsOfService, PrivacyPolicy, AcceptableUse, GDPR } from "./pages/Legal";
 import { Support, Contact, Sales } from "./pages/Support";
 import { MainLayout } from "./layouts/MainLayout";
@@ -19,12 +15,21 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LazyMotionProvider } from "./components/LazyMotionProvider";
 import { VersionCheck } from "./components/VersionCheck";
 import { ErrorPage } from "./pages/ErrorPage";
+import { ScrollToTop } from "./components/ScrollToTop";
 
-// Lazy load pages
+// Lazy load public pages for better initial bundle size
+const Features = lazy(() => import("./pages/Features").then(m => ({ default: m.Features })));
+const API = lazy(() => import("./pages/API").then(m => ({ default: m.API })));
+const Pricing = lazy(() => import("./pages/Pricing").then(m => ({ default: m.Pricing })));
+const Docs = lazy(() => import("./pages/Docs").then(m => ({ default: m.Docs })));
+
+// Lazy load auth pages
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const Register = lazy(() => import("./pages/Register").then(m => ({ default: m.Register })));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail").then(m => ({ default: m.VerifyEmail })));
 const MagicLinkVerify = lazy(() => import("./pages/MagicLinkVerify").then(m => ({ default: m.MagicLinkVerify })));
+
+// Lazy load app pages
 const InboxManager = lazy(() => import("./pages/InboxManager").then(m => ({ default: m.InboxManager })));
 const FocusDashboard = lazy(() => import("./pages/FocusDashboard").then(m => ({ default: m.FocusDashboard })));
 const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
@@ -36,8 +41,6 @@ const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default:
 const Plans = lazy(() => import("./pages/Plans").then(m => ({ default: m.Plans })));
 const Teams = lazy(() => import("./pages/Teams").then(m => ({ default: m.Teams })));
 const InboxViewer = lazy(() => import("./pages/InboxViewer").then(m => ({ default: m.InboxViewer })));
-
-import { ScrollToTop } from "./components/ScrollToTop";
 
 function App() {
   return (
@@ -133,4 +136,3 @@ function App() {
 }
 
 export default App;
-

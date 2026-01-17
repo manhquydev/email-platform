@@ -122,7 +122,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
             });
 
             delete challenges[userId];
-            await recordAudit(userId, "PASSKEY_REGISTERED", {});
+            await recordAudit({ userId, action: "PASSKEY_REGISTERED", meta: {} });
 
             return { ok: true, verified };
         }
@@ -242,7 +242,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
             }
 
             const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
-            await recordAudit(user.id, "LOGIN_PASSKEY", { ip: request.ip });
+            await recordAudit({ userId: user.id, action: "LOGIN_PASSKEY", meta: { ip: request.ip } });
 
             return { token, user: { id: user.id, email: user.email, role: user.role } };
         }
@@ -289,7 +289,7 @@ export async function webauthnRoutes(app: FastifyInstance) {
             return reply.status(500).send({ error: "Failed to delete passkey" });
         }
 
-        await recordAudit(userId, "PASSKEY_DELETED", { credentialId: id });
+        await recordAudit({ userId, action: "PASSKEY_DELETED", meta: { credentialId: id } });
 
         return { success: true };
     });

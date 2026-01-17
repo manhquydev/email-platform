@@ -151,7 +151,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(inboxId);
 
-    await recordAudit(user.userId, 'VISIBILITY_RULE_CREATED', {
+    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_CREATED', meta: {
       ruleId: rule.id,
       inboxId,
       ruleName: rule.name,
@@ -202,7 +202,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(ownership.inbox.id);
 
-    await recordAudit(user.userId, 'VISIBILITY_RULE_UPDATED', {
+    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_UPDATED', meta: {
       ruleId: id,
       inboxId: ownership.inbox.id,
       changes: Object.keys(parsed.data),
@@ -228,7 +228,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(ownership.inbox.id);
 
-    await recordAudit(user.userId, 'VISIBILITY_RULE_DELETED', {
+    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_DELETED', meta: {
       ruleId: id,
       inboxId: ownership.inbox.id,
       ruleName: ownership.rule.name,
@@ -266,7 +266,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
     await Promise.all(updates);
     invalidateRulesCache(inboxId);
 
-    await recordAudit(user.userId, 'VISIBILITY_RULES_REORDERED', { inboxId });
+    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULES_REORDERED', meta: { inboxId } });
 
     return { success: true };
   });
@@ -335,7 +335,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(inboxId);
 
-    await recordAudit(user.userId, 'VISIBILITY_RULE_FROM_TEMPLATE', {
+    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_FROM_TEMPLATE', meta: {
       ruleId: rule.id,
       inboxId,
       templateId: template.id,

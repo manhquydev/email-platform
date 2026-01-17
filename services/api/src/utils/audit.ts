@@ -92,7 +92,10 @@ export const recordAuditFromRequest = async (
 ): Promise<void> => {
   const ctx = getAuditContext(request);
   await recordAudit({
-    ...ctx,
+    userId: ctx.userId ?? null,
+    ip: ctx.ip,
+    userAgent: ctx.userAgent,
+    requestId: ctx.requestId,
     action,
     meta,
     success,

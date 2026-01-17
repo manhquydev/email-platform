@@ -34,7 +34,7 @@ const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${API
 const SSE_URL = `${API_BASE_URL}/realtime/sse`;
 const MAX_RECONNECT_DELAY = 30000;
 const POLLING_INTERVAL = 30000; // Fallback polling every 30s
-const MAX_SSE_FAILURES = 3; // Max SSE failures before falling back to polling
+// MAX_SSE_FAILURES removed - not currently used
 const INITIAL_RECONNECT_DELAY = 1000;
 
 export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeReturn {
@@ -42,7 +42,7 @@ export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeReturn
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const wsRef = useRef<WebSocket | null>(null);
   const sseRef = useRef<EventSource | null>(null);
-  const sseFailureCountRef = useRef(0);
+  // sseFailureCountRef removed - not currently used
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPollingRef = useRef(false);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

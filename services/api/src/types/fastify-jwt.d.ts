@@ -8,6 +8,7 @@ declare module "@fastify/jwt" {
       role: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
+      type?: "access" | "refresh";
       // Telegram temp token fields (for registration flow)
       telegramAuth?: boolean;
       telegramId?: string;
@@ -20,6 +21,7 @@ declare module "@fastify/jwt" {
       role: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
+      type?: "access" | "refresh";
       iat: number;
       exp: number;
     };
@@ -32,6 +34,7 @@ export interface AuthenticatedUser {
   role: UserRole;
   tier?: SubscriptionTier;
   pending2FA?: boolean;
+      type?: "access" | "refresh";
   iat: number;
   exp: number;
 }

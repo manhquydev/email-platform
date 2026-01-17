@@ -151,11 +151,11 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(inboxId);
 
-    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_CREATED', meta: {
+    await recordAudit(user.userId, 'VISIBILITY_RULE_CREATED', {
       ruleId: rule.id,
       inboxId,
       ruleName: rule.name,
-      ruleType: rule.ruleType } });
+      ruleType: rule.ruleType,
     });
 
     return reply.status(201).send({ rule });
@@ -202,10 +202,10 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(ownership.inbox.id);
 
-    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_UPDATED', meta: {
+    await recordAudit(user.userId, 'VISIBILITY_RULE_UPDATED', {
       ruleId: id,
       inboxId: ownership.inbox.id,
-      changes: Object.keys(parsed.data) } });
+      changes: Object.keys(parsed.data),
     });
 
     return { rule: updated };
@@ -228,10 +228,10 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(ownership.inbox.id);
 
-    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_DELETED', meta: {
+    await recordAudit(user.userId, 'VISIBILITY_RULE_DELETED', {
       ruleId: id,
       inboxId: ownership.inbox.id,
-      ruleName: ownership.rule.name } });
+      ruleName: ownership.rule.name,
     });
 
     return { success: true };
@@ -266,7 +266,7 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
     await Promise.all(updates);
     invalidateRulesCache(inboxId);
 
-    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULES_REORDERED', meta: { inboxId } });
+    await recordAudit(user.userId, 'VISIBILITY_RULES_REORDERED', { inboxId });
 
     return { success: true };
   });
@@ -335,11 +335,11 @@ export const visibilityRulesRoutes: FastifyPluginAsync = async (app) => {
 
     invalidateRulesCache(inboxId);
 
-    await recordAudit({ userId: user.userId, action: 'VISIBILITY_RULE_FROM_TEMPLATE', meta: {
+    await recordAudit(user.userId, 'VISIBILITY_RULE_FROM_TEMPLATE', {
       ruleId: rule.id,
       inboxId,
       templateId: template.id,
-      templateName: template.name } });
+      templateName: template.name,
     });
 
     return reply.status(201).send({ rule });

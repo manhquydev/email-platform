@@ -39,10 +39,10 @@ export const runDomainVerificationSweep = async (log: { info: Function; error: F
 
           // Audit log
           if (domain.ownerId) {
-            await recordAudit({ userId: domain.ownerId, action: "DOMAIN_VERIFIED", meta: {
+            await recordAudit(domain.ownerId, "DOMAIN_VERIFIED", {
               domainId: domain.id,
               name: domain.name,
-              method: "background_worker" } });
+              method: "background_worker"
             });
           }
 

@@ -74,6 +74,15 @@ export default {
                 'nebula-xl': 'var(--nebula-shadow-xl)',
                 'nebula-glow': 'var(--nebula-shadow-glow)',
             },
+            // Mobile touch targets (44px minimum per WCAG 2.1)
+            minHeight: {
+                'touch': '44px',
+                'touch-sm': '36px',
+            },
+            minWidth: {
+                'touch': '44px',
+                'touch-sm': '36px',
+            },
             borderRadius: {
                 'sm': 'var(--border-radius-sm)',
                 'md': 'var(--border-radius-md)',

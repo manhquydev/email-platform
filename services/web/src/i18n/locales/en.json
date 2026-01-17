@@ -1,0 +1,30 @@
+{
+  "common": {
+    "home": "Home",
+    "back": "Go Back",
+    "retry": "Try Again",
+    "login": "Login",
+    "support": "Support",
+    "reportIssue": "Report Issue",
+    "needHelp": "Need help?",
+    "contactSupport": "Contact Support"
+  },
+  "errors": {
+    "404": {
+      "title": "Page Not Found",
+      "message": "The page you're looking for doesn't exist or has been moved."
+    },
+    "403": {
+      "title": "Access Denied",
+      "message": "You don't have permission to access this page. Please login or contact an administrator."
+    },
+    "500": {
+      "title": "Server Error",
+      "message": "An unexpected error occurred. Please try again later."
+    },
+    "503": {
+      "title": "Under Maintenance",
+      "message": "The system is currently under maintenance. Please check back in a few minutes."
+    }
+  }
+}

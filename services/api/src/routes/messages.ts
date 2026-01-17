@@ -64,7 +64,10 @@ export const messageRoutes = async (app: FastifyInstance) => {
         orderBy: { receivedAt: "desc" },
         take: limit ?? 50,
         skip: offset ?? 0,
-        include: { attachments: { where: { deletedAt: null } } },
+        // Optimized: use _count instead of full attachments to avoid N+1
+        include: {
+          _count: { select: { attachments: true } },
+        },
       }),
       prisma.message.count({ where }),
     ]);
@@ -142,7 +145,10 @@ export const messageRoutes = async (app: FastifyInstance) => {
         orderBy: { receivedAt: "desc" },
         take: query.data.limit ?? 50,
         skip: query.data.offset ?? 0,
-        include: { attachments: { where: { deletedAt: null } } },
+        // Optimized: use _count instead of full attachments to avoid N+1
+        include: {
+          _count: { select: { attachments: true } },
+        },
       }),
       prisma.message.count({ where }),
     ]);

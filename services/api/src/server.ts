@@ -143,22 +143,61 @@ export const buildServer = () => {
     decorateReply: false
   });
 
+  // CORS configuration with environment-based whitelist
+  const corsAllowedOrigins = (() => {
+    const envOrigins = process.env.CORS_ALLOWED_ORIGINS;
+    const baseAllowed = [appConfig.webUrl];
+
+    // Add dev origins only in non-production
+    if (process.env.NODE_ENV !== 'production') {
+      baseAllowed.push("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080");
+    }
+
+    // Add environment-configured origins (comma-separated)
+    if (envOrigins) {
+      baseAllowed.push(...envOrigins.split(',').map(o => o.trim()).filter(Boolean));
+    }
+
+    return baseAllowed;
+  })();
+
+  // Extension origins whitelist from environment
+  const corsAllowedExtensions = (() => {
+    const envExtensions = process.env.CORS_ALLOWED_EXTENSIONS;
+    if (!envExtensions) return []; // No extensions allowed by default in production
+    return envExtensions.split(',').map(e => e.trim()).filter(Boolean);
+  })();
+
   app.register(cors, {
     origin: (origin, cb) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return cb(null, true);
-      // Allow Chrome/Firefox extensions
+
+      // Allow whitelisted browser extensions only
       if (origin.startsWith("chrome-extension://") || origin.startsWith("moz-extension://")) {
-        return cb(null, true);
+        // In production, only allow explicitly whitelisted extension IDs
+        if (corsAllowedExtensions.length > 0) {
+          const extensionId = origin.split('://')[1];
+          if (corsAllowedExtensions.includes(extensionId)) {
+            return cb(null, true);
+          }
+          return cb(new Error("Extension not whitelisted"), false);
+        }
+        // In development, allow all extensions
+        if (process.env.NODE_ENV !== 'production') {
+          return cb(null, true);
+        }
+        return cb(new Error("Extensions not allowed"), false);
       }
-      const allowed = [appConfig.webUrl, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"];
-      if (allowed.includes(origin)) {
+
+      if (corsAllowedOrigins.includes(origin)) {
         cb(null, true);
         return;
       }
       cb(new Error("Not allowed"), false);
     },
     methods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true,
   });
 
   // WebSocket plugin for realtime features
@@ -247,6 +286,11 @@ export const buildServer = () => {
         if (keyRecord.expiresAt && keyRecord.expiresAt < new Date()) {
           return reply.status(401).send({ error: "API Key has expired" });
         }
+
+        // API keys are still subject to rate limiting (per-key, not per-IP)
+        // The rate limit is enforced at route level, but we mark the request
+        // so rate limiter can use API key as the key instead of IP
+        (request as any).apiKeyId = keyRecord.id;
 
         request.user = {
           userId: keyRecord.userId,

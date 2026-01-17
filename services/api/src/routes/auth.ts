@@ -9,8 +9,20 @@ import { encrypt, decrypt } from "../utils/encryption";
 import { appConfig } from "../config";
 import { outboundService } from "../services/outbound";
 import { isEmailVerificationRequired } from "../utils/system-settings";
-import { recordAudit } from "../utils/audit";
+import { recordAuditFromRequest, AuditAction } from "../utils/audit";
 import { TIER_LIMITS } from "./billing";
+
+// Password validation with complexity requirements
+const passwordSchema = z.string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number");
+
+// JWT expiry configuration
+const ACCESS_TOKEN_EXPIRY = "15m"; // Short-lived access token
+const REFRESH_TOKEN_EXPIRY = "7d"; // Longer-lived refresh token
+
 
 export async function authRoutes(app: FastifyInstance) {
   // Stricter rate limit for registration (prevent spam accounts)
@@ -24,7 +36,7 @@ export async function authRoutes(app: FastifyInstance) {
   }, async (request, reply) => {
     const bodySchema = z.object({
       email: z.string().email(),
-      password: z.string().min(6),
+      password: passwordSchema,
     });
 
     const parsed = bodySchema.safeParse(request.body);
@@ -72,12 +84,15 @@ export async function authRoutes(app: FastifyInstance) {
       }
     }
 
-    const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
+    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access" }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh" }, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
-    await recordAudit(user.id, "USER_REGISTERED", { email: user.email });
+    await recordAuditFromRequest(request, "auth.register", { email: user.email });
 
     return {
-      token,
+      token: accessToken,
+      refreshToken,
+      expiresIn: 900, // 15 minutes in seconds
       user: { id: user.id, email: user.email, role: user.role },
       message: requireVerification
         ? "Registration successful. Please check your email to verify your account."
@@ -127,7 +142,7 @@ export async function authRoutes(app: FastifyInstance) {
       request.log.error(err, "Failed to send welcome email");
     }
 
-    await recordAudit(user.id, "EMAIL_VERIFIED", { email: user.email });
+    await recordAuditFromRequest(request, "auth.email_verified", { email: user.email, userId: user.id });
 
     return { ok: true, message: "Email verified successfully" };
   });
@@ -183,7 +198,7 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: "Failed to send verification email" });
     }
 
-    await recordAudit(user.id, "RESEND_VERIFICATION", { email: user.email });
+    await recordAuditFromRequest(request, "auth.resend_verification", { email: user.email, userId: user.id });
 
     return { ok: true, message: "Verification email sent successfully" };
   });
@@ -211,7 +226,7 @@ export async function authRoutes(app: FastifyInstance) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       // Log failed attempt for unknown user (prevent enumeration, but log for security analysis)
-      await recordAudit(null, "LOGIN_FAILED", { email, ip: request.ip, reason: "user_not_found" });
+      await recordAuditFromRequest(request, AuditAction.LOGIN_FAILED, { email, reason: "user_not_found" }, false);
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
@@ -222,7 +237,7 @@ export async function authRoutes(app: FastifyInstance) {
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       const remainingMs = user.lockedUntil.getTime() - Date.now();
       const remainingMins = Math.ceil(remainingMs / 60000);
-      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "account_locked" });
+      await recordAuditFromRequest(request, AuditAction.LOGIN_FAILED, { email: user.email, reason: "account_locked", userId: user.id }, false);
       return reply.status(423).send({
         error: `Account is temporarily locked. Try again in ${remainingMins} minute(s).`,
         lockedUntil: user.lockedUntil.toISOString()
@@ -243,12 +258,7 @@ export async function authRoutes(app: FastifyInstance) {
         }
       });
 
-      await recordAudit(user.id, "LOGIN_FAILED", {
-        email: user.email,
-        ip: request.ip,
-        reason: shouldLock ? "account_locked_max_attempts" : "invalid_password",
-        failedAttempts: newFailedAttempts
-      });
+      await recordAuditFromRequest(request, AuditAction.LOGIN_FAILED, { email: user.email, reason: shouldLock ? "account_locked_max_attempts" : "invalid_password", failedAttempts: newFailedAttempts, userId: user.id }, false);
 
       if (shouldLock) {
         return reply.status(423).send({
@@ -271,13 +281,13 @@ export async function authRoutes(app: FastifyInstance) {
     // Check email verification (dynamic setting from DB)
     const requireVerification = await isEmailVerificationRequired();
     if (requireVerification && !user.emailVerified) {
-      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "email_not_verified" });
+      await recordAuditFromRequest(request, AuditAction.LOGIN_FAILED, { email: user.email, reason: "email_not_verified", userId: user.id }, false);
       return reply.status(403).send({ error: "Email not verified. Please check your email." });
     }
 
     // Check if account is disabled
     if (user.isDisabled) {
-      await recordAudit(user.id, "LOGIN_FAILED", { email: user.email, ip: request.ip, reason: "account_disabled" });
+      await recordAuditFromRequest(request, AuditAction.LOGIN_FAILED, { email: user.email, reason: "account_disabled", userId: user.id }, false);
       return reply.status(403).send({ error: "Account is disabled. Contact administrator." });
     }
 
@@ -288,16 +298,22 @@ export async function authRoutes(app: FastifyInstance) {
       return { requires2FA: true, tempToken };
     }
 
-    const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
+    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access" }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh" }, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
-    await recordAudit(user.id, "LOGIN", { email: user.email, ip: request.ip });
+    await recordAuditFromRequest(request, AuditAction.LOGIN_SUCCESS, { email: user.email, userId: user.id });
 
-    return { token, user: { id: user.id, email: user.email, role: user.role } };
+    return {
+      token: accessToken,
+      refreshToken,
+      expiresIn: 900,
+      user: { id: user.id, email: user.email, role: user.role }
+    };
   });
 
   app.post("/auth/change-password", { preHandler: app.authenticate }, async (request, reply) => {
     const bodySchema = z.object({
-      newPassword: z.string().min(6),
+      newPassword: passwordSchema,
     });
 
     const parsed = bodySchema.safeParse(request.body);
@@ -315,7 +331,7 @@ export async function authRoutes(app: FastifyInstance) {
       data: { passwordHash },
     });
 
-    await recordAudit(userId, "PASSWORD_CHANGED", {});
+    await recordAuditFromRequest(request, AuditAction.PASSWORD_CHANGE, {});
 
     return { ok: true };
   });
@@ -392,11 +408,17 @@ export async function authRoutes(app: FastifyInstance) {
       });
     }
 
-    const token = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
+    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access" }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh" }, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
-    await recordAudit(user.id, "LOGIN_2FA", { email: user.email, ip: request.ip });
+    await recordAuditFromRequest(request, AuditAction.TWO_FACTOR_VERIFIED, { email: user.email, userId: user.id });
 
-    return { token, user: { id: user.id, email: user.email, role: user.role } };
+    return {
+      token: accessToken,
+      refreshToken,
+      expiresIn: 900,
+      user: { id: user.id, email: user.email, role: user.role }
+    };
   });
 
   // 2FA: Setup - Generate secret and QR code
@@ -476,7 +498,7 @@ export async function authRoutes(app: FastifyInstance) {
       },
     });
 
-    await recordAudit(userId, "2FA_ENABLED", {});
+    await recordAuditFromRequest(request, AuditAction.TWO_FACTOR_ENABLED, {});
 
     return { ok: true, backupCodes };
   });
@@ -515,7 +537,7 @@ export async function authRoutes(app: FastifyInstance) {
       },
     });
 
-    await recordAudit(userId, "2FA_DISABLED", {});
+    await recordAuditFromRequest(request, AuditAction.TWO_FACTOR_DISABLED, {});
 
     return { ok: true };
   });
@@ -596,7 +618,7 @@ export async function authRoutes(app: FastifyInstance) {
       data: { name }
     });
 
-    await recordAudit(userId, "PROFILE_UPDATED", {});
+    await recordAuditFromRequest(request, "auth.profile_updated", {});
     return { ok: true };
   });
 
@@ -636,7 +658,7 @@ export async function authRoutes(app: FastifyInstance) {
       }
     });
 
-    await recordAudit(userId, "PROFILE_UPDATED", { fields: Object.keys(updateData) });
+    await recordAuditFromRequest(request, "auth.profile_updated", { fields: Object.keys(updateData) });
     return { ok: true, user };
   });
 
@@ -704,7 +726,7 @@ export async function authRoutes(app: FastifyInstance) {
       request.log.error(err, "Failed to send password reset email");
     }
 
-    await recordAudit(user.id, "PASSWORD_RESET_REQUESTED", { ip: request.ip });
+    await recordAuditFromRequest(request, AuditAction.PASSWORD_RESET_REQUEST, { userId: user.id });
 
     return successResponse;
   });
@@ -720,7 +742,7 @@ export async function authRoutes(app: FastifyInstance) {
   }, async (request, reply) => {
     const bodySchema = z.object({
       token: z.string().min(1),
-      newPassword: z.string().min(6),
+      newPassword: passwordSchema,
     });
 
     const parsed = bodySchema.safeParse(request.body);
@@ -757,7 +779,7 @@ export async function authRoutes(app: FastifyInstance) {
       }
     });
 
-    await recordAudit(user.id, "PASSWORD_RESET_COMPLETED", { ip: request.ip });
+    await recordAuditFromRequest(request, AuditAction.PASSWORD_RESET_COMPLETE, { userId: user.id });
 
     return { ok: true, message: "Password has been reset successfully" };
   });

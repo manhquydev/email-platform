@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import Clarity from '@microsoft/clarity'
+import './i18n' // Initialize i18n before React render
 import './index.css'
 import './styles/focus-stream.css'
 import App from './App.tsx'

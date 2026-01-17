@@ -64,7 +64,7 @@ export async function inboxRoutes(app: FastifyInstance) {
           _count: { select: { messages: { where: { deletedAt: null } } } }
         },
         orderBy: { createdAt: "desc" },
-        take: query.data.limit ?? 100,
+        take: query.data.limit ?? 200, // Increased from 100 for better UX
         skip: query.data.offset ?? 0,
       }),
       prisma.inbox.count({ where }),

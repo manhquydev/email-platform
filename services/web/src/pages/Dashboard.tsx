@@ -15,7 +15,8 @@ import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { EmailStream } from "../components/EmailStream";
 import { cn } from "../utils/cn";
-import { useRealtimeSubscription } from "../hooks/useRealtimeContext";
+import { useRealtimeSubscription, useRealtimeContext } from "../hooks/useRealtimeContext";
+import { ListeningIndicator } from "../components/copy-first/ListeningIndicator";
 import type { Domain, Inbox, Message, PaginatedResponse, Team } from "../types";
 import type { RealtimeEvent } from "../types/realtime";
 import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
@@ -27,6 +28,7 @@ const KeyboardShortcutsHelp = lazy(() => import("../components/KeyboardShortcuts
 export function Dashboard() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { token, user, logout: _logout } = useAuth();
+    const { status: realtimeStatus } = useRealtimeContext();
     const location = useLocation();
     const navigate = useNavigate();
     const [busy, setBusy] = useState(false);
@@ -237,7 +239,7 @@ export function Dashboard() {
     }, [selectedInbox, loadMessages]);
 
     useEffect(() => {
-        const t = setTimeout(() => { if (selectedInbox) loadMessages(selectedInbox); }, 500);
+        const t = setTimeout(() => { if (selectedInbox) loadMessages(selectedInbox); }, 800);
         return () => clearTimeout(t);
     }, [messageSearch, selectedInbox, loadMessages]);
 
@@ -313,7 +315,14 @@ export function Dashboard() {
                         <div className="flex items-center gap-3 w-full">
                             {/* Inbox Selector - Always visible now since Sidebar is gone */}
                             <div className="w-full max-w-[280px]">
-                                <InboxSelector
+                                {/* Connection status indicator */}
+                <ListeningIndicator
+                    status={realtimeStatus === 'error' ? 'disconnected' : realtimeStatus}
+                    size="sm"
+                    showLabel={true}
+                    className="mr-4"
+                />
+                <InboxSelector
                                     domains={domains}
                                     teams={teams}
                                     inboxes={inboxes}

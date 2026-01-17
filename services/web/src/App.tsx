@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "./context/AuthContext";
@@ -16,7 +16,9 @@ import { PublicLayout } from "./layouts/PublicLayout";
 import { AuthLayout } from "./layouts/AuthLayout";
 import { Loading } from "./components/Loading";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { LazyMotionProvider } from "./components/LazyMotionProvider";
 import { VersionCheck } from "./components/VersionCheck";
+import { ErrorPage } from "./pages/ErrorPage";
 
 // Lazy load pages
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
@@ -40,8 +42,16 @@ import { ScrollToTop } from "./components/ScrollToTop";
 function App() {
   return (
     <ThemeProvider>
+      <LazyMotionProvider>
       <AuthProvider>
         <RealtimeProvider>
+          {/* ARIA live region for dynamic announcements */}
+          <div
+            id="aria-live-announcer"
+            aria-live="polite"
+            aria-atomic="true"
+            className="sr-only"
+          />
           {/* Skip to main content link for accessibility */}
           <a
             href="#main-content"
@@ -103,14 +113,21 @@ function App() {
                     <Route path="/plans" element={<Plans />} />
                   </Route>
 
-                  {/* Fallback */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  {/* Error Pages */}
+                  <Route element={<PublicLayout />}>
+                    <Route path="/403" element={<ErrorPage code={403} />} />
+                    <Route path="/503" element={<ErrorPage code={503} />} />
+                  </Route>
+
+                  {/* 404 Fallback */}
+                  <Route path="*" element={<ErrorPage code={404} />} />
                 </Routes>
               </Suspense>
             </ErrorBoundary>
           </BrowserRouter>
         </RealtimeProvider>
       </AuthProvider>
+      </LazyMotionProvider>
     </ThemeProvider>
   );
 }

@@ -7,6 +7,7 @@ interface UseRealtimeOptions {
   onConnect?: () => void;
   onDisconnect?: () => void;
   eventTypes?: RealtimeEventType[];
+  onPoll?: () => void; // Called when polling fallback is triggered
 }
 
 interface UseRealtimeReturn {
@@ -32,6 +33,8 @@ const API_HOST = getApiHost();
 const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${API_HOST}/ws/events`;
 const SSE_URL = `${API_BASE_URL}/realtime/sse`;
 const MAX_RECONNECT_DELAY = 30000;
+const POLLING_INTERVAL = 30000; // Fallback polling every 30s
+const MAX_SSE_FAILURES = 3; // Max SSE failures before falling back to polling
 const INITIAL_RECONNECT_DELAY = 1000;
 
 export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeReturn {
@@ -39,18 +42,49 @@ export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeReturn
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const wsRef = useRef<WebSocket | null>(null);
   const sseRef = useRef<EventSource | null>(null);
+  const sseFailureCountRef = useRef(0);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isPollingRef = useRef(false);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY);
   const mountedRef = useRef(true);
   const connectSSERef = useRef<() => void>(() => {});
   const connectWebSocketRef = useRef<() => void>(() => {});
 
-  const { onEvent, onConnect, onDisconnect, eventTypes } = options;
+  const { onEvent, onConnect, onDisconnect, eventTypes, onPoll } = options;
 
   const handleEvent = useCallback((event: RealtimeEvent) => {
     if (eventTypes && !eventTypes.includes(event.type)) return;
     onEvent?.(event);
   }, [onEvent, eventTypes]);
+
+
+  // Polling fallback when both WS and SSE fail
+  const startPolling = useCallback(() => {
+    if (isPollingRef.current || pollingIntervalRef.current) return;
+
+    console.warn('[Realtime] Starting polling fallback');
+    isPollingRef.current = true;
+    setStatus('connected'); // Show as connected since polling works
+
+    // Initial poll
+    onPoll?.();
+
+    // Set up interval
+    pollingIntervalRef.current = setInterval(() => {
+      if (mountedRef.current) {
+        onPoll?.();
+      }
+    }, POLLING_INTERVAL);
+  }, [onPoll]);
+
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    isPollingRef.current = false;
+  }, []);
 
   const connectSSE = useCallback(() => {
     if (!token || sseRef.current) return;
@@ -94,7 +128,7 @@ export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeReturn
         }, reconnectDelayRef.current);
       }
     };
-  }, [token, handleEvent, onConnect, onDisconnect]);
+  }, [token, handleEvent, onConnect, onDisconnect, startPolling, stopPolling]);
 
   const connectWebSocket = useCallback(() => {
     if (!token || wsRef.current?.readyState === WebSocket.OPEN) return;

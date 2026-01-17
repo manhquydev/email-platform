@@ -1,0 +1,30 @@
+{
+  "common": {
+    "home": "Trang chủ",
+    "back": "Quay lại",
+    "retry": "Thử lại",
+    "login": "Đăng nhập",
+    "support": "Hỗ trợ",
+    "reportIssue": "Báo lỗi",
+    "needHelp": "Cần hỗ trợ?",
+    "contactSupport": "Liên hệ hỗ trợ"
+  },
+  "errors": {
+    "404": {
+      "title": "Không tìm thấy trang",
+      "message": "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển."
+    },
+    "403": {
+      "title": "Truy cập bị từ chối",
+      "message": "Bạn không có quyền truy cập trang này. Vui lòng đăng nhập hoặc liên hệ quản trị viên."
+    },
+    "500": {
+      "title": "Lỗi máy chủ",
+      "message": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau."
+    },
+    "503": {
+      "title": "Đang bảo trì",
+      "message": "Hệ thống đang được bảo trì. Vui lòng quay lại sau ít phút."
+    }
+  }
+}

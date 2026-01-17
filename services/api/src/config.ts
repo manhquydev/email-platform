@@ -41,6 +41,34 @@ const list = (name: string, fallback = "") =>
     .filter(Boolean);
 const lower = (values: string[]) => values.map((v) => v.toLowerCase());
 
+/**
+ * Get TOTP encryption key with validation
+ * Production: requires explicit key, rejects weak/missing keys
+ * Development: allows insecure default with warning
+ */
+const getTotpEncryptionKey = (): string => {
+  const key = process.env.TOTP_ENCRYPTION_KEY;
+  if (key) {
+    if (key.length !== 64 || !/^[0-9a-fA-F]{64}$/.test(key)) {
+      console.error('❌ TOTP_ENCRYPTION_KEY must be 64 hex chars');
+      process.exit(1);
+    }
+    if (isProduction && /^0+$/.test(key)) {
+      console.error('❌ TOTP_ENCRYPTION_KEY cannot be all zeros in production');
+      console.error('   Generate: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+      process.exit(1);
+    }
+    return key;
+  }
+  if (isProduction) {
+    console.error('❌ TOTP_ENCRYPTION_KEY required in production');
+    console.error('   Generate: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+    process.exit(1);
+  }
+  console.warn('⚠️  Using insecure default TOTP key - dev only!');
+  return '0'.repeat(64);
+};
+
 export const appConfig = {
   databaseUrl: required("DATABASE_URL"),
   databaseReadUrl: process.env.DATABASE_READ_URL || process.env.DATABASE_URL, // Read replica URL
@@ -86,7 +114,7 @@ export const appConfig = {
   mailFromAddress: process.env.MAIL_FROM_ADDRESS ?? "noreply@localhost",
   // TOTP secret encryption key (32 bytes = 64 hex chars for AES-256)
   // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-  totpEncryptionKey: process.env.TOTP_ENCRYPTION_KEY ?? "0".repeat(64), // Default for dev only!
+  totpEncryptionKey: getTotpEncryptionKey(),
   // Set to false to temporarily disable email verification requirement
   requireEmailVerification: (process.env.REQUIRE_EMAIL_VERIFICATION ?? "true").toLowerCase() === "true",
   s3: {

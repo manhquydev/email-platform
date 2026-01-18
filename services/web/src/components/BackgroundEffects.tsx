@@ -19,38 +19,42 @@ export function BackgroundEffects({
     showGrid = false,
     animate = true
 }: BackgroundEffectsProps) {
-    // Opacity multipliers based on variant
+    // Opacity values based on variant
     const opacityConfig = {
-        subtle: { light: 0.2, dark: 0.3 },
-        default: { light: 0.4, dark: 0.6 },
-        intense: { light: 0.5, dark: 0.7 }
+        subtle: { blob1: 0.3, blob2: 0.2, blob3: 0.15 },
+        default: { blob1: 0.5, blob2: 0.4, blob3: 0.25 },
+        intense: { blob1: 0.6, blob2: 0.5, blob3: 0.35 }
     };
 
     const config = opacityConfig[variant];
 
     return (
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            {/* Primary gradient blob - top left */}
+            {/* Primary gradient blob - top left (violet/blue) */}
             <div
-                className={`absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[150px] ${animate ? 'animate-pulse-slow' : ''}`}
+                className={`absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[150px] ${animate ? 'animate-pulse' : ''}`}
                 style={{
-                    opacity: `var(--bg-opacity-1, ${config.light})`,
+                    background: 'rgba(139, 92, 246, 0.15)',
+                    opacity: config.blob1,
                 }}
             />
 
-            {/* Secondary gradient blob - bottom right */}
+            {/* Secondary gradient blob - bottom right (purple) */}
             <div
-                className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] ${animate ? 'animate-pulse-slow delay-1000' : ''}`}
+                className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] ${animate ? 'animate-pulse' : ''}`}
                 style={{
-                    opacity: `var(--bg-opacity-2, ${config.light * 0.75})`,
+                    background: 'rgba(147, 51, 234, 0.12)',
+                    opacity: config.blob2,
+                    animationDelay: '1s',
                 }}
             />
 
-            {/* Tertiary gradient blob - center */}
+            {/* Tertiary gradient blob - center (cyan) */}
             <div
-                className={`absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-cyan-500/10 rounded-full blur-[100px]`}
+                className="absolute top-[40%] left-[40%] w-[30%] h-[30%] rounded-full blur-[100px]"
                 style={{
-                    opacity: `var(--bg-opacity-3, ${config.light * 0.5})`,
+                    background: 'rgba(6, 182, 212, 0.1)',
+                    opacity: config.blob3,
                 }}
             />
 
@@ -58,15 +62,6 @@ export function BackgroundEffects({
             {showGrid && (
                 <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
             )}
-
-            {/* Dark mode adjustments via CSS custom properties */}
-            <style>{`
-                .dark {
-                    --bg-opacity-1: ${config.dark};
-                    --bg-opacity-2: ${config.dark * 0.83};
-                    --bg-opacity-3: ${config.dark * 0.5};
-                }
-            `}</style>
         </div>
     );
 }

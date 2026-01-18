@@ -306,3 +306,37 @@ const WS_URL = `wss://${API_HOST}/ws/events`;
 }
 ```
 
+
+### Prisma Schema-Database Mismatch (Column không tồn tại)
+
+**Triệu chứng:** API trả về 500 error với log:
+```
+PrismaClientKnownRequestError:
+The column `Message.otpExtractedAt` does not exist in the current database.
+Error Code: P2022
+```
+
+**Nguyên nhân:** Migration đã được đánh dấu applied trong `_prisma_migrations` nhưng column thực tế không tồn tại trong database (migration failed giữa chừng hoặc manual DB modification).
+
+**Chẩn đoán:**
+```bash
+# Kiểm tra migration status
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-api-1 npx prisma migrate status"
+
+# Kiểm tra column thực tế trong database
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-postgres-1 psql -U postgres -d email_service -c \"SELECT column_name FROM information_schema.columns WHERE table_name = 'Message' ORDER BY ordinal_position;\""
+```
+
+**Giải pháp:**
+```bash
+# Thêm column thủ công (thay tên column và data type phù hợp)
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-postgres-1 psql -U postgres -d email_service -c \"ALTER TABLE \\\"Message\\\" ADD COLUMN IF NOT EXISTS \\\"otpExtractedAt\\\" TIMESTAMP(3);\""
+
+# Verify column đã được thêm
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-postgres-1 psql -U postgres -d email_service -c \"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'Message' AND column_name = 'otpExtractedAt';\""
+```
+
+**Phòng ngừa:**
+1. Luôn kiểm tra migration status sau mỗi lần deploy
+2. Backup database trước khi chạy migration trên production
+3. Thêm database schema validation vào CI/CD pipeline

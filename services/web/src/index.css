@@ -2,6 +2,8 @@
 
 /* Nebula Glass Design System */
 @import './styles/nebula-glass.css';
+/* Phase 3: Design Tokens, Typography Scale, Cursor States */
+@import './styles/design-tokens.css';
 
 @tailwind base;
 @tailwind components;

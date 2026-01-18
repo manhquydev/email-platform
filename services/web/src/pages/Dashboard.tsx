@@ -17,6 +17,7 @@ import { EmailStream } from "../components/EmailStream";
 import { cn } from "../utils/cn";
 import { useRealtimeSubscription, useRealtimeContext } from "../hooks/useRealtimeContext";
 import { ListeningIndicator } from "../components/copy-first/ListeningIndicator";
+import { OTPIcon } from "../components/icons";
 import type { Domain, Inbox, Message, PaginatedResponse, Team } from "../types";
 import type { RealtimeEvent } from "../types/realtime";
 import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
@@ -523,7 +524,7 @@ export function Dashboard() {
                                         <div className="mb-8 p-6 bg-nebula-violet/10 border border-nebula-violet/20 rounded-2xl flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-xl bg-nebula-violet flex items-center justify-center text-white shadow-lg shadow-nebula-violet/20">
-                                                    🔢
+                                                    <OTPIcon className="w-6 h-6 text-white" />
                                                 </div>
                                                 <div>
                                                     <div className="text-sm text-nebula-violet font-bold uppercase tracking-wider mb-1">Mã xác thực</div>

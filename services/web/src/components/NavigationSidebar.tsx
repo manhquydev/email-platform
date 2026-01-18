@@ -103,6 +103,18 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Tên miền</span>}
                     </Link>
 
+                    <Link to="/inbox-viewer"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
+                            isActive("/inbox-viewer")
+                                ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                : "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
+                        )}
+                        title="Xem hộp thư công khai">
+                        <span className="material-symbols-outlined text-[24px] shrink-0">visibility</span>
+                        {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Xem hộp thư</span>}
+                    </Link>
+
                     {user?.role === 'ADMIN' && (
                         <Link to="/admin"
                             className={cn(

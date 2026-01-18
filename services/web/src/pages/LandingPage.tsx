@@ -99,6 +99,10 @@ export function LandingPage() {
                             <span className="material-symbols-outlined !text-[20px]">description</span>
                             Tài liệu
                         </Link>
+                        <Link to="/inbox-viewer" className="w-full sm:w-auto h-12 px-8 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-bold text-sm tracking-wide transition-all backdrop-blur-sm flex items-center justify-center gap-2">
+                            <span className="material-symbols-outlined !text-[20px]">mail</span>
+                            Xem hộp thư
+                        </Link>
                     </div>
 
                     {/* Trust Badge - Hero Section */}

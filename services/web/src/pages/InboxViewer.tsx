@@ -6,6 +6,7 @@ import { SearchForm } from "../components/inbox-viewer/search-form";
 import { MessageList } from "../components/inbox-viewer/message-list";
 import { MessageDetail } from "../components/inbox-viewer/message-detail";
 import { TelegramLinkModal } from "../components/telegram-link-modal";
+import { BackgroundEffects } from "../components/BackgroundEffects";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -294,9 +295,12 @@ const handleSearch = useCallback(async (emailAddr: string) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 relative">
+      {/* Background Effects - consistent with other pages */}
+      <BackgroundEffects variant="subtle" />
+
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow">
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow relative z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
             Xem hộp thư công khai
@@ -324,7 +328,7 @@ const handleSearch = useCallback(async (emailAddr: string) => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 relative z-10">
         {accessError ? (
           renderAccessError()
         ) : !email ? (

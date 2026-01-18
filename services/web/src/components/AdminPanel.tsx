@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { NavigationProvider, useNavigation, MobileNav, HamburgerMenu } from "./Navigation/index";
 import { useAuth } from "../context/AuthContext";
+import { BackgroundEffects } from "./BackgroundEffects";
 
 // Define NavItem type
 interface NavItem {
@@ -180,7 +181,10 @@ function AdminPanelInner({ token }: { token: string }) {
     ];
 
     return (
-        <div className="h-screen flex flex-col md:flex-row">
+        <div className="h-screen flex flex-col md:flex-row relative bg-white dark:bg-slate-950">
+            {/* Background Effects - consistent with other pages */}
+            <BackgroundEffects variant="subtle" />
+
             {/* Mobile Header */}
             <header className="md:hidden h-14 border-b border-nebula-border bg-nebula-surface/95 backdrop-blur-lg flex items-center justify-between px-4 z-20 shrink-0">
                 <div className="flex items-center gap-3">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api";
@@ -38,6 +38,7 @@ export function Settings() {
     const { token } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const mainContentRef = useRef<HTMLElement>(null);
     const [activeTab, setActiveTab] = useState<SettingsTab>('general');
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -52,6 +53,13 @@ export function Settings() {
             }
         }
     }, [location.search, activeTab]);
+
+    // Scroll to top when tab changes
+    useEffect(() => {
+        if (mainContentRef.current) {
+            mainContentRef.current.scrollTo({ top: 0, behavior: 'instant' });
+        }
+    }, [activeTab]);
 
     // Update URL when tab changes
     const changeTab = (tab: string) => {
@@ -91,7 +99,7 @@ export function Settings() {
             console.error("Failed to load inboxes", err);
             setInboxes([]);
         }
-    }, [token]); // Removed selectedInboxId dependency to break loop
+    }, [token]);
 
     useEffect(() => {
         loadProfile();
@@ -104,7 +112,7 @@ export function Settings() {
             <SettingsTabs activeTab={activeTab} onTabChange={changeTab} />
 
             {/* Main Content Area - Full Width */}
-            <main className="flex-1 overflow-y-auto">
+            <main ref={mainContentRef} className="flex-1 overflow-y-auto">
                 <div className="max-w-7xl mx-auto px-6 py-8 pb-24">
                     {activeTab === 'general' && <GeneralSettings profile={profile} loadProfile={loadProfile} loading={loading} />}
                     {activeTab === 'security' && <SecuritySettings profile={profile} loadProfile={loadProfile} />}
@@ -120,4 +128,3 @@ export function Settings() {
         </div>
     );
 }
-

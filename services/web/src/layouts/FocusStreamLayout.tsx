@@ -7,6 +7,7 @@ import { CommandPalette } from "../components/CommandPalette";
 import { SearchBar } from "../components/SearchBar";
 import { InboxSelector } from "../components/InboxSelector";
 import { NotificationCenter } from "../components/NotificationCenter";
+import { BackgroundEffects } from "../components/BackgroundEffects";
 
 import type { Domain, Inbox } from "../types";
 
@@ -55,11 +56,7 @@ export function FocusStreamLayout({
         <NavigationProvider>
             <div className="flex flex-row h-screen w-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans relative">
                 {/* Background Effects */}
-                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                    <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[150px] opacity-40 dark:opacity-60" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] opacity-30 dark:opacity-50" />
-                    <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-cyan-500/10 rounded-full blur-[100px] opacity-20 dark:opacity-30" />
-                </div>
+                <BackgroundEffects variant="default" />
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0 relative z-10">

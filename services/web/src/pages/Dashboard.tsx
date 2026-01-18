@@ -18,6 +18,7 @@ import { cn } from "../utils/cn";
 import { useRealtimeSubscription, useRealtimeContext } from "../hooks/useRealtimeContext";
 import { ListeningIndicator } from "../components/copy-first/ListeningIndicator";
 import { OTPIcon } from "../components/icons";
+import { messageService } from "../services";
 import type { Domain, Inbox, Message, PaginatedResponse, Team } from "../types";
 import type { RealtimeEvent } from "../types/realtime";
 import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
@@ -248,7 +249,7 @@ export function Dashboard() {
         setSelectedMessage(msg);
         if (!msg.isRead) {
             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
-            try { await api(`/messages/${msg.id}/read`, { method: "PATCH", token, body: { isRead: true } }); }
+            try { await messageService.markAsRead(msg.id, true); }
             catch { /* background */ }
         }
     };
@@ -256,14 +257,14 @@ export function Dashboard() {
     const handleMarkUnread = async (msgId: string) => {
         setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRead: false } : m));
         if (selectedMessage?.id === msgId) setSelectedMessage(prev => prev ? { ...prev, isRead: false } : null);
-        try { await api(`/messages/${msgId}/read`, { method: "PATCH", token, body: { isRead: false } }); toast.success("Đã đánh dấu chưa đọc"); }
+        try { await messageService.markAsRead(msgId, false); toast.success("Đã đánh dấu chưa đọc"); }
         catch { toast.error("Không thể cập nhật trạng thái"); }
     };
 
     const handleDeleteMessage = useCallback(async (msgId: string) => {
         try {
             setBusy(true);
-            await api(`/messages/${msgId}`, { method: "DELETE", token });
+            await messageService.delete(msgId);
             setMessages(prev => prev.filter(m => m.id !== msgId));
             if (selectedMessage?.id === msgId) setSelectedMessage(null);
             toast.success("Đã xóa email");

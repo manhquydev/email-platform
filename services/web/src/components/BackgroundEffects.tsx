@@ -19,42 +19,57 @@ export function BackgroundEffects({
     showGrid = false,
     animate = true
 }: BackgroundEffectsProps) {
-    // Opacity values based on variant
-    const opacityConfig = {
-        subtle: { blob1: 0.3, blob2: 0.2, blob3: 0.15 },
-        default: { blob1: 0.5, blob2: 0.4, blob3: 0.25 },
-        intense: { blob1: 0.6, blob2: 0.5, blob3: 0.35 }
+    // Color configs with FULL opacity values (no double multiplication)
+    const colorConfig = {
+        subtle: {
+            blob1: 'rgba(139, 92, 246, 0.25)',   // violet
+            blob2: 'rgba(147, 51, 234, 0.20)',   // purple
+            blob3: 'rgba(6, 182, 212, 0.15)',    // cyan
+        },
+        default: {
+            blob1: 'rgba(139, 92, 246, 0.35)',   // violet
+            blob2: 'rgba(147, 51, 234, 0.30)',   // purple
+            blob3: 'rgba(6, 182, 212, 0.20)',    // cyan
+        },
+        intense: {
+            blob1: 'rgba(139, 92, 246, 0.50)',   // violet
+            blob2: 'rgba(147, 51, 234, 0.40)',   // purple
+            blob3: 'rgba(6, 182, 212, 0.30)',    // cyan
+        }
     };
 
-    const config = opacityConfig[variant];
+    const colors = colorConfig[variant];
 
     return (
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            {/* Primary gradient blob - top left (violet/blue) */}
+            {/* Primary gradient blob - top left (violet) */}
             <div
-                className={`absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[150px] ${animate ? 'animate-pulse' : ''}`}
+                className={`absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full ${animate ? 'animate-pulse' : ''}`}
                 style={{
-                    background: 'rgba(139, 92, 246, 0.15)',
-                    opacity: config.blob1,
+                    background: colors.blob1,
+                    filter: 'blur(120px)',
+                    WebkitFilter: 'blur(120px)',
                 }}
             />
 
             {/* Secondary gradient blob - bottom right (purple) */}
             <div
-                className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] ${animate ? 'animate-pulse' : ''}`}
+                className={`absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] rounded-full ${animate ? 'animate-pulse' : ''}`}
                 style={{
-                    background: 'rgba(147, 51, 234, 0.12)',
-                    opacity: config.blob2,
+                    background: colors.blob2,
+                    filter: 'blur(100px)',
+                    WebkitFilter: 'blur(100px)',
                     animationDelay: '1s',
                 }}
             />
 
             {/* Tertiary gradient blob - center (cyan) */}
             <div
-                className="absolute top-[40%] left-[40%] w-[30%] h-[30%] rounded-full blur-[100px]"
+                className="absolute top-[30%] left-[30%] w-[40%] h-[40%] rounded-full"
                 style={{
-                    background: 'rgba(6, 182, 212, 0.1)',
-                    opacity: config.blob3,
+                    background: colors.blob3,
+                    filter: 'blur(80px)',
+                    WebkitFilter: 'blur(80px)',
                 }}
             />
 

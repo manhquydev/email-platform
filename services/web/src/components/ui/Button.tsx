@@ -5,6 +5,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     isLoading?: boolean;
+    /** Shows success checkmark with green styling */
+    isSuccess?: boolean;
     icon?: React.ReactNode;
 }
 
@@ -13,6 +15,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     variant = 'primary',
     size = 'md',
     isLoading,
+    isSuccess,
     children,
     disabled,
     icon,
@@ -28,7 +31,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     };
 
     // Touch target sizes - WCAG 2.5.5 requires minimum 44x44px for touch targets
-    // Using min-h/min-w ensures touch accessibility on mobile devices
     const sizes = {
         sm: 'h-9 min-h-[44px] px-3 text-xs rounded-lg',
         md: 'h-11 min-h-[44px] px-4 py-2 text-sm rounded-xl',
@@ -36,19 +38,28 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
         icon: 'h-11 w-11 min-h-[44px] min-w-[44px] p-0 flex items-center justify-center rounded-xl',
     };
 
+    // Success state overrides variant styling
+    const successStyles = isSuccess 
+        ? 'bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30' 
+        : '';
+
     return (
         <button
             ref={ref}
+            aria-busy={isLoading}
+            aria-disabled={disabled || isLoading}
             className={cn(
                 'relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-nebula-violet/50 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
                 variants[variant],
                 sizes[size],
-                isLoading && 'text-transparent cursor-wait',
+                (isLoading || isSuccess) && 'text-transparent cursor-wait',
+                successStyles,
                 className
             )}
             disabled={disabled || isLoading}
             {...props}
         >
+            {/* Loading spinner */}
             {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center">
                     <svg className="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -57,7 +68,21 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
                     </svg>
                 </div>
             )}
-            <span className={cn(isLoading ? 'opacity-0' : 'opacity-100', 'flex items-center gap-2')}>
+
+            {/* Success checkmark with scale animation */}
+            {isSuccess && !isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center animate-[scale_0.2s_ease-out]">
+                    <svg className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+            )}
+
+            {/* Button content */}
+            <span className={cn(
+                (isLoading || isSuccess) ? 'opacity-0' : 'opacity-100',
+                'flex items-center gap-2 transition-opacity duration-150'
+            )}>
                 {icon}
                 {children}
             </span>

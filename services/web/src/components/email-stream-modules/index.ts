@@ -10,3 +10,4 @@ export {
 } from "./email-stream-types";
 export { EmptyInbox, GroupHeader, EmailItem } from "./email-stream-components";
 export { VirtualizedEmailList } from "./virtualized-email-list";
+export { SwipeableEmailItem } from "./swipeable-email-item";

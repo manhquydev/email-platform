@@ -60,7 +60,7 @@ export function PricingCardsSection({ packages, loading, currentTier, onCheckout
                     <span className="text-nebula-text-muted">Đang tải gói dịch vụ...</span>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     {/* Free Tier */}
                     <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-nebula-surface border border-nebula-border shadow-sm ${isPlanActive('FREE') ? 'border-nebula-violet shadow-[0_0_30px_rgba(139,92,246,0.15)] ring-2 ring-nebula-violet/20' : ''}`}>
                         <div>
@@ -160,29 +160,87 @@ export function PricingCardsSection({ packages, loading, currentTier, onCheckout
                         );
                     })()}
 
+                    {/* Business Tier */}
+                    {(() => {
+                        const pkg = getPackageByTier('BUSINESS');
+                        return (
+                            <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative bg-nebula-surface border border-nebula-border shadow-sm ${isPlanActive('BUSINESS') ? 'border-nebula-violet shadow-[0_0_30px_rgba(139,92,246,0.15)] ring-2 ring-nebula-violet/20' : ''}`}>
+                                {isPlanActive('BUSINESS') && (
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-nebula-violet text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-nebula-violet/40">
+                                        Gói hiện tại
+                                    </div>
+                                )}
+                                <div>
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg font-bold text-nebula-text">Doanh nghiệp</h3>
+                                        <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded">GIÁ TRỊ</span>
+                                    </div>
+                                    <p className="text-nebula-text-muted text-sm mt-1">Cho doanh nghiệp vừa và nhỏ</p>
+                                    <div className="mt-4 flex items-baseline gap-1">
+                                        <span className="text-4xl font-bold text-nebula-text">
+                                            {pkg ? formatPrice(pkg.price, pkg.currency) : '--'}
+                                        </span>
+                                        <span className="text-nebula-text-muted text-sm">/{billingCycle === 'monthly' ? 'tháng' : 'năm'}</span>
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={() => pkg && onCheckout(pkg.id)}
+                                    variant={isPlanActive('BUSINESS') ? "secondary" : "primary"}
+                                    disabled={!pkg || isPlanActive('BUSINESS')}
+                                    className="w-full"
+                                >
+                                    {isPlanActive('BUSINESS') ? "Gói hiện tại" : pkg ? "Nâng cấp" : "Không khả dụng"}
+                                </Button>
+                                <ul className="flex flex-col gap-3 text-sm text-nebula-text-secondary">
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> 25 Tên miền riêng</li>
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> 500 Hộp thư</li>
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> 20GB Lưu trữ</li>
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> 30 Webhooks</li>
+                                </ul>
+                            </GlassCard>
+                        );
+                    })()}
+
                     {/* Enterprise Tier */}
-                    <GlassCard className="p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 bg-nebula-surface border border-nebula-border shadow-sm">
-                        <div>
-                            <h3 className="text-lg font-bold text-nebula-text">Doanh nghiệp</h3>
-                            <p className="text-nebula-text-muted text-sm mt-1">Truy cập API & lưu lượng lớn</p>
-                            <div className="mt-4 flex items-baseline gap-1">
-                                <span className="text-4xl font-bold text-nebula-text">Liên hệ</span>
-                            </div>
-                        </div>
-                        <Button
-                            variant="ghost"
-                            className="w-full"
-                            onClick={() => window.location.href = 'mailto:support@manhquy.click?subject=Enterprise%20Plan%20Inquiry'}
-                        >
-                            Liên hệ bán hàng
-                        </Button>
-                        <ul className="flex flex-col gap-3 text-sm text-nebula-text-secondary">
-                            <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> Không giới hạn tên miền</li>
-                            <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> Không giới hạn hộp thư</li>
-                            <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> 50GB+ Lưu trữ</li>
-                            <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> Dedicated Support</li>
-                        </ul>
-                    </GlassCard>
+                    {(() => {
+                        const pkg = getPackageByTier('ENTERPRISE');
+                        return (
+                            <GlassCard className={`p-6 flex flex-col gap-6 hover:-translate-y-1 transition-transform duration-300 relative bg-nebula-surface border border-nebula-border shadow-sm ${isPlanActive('ENTERPRISE') ? 'border-nebula-violet shadow-[0_0_30px_rgba(139,92,246,0.15)] ring-2 ring-nebula-violet/20' : ''}`}>
+                                {isPlanActive('ENTERPRISE') && (
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-nebula-violet text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-nebula-violet/40">
+                                        Gói hiện tại
+                                    </div>
+                                )}
+                                <div>
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg font-bold text-nebula-text">Enterprise</h3>
+                                        <span className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded">TỐI ƯU</span>
+                                    </div>
+                                    <p className="text-nebula-text-muted text-sm mt-1">Dành cho tổ chức lớn</p>
+                                    <div className="mt-4 flex items-baseline gap-1">
+                                        <span className="text-4xl font-bold text-nebula-text">
+                                            {pkg ? formatPrice(pkg.price, pkg.currency) : '--'}
+                                        </span>
+                                        <span className="text-nebula-text-muted text-sm">/{billingCycle === 'monthly' ? 'tháng' : 'năm'}</span>
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={() => pkg && onCheckout(pkg.id)}
+                                    variant={isPlanActive('ENTERPRISE') ? "secondary" : "primary"}
+                                    disabled={!pkg || isPlanActive('ENTERPRISE')}
+                                    className="w-full"
+                                >
+                                    {isPlanActive('ENTERPRISE') ? "Gói hiện tại" : pkg ? "Nâng cấp" : "Liên hệ"}
+                                </Button>
+                                <ul className="flex flex-col gap-3 text-sm text-nebula-text-secondary">
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> Không giới hạn tên miền</li>
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> Không giới hạn hộp thư</li>
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> 50GB Lưu trữ</li>
+                                    <li className="flex gap-3"><span className="material-symbols-outlined text-success text-[20px]">check</span> Hỗ trợ ưu tiên 24/7</li>
+                                </ul>
+                            </GlassCard>
+                        );
+                    })()}
                 </div>
             )}
         </div>

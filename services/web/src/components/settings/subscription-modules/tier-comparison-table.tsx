@@ -49,6 +49,15 @@ function formatLimit(value: number | boolean, suffix?: string): string {
     return suffix ? `${value} ${suffix}` : value.toString();
 }
 
+/** Format price for display (supports VND and USD) */
+function formatPrice(price: number, currency: string): string {
+    if (price === 0) return "Miễn phí";
+    if (currency === "VND") {
+        return new Intl.NumberFormat("vi-VN").format(price) + "đ";
+    }
+    return `$${price}`;
+}
+
 /** Feature row labels (Vietnamese) */
 const FEATURE_LABELS: Record<keyof TierLimits, { label: string; suffix?: string }> = {
     domains: { label: "Tên miền" },
@@ -142,7 +151,7 @@ export function TierComparisonTable() {
                             >
                                 <div className="flex flex-col items-center">
                                     <span className="text-2xl font-bold text-nebula-text">
-                                        {tier.price === 0 ? "Miễn phí" : `$${tier.price}`}
+                                        {formatPrice(tier.price, tier.currency)}
                                     </span>
                                     {tier.price > 0 && (
                                         <span className="text-xs text-nebula-text-muted">/{tier.period}</span>

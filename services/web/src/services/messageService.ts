@@ -13,11 +13,8 @@ const log = logger.scope('MessageService');
 /** Get token from localStorage (fallback for service layer) */
 function getStoredToken(): string | undefined {
     try {
-        const stored = localStorage.getItem('auth');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            return parsed?.token;
-        }
+        // Token is stored directly under 'token' key (see login-hooks.ts, MagicLinkVerify.tsx)
+        return localStorage.getItem('token') ?? undefined;
     } catch { /* ignore */ }
     return undefined;
 }

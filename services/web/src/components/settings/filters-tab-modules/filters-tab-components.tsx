@@ -1,6 +1,7 @@
 /**
  * UI components for FiltersTab
  */
+import { useState } from "react";
 import type { EmailFilter, FilterCondition, FilterAction, Label } from "../../../types";
 import { GlassCard } from "../../ui/GlassCard";
 import { Button } from "../../ui/Button";
@@ -12,9 +13,10 @@ interface FilterCardProps {
     filter: EmailFilter;
     onEdit: () => void;
     onDelete: () => void;
+    onTest: () => void;
 }
 
-export function FilterCard({ filter, onEdit, onDelete }: FilterCardProps) {
+export function FilterCard({ filter, onEdit, onDelete, onTest }: FilterCardProps) {
     return (
         <GlassCard className="p-4 flex flex-col md:flex-row justify-between gap-4 group">
             <div>
@@ -46,6 +48,7 @@ export function FilterCard({ filter, onEdit, onDelete }: FilterCardProps) {
                 </div>
             </div>
             <div className="flex items-start gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="sm" onClick={onTest}>Test</Button>
                 <Button variant="ghost" size="sm" onClick={onEdit}>Sửa</Button>
                 <Button variant="ghost" size="sm" className="text-danger hover:text-danger/80" onClick={onDelete}>Xóa</Button>
             </div>
@@ -239,6 +242,103 @@ export function FilterModal({
                     <div className="flex justify-end gap-3 pt-4 border-t border-nebula-border">
                         <Button variant="ghost" onClick={onClose}>Hủy</Button>
                         <Button variant="primary" onClick={onSave}>Lưu Bộ lọc</Button>
+                    </div>
+                </GlassCard>
+            </div>
+        </div>
+    );
+}
+
+// --- Test Filter Modal ---
+interface TestFilterModalProps {
+    filter: EmailFilter;
+    testResult: { matches: boolean; allMatchingFilters: { id: string; name: string }[] } | null;
+    loading: boolean;
+    onTest: (data: { fromAddress?: string; toAddress?: string; subject?: string; body?: string; hasAttachment?: boolean }) => void;
+    onClose: () => void;
+}
+
+export function TestFilterModal({ filter, testResult, loading, onTest, onClose }: TestFilterModalProps) {
+    const [fromAddress, setFromAddress] = useState("");
+    const [toAddress, setToAddress] = useState("");
+    const [subject, setSubject] = useState("");
+    const [body, setBody] = useState("");
+    const [hasAttachment, setHasAttachment] = useState(false);
+
+    const handleSubmit = () => {
+        onTest({ fromAddress, toAddress, subject, body, hasAttachment });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+            <div className="min-h-full py-8 flex items-center justify-center w-full">
+                <GlassCard className="w-full max-w-lg p-6 space-y-5 relative animate-fade-in-up">
+                    <h3 className="text-xl font-bold text-nebula-text">
+                        Kiểm tra Bộ lọc: {filter.name}
+                    </h3>
+
+                    <p className="text-sm text-nebula-text-muted">
+                        Nhập dữ liệu email mẫu để kiểm tra bộ lọc có khớp không.
+                    </p>
+
+                    <div className="space-y-3">
+                        <div>
+                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Từ (From)</label>
+                            <Input value={fromAddress} onChange={e => setFromAddress(e.target.value)} placeholder="sender@example.com" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Đến (To)</label>
+                            <Input value={toAddress} onChange={e => setToAddress(e.target.value)} placeholder="inbox@yourdomain.com" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Tiêu đề (Subject)</label>
+                            <Input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Test email subject" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Nội dung (Body)</label>
+                            <textarea
+                                value={body}
+                                onChange={e => setBody(e.target.value)}
+                                placeholder="Email body content..."
+                                className="w-full bg-nebula-surface border border-nebula-border rounded-lg px-3 py-2 text-sm text-nebula-text focus:outline-none focus:border-nebula-violet min-h-[80px]"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="hasAttachment"
+                                checked={hasAttachment}
+                                onChange={e => setHasAttachment(e.target.checked)}
+                                className="rounded border-nebula-border"
+                            />
+                            <label htmlFor="hasAttachment" className="text-sm text-nebula-text">Có đính kèm</label>
+                        </div>
+                    </div>
+
+                    {/* Test Result */}
+                    {testResult && (
+                        <div className={`p-4 rounded-lg border ${testResult.matches ? 'bg-success/10 border-success/30' : 'bg-warning/10 border-warning/30'}`}>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className={`text-lg ${testResult.matches ? 'text-success' : 'text-warning'}`}>
+                                    {testResult.matches ? '✓' : '✗'}
+                                </span>
+                                <span className={`font-semibold ${testResult.matches ? 'text-success' : 'text-warning'}`}>
+                                    {testResult.matches ? 'Bộ lọc KHỚP!' : 'Bộ lọc KHÔNG khớp'}
+                                </span>
+                            </div>
+                            {testResult.allMatchingFilters.length > 0 && (
+                                <div className="text-sm text-nebula-text-muted">
+                                    Tất cả bộ lọc khớp: {testResult.allMatchingFilters.map(f => f.name).join(', ')}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-3 pt-4 border-t border-nebula-border">
+                        <Button variant="ghost" onClick={onClose}>Đóng</Button>
+                        <Button variant="primary" onClick={handleSubmit} disabled={loading}>
+                            {loading ? 'Đang kiểm tra...' : 'Kiểm tra'}
+                        </Button>
                     </div>
                 </GlassCard>
             </div>

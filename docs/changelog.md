@@ -2,6 +2,76 @@
 
 All notable changes to the Ephemera project will be documented in this file.
 
+## [0.3.3] - 2026-01-20
+
+### Added
+- **Mobile App (React Native + Expo SDK 54):**
+  - Complete 11-screen mobile app with Teams, Messages, Inboxes, and Settings
+  - Team management: create team, add members with role selection
+  - AI Summary integration in message detail view
+  - Zustand state management + React Query data fetching
+  - TypeScript with path aliases (@/ → src/)
+
+- **RFC 8601 Authentication Headers:**
+  - New `auth-headers.ts` utility for generating Authentication-Results headers
+  - SPF, DKIM, DMARC result formatting per RFC 8601
+  - Integrated into email worker pipeline
+
+### Fixed
+- Label destructuring in email components (EmailItem, EmailHeader, email-stream-components)
+- Removed unused ErrorResponse interface from ai-summary-card
+- Mobile app peer dependencies (expo-font, expo-linking)
+
+### Verified
+- All 17/17 expo-doctor checks passing
+- Web build successful (87 PWA entries, 2.5MB precache)
+- Mobile TypeScript compilation clean
+
+## [0.3.2] - 2026-01-20
+
+### Added
+- **Advanced Subscription Tiers:**
+  - Extended `TIER_LIMITS` with 13 features per tier (domains, inboxes, storage, dailyEmails, retentionDays, teams, teamMembers, filters, forwardingRules, labels, webhooks, apiAccess, prioritySupport)
+  - Added `TIER_INFO` with pricing and display metadata for FREE/STARTER/PROFESSIONAL/ENTERPRISE
+  - New API endpoint `GET /billing/tiers` for fetching all tier data
+  - New API endpoint `GET /billing/compare/:targetTier` for tier comparison with improvements calculation
+  - `TierComparisonTable` component with dynamic data fetching and current tier highlighting
+  - Pricing row in comparison table showing $0 → $5 → $15 → $49/month
+  - Vietnamese localization for all 13 feature labels
+
+- **AI-Powered Email Summarization:**
+  - New `AISummarizationService` with Google Gemini API integration (gemini-2.0-flash)
+  - Database schema: Added `aiSummary` and `aiSummarizedAt` fields to Message model
+  - New API endpoint `POST /messages/:id/summarize` with tier-gating and credit-based billing
+  - `AISummaryCard` component with collapsible UI, loading states, and error handling
+  - Tier-gated access: STARTER+ tiers only (apiAccess required)
+  - Credit-based: 1 credit per new summary (configurable via `AI_SUMMARY_CREDIT_COST`)
+  - Cached summaries: Free retrieval after initial generation
+  - Credit refund on API failure
+  - Vietnamese UI labels throughout
+
+## [0.3.1] - 2026-01-19
+
+### Added
+- **Settings Tabs Enhancement:**
+  - Filters: Test preview endpoints (`POST /filters/:id/test`, `POST /inboxes/:id/filters/test`)
+  - Filters: TestFilterModal UI component for testing filters against sample email data
+  - Labels: Message list now displays labels with color badges (up to 3 visible)
+  - Labels: Updated Message type to include label relations
+
+### Fixed
+- Messages queries now include labels data across all endpoints:
+  - `GET /messages`
+  - `GET /inboxes/:id/messages`
+  - `GET /messages/search`
+  - `GET /messages/:id`
+
+### Verified
+- Retention settings: `PATCH /auth/me` and `PATCH /inboxes/:id` fully support retentionDays with tier validation
+- Sweep job runs with proper hierarchy (inbox → user → tier → global)
+- Teams: Full CRUD, member management (OWNER/ADMIN/MEMBER/VIEWER roles), and shared inbox permissions working correctly
+- TeamService provides centralized access control for all inbox/message endpoints
+
 ## [0.3.0] - 2026-01-17
 
 ### Added

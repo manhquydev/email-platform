@@ -189,6 +189,28 @@ export function MessageItem({ msg, isSelected, isChecked, showCheckboxes, onSele
                         {msg.subject || '(Không có tiêu đề)'}
                     </div>
 
+                    {/* Labels */}
+                    {msg.labels && msg.labels.length > 0 && (
+                        <div className="flex gap-1 flex-wrap mt-1">
+                            {msg.labels.slice(0, 3).map((ml: { label: { id: string; name: string; color?: string | null } }) => (
+                                <span
+                                    key={ml.label.id}
+                                    className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium"
+                                    style={{
+                                        backgroundColor: ml.label.color ? `${ml.label.color}20` : '#8b5cf620',
+                                        color: ml.label.color || '#8b5cf6',
+                                        border: `1px solid ${ml.label.color ? `${ml.label.color}40` : '#8b5cf640'}`
+                                    }}
+                                >
+                                    {ml.label.name}
+                                </span>
+                            ))}
+                            {msg.labels.length > 3 && (
+                                <span className="text-[10px] text-muted">+{msg.labels.length - 3}</span>
+                            )}
+                        </div>
+                    )}
+
                     <div className="text-[13px] text-muted truncate line-clamp-2 leading-relaxed opacity-80">
                         {msg.textBody ? msg.textBody.substring(0, 120) : 'Không có nội dung xem trước...'}
                         {msg.attachments && msg.attachments.length > 0 && (

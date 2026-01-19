@@ -7,7 +7,8 @@ import { Button } from "../ui/Button";
 import {
     useFiltersData,
     FilterCard,
-    FilterModal
+    FilterModal,
+    TestFilterModal
 } from "./filters-tab-modules";
 
 interface FiltersTabProps {
@@ -42,7 +43,15 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
         updateAction,
         addAction,
         removeAction,
-        closeModal
+        closeModal,
+        // Test filter
+        isTestModalOpen,
+        testingFilter,
+        testResult,
+        testLoading,
+        openTestModal,
+        closeTestModal,
+        handleTestFilter
     } = useFiltersData(effectiveInboxId);
 
     if (loading && filters.length === 0) {
@@ -84,6 +93,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                         filter={filter}
                         onEdit={() => openEditModal(filter)}
                         onDelete={() => handleDelete(filter.id)}
+                        onTest={() => openTestModal(filter)}
                     />
                 ))}
                 {filters.length === 0 && (
@@ -112,6 +122,17 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                     onRemoveAction={removeAction}
                     onSave={handleSave}
                     onClose={closeModal}
+                />
+            )}
+
+            {/* Test Filter Modal */}
+            {isTestModalOpen && testingFilter && (
+                <TestFilterModal
+                    filter={testingFilter}
+                    testResult={testResult}
+                    loading={testLoading}
+                    onTest={handleTestFilter}
+                    onClose={closeTestModal}
                 />
             )}
         </div>

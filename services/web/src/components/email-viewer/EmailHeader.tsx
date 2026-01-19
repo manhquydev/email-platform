@@ -66,7 +66,7 @@ export function EmailHeader({ message, className }: EmailHeaderProps) {
             {/* Labels/Tags if available */}
             {message.labels && message.labels.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                    {message.labels.map((label) => (
+                    {message.labels.map(({ label }) => (
                         <span
                             key={label.id}
                             className="px-2 py-0.5 text-xs font-medium rounded-full"

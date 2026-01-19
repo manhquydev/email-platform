@@ -61,7 +61,8 @@ export type Message = {
     isPinned: boolean;
     snoozedUntil?: string | null;
     attachments: Attachment[];
-    labels?: Label[];
+    /** MessageLabel relations with nested label data */
+    labels?: { label: Label }[];
 };
 
 export type PaginatedResponse<T> = {

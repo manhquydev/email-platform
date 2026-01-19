@@ -13,3 +13,4 @@ export {
     EmailBody,
     AttachmentsSection
 } from "./message-detail-components";
+export { AISummaryCard } from "./ai-summary-card";

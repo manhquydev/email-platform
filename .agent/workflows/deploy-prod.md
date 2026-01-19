@@ -340,3 +340,69 @@ ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-postgres-1
 1. Luôn kiểm tra migration status sau mỗi lần deploy
 2. Backup database trước khi chạy migration trên production
 3. Thêm database schema validation vào CI/CD pipeline
+
+### WebSocket/SSE "Mất kết nối" sau deploy
+
+**Triệu chứng:** UI hiển thị "Mất kết nối" (màu xám), WebSocket endpoint `/ws/events` trả về 404.
+
+**Nguyên nhân:** GitHub Actions chỉ chạy `docker compose up -d` mà KHÔNG rebuild containers. API container vẫn chạy code cũ, không load được routes mới.
+
+**Chẩn đoán:**
+```bash
+# Kiểm tra WebSocket endpoint
+curl -sI -H "Connection: Upgrade" -H "Upgrade: websocket" "https://api.manhquy.click/ws/events"
+# Nếu trả về 404 hoặc 500 → container chạy code cũ
+
+# Kiểm tra logs API
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && docker compose logs api 2>&1 | tail -30"
+```
+
+**Giải pháp:**
+```bash
+# Force rebuild và recreate API container
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml build --no-cache api && docker compose -f docker-compose.prod.yml up -d --force-recreate api"
+```
+
+**Verify:**
+```bash
+# Kiểm tra logs có WebSocket authenticated
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && docker compose logs api 2>&1 | grep -i 'websocket authenticated'"
+```
+
+> **Lưu ý:** `docker compose up -d` chỉ tạo container mới nếu image thay đổi. Khi code thay đổi mà không rebuild, container vẫn chạy code cũ.
+
+### 401 Unauthorized trên API calls (localStorage key sai)
+
+**Triệu chứng:** Console log hiển thị:
+```
+PATCH https://api.manhquy.click/messages/.../read 401 (Unauthorized)
+[MessageService] No Authorization was found in request.headers
+```
+
+**Nguyên nhân:** Service layer đọc token từ sai localStorage key. App lưu token với key `'token'` nhưng service đọc từ key `'auth'`.
+
+**Chẩn đoán:**
+1. Kiểm tra browser DevTools → Application → Local Storage
+2. Xác định key chứa JWT token (thường là `'token'` hoặc `'auth'`)
+3. So sánh với code trong service files
+
+**Giải pháp:**
+```typescript
+// Kiểm tra nơi token được lưu (login, MagicLinkVerify, etc.)
+localStorage.setItem('token', res.token);  // ← Key thực tế
+
+// Service layer phải đọc đúng key
+function getStoredToken(): string | undefined {
+    return localStorage.getItem('token') ?? undefined;  // ← Phải khớp
+}
+```
+
+**Phòng ngừa:**
+1. Định nghĩa constants cho localStorage keys:
+   ```typescript
+   export const STORAGE_KEYS = {
+     TOKEN: 'token',
+     USER: 'user',
+   } as const;
+   ```
+2. Sử dụng constants thay vì hardcode strings trong toàn bộ codebase

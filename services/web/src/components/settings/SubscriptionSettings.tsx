@@ -14,7 +14,8 @@ import {
     SubscriptionStatsCards,
     PaymentMethodCard,
     PricingCardsSection,
-    PaymentHistoryTable
+    PaymentHistoryTable,
+    TierComparisonTable
 } from "./subscription-modules";
 
 interface UserProfile {
@@ -111,6 +112,20 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                 currentTier={profile?.tier || 'FREE'}
                 onCheckout={handleCheckout}
             />
+
+            {/* Tier Comparison Table */}
+            <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border">
+                <div className="mb-4">
+                    <h3 className="text-lg font-bold text-nebula-text mb-1 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-nebula-violet">compare</span>
+                        So sánh chi tiết các gói
+                    </h3>
+                    <p className="text-sm text-nebula-text-muted">
+                        Xem tất cả tính năng và giới hạn của từng gói dịch vụ.
+                    </p>
+                </div>
+                <TierComparisonTable />
+            </section>
 
             {/* Billing History Table */}
             <PaymentHistoryTable

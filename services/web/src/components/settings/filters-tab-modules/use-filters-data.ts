@@ -6,12 +6,25 @@ import { toast } from "react-hot-toast";
 import { api } from "../../../utils/api";
 import type { EmailFilter, Label, FilterCondition, FilterAction } from "../../../types";
 
+/** Test filter result from API */
+export interface FilterTestResult {
+    matches: boolean;
+    filter: { id: string; name: string };
+    allMatchingFilters: { id: string; name: string }[];
+}
+
 export function useFiltersData(effectiveInboxId: string | undefined) {
     const [filters, setFilters] = useState<EmailFilter[]>([]);
     const [labels, setLabels] = useState<Label[]>([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingFilter, setEditingFilter] = useState<EmailFilter | null>(null);
+
+    // Test filter state
+    const [isTestModalOpen, setIsTestModalOpen] = useState(false);
+    const [testingFilter, setTestingFilter] = useState<EmailFilter | null>(null);
+    const [testResult, setTestResult] = useState<FilterTestResult | null>(null);
+    const [testLoading, setTestLoading] = useState(false);
 
     // Form State
     const [name, setName] = useState("");
@@ -150,6 +163,42 @@ export function useFiltersData(effectiveInboxId: string | undefined) {
 
     const closeModal = () => setIsModalOpen(false);
 
+    // Test filter functions
+    const openTestModal = (filter: EmailFilter) => {
+        setTestingFilter(filter);
+        setTestResult(null);
+        setIsTestModalOpen(true);
+    };
+
+    const closeTestModal = () => {
+        setIsTestModalOpen(false);
+        setTestingFilter(null);
+        setTestResult(null);
+    };
+
+    const handleTestFilter = async (testData: {
+        fromAddress?: string;
+        toAddress?: string;
+        subject?: string;
+        body?: string;
+        hasAttachment?: boolean;
+    }) => {
+        if (!testingFilter) return;
+        setTestLoading(true);
+        try {
+            const result = await api<FilterTestResult>(`/filters/${testingFilter.id}/test`, {
+                method: "POST",
+                body: testData
+            });
+            setTestResult(result);
+        } catch (err) {
+            console.error("Failed to test filter", err);
+            toast.error("Không thể kiểm tra bộ lọc");
+        } finally {
+            setTestLoading(false);
+        }
+    };
+
     return {
         filters,
         labels,
@@ -172,6 +221,14 @@ export function useFiltersData(effectiveInboxId: string | undefined) {
         updateAction,
         addAction,
         removeAction,
-        closeModal
+        closeModal,
+        // Test filter
+        isTestModalOpen,
+        testingFilter,
+        testResult,
+        testLoading,
+        openTestModal,
+        closeTestModal,
+        handleTestFilter
     };
 }

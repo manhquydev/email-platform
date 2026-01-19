@@ -24,6 +24,7 @@ import { extractOTP } from './utils/otpExtractor';
 import { evaluateMessage as evaluateVisibility, type EmailData } from './services/visibility-engine';
 import { realtimeEvents } from './services/realtime-events';
 import { pushNotification } from './services/push-notification';
+import { buildAuthHeaders, generateAuthResultsHeader } from './utils/auth-headers';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -248,6 +249,22 @@ export const setupEmailWorker = (logger: Logger) => {
                     logger.warn({ spamResult }, 'Rejecting spam email');
                     throw new Error(`Email rejected as spam (score: ${spamResult.score})`);
                 }
+
+                // Generate authentication headers (RFC 8601)
+                const authHeaders = buildAuthHeaders(spamResult, {
+                    authservId: appConfig.hostname || 'ephemera.email',
+                    clientIp: sourceIp,
+                });
+                const authResults = generateAuthResultsHeader(spamResult, {
+                    authservId: appConfig.hostname || 'ephemera.email',
+                    clientIp: sourceIp,
+                });
+                logger.info({
+                    authStatus: authResults.summary.overall,
+                    spf: authResults.summary.spf,
+                    dkim: authResults.summary.dkim,
+                    dmarc: authResults.summary.dmarc,
+                }, 'authentication results');
 
                 // Extract OTP from email content
                 const otpResult = extractOTP(textBody || htmlBody || '');

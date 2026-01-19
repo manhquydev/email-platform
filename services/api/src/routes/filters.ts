@@ -6,6 +6,7 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
+import { getMatchingFilters, type EmailData } from '../services/emailFilters';
 
 // Validation schemas
 const createFilterSchema = z.object({
@@ -142,6 +143,99 @@ export const filterRoutes: FastifyPluginAsync = async (app) => {
         await prisma.emailFilter.delete({ where: { id } });
 
         return { success: true };
+    });
+
+    // Test a filter with sample email data
+    const testFilterSchema = z.object({
+        fromAddress: z.string().optional(),
+        toAddress: z.string().optional(),
+        subject: z.string().optional(),
+        body: z.string().optional(),
+        hasAttachment: z.boolean().default(false),
+    });
+
+    app.post('/filters/:id/test', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
+        const { id } = req.params as { id: string };
+        const user = req.user as { userId: string };
+
+        // Verify filter ownership
+        const filter = await prisma.emailFilter.findFirst({
+            where: { id, inbox: { domain: { ownerId: user.userId } } },
+        });
+
+        if (!filter) {
+            return reply.status(404).send({ error: 'Filter not found' });
+        }
+
+        const parsed = testFilterSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: parsed.error.flatten() });
+        }
+
+        const testEmail: EmailData = {
+            fromAddress: parsed.data.fromAddress ?? null,
+            toAddress: parsed.data.toAddress ?? null,
+            subject: parsed.data.subject ?? null,
+            textBody: parsed.data.body ?? null,
+            htmlBody: null,
+            hasAttachment: parsed.data.hasAttachment,
+        };
+
+        const matchingFilters = await getMatchingFilters(filter.inboxId, testEmail);
+        const thisFilterMatches = matchingFilters.some(f => f.id === id);
+
+        return {
+            matches: thisFilterMatches,
+            filter: {
+                id: filter.id,
+                name: filter.name,
+                conditions: filter.conditions,
+                actions: filter.actions,
+            },
+            testData: testEmail,
+            allMatchingFilters: matchingFilters.map(f => ({ id: f.id, name: f.name })),
+        };
+    });
+
+    // Test all filters for an inbox with sample email
+    app.post('/inboxes/:inboxId/filters/test', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
+        const { inboxId } = req.params as { inboxId: string };
+        const user = req.user as { userId: string };
+
+        // Verify inbox ownership
+        const inbox = await prisma.inbox.findFirst({
+            where: { id: inboxId, domain: { ownerId: user.userId }, deletedAt: null },
+        });
+
+        if (!inbox) {
+            return reply.status(404).send({ error: 'Inbox not found' });
+        }
+
+        const parsed = testFilterSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: parsed.error.flatten() });
+        }
+
+        const testEmail: EmailData = {
+            fromAddress: parsed.data.fromAddress ?? null,
+            toAddress: parsed.data.toAddress ?? null,
+            subject: parsed.data.subject ?? null,
+            textBody: parsed.data.body ?? null,
+            htmlBody: null,
+            hasAttachment: parsed.data.hasAttachment,
+        };
+
+        const matchingFilters = await getMatchingFilters(inboxId, testEmail);
+
+        return {
+            matchCount: matchingFilters.length,
+            matchingFilters: matchingFilters.map(f => ({
+                id: f.id,
+                name: f.name,
+                actions: f.actions,
+            })),
+            testData: testEmail,
+        };
     });
 
     // ==================

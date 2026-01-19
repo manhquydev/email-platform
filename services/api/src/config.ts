@@ -129,4 +129,12 @@ export const appConfig = {
     apiKey: process.env.STRIPE_API_KEY ?? "",
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   },
+  // AI/Gemini API configuration
+  ai: {
+    enabled: (process.env.AI_ENABLED ?? "false").toLowerCase() === "true",
+    provider: process.env.AI_PROVIDER ?? "gemini", // gemini, openai
+    geminiApiKey: process.env.GEMINI_API_KEY ?? "",
+    geminiModel: process.env.GEMINI_MODEL ?? "gemini-2.0-flash",
+    summaryCreditCost: Number(process.env.AI_SUMMARY_CREDIT_COST ?? 1),
+  },
 };

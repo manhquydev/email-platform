@@ -11,12 +11,140 @@ import { appConfig } from '../config';
 // Stripe import - will be installed separately
 import { StripeService } from '../services/stripe.service';
 
-// Tier limits configuration
+// Tier limits configuration - Extended with all features
 export const TIER_LIMITS = {
-    FREE: { domains: 1, inboxes: 3, storageGB: 0.1, dailyEmails: 50 },
-    STARTER: { domains: 3, inboxes: 20, storageGB: 1, dailyEmails: 200 },
-    PROFESSIONAL: { domains: 10, inboxes: 100, storageGB: 5, dailyEmails: 1000 },
-    ENTERPRISE: { domains: -1, inboxes: -1, storageGB: 50, dailyEmails: -1 }, // -1 = unlimited
+    FREE: {
+        domains: 1,
+        inboxes: 3,
+        storageGB: 0.1,
+        dailyEmails: 50,
+        retentionDays: 7,
+        teams: 0,
+        teamMembers: 0,
+        filters: 3,
+        forwardingRules: 2,
+        labels: 5,
+        webhooks: 0,
+        apiAccess: false,
+        prioritySupport: false,
+    },
+    STARTER: {
+        domains: 3,
+        inboxes: 20,
+        storageGB: 1,
+        dailyEmails: 200,
+        retentionDays: 30,
+        teams: 1,
+        teamMembers: 3,
+        filters: 10,
+        forwardingRules: 5,
+        labels: 20,
+        webhooks: 2,
+        apiAccess: true,
+        prioritySupport: false,
+    },
+    PROFESSIONAL: {
+        domains: 10,
+        inboxes: 100,
+        storageGB: 5,
+        dailyEmails: 1000,
+        retentionDays: 90,
+        teams: 5,
+        teamMembers: 10,
+        filters: 50,
+        forwardingRules: 20,
+        labels: 100,
+        webhooks: 10,
+        apiAccess: true,
+        prioritySupport: true,
+    },
+    ENTERPRISE: {
+        domains: -1,        // -1 = unlimited
+        inboxes: -1,
+        storageGB: 50,
+        dailyEmails: -1,
+        retentionDays: 365,
+        teams: -1,
+        teamMembers: -1,
+        filters: -1,
+        forwardingRules: -1,
+        labels: -1,
+        webhooks: -1,
+        apiAccess: true,
+        prioritySupport: true,
+    },
+} as const;
+
+// Tier pricing and display info
+export const TIER_INFO = {
+    FREE: {
+        name: 'Free',
+        price: 0,
+        currency: 'USD',
+        period: 'month',
+        description: 'Perfect for trying out Ephemera',
+        badge: null,
+        features: [
+            '1 custom domain',
+            '3 inboxes',
+            '100MB storage',
+            '7-day email retention',
+            'Basic email filters',
+        ],
+    },
+    STARTER: {
+        name: 'Starter',
+        price: 5,
+        currency: 'USD',
+        period: 'month',
+        description: 'Great for individuals and freelancers',
+        badge: null,
+        features: [
+            '3 custom domains',
+            '20 inboxes',
+            '1GB storage',
+            '30-day email retention',
+            '1 team with 3 members',
+            'API access',
+            '2 webhooks',
+        ],
+    },
+    PROFESSIONAL: {
+        name: 'Professional',
+        price: 15,
+        currency: 'USD',
+        period: 'month',
+        description: 'Best for growing teams',
+        badge: 'Popular',
+        features: [
+            '10 custom domains',
+            '100 inboxes',
+            '5GB storage',
+            '90-day email retention',
+            '5 teams with 10 members each',
+            'Priority support',
+            '10 webhooks',
+            'Advanced forwarding rules',
+        ],
+    },
+    ENTERPRISE: {
+        name: 'Enterprise',
+        price: 49,
+        currency: 'USD',
+        period: 'month',
+        description: 'For large organizations',
+        badge: 'Best Value',
+        features: [
+            'Unlimited domains',
+            'Unlimited inboxes',
+            '50GB storage',
+            '365-day email retention',
+            'Unlimited teams & members',
+            'Priority support',
+            'Unlimited webhooks',
+            'Custom integrations',
+        ],
+    },
 } as const;
 
 // Stripe price IDs (configure in production .env)
@@ -39,6 +167,58 @@ const cancelSubscriptionSchema = z.object({
 export const billingRoutes: FastifyPluginAsync = async (app) => {
     // Check if Stripe is configured
     const stripeEnabled = !!appConfig.stripe.apiKey;
+
+    // Get all tier information with limits and pricing (public endpoint)
+    app.get('/billing/tiers', async () => {
+        const tiers = Object.entries(TIER_LIMITS).map(([key, limits]) => {
+            const info = TIER_INFO[key as keyof typeof TIER_INFO];
+            return {
+                id: key,
+                ...info,
+                limits,
+            };
+        });
+        return { tiers, stripeEnabled };
+    });
+
+    // Compare user's current tier with target tier
+    app.get('/billing/compare/:targetTier', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
+        const user = req.user as { userId: string; tier?: string };
+        const { targetTier } = req.params as { targetTier: string };
+
+        const currentTierKey = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
+        const targetTierKey = targetTier.toUpperCase() as keyof typeof TIER_LIMITS;
+
+        if (!TIER_LIMITS[targetTierKey]) {
+            return reply.status(400).send({ error: 'Invalid tier' });
+        }
+
+        const currentLimits = TIER_LIMITS[currentTierKey];
+        const targetLimits = TIER_LIMITS[targetTierKey];
+        const currentInfo = TIER_INFO[currentTierKey];
+        const targetInfo = TIER_INFO[targetTierKey];
+
+        // Calculate improvements
+        const improvements: Record<string, { current: number | boolean; target: number | boolean; improved: boolean }> = {};
+        for (const [key, targetValue] of Object.entries(targetLimits)) {
+            const currentValue = currentLimits[key as keyof typeof currentLimits];
+            const isImproved = typeof targetValue === 'boolean'
+                ? targetValue && !currentValue
+                : (targetValue === -1 || (typeof currentValue === 'number' && targetValue > currentValue));
+            improvements[key] = {
+                current: currentValue,
+                target: targetValue,
+                improved: isImproved,
+            };
+        }
+
+        return {
+            current: { id: currentTierKey, ...currentInfo, limits: currentLimits },
+            target: { id: targetTierKey, ...targetInfo, limits: targetLimits },
+            improvements,
+            priceDifference: targetInfo.price - currentInfo.price,
+        };
+    });
 
     // Get available packages
     app.get('/billing/packages', async () => {

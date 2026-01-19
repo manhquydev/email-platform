@@ -125,7 +125,7 @@ export const EmailItem = React.memo(function EmailItem({
                 {/* Labels */}
                 {message.labels && message.labels.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
-                        {message.labels.map(label => (
+                        {message.labels.map(({ label }) => (
                             <span
                                 key={label.id}
                                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"

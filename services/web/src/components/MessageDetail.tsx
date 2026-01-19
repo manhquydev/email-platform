@@ -1,5 +1,5 @@
 /**
- * MessageDetail - Email detail view with OTP detection
+ * MessageDetail - Email detail view with OTP detection and AI summary
  * Modules extracted to message-detail-modules/
  */
 import {
@@ -16,7 +16,8 @@ import {
     OTPBanner,
     SecurityGrid,
     EmailBody,
-    AttachmentsSection
+    AttachmentsSection,
+    AISummaryCard
 } from "./message-detail-modules";
 
 export function MessageDetail({ message, onComposeReply, onForward, onBack }: MessageDetailProps) {
@@ -48,6 +49,9 @@ export function MessageDetail({ message, onComposeReply, onForward, onBack }: Me
                             onCopy={() => copyOTP(detectedOTP.code)}
                         />
                     )}
+
+                    {/* AI Summary Card - positioned after OTP for visibility */}
+                    <AISummaryCard messageId={message.id} />
 
                     <SecurityGrid />
 

@@ -6,3 +6,4 @@ export { SubscriptionStatsCards } from './subscription-stats-cards';
 export { PaymentMethodCard } from './payment-method-card';
 export { PricingCardsSection } from './pricing-cards-section';
 export { PaymentHistoryTable } from './payment-history-table';
+export { TierComparisonTable } from './tier-comparison-table';

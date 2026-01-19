@@ -197,6 +197,10 @@ model Message {
   otpConfidence  String?   // high, medium, low
   otpExtractedAt DateTime?
 
+  // AI summarization data
+  aiSummary      String?   @db.Text
+  aiSummarizedAt DateTime?
+
   abuseReports AbuseReport[]
   attachments  Attachment[]
   inbox        Inbox          @relation(fields: [inboxId], references: [id], onDelete: Cascade)

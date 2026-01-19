@@ -64,9 +64,10 @@ export const messageRoutes = async (app: FastifyInstance) => {
         orderBy: { receivedAt: "desc" },
         take: limit ?? 50,
         skip: offset ?? 0,
-        // Optimized: use _count instead of full attachments to avoid N+1
+        // Include labels and attachment count
         include: {
           _count: { select: { attachments: true } },
+          labels: { include: { label: true } },
         },
       }),
       prisma.message.count({ where }),
@@ -145,9 +146,10 @@ export const messageRoutes = async (app: FastifyInstance) => {
         orderBy: { receivedAt: "desc" },
         take: query.data.limit ?? 50,
         skip: query.data.offset ?? 0,
-        // Optimized: use _count instead of full attachments to avoid N+1
+        // Include labels and attachment count
         include: {
           _count: { select: { attachments: true } },
+          labels: { include: { label: true } },
         },
       }),
       prisma.message.count({ where }),
@@ -228,7 +230,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
         orderBy: { receivedAt: "desc" },
         take: limit,
         skip: offset,
-        include: { inbox: { include: { domain: true } }, attachments: { where: { deletedAt: null } } },
+        include: { inbox: { include: { domain: true } }, attachments: { where: { deletedAt: null } }, labels: { include: { label: true } } },
       }),
       prisma.message.count({ where }),
     ]);
@@ -279,7 +281,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
     const message = await prisma.message.findUnique({
       where: { id: params.data.id, deletedAt: null },
-      include: { attachments: { where: { deletedAt: null } }, inbox: { include: { domain: true } } },
+      include: { attachments: { where: { deletedAt: null } }, inbox: { include: { domain: true } }, labels: { include: { label: true } } },
     });
     if (!message) {
       return reply.status(404).send({ error: "Message not found" });
@@ -908,6 +910,145 @@ To: ${originalMessage.toAddress || "unknown"}
 
       request.log.error(err, "Failed to forward message");
       return reply.status(500).send({ error: "Failed to forward message", details: err.message });
+    }
+  });
+
+  // AI Summarization endpoint
+  app.post("/messages/:id/summarize", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const bodySchema = z.object({
+      forceRegenerate: z.boolean().optional().default(false),
+    });
+
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid message ID" });
+    }
+
+    const body = bodySchema.safeParse(request.body || {});
+    const forceRegenerate = body.success ? body.data.forceRegenerate : false;
+
+    const userId = (request.user as any).userId;
+
+    // Import AI service
+    const { AISummarizationService } = await import("../services/ai-summarization.service");
+    const { appConfig } = await import("../config");
+
+    // Check if AI is enabled
+    if (!AISummarizationService.isEnabled()) {
+      return reply.status(503).send({
+        error: "AI summarization not available",
+        message: "AI features are not configured on this server",
+      });
+    }
+
+    // Check user tier access
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { tier: true, credits: true },
+    });
+
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+
+    if (!AISummarizationService.hasTierAccess(user.tier)) {
+      return reply.status(403).send({
+        error: "Upgrade required",
+        message: "AI summarization requires Starter plan or higher",
+        currentTier: user.tier,
+        requiredTier: "STARTER",
+      });
+    }
+
+    // Check message access
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      select: { id: true, inboxId: true, aiSummary: true, aiSummarizedAt: true },
+    });
+
+    if (!message) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    // Check if we need to charge credits (only for new summaries)
+    const needsGeneration = !message.aiSummary || forceRegenerate;
+    const creditCost = appConfig.ai.summaryCreditCost;
+
+    if (needsGeneration) {
+      // Check credits before generating
+      if (user.credits < creditCost) {
+        return reply.status(402).send({
+          error: "Insufficient credits",
+          message: `AI summarization requires ${creditCost} credit(s). You have ${user.credits}.`,
+          required: creditCost,
+          available: user.credits,
+        });
+      }
+
+      // Deduct credits
+      const { CreditService } = await import("../services/credit.service");
+      const { CreditTransactionType } = await import("@prisma/client");
+
+      try {
+        await CreditService.deductCredits(
+          userId,
+          creditCost,
+          CreditTransactionType.USAGE,
+          `AI summary for message`,
+          { messageId: params.data.id }
+        );
+      } catch (error: any) {
+        if (error.message === "Insufficient credits") {
+          return reply.status(402).send({ error: "Insufficient credits" });
+        }
+        throw error;
+      }
+    }
+
+    try {
+      const result = await AISummarizationService.summarize(
+        params.data.id,
+        userId,
+        forceRegenerate
+      );
+
+      // Get updated user credits
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { credits: true },
+      });
+
+      return {
+        summary: result.summary,
+        cached: result.cached,
+        creditCost: needsGeneration ? creditCost : 0,
+        remainingCredits: updatedUser?.credits ?? 0,
+      };
+    } catch (error: any) {
+      // Refund credits on failure
+      if (needsGeneration) {
+        const { CreditService } = await import("../services/credit.service");
+        const { CreditTransactionType } = await import("@prisma/client");
+
+        await CreditService.addCredits(
+          userId,
+          creditCost,
+          CreditTransactionType.REFUND,
+          `Refund for failed AI summary`,
+          { messageId: params.data.id, error: error.message }
+        );
+      }
+
+      request.log.error(error, "Failed to generate AI summary");
+      return reply.status(500).send({
+        error: "Failed to generate summary",
+        details: error.message,
+      });
     }
   });
 }

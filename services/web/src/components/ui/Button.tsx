@@ -27,11 +27,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
         outline: 'border border-nebula-border bg-transparent hover:bg-nebula-surface/50 text-nebula-text',
     };
 
+    // Touch target sizes - WCAG 2.5.5 requires minimum 44x44px for touch targets
+    // Using min-h/min-w ensures touch accessibility on mobile devices
     const sizes = {
-        sm: 'h-8 px-3 text-xs rounded-lg',
-        md: 'h-10 px-4 py-2 text-sm rounded-xl',
-        lg: 'h-12 px-6 text-base rounded-2xl',
-        icon: 'h-10 w-10 p-0 flex items-center justify-center rounded-xl',
+        sm: 'h-9 min-h-[44px] px-3 text-xs rounded-lg',
+        md: 'h-11 min-h-[44px] px-4 py-2 text-sm rounded-xl',
+        lg: 'h-12 min-h-[44px] px-6 text-base rounded-2xl',
+        icon: 'h-11 w-11 min-h-[44px] min-w-[44px] p-0 flex items-center justify-center rounded-xl',
     };
 
     return (

@@ -2803,3 +2803,98 @@
         padding-bottom: 80px; 
     }
 }
+/* ============================================
+   UNIVERSAL FOCUS RING UTILITIES - A11y
+   Consistent focus states for all interactive elements
+   ============================================ */
+
+/* Base focus ring - applied to all focusable elements */
+.focus-ring {
+    outline: none;
+}
+
+.focus-ring:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .focus-ring:focus-visible {
+    outline-color: #60A5FA;
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+/* Inset focus ring - for cards and contained elements */
+.focus-ring-inset:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+[data-theme="dark"] .focus-ring-inset:focus-visible {
+    box-shadow: inset 0 0 0 2px #60A5FA;
+}
+
+/* Focus ring for buttons - subtle version */
+.focus-ring-button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Apply focus-visible to all interactive elements by default */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[role="menuitem"]:focus-visible,
+[role="option"]:focus-visible,
+[role="tab"]:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+[data-theme="dark"] button:focus-visible,
+[data-theme="dark"] a:focus-visible,
+[data-theme="dark"] input:focus-visible,
+[data-theme="dark"] select:focus-visible,
+[data-theme="dark"] textarea:focus-visible,
+[data-theme="dark"] [role="button"]:focus-visible,
+[data-theme="dark"] [role="link"]:focus-visible,
+[data-theme="dark"] [role="menuitem"]:focus-visible,
+[data-theme="dark"] [role="option"]:focus-visible,
+[data-theme="dark"] [role="tab"]:focus-visible,
+[data-theme="dark"] [tabindex]:focus-visible {
+    outline-color: #60A5FA;
+}
+
+/* Skip link - visible only on focus */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 12px 24px;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 16px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .focus-ring:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+        transition: none;
+    }
+}

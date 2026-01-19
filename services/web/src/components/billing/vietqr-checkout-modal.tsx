@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { api } from "../../lib/api";
+import { api } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
 
 interface SepayCheckoutData {

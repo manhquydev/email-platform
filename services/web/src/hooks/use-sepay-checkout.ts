@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { api } from "../lib/api";
+import { api } from "../utils/api";
 
 export interface SepayCheckoutResult {
   orderCode: string;

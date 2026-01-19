@@ -70,6 +70,7 @@ const getTotpEncryptionKey = (): string => {
 };
 
 export const appConfig = {
+  hostname: process.env.HOSTNAME || process.env.MAIL_HOSTNAME || "ephemera.email",
   databaseUrl: required("DATABASE_URL"),
   databaseReadUrl: process.env.DATABASE_READ_URL || process.env.DATABASE_URL, // Read replica URL
   jwtSecret: required("JWT_SECRET"),

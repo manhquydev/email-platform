@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { generateToken } from "../utils/token";
 import { recordAudit } from "../utils/audit";
 import { addDomainToPostfix, removeDomainFromPostfix } from "../utils/postfix-sync";
+import { validateEmail, validateDomain, canReceiveEmail } from "../utils/email-validation";
 
 export async function domainRoutes(app: FastifyInstance) {
   app.get("/domains", { preHandler: app.authenticate }, async (request, reply) => {
@@ -134,6 +135,7 @@ export async function domainRoutes(app: FastifyInstance) {
 
     const user = request.user as { userId: string; role: string };
     const { name } = parsed.data;
+// Validate domain format    const { isValidDomainFormat } = await import("../utils/email-validation");    if (!isValidDomainFormat(name)) {      return reply.status(400).send({        error: "Invalid domain format",        details: "Domain must be a valid format (e.g., example.com)"      });    }
 
     const existing = await prisma.domain.findUnique({ where: { name } });
     if (existing) {
@@ -504,5 +506,56 @@ export async function domainRoutes(app: FastifyInstance) {
     }
 
     return { domain: updated };
+  });
+}
+
+// Email validation endpoints (appended)
+export async function emailValidationRoutes(app: import("fastify").FastifyInstance) {
+  const { validateEmail, validateDomain, canReceiveEmail } = await import("../utils/email-validation");
+  const { z } = await import("zod");
+
+  // Validate email address (MX, SPF, format, disposable check)
+  app.post("/domains/validate-email", { preHandler: app.authenticate }, async (request, reply) => {
+    const body = z.object({ email: z.string().email() }).safeParse(request.body);
+    if (!body.success) {
+      return reply.status(400).send({ error: "Invalid email format" });
+    }
+    try {
+      const result = await validateEmail(body.data.email);
+      return result;
+    } catch (err) {
+      request.log.error(err, "Email validation error");
+      return reply.status(500).send({ error: "Failed to validate email" });
+    }
+  });
+
+  // Validate domain configuration (MX, SPF, DMARC)
+  app.post("/domains/validate", { preHandler: app.authenticate }, async (request, reply) => {
+    const body = z.object({ domain: z.string().min(3) }).safeParse(request.body);
+    if (!body.success) {
+      return reply.status(400).send({ error: "Invalid domain" });
+    }
+    try {
+      const result = await validateDomain(body.data.domain);
+      return result;
+    } catch (err) {
+      request.log.error(err, "Domain validation error");
+      return reply.status(500).send({ error: "Failed to validate domain" });
+    }
+  });
+
+  // Quick check if email can receive messages
+  app.get("/domains/can-receive", { preHandler: app.authenticate }, async (request, reply) => {
+    const query = z.object({ email: z.string().email() }).safeParse(request.query);
+    if (!query.success) {
+      return reply.status(400).send({ error: "Invalid email" });
+    }
+    try {
+      const canReceive = await canReceiveEmail(query.data.email);
+      return { email: query.data.email, canReceive };
+    } catch (err) {
+      request.log.error(err, "Can receive check error");
+      return reply.status(500).send({ error: "Failed to check email" });
+    }
   });
 }

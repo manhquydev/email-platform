@@ -40,3 +40,62 @@
 - Implement features according to specifications
 - Handle edge cases and error scenarios
 - **DO NOT** create new enhanced files, update to the existing files directly.
+
+## Component Modularization Standards
+
+### When to Modularize
+- Components exceeding **200 lines** must be split into modules
+- Complex components with multiple concerns (hooks, utilities, sub-components)
+- Reusable logic that can be shared across components
+
+### Module Structure Pattern
+For a component `ComponentName.tsx`, create `component-name-modules/`:
+```
+component-name-modules/
+├── component-name-utils.ts      # Types, interfaces, constants
+├── component-name-hooks.ts      # Custom React hooks
+├── component-name-components.tsx # Sub-components
+└── index.ts                      # Barrel export
+```
+
+### Naming Conventions
+- Use **kebab-case** for module directories: `quick-generate-card-modules/`
+- Use **kebab-case** for module files: `quick-generate-card-hooks.ts`
+- Suffix files by concern: `-utils.ts`, `-hooks.ts`, `-components.tsx`
+
+### Barrel Export Pattern
+```typescript
+// index.ts
+export type { ComponentProps } from "./component-utils";
+export { CONSTANTS } from "./component-utils";
+export { useComponentHook } from "./component-hooks";
+export { SubComponent1, SubComponent2 } from "./component-components";
+```
+
+## Vercel React Best Practices
+
+### Critical Performance Rules
+- `bundle-barrel-imports`: Import directly from modules, avoid re-exporting everything
+- `async-parallel`: Use `Promise.all()` for independent async operations
+- `bundle-dynamic-imports`: Use `next/dynamic` or `React.lazy()` for heavy components
+
+### Re-render Optimization
+- `rerender-memo`: Use `useMemo` for expensive derived state
+- `rerender-functional-setstate`: Use `useCallback` for stable event handlers
+- `rerender-lazy-state-init`: Pass function to `useState` for expensive initial values
+
+### Rendering Performance
+- `rendering-hoist-jsx`: Extract static JSX/constants outside components
+- `rendering-conditional-render`: Use ternary (`? :`) instead of `&&` for conditionals
+
+### Example Pattern
+```typescript
+// ✅ Good: Hoisted constants, memoized derived state
+const OPTIONS = [{ label: 'A', value: 1 }] as const;
+
+function Component({ items }) {
+  const filtered = useMemo(() => items.filter(x => x.active), [items]);
+  const handleClick = useCallback(() => doSomething(), []);
+  return <Button onClick={handleClick} />;
+}
+```

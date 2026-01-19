@@ -1,0 +1,219 @@
+/**
+ * Section components for Docs page
+ */
+import { Link } from "react-router-dom";
+import { GlassCard } from "../../components/ui/GlassCard";
+import { CODE_EXAMPLES, API_ENDPOINTS, PLANNED_SDKS } from "./docs-data";
+
+// --- Quickstart Section ---
+export function QuickstartSection() {
+    return (
+        <div className="space-y-8 animate-fade-in-up">
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">1. Lấy API Key</h2>
+                <p className="text-nebula-text-muted mb-4">
+                    Truy cập <Link to="/app/settings?tab=developer" className="text-nebula-violet hover:underline">Settings → Developer</Link> để tạo API Key mới.
+                </p>
+                <div className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border">
+                    <code className="text-green-300 text-sm">epk_live_xxxxxxxxxxxxxxxxxxxxxxxx</code>
+                </div>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">2. Tạo Inbox đầu tiên</h2>
+                <p className="text-nebula-text-muted mb-4">
+                    Gọi API để tạo inbox mới. Inbox sẽ có địa chỉ email ngẫu nhiên thuộc domain của bạn.
+                </p>
+                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
+                    <code className="text-sm text-slate-300">{CODE_EXAMPLES.createInbox}</code>
+                </pre>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">3. Nhận Email</h2>
+                <p className="text-nebula-text-muted mb-4">
+                    Có 2 cách để nhận email mới:
+                </p>
+                <ul className="space-y-3 text-nebula-text-muted">
+                    <li className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-green-400 text-sm mt-1">check</span>
+                        <span><strong>Polling:</strong> Gọi GET /inboxes/:id/messages định kỳ</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-green-400 text-sm mt-1">check</span>
+                        <span><strong>Webhooks:</strong> Nhận HTTP POST khi có email mới (khuyến nghị)</span>
+                    </li>
+                </ul>
+            </GlassCard>
+        </div>
+    );
+}
+
+// --- API Reference Section ---
+export function ApiReferenceSection() {
+    return (
+        <div className="space-y-6 animate-fade-in-up">
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Base URL</h2>
+                <code className="block bg-nebula-elevated rounded-lg p-4 border border-nebula-border text-green-300">
+                    https://api.manhquy.click
+                </code>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-6">Endpoints</h2>
+                <div className="space-y-4">
+                    {API_ENDPOINTS.map((ep, i) => (
+                        <div key={i} className="flex items-center gap-4 p-3 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                            <span className={`px-2 py-1 rounded text-xs font-mono font-bold ${
+                                ep.method === "GET" ? "bg-blue-500/20 text-blue-400" :
+                                ep.method === "POST" ? "bg-green-500/20 text-green-400" :
+                                "bg-red-500/20 text-red-400"
+                            }`}>
+                                {ep.method}
+                            </span>
+                            <code className="text-sm text-slate-300 flex-1">{ep.path}</code>
+                            <span className="text-sm text-nebula-text-muted">{ep.desc}</span>
+                        </div>
+                    ))}
+                </div>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Authentication</h2>
+                <p className="text-nebula-text-muted mb-4">
+                    Sử dụng header Authorization với Bearer token:
+                </p>
+                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border">
+                    <code className="text-sm text-slate-300">Authorization: Bearer YOUR_API_KEY</code>
+                </pre>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Rate Limits</h2>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                        <div className="text-2xl font-bold text-nebula-violet">100</div>
+                        <div className="text-sm text-nebula-text-muted">requests/phút (Free)</div>
+                    </div>
+                    <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                        <div className="text-2xl font-bold text-nebula-violet">1000</div>
+                        <div className="text-sm text-nebula-text-muted">requests/phút (Pro)</div>
+                    </div>
+                </div>
+            </GlassCard>
+        </div>
+    );
+}
+
+// --- Webhooks Section ---
+export function WebhooksSection() {
+    return (
+        <div className="space-y-6 animate-fade-in-up">
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Cấu hình Webhook</h2>
+                <p className="text-nebula-text-muted mb-4">
+                    Vào <Link to="/app/settings?tab=developer" className="text-nebula-violet hover:underline">Settings → Developer</Link> để tạo webhook endpoint.
+                </p>
+                <ul className="space-y-2 text-nebula-text-muted">
+                    <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                        URL phải là HTTPS và public accessible
+                    </li>
+                    <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                        Response phải trả về 2xx trong 30 giây
+                    </li>
+                </ul>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Events</h2>
+                <div className="space-y-3">
+                    <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                        <code className="text-green-400">email.received</code>
+                        <p className="text-sm text-nebula-text-muted mt-1">Khi có email mới đến inbox</p>
+                    </div>
+                    <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                        <code className="text-blue-400">test.event</code>
+                        <p className="text-sm text-nebula-text-muted mt-1">Sự kiện test từ nút "Test" trong dashboard</p>
+                    </div>
+                </div>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Payload Example</h2>
+                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
+                    <code className="text-sm text-slate-300">{CODE_EXAMPLES.webhookPayload}</code>
+                </pre>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Xác thực Signature</h2>
+                <p className="text-nebula-text-muted mb-4">
+                    Mỗi webhook request có header <code className="text-nebula-violet">X-Webhook-Signature</code> chứa HMAC-SHA256 của body.
+                </p>
+                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
+                    <code className="text-sm text-slate-300">{CODE_EXAMPLES.verifyWebhook}</code>
+                </pre>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Retry Policy</h2>
+                <ul className="space-y-2 text-nebula-text-muted">
+                    <li className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-nebula-violet text-sm">schedule</span>
+                        5 lần retry với exponential backoff
+                    </li>
+                    <li className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-nebula-violet text-sm">schedule</span>
+                        Delays: 1m, 5m, 30m, 2h, 24h
+                    </li>
+                    <li className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-nebula-violet text-sm">schedule</span>
+                        Có thể retry thủ công từ dashboard
+                    </li>
+                </ul>
+            </GlassCard>
+        </div>
+    );
+}
+
+// --- SDKs Section ---
+export function SdksSection() {
+    return (
+        <div className="space-y-6 animate-fade-in-up">
+            <GlassCard className="p-8 border-l-4 border-l-yellow-500">
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="material-symbols-outlined text-yellow-400">construction</span>
+                    <h3 className="text-lg font-bold text-yellow-400">Coming Soon</h3>
+                </div>
+                <p className="text-nebula-text-muted">
+                    SDK chính thức đang được phát triển. Hiện tại, bạn có thể sử dụng REST API trực tiếp với bất kỳ HTTP client nào.
+                </p>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Planned SDKs</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                    {PLANNED_SDKS.map((sdk, i) => (
+                        <div key={i} className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span>{sdk.icon}</span>
+                                <span className="font-medium">{sdk.name}</span>
+                            </div>
+                            <span className="text-xs text-nebula-text-muted">{sdk.status}</span>
+                        </div>
+                    ))}
+                </div>
+            </GlassCard>
+
+            <GlassCard className="p-8">
+                <h2 className="text-2xl font-bold mb-4">Sử dụng với fetch</h2>
+                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
+                    <code className="text-sm text-slate-300">{CODE_EXAMPLES.fetchExample}</code>
+                </pre>
+            </GlassCard>
+        </div>
+    );
+}

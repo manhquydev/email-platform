@@ -1,0 +1,40 @@
+/**
+ * OTP Highlight component
+ * Displays extracted OTP code with copy functionality
+ */
+import { extractOTP } from "../../../utils/otpExtractor";
+import { Button } from "../../../components/ui/Button";
+import { OTPIcon } from "../../../components/icons";
+import type { Message } from "../../../types";
+
+interface OTPHighlightProps {
+    message: Message;
+    onCopy: (otp: string) => void;
+}
+
+export function OTPHighlight({ message, onCopy }: OTPHighlightProps) {
+    const otpResult = extractOTP(message.textBody || message.htmlBody || "");
+    const otp = typeof otpResult === 'string' ? otpResult : otpResult?.code;
+    if (!otp) return null;
+
+    return (
+        <div className="mb-8 p-6 bg-nebula-violet/10 border border-nebula-violet/20 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-nebula-violet flex items-center justify-center text-white shadow-lg shadow-nebula-violet/20">
+                    <OTPIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                    <div className="text-sm text-nebula-violet font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
+                    <div className="text-3xl font-bold text-nebula-text font-mono tracking-widest">{otp}</div>
+                </div>
+            </div>
+            <Button
+                variant="primary"
+                onClick={() => onCopy(otp)}
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>}
+            >
+                Sao chép
+            </Button>
+        </div>
+    );
+}

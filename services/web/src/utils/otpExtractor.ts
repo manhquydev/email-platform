@@ -154,6 +154,13 @@ export function hasOTP(text: string): boolean {
     return extractOTP(text) !== null;
 }
 
+// Pre-compiled global RegExp patterns for extractAllOTPs (hoisted to avoid recreation)
+const OTP_PATTERNS_GLOBAL = OTP_PATTERNS.map(pattern => {
+    const source = pattern.source;
+    const flags = pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g';
+    return new RegExp(source, flags.includes('i') ? flags : flags + 'i');
+});
+
 /**
  * Extract all potential OTPs from text (for edge cases with multiple codes)
  */
@@ -161,14 +168,20 @@ export function extractAllOTPs(text: string): OTPResult[] {
     const results: OTPResult[] = [];
     const seen = new Set<string>();
 
-    for (const pattern of OTP_PATTERNS) {
-        const matches = text.matchAll(new RegExp(pattern, 'gi'));
+    for (let i = 0; i < OTP_PATTERNS_GLOBAL.length; i++) {
+        const globalPattern = OTP_PATTERNS_GLOBAL[i];
+        const originalPattern = OTP_PATTERNS[i];
+
+        // Reset lastIndex before each use (global regex has mutable state)
+        globalPattern.lastIndex = 0;
+
+        const matches = text.matchAll(globalPattern);
         for (const match of matches) {
             if (match[1] && !seen.has(match[1])) {
                 seen.add(match[1]);
                 results.push({
                     code: match[1],
-                    confidence: getConfidence(pattern, text),
+                    confidence: getConfidence(originalPattern, text),
                     context: getContext(text, match.index || 0)
                 });
             }

@@ -1,80 +1,59 @@
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
+/**
+ * Dashboard Page - Email reading interface
+ * Refactored to use modular hooks and components
+ */
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
-import { api, PAGE_SIZE } from "../utils/api";
-import { parseSearchQuery } from "../utils/searchParser";
+import { PAGE_SIZE } from "../utils/api";
 import { InboxSelector } from "../components/InboxSelector";
 import { Loading } from "../components/Loading";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { AppShell } from "../layouts/AppShell";
-import { extractOTP } from "../utils/otpExtractor";
 import { OnboardingHints } from "../components/OnboardingHints";
-import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 import { EmailStream } from "../components/EmailStream";
 import { cn } from "../utils/cn";
 import { useRealtimeSubscription, useRealtimeContext } from "../hooks/useRealtimeContext";
 import { ListeningIndicator } from "../components/copy-first/ListeningIndicator";
-import { OTPIcon } from "../components/icons";
-import { messageService } from "../services";
-import type { Domain, Inbox, Message, PaginatedResponse, Team } from "../types";
+import type { Message } from "../types";
 import type { RealtimeEvent } from "../types/realtime";
 import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
+
+// Import modular components
+import { useDashboardData, useMessageActions, MessageDetailPane, TOAST_DURATION, TOAST_POSITION } from "./dashboard-modules";
 
 // Lazy load heavy modal components
 const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
 const KeyboardShortcutsHelp = lazy(() => import("../components/KeyboardShortcutsHelp").then(m => ({ default: m.KeyboardShortcutsHelp })));
 
 export function Dashboard() {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { token, user, logout: _logout } = useAuth();
+    const { token, user } = useAuth();
     const { status: realtimeStatus } = useRealtimeContext();
     const location = useLocation();
     const navigate = useNavigate();
-    const [busy, setBusy] = useState(false);
 
-    // Data
-    const [domains, setDomains] = useState<Domain[]>([]);
-    const [teams, setTeams] = useState<Team[]>([]);
-    const [inboxes, setInboxes] = useState<Inbox[]>([]);
-    const [messages, setMessages] = useState<Message[]>([]);
+    // Search state (needed for data hook)
+    const [messageSearch, setMessageSearch] = useState("");
 
-    // Selection
-    const [selectedDomain, setSelectedDomain] = useState<string>("");
-    const [selectedTeam, setSelectedTeam] = useState<string>("");
-    const [selectedInbox, setSelectedInbox] = useState<string>("");
+    // Use modular hooks
+    const {
+        domains, teams, inboxes, messages,
+        selectedDomain, selectedTeam, selectedInbox,
+        messageOffset, messageTotal, busy,
+        setSelectedDomain, setSelectedTeam, setSelectedInbox,
+        setMessages, loadMessages, refreshMessages
+    } = useDashboardData(messageSearch);
+
+    // Selected message state
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
-    // Filter/Pagination States
-    const [messageSearch, setMessageSearch] = useState("");
-    const [messageOffset, setMessageOffset] = useState(0);
-    const [messageTotal, setMessageTotal] = useState(0);
-
-    // Sync state with URL params
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const inboxId = params.get("inboxId");
-        const q = params.get("q");
-        const action = params.get("action");
-        const payment = params.get("payment");
-
-        if (payment === "success") {
-            toast.success("Thanh toán thành công! Gói dịch vụ của bạn đã được kích hoạt.", { duration: 6000 });
-            navigate(location.pathname, { replace: true });
-        }
-
-        if (inboxId && inboxId !== selectedInbox) {
-            setSelectedInbox(inboxId);
-        }
-
-        if (q !== null && q !== messageSearch) {
-            setMessageSearch(q);
-        }
-
-        if (action === "compose") setShowCompose(true);
-    }, [location.search, location.pathname, navigate, selectedInbox, messageSearch]);
+    // Message actions
+    const { handleSelectMessage, handleMarkUnread, handleDeleteMessage, handleTogglePin, copyOTP } = useMessageActions({
+        messages, selectedMessage, setMessages, setSelectedMessage
+    });
 
     // UI States
     const [showCompose, setShowCompose] = useState(false);
@@ -91,111 +70,29 @@ export function Dashboard() {
     const outboundEnabled = String(window.env?.OUTBOUND_ENABLED ?? import.meta.env.VITE_OUTBOUND_ENABLED ?? "false").toLowerCase() === "true";
     const canSendOutbound = outboundEnabled && isAdmin;
 
-    // --- Loaders ---
-    const loadDomains = useCallback(async () => {
-        if (!token) return;
-        try {
-            const res = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
-            const domainsData = res?.data || [];
-            setDomains(domainsData);
-        } catch (e) {
-            console.error("Failed to load domains", e);
-            toast.error("Lỗi tải danh sách tên miền");
-        }
-    }, [token]);
-
-    const loadTeams = useCallback(async () => {
-        if (!token) return;
-        try {
-            const res = await api<{ teams: Team[] }>("/teams", { token });
-            setTeams(res.teams || []);
-        } catch (e) {
-            console.error("Failed to load teams", e);
-        }
-    }, [token]);
-
-    // Auto-select domain effect
+    // Sync state with URL params
     useEffect(() => {
-        if (domains.length > 0 && !selectedDomain) {
-            const myDomains = domains.filter(d => d.ownerId === user?.id);
-            if (myDomains.length > 0) {
-                setSelectedDomain(myDomains[0].id);
-            } else {
-                setSelectedDomain(domains[0].id);
-            }
+        const params = new URLSearchParams(location.search);
+        const inboxId = params.get("inboxId");
+        const q = params.get("q");
+        const action = params.get("action");
+        const payment = params.get("payment");
+
+        if (payment === "success") {
+            toast.success("Thanh toán thành công! Gói dịch vụ của bạn đã được kích hoạt.", { duration: TOAST_DURATION.LONG });
+            navigate(location.pathname, { replace: true });
         }
-    }, [domains, selectedDomain, user?.id]);
 
-    const loadInboxes = useCallback(async () => {
-        if (!token) return;
-        setBusy(true);
-        try {
-            const params = new URLSearchParams({ limit: "100" });
-            if (selectedTeam) {
-                params.append("teamId", selectedTeam);
-            }
-            // Removed strict personal=true to include shared team inboxes
-            const res = await api<PaginatedResponse<Inbox>>(`/inboxes?${params.toString()}`, { token });
-            setInboxes(res?.data || []);
-        } catch (e) {
-            console.error("Failed to load inboxes", e);
-            toast.error("Lỗi tải danh sách hộp thư");
-        } finally {
-            setBusy(false);
+        if (inboxId && inboxId !== selectedInbox) {
+            setSelectedInbox(inboxId);
         }
-    }, [token, selectedTeam]);
 
-    // Auto-select inbox effect
-    useEffect(() => {
-        if (inboxes.length > 0) {
-            if (!selectedInbox || !inboxes.find(i => i.id === selectedInbox)) {
-                setSelectedInbox(inboxes[0].id);
-            }
-        } else if (!busy) {
-            setMessages([]);
-            setSelectedMessage(null);
-            setSelectedInbox("");
+        if (q !== null && q !== messageSearch) {
+            setMessageSearch(q);
         }
-    }, [inboxes, selectedInbox, busy]);
 
-    const loadMessages = useCallback(async (inboxId: string, params: { offset?: number, append?: boolean, background?: boolean } = {}) => {
-        if (!token) return;
-        if (!params.background) setBusy(true);
-        try {
-            const off = params.offset ?? 0;
-            const parsed = parseSearchQuery(messageSearch);
-
-            if (parsed.q && parsed.q.length >= 2 && !parsed.from && !parsed.before && !parsed.after && parsed.isRead === undefined) {
-                // Fuzzy search
-                const fuzzyParams = new URLSearchParams({
-                    q: parsed.q, inboxId, limit: String(PAGE_SIZE.messages), threshold: "0.3",
-                });
-                if (parsed.hasAttachments) fuzzyParams.append("hasAttachments", "true");
-                const res = await api<PaginatedResponse<Message>>(`/messages/search/fuzzy?${fuzzyParams.toString()}`, { token });
-                setMessages(prev => params.append ? [...prev, ...res.data] : res.data);
-                if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
-                if (params.offset !== undefined) setMessageOffset(params.offset);
-            } else {
-                // Regular search
-                const queryParams = new URLSearchParams({ inboxId, limit: String(PAGE_SIZE.messages), offset: String(off) });
-                if (parsed.q) queryParams.append("q", parsed.q);
-                if (parsed.from) queryParams.append("from", parsed.from);
-                if (parsed.hasAttachments) queryParams.append("hasAttachments", "true");
-                if (parsed.before) queryParams.append("end", parsed.before);
-                if (parsed.after) queryParams.append("start", parsed.after);
-                if (parsed.isRead !== undefined) queryParams.append("isRead", String(parsed.isRead));
-
-                const res = await api<PaginatedResponse<Message>>(`/messages?${queryParams.toString()}`, { token });
-                setMessages(prev => params.append ? [...prev, ...res.data] : res.data);
-                if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
-                if (params.offset !== undefined) setMessageOffset(params.offset);
-            }
-        } catch {
-            if (!params.background) toast.error("Lỗi tải email");
-        } finally {
-            if (!params.background) setBusy(false);
-        }
-    }, [token, messageSearch]);
+        if (action === "compose") setShowCompose(true);
+    }, [location.search, location.pathname, navigate, selectedInbox, messageSearch, setSelectedInbox]);
 
     // Realtime subscription
     useRealtimeSubscription("dashboard-email-events", (event: RealtimeEvent) => {
@@ -205,8 +102,7 @@ export function Dashboard() {
             const payload = event.payload as unknown as EmailNewPayload;
             if (payload.inboxId === selectedInbox) {
                 toast.success(`Có email mới từ ${payload.from || "Unknown"}: ${payload.subject || "(No Subject)"}`, {
-                    position: "bottom-right",
-                    duration: 4000
+                    position: TOAST_POSITION.BOTTOM_RIGHT, duration: TOAST_DURATION.SHORT
                 });
                 loadMessages(selectedInbox, { background: true });
             }
@@ -225,12 +121,9 @@ export function Dashboard() {
                 }
             }
         }
-    }, [selectedInbox, selectedMessage, loadMessages]);
+    }, [selectedInbox, selectedMessage, loadMessages, setMessages]);
 
-    // --- Effects ---
-    useEffect(() => { loadDomains(); }, [loadDomains]);
-    useEffect(() => { loadTeams(); }, [loadTeams]);
-    useEffect(() => { loadInboxes(); }, [loadInboxes]);
+    // Load messages on inbox change
     useEffect(() => {
         if (selectedInbox) {
             loadMessages(selectedInbox, { offset: 0 });
@@ -238,50 +131,13 @@ export function Dashboard() {
         } else {
             setMessages([]);
         }
-    }, [selectedInbox, loadMessages]);
+    }, [selectedInbox, loadMessages, setMessages]);
 
+    // Debounced search
     useEffect(() => {
         const t = setTimeout(() => { if (selectedInbox) loadMessages(selectedInbox); }, 800);
         return () => clearTimeout(t);
     }, [messageSearch, selectedInbox, loadMessages]);
-
-    const handleSelectMessage = async (msg: Message) => {
-        setSelectedMessage(msg);
-        if (!msg.isRead) {
-            setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isRead: true } : m));
-            try { await messageService.markAsRead(msg.id, true); }
-            catch { /* background */ }
-        }
-    };
-
-    const handleMarkUnread = async (msgId: string) => {
-        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRead: false } : m));
-        if (selectedMessage?.id === msgId) setSelectedMessage(prev => prev ? { ...prev, isRead: false } : null);
-        try { await messageService.markAsRead(msgId, false); toast.success("Đã đánh dấu chưa đọc"); }
-        catch { toast.error("Không thể cập nhật trạng thái"); }
-    };
-
-    const handleDeleteMessage = useCallback(async (msgId: string) => {
-        try {
-            setBusy(true);
-            await messageService.delete(msgId);
-            setMessages(prev => prev.filter(m => m.id !== msgId));
-            if (selectedMessage?.id === msgId) setSelectedMessage(null);
-            toast.success("Đã xóa email");
-        } catch { toast.error("Không thể xóa email"); } finally { setBusy(false); }
-    }, [selectedMessage, token]);
-
-    const handleTogglePin = async (msgId: string, isPinned: boolean) => {
-        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isPinned } : m));
-        if (selectedMessage?.id === msgId) setSelectedMessage(prev => prev ? { ...prev, isPinned } : null);
-        try { await api(`/messages/${msgId}/pin`, { method: "PATCH", token, body: { isPinned } }); toast.success(isPinned ? "Đã ghim email" : "Đã bỏ ghim"); }
-        catch { toast.error("Không thể cập nhật"); }
-    };
-
-    const copyOTP = (otp: string) => {
-        navigator.clipboard.writeText(otp);
-        toast.success(`Đã copy OTP: ${otp}`);
-    };
 
     // Keyboard Shortcuts
     useKeyboardShortcuts({
@@ -291,7 +147,7 @@ export function Dashboard() {
         onDeleteMessage: selectedMessage ? () => handleDeleteMessage(selectedMessage.id) : undefined,
         onMarkUnread: selectedMessage ? () => handleMarkUnread(selectedMessage.id) : undefined,
         onReply: canSendOutbound ? () => setShowCompose(true) : undefined,
-        onRefresh: selectedInbox ? () => loadMessages(selectedInbox) : undefined,
+        onRefresh: selectedInbox ? refreshMessages : undefined,
         onFocusSearch: () => searchInputRef.current?.focus(),
         onShowHelp: () => setShowKeyboardHelp(true),
         onBack: () => setSelectedMessage(null),
@@ -300,10 +156,8 @@ export function Dashboard() {
 
     return (
         <AppShell>
-            {/* 2-Pane Layout (Gmail style): Sidebar (Removed) | Main Content (flex) */}
             <div className="flex-1 flex h-full w-full">
-
-                {/* Pane 2: Message List - Adjusted width for no sidebar */}
+                {/* Message List Pane */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -311,20 +165,19 @@ export function Dashboard() {
                     className={cn(
                         "flex flex-col h-full bg-nebula-elevated/50 border-r border-nebula-border",
                         selectedMessage ? "hidden md:flex md:w-[360px] lg:w-[400px]" : "w-full md:w-[360px] lg:w-[400px] flex-shrink-0"
-                    )}>
+                    )}
+                >
                     {/* Toolbar */}
                     <div className="h-16 px-4 border-b border-nebula-border flex items-center justify-between shrink-0 bg-nebula-surface/90 backdrop-blur-md relative z-20">
                         <div className="flex items-center gap-3 w-full">
-                            {/* Inbox Selector - Always visible now since Sidebar is gone */}
                             <div className="w-full max-w-[280px]">
-                                {/* Connection status indicator */}
-                <ListeningIndicator
-                    status={realtimeStatus === 'error' ? 'disconnected' : realtimeStatus}
-                    size="sm"
-                    showLabel={true}
-                    className="mr-4"
-                />
-                <InboxSelector
+                                <ListeningIndicator
+                                    status={realtimeStatus === 'error' ? 'disconnected' : realtimeStatus}
+                                    size="sm"
+                                    showLabel={true}
+                                    className="mr-4"
+                                />
+                                <InboxSelector
                                     domains={domains}
                                     teams={teams}
                                     inboxes={inboxes}
@@ -334,7 +187,6 @@ export function Dashboard() {
                                     onSelectDomain={setSelectedDomain}
                                     onSelectTeam={setSelectedTeam}
                                     onSelectInbox={(id) => navigate(`?inboxId=${id}`)}
-                                    // No create/delete props passed
                                     user={user}
                                     token={token}
                                 />
@@ -344,23 +196,16 @@ export function Dashboard() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => selectedInbox && loadMessages(selectedInbox)}
+                                onClick={refreshMessages}
                                 disabled={busy}
                                 className="text-nebula-text-muted hover:text-nebula-violet"
                                 icon={<svg className={cn("w-5 h-5", busy && "animate-spin")} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>}
                             />
                             {canSendOutbound && (
-                                <Button
-                                    variant="primary"
-                                    size="sm"
-                                    onClick={() => setShowCompose(true)}
-                                    className="ml-2"
-                                >
+                                <Button variant="primary" size="sm" onClick={() => setShowCompose(true)} className="ml-2">
                                     Soạn thư
                                 </Button>
                             )}
-
-                            {/* Enhanced Manager Button */}
                             <div className="group relative ml-1">
                                 <Button
                                     variant="primary"
@@ -411,10 +256,9 @@ export function Dashboard() {
                                         messages={messages}
                                         selectedMessageId={selectedMessage?.id || null}
                                         onSelectMessage={handleSelectMessage}
-                                        onCopyOTP={(otp) => copyOTP(otp)}
+                                        onCopyOTP={copyOTP}
                                         className="pb-24 md:pb-0"
                                     />
-                                    {/* Load More Button */}
                                     {messages.length < messageTotal && (
                                         <div className="p-4 flex justify-center border-t border-nebula-border">
                                             <Button
@@ -432,214 +276,16 @@ export function Dashboard() {
                     </div>
                 </motion.div>
 
-                {/* Pane 3: Detail View */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className={cn(
-                        "flex-1 bg-nebula-surface flex flex-col h-full overflow-hidden border-l border-nebula-border",
-                        // Mobile: show only if message selected
-                        !selectedMessage ? "hidden md:flex" : "flex fixed inset-0 z-50 md:static bg-nebula-surface"
-                    )}>
-                    {selectedMessage ? (
-                        <>
-                            {/* Detail Header */}
-                            <div className="h-16 px-6 border-b border-nebula-border flex items-center justify-between shrink-0 bg-nebula-surface/90 backdrop-blur-md">
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="md:hidden text-nebula-text" // Back button only on mobile
-                                        onClick={() => setSelectedMessage(null)}
-                                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>}
-                                    />
-                                    <div className="flex flex-col">
-                                        <h3 className="text-base font-semibold text-nebula-text max-w-[200px] md:max-w-md truncate">
-                                            {selectedMessage.fromAddress}
-                                        </h3>
-                                        <span className="text-xs text-nebula-text-muted">
-                                            {new Date(selectedMessage.receivedAt).toLocaleString("vi-VN")}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-1 bg-nebula-elevated rounded-lg p-1 border border-nebula-border shadow-lg backdrop-blur-md">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setShowCompose(true)}
-                                        title="Trả lời"
-                                        className="text-nebula-text-muted hover:text-nebula-text"
-                                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>}
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleMarkUnread(selectedMessage.id)}
-                                        title="Đánh dấu chưa đọc"
-                                        className="text-nebula-text-muted hover:text-nebula-text"
-                                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleTogglePin(selectedMessage.id, !selectedMessage.isPinned)}
-                                        className={selectedMessage.isPinned ? "text-warning" : "text-nebula-text-muted hover:text-nebula-text"}
-                                        title={selectedMessage.isPinned ? "Bỏ ghim" : "Ghim"}
-                                        icon={<svg className="w-5 h-5" fill={selectedMessage.isPinned ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>}
-                                    />
-
-                                    <div className="w-px h-5 bg-nebula-border mx-1"></div>
-
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleDeleteMessage(selectedMessage.id)}
-                                        className="text-nebula-text-muted hover:text-danger hover:bg-danger/10"
-                                        title="Xóa"
-                                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => copyOTP(selectedMessage.textBody || selectedMessage.htmlBody || "")}
-                                        className="text-nebula-text-muted hover:text-nebula-text"
-                                        title="Sao chép nội dung"
-                                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Detail Content */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pb-24 md:pb-6">
-                                {/* Subject */}
-                                <h1 className="text-2xl font-bold text-nebula-text mb-6 leading-tight">
-                                    {selectedMessage.subject || "(Không có chủ đề)"}
-                                </h1>
-
-                                {/* OTP Highlight */}
-                                {(() => {
-                                    const otpResult = extractOTP(selectedMessage.textBody || selectedMessage.htmlBody || "");
-                                    const otp = typeof otpResult === 'string' ? otpResult : otpResult?.code;
-                                    if (otp) return (
-                                        <div className="mb-8 p-6 bg-nebula-violet/10 border border-nebula-violet/20 rounded-2xl flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-nebula-violet flex items-center justify-center text-white shadow-lg shadow-nebula-violet/20">
-                                                    <OTPIcon className="w-6 h-6 text-white" />
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm text-nebula-violet font-bold uppercase tracking-wider mb-1">Mã xác thực</div>
-                                                    <div className="text-3xl font-bold text-nebula-text font-mono tracking-widest">{otp}</div>
-                                                </div>
-                                            </div>
-                                            <Button
-                                                variant="primary"
-                                                onClick={() => copyOTP(otp)}
-                                                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>}
-                                            >
-                                                Sao chép
-                                            </Button>
-                                        </div>
-                                    );
-                                    return null;
-                                })()}
-
-                                {/* Email Body */}
-                                <GlassCard className="p-6 md:p-8 rounded-2xl dark:bg-[var(--nebula-surface)] border-2 border-nebula-border overflow-hidden shadow-sm">
-                                    {selectedMessage.htmlBody ? (
-                                        <div className="prose dark:prose-invert max-w-none">
-                                            <iframe
-                                                srcDoc={`
-                                                    <style>
-                                                        @media (prefers-color-scheme: dark) {
-                                                            html, body { background: #1A2340 !important; color: #E2E8F0 !important; }
-                                                        }
-                                                        html.dark, body.dark { background: #1A2340 !important; color: #E2E8F0 !important; }
-                                                    </style>
-                                                    <script>
-                                                        if (window.matchMedia('(prefers-color-scheme: dark)').matches ||
-                                                            document.documentElement.getAttribute('data-theme') === 'dark') {
-                                                            document.documentElement.classList.add('dark');
-                                                            document.body?.classList.add('dark');
-                                                        }
-                                                    </script>
-                                                    ${selectedMessage.htmlBody}
-                                                `}
-                                                sandbox="allow-same-origin allow-scripts"
-                                                title="Email content"
-                                                className="w-full min-h-[400px] border-none bg-white dark:bg-[#1A2340] rounded-lg"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-nebula-text-secondary">
-                                            {selectedMessage.textBody || "Không có nội dung"}
-                                        </pre>
-                                    )}
-                                </GlassCard>
-
-                                {/* Attachments */}
-                                {selectedMessage.attachments && selectedMessage.attachments.length > 0 && (
-                                    <div className="mt-8">
-                                        <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-4 flex items-center gap-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                                            Tệp đính kèm ({selectedMessage.attachments.length})
-                                        </h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                            {selectedMessage.attachments.map((att, idx) => (
-                                                <a
-                                                    key={idx}
-                                                    href={`/api/attachments/${att.storageKey}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-3 p-3 rounded-xl bg-nebula-elevated border border-nebula-border hover:border-nebula-violet/50 hover:bg-nebula-surface transition-all group"
-                                                >
-                                                    <div className="p-2 bg-nebula-surface rounded-lg group-hover:bg-nebula-violet/20 group-hover:text-nebula-violet transition-colors">
-                                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-medium text-nebula-text truncate">{att.filename || `Tệp ${idx + 1}`}</div>
-                                                        <div className="text-xs text-nebula-text-muted">Nhấp để tải xuống</div>
-                                                    </div>
-                                                </a>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center p-8 text-nebula-text-secondary">
-                            <div className="w-20 h-20 rounded-3xl bg-nebula-elevated border border-nebula-border flex items-center justify-center mb-6 shadow-xl">
-                                <svg className="w-10 h-10 text-nebula-text-muted" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-medium text-nebula-text mb-2">Chưa chọn tin nhắn</h3>
-                            <p className="max-w-xs mx-auto">Chọn một email từ danh sách để xem nội dung.</p>
-                        </div>
-                    )}
-
-
-                    {/* Quick Reply Footer - Wireframe Match */}
-                    {selectedMessage && (
-                        <div className="hidden md:flex p-4 border-t border-nebula-border bg-nebula-surface/50 backdrop-blur-md shrink-0 z-10">
-                            <button
-                                onClick={() => setShowCompose(true)}
-                                className="flex-1 h-12 rounded-lg bg-nebula-elevated border border-nebula-border hover:border-nebula-violet/50 text-left px-4 text-nebula-text-muted text-sm flex items-center justify-between group transition-all"
-                            >
-                                <span>Soạn phản hồi nhanh...</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="p-1 rounded bg-nebula-surface border border-nebula-border text-xs text-nebula-text-muted">Ctrl + Enter</span>
-                                    <span className="material-symbols-outlined text-[20px] group-hover:text-nebula-violet transition-colors">send</span>
-                                </div>
-                            </button>
-                        </div>
-                    )}
-                </motion.div>
-
-                {/* Mobile Sidebar Removed */}
+                {/* Message Detail Pane */}
+                <MessageDetailPane
+                    selectedMessage={selectedMessage}
+                    onBack={() => setSelectedMessage(null)}
+                    onReply={() => setShowCompose(true)}
+                    onMarkUnread={handleMarkUnread}
+                    onTogglePin={handleTogglePin}
+                    onDelete={handleDeleteMessage}
+                    onCopyOTP={copyOTP}
+                />
 
                 {/* Modals */}
                 {showCompose && (
@@ -659,11 +305,8 @@ export function Dashboard() {
                     </Suspense>
                 )}
 
-                {/* ConfirmationModals removed */}
-
-                {/* Onboarding Wizard for new users */}
                 <OnboardingHints />
             </div>
-        </AppShell >
+        </AppShell>
     );
 }

@@ -1,97 +1,32 @@
-import { useState, useEffect, useCallback } from "react";
-import { api } from "../../utils/api";
-import { getFriendlyErrorMessage } from "../../utils/errorMapping";
-import toast from "react-hot-toast";
+/**
+ * AdminDomains - Admin panel for managing domains
+ * Modules extracted to admin-domains-modules/
+ */
 import {
     GlassCard, SectionHeader, PremiumTable, TableHeader, TableHeaderCell,
-    TableBody, TableRow, TableCell, StatusBadge, PremiumButton, PremiumInput,
-    EmptyState, LoadingSpinner, Pagination, BulkActionsBar
+    TableBody, EmptyState, LoadingSpinner, Pagination, BulkActionsBar, PremiumButton, PremiumInput
 } from "./AdminUIComponents";
-
-interface Domain {
-    id: string;
-    name: string;
-    status: "PENDING" | "VERIFIED" | "FAILED";
-    contributionStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
-    isPublic: boolean;
-    owner?: { email: string };
-    createdAt: string;
-}
-
-const PAGE_SIZE = 10;
+import { useAdminDomains, DomainRow, FilterSelect } from "./admin-domains-modules";
 
 export function AdminDomains({ token }: { token: string }) {
-    const [domains, setDomains] = useState<Domain[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [updating, setUpdating] = useState<string | null>(null);
-    const [page, setPage] = useState(0);
-    const [total, setTotal] = useState(0);
-    const [search, setSearch] = useState("");
-    const [filter, setFilter] = useState<string>("ALL");
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-    const loadData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams();
-            if (search) params.set("search", search);
-            if (filter !== "ALL") params.set("contributionStatus", filter);
-            params.set("limit", String(PAGE_SIZE));
-            params.set("offset", String(page * PAGE_SIZE));
-
-            const res = await api<{ data: Domain[]; meta: { total: number } }>(`/admin/domains?${params}`, { token });
-            setDomains(res.data);
-            setTotal(res.meta.total);
-            setSelectedIds(new Set());
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setLoading(false);
-        }
-    }, [token, search, filter, page]);
-
-    useEffect(() => { loadData(); }, [loadData]);
-
-    const handleReview = async (domainId: string, status: "APPROVED" | "REJECTED") => {
-        setUpdating(domainId);
-        try {
-            await api(`/admin/domains/${domainId}/review`, {
-                method: "POST",
-                token,
-                body: { status }
-            });
-            toast.success(status === "APPROVED" ? "Đã duyệt tên miền" : "Đã từ chối");
-            await loadData();
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setUpdating(null);
-        }
-    };
-
-    const handleBulkAction = async (action: "APPROVED" | "REJECTED") => {
-        const ids = Array.from(selectedIds);
-        setLoading(true);
-        try {
-            // Bulk review logic would go here if backend supported it,
-            // for now we iterate to match the individual review endpoint.
-            await Promise.all(ids.map(id =>
-                api(`/admin/domains/${id}/review`, {
-                    method: "POST",
-                    token,
-                    body: { status: action }
-                })
-            ));
-            toast.success(`Đã xử lý ${ids.length} mục`);
-            await loadData();
-        } catch (err) {
-            toast.error(getFriendlyErrorMessage((err as Error).message));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const {
+        domains,
+        loading,
+        updating,
+        page,
+        setPage,
+        search,
+        setSearch,
+        filter,
+        setFilter,
+        selectedIds,
+        setSelectedIds,
+        totalPages,
+        handleReview,
+        handleBulkAction,
+        toggleSelectAll,
+        toggleSelect
+    } = useAdminDomains(token);
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-4">
@@ -100,16 +35,7 @@ export function AdminDomains({ token }: { token: string }) {
                 subtitle="Duyệt và quản lý tên miền do người dùng đóng góp"
                 action={
                     <div className="flex items-center gap-3">
-                        <select
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
-                            className="text-xs py-2 px-3 rounded-xl border border-nebula-border bg-nebula-elevated text-nebula-text"
-                        >
-                            <option value="ALL">Tất cả</option>
-                            <option value="PENDING">Chờ duyệt</option>
-                            <option value="APPROVED">Đã duyệt</option>
-                            <option value="REJECTED">Bị từ chối</option>
-                        </select>
+                        <FilterSelect value={filter} onChange={setFilter} />
                         <PremiumInput
                             value={search}
                             onChange={setSearch}
@@ -138,10 +64,7 @@ export function AdminDomains({ token }: { token: string }) {
                                 <TableHeaderCell className="w-10">
                                     <input
                                         type="checkbox"
-                                        onChange={(e) => {
-                                            if (e.target.checked) setSelectedIds(new Set(domains.map(d => d.id)));
-                                            else setSelectedIds(new Set());
-                                        }}
+                                        onChange={(e) => toggleSelectAll(e.target.checked)}
                                         checked={selectedIds.size === domains.length && domains.length > 0}
                                         className="rounded border-nebula-border"
                                     />
@@ -156,69 +79,14 @@ export function AdminDomains({ token }: { token: string }) {
                         </TableHeader>
                         <TableBody>
                             {domains.map((domain) => (
-                                <TableRow key={domain.id}>
-                                    <TableCell>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedIds.has(domain.id)}
-                                            onChange={() => {
-                                                const newSet = new Set(selectedIds);
-                                                if (newSet.has(domain.id)) newSet.delete(domain.id);
-                                                else newSet.add(domain.id);
-                                                setSelectedIds(newSet);
-                                            }}
-                                            className="rounded border-nebula-border"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-nebula-text">{domain.name}</div>
-                                        <div className="text-xs text-nebula-text-muted">{new Date(domain.createdAt).toLocaleDateString()}</div>
-                                    </TableCell>
-                                    <TableCell className="text-xs">{domain.owner?.email || "—"}</TableCell>
-                                    <TableCell>
-                                        <StatusBadge
-                                            status={domain.status}
-                                            variant={domain.status === "VERIFIED" ? "success" : "warning"}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <StatusBadge
-                                            status={domain.contributionStatus}
-                                            variant={
-                                                domain.contributionStatus === "APPROVED" ? "success" :
-                                                    domain.contributionStatus === "REJECTED" ? "danger" :
-                                                        domain.contributionStatus === "PENDING" ? "warning" : "default"
-                                            }
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`text-xs px-2 py-1 rounded-lg ${domain.isPublic ? "bg-info/10 text-info" : "bg-nebula-elevated text-nebula-text-muted"}`}>
-                                            {domain.isPublic ? "Public" : "Private"}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            {domain.contributionStatus === "PENDING" && (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleReview(domain.id, "APPROVED")}
-                                                        disabled={updating === domain.id}
-                                                        className="text-xs text-success hover:text-success font-medium"
-                                                    >
-                                                        Duyệt
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleReview(domain.id, "REJECTED")}
-                                                        disabled={updating === domain.id}
-                                                        className="text-xs text-danger hover:text-danger font-medium"
-                                                    >
-                                                        Từ chối
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
+                                <DomainRow
+                                    key={domain.id}
+                                    domain={domain}
+                                    isSelected={selectedIds.has(domain.id)}
+                                    updating={updating}
+                                    onToggleSelect={toggleSelect}
+                                    onReview={handleReview}
+                                />
                             ))}
                         </TableBody>
                     </PremiumTable>

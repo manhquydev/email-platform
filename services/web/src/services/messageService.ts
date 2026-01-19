@@ -10,6 +10,18 @@ import type { PaginatedResponse } from '../types/api';
 
 const log = logger.scope('MessageService');
 
+/** Get token from localStorage (fallback for service layer) */
+function getStoredToken(): string | undefined {
+    try {
+        const stored = localStorage.getItem('auth');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            return parsed?.token;
+        }
+    } catch { /* ignore */ }
+    return undefined;
+}
+
 /**
  * Query parameters for fetching messages
  */
@@ -119,7 +131,8 @@ export const messageService = {
         try {
             const response = await api<Message>(`${API_PATHS.MESSAGES}/${messageId}/read`, {
                 method: 'PATCH',
-                body: JSON.stringify({ isRead }),
+                token: getStoredToken(),
+                body: { isRead },
             });
             log.info('Message marked', { messageId, isRead });
             return response;
@@ -138,6 +151,7 @@ export const messageService = {
         try {
             await api(`${API_PATHS.MESSAGES}/${messageId}`, {
                 method: 'DELETE',
+                token: getStoredToken(),
             });
             log.info('Message deleted', { messageId });
         } catch (error) {
@@ -155,7 +169,8 @@ export const messageService = {
         try {
             await api(`${API_PATHS.MESSAGES}/bulk-delete`, {
                 method: 'POST',
-                body: JSON.stringify({ messageIds }),
+                token: getStoredToken(),
+                body: { messageIds },
             });
             log.info('Messages deleted', { count: messageIds.length });
         } catch (error) {
@@ -173,7 +188,8 @@ export const messageService = {
         try {
             await api(`${API_PATHS.MESSAGES}/bulk-read`, {
                 method: 'POST',
-                body: JSON.stringify({ messageIds, isRead }),
+                token: getStoredToken(),
+                body: { messageIds, isRead },
             });
             log.info('Messages marked', { count: messageIds.length, isRead });
         } catch (error) {

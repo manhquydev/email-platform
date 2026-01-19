@@ -165,8 +165,9 @@ const cancelSubscriptionSchema = z.object({
 });
 
 export const billingRoutes: FastifyPluginAsync = async (app) => {
-    // Check if Stripe is configured
-    const stripeEnabled = !!appConfig.stripe.apiKey;
+    // Check if payment providers are configured
+    const stripeEnabled = !!appConfig.stripe.apiKey && appConfig.stripe.enabled;
+    const sepayEnabled = appConfig.sepay.enabled;
 
     // Get all tier information with limits and pricing (public endpoint)
     app.get('/billing/tiers', async () => {
@@ -178,7 +179,15 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
                 limits,
             };
         });
-        return { tiers, stripeEnabled };
+        return {
+            tiers,
+            stripeEnabled,
+            sepayEnabled,
+            paymentMethods: {
+                stripe: stripeEnabled,
+                sepay: sepayEnabled,
+            }
+        };
     });
 
     // Compare user's current tier with target tier

@@ -1,13 +1,21 @@
 /**
  * Hook for subscription actions
  * Handles checkout, redeem, portal, invoice/report export
+ * Updated: Uses SePay VietQR for checkout instead of Stripe redirect
  */
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { api } from "../../../../utils/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { getFriendlyErrorMessage } from "../../../../utils/errorMapping";
 import type { Payment } from "../../../../types";
+
+export interface SepayCheckoutResult {
+    orderCode: string;
+    qrUrl: string;
+    amount: number;
+    expiresAt: string;
+}
 
 export interface UseSubscriptionActionsProps {
     loadProfile: () => void;
@@ -16,14 +24,24 @@ export interface UseSubscriptionActionsProps {
 
 export interface UseSubscriptionActionsReturn {
     handlePortal: () => Promise<void>;
-    handleCheckout: (packageId: string) => Promise<void>;
+    handleCheckout: (packageId: string, packageName: string) => Promise<void>;
     handleRedeem: (code: string) => Promise<boolean>;
     handleExportReport: () => void;
     handleDownloadInvoice: (payment: Payment) => void;
+    // SePay checkout state
+    sepayCheckout: SepayCheckoutResult | null;
+    sepayPackageName: string;
+    isSepayModalOpen: boolean;
+    closeSepayModal: () => void;
 }
 
 export function useSubscriptionActions({ loadProfile, payments }: UseSubscriptionActionsProps): UseSubscriptionActionsReturn {
     const { token } = useAuth();
+
+    // SePay checkout state
+    const [sepayCheckout, setSepayCheckout] = useState<SepayCheckoutResult | null>(null);
+    const [sepayPackageName, setSepayPackageName] = useState("");
+    const [isSepayModalOpen, setIsSepayModalOpen] = useState(false);
 
     const handlePortal = useCallback(async () => {
         try {
@@ -41,23 +59,56 @@ export function useSubscriptionActions({ loadProfile, payments }: UseSubscriptio
         }
     }, [token]);
 
-    const handleCheckout = useCallback(async (packageId: string) => {
+    const handleCheckout = useCallback(async (packageId: string, packageName: string = "Gói dịch vụ") => {
         try {
-            toast.loading("Đang chuẩn bị thanh toán...");
-            const res = await api<{ url: string }>("/billing/checkout", {
+            toast.loading("Đang tạo mã QR thanh toán...");
+
+            // Try SePay first
+            const res = await api<SepayCheckoutResult>("/billing/sepay/checkout", {
                 method: "POST",
                 token,
                 body: { packageId }
             });
+
             toast.dismiss();
-            if (res.url) {
-                window.location.href = res.url;
+
+            // Open VietQR modal
+            setSepayCheckout(res);
+            setSepayPackageName(packageName);
+            setIsSepayModalOpen(true);
+        } catch (error: any) {
+            toast.dismiss();
+
+            // If SePay fails, try Stripe as fallback
+            if (error.message?.includes("not configured") || error.message?.includes("503")) {
+                try {
+                    toast.loading("Đang chuyển hướng đến Stripe...");
+                    const stripeRes = await api<{ url: string }>("/billing/checkout", {
+                        method: "POST",
+                        token,
+                        body: { packageId }
+                    });
+                    toast.dismiss();
+                    if (stripeRes.url) {
+                        window.location.href = stripeRes.url;
+                    }
+                } catch (stripeError) {
+                    toast.dismiss();
+                    toast.error("Thanh toán tạm thời không khả dụng. Vui lòng thử lại sau.");
+                }
+            } else {
+                toast.error(getFriendlyErrorMessage((error as Error).message));
             }
-        } catch (error) {
-            toast.dismiss();
-            toast.error(getFriendlyErrorMessage((error as Error).message));
         }
     }, [token]);
+
+    const closeSepayModal = useCallback(() => {
+        setIsSepayModalOpen(false);
+        setSepayCheckout(null);
+        setSepayPackageName("");
+        // Reload profile to get updated subscription status
+        loadProfile();
+    }, [loadProfile]);
 
     const handleRedeem = useCallback(async (code: string): Promise<boolean> => {
         if (!code.trim()) return false;
@@ -153,6 +204,11 @@ Cảm ơn bạn đã sử dụng dịch vụ!
         handleCheckout,
         handleRedeem,
         handleExportReport,
-        handleDownloadInvoice
+        handleDownloadInvoice,
+        // SePay checkout state
+        sepayCheckout,
+        sepayPackageName,
+        isSepayModalOpen,
+        closeSepayModal
     };
 }

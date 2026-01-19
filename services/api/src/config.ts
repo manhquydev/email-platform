@@ -127,8 +127,17 @@ export const appConfig = {
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
   },
   stripe: {
+    enabled: (process.env.STRIPE_ENABLED ?? "false").toLowerCase() === "true",
     apiKey: process.env.STRIPE_API_KEY ?? "",
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  },
+  sepay: {
+    enabled: (process.env.SEPAY_ENABLED ?? "true").toLowerCase() === "true",
+    merchantId: process.env.SEPAY_MERCHANT_ID ?? "",
+    apiToken: process.env.SEPAY_API_TOKEN ?? "",
+    secretKey: process.env.SEPAY_SECRET_KEY ?? "",
+    accountNumber: process.env.SEPAY_ACCOUNT_NUMBER ?? "",
+    bankBrand: process.env.SEPAY_BANK_BRAND ?? "MBBank",
   },
   // AI/Gemini API configuration
   ai: {

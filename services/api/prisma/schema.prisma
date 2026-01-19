@@ -50,6 +50,7 @@ model User {
   telegramLinkTokens         TelegramLinkToken[]
   redemptions                CodeRedemption[]       @relation("UserRedemptions")
   payments                   Payment[]
+  pendingPayments            PendingPayment[]
   passkeyCredentials         PasskeyCredential[]
   magicLinkTokens            MagicLinkToken[]
   creditTransactions         CreditTransaction[]
@@ -534,6 +535,7 @@ model ServicePackage {
   badge        String?  // e.g. "KHUYÊN DÙNG", "PHỔ BIẾN"
 
   codes RedemptionCode[]
+  pendingPayments PendingPayment[]
 }
 
 model RedemptionCode {
@@ -580,11 +582,43 @@ model Payment {
   amount          Decimal
   currency        String
   status          String // SUCCEEDED, FAILED, PENDING
+
+  // Stripe fields (optional)
   stripePaymentId String?  @unique
+
+  // SePay fields (new)
+  sepayTransactionId String? @unique
+  sepayReferenceCode String?
+  paymentMethod      String  @default("STRIPE") // STRIPE, SEPAY
+
   packageId       String?
   createdAt       DateTime @default(now())
+  paidAt          DateTime?
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([paymentMethod])
+}
+
+model PendingPayment {
+  id          String   @id @default(uuid())
+  userId      String
+  packageId   String
+  orderCode   String   @unique  // Unique code for matching: EP_XXXXXXXX
+  amount      Decimal
+  currency    String   @default("VND")
+  status      String   @default("PENDING") // PENDING, COMPLETED, EXPIRED
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  user    User           @relation(fields: [userId], references: [id])
+  package ServicePackage @relation(fields: [packageId], references: [id])
+
+  @@index([orderCode])
+  @@index([userId])
+  @@index([status, expiresAt])
 }
 
 model Notification {

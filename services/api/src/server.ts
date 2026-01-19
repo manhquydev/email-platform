@@ -27,6 +27,7 @@ import { telegramRoutes } from "./routes/telegram";
 import { webhookRoutes } from "./routes/webhooks";
 import { forwardingRoutes } from "./routes/forwarding";
 import { subscriptionRoutes } from "./routes/subscription";
+import { sepayRoutes } from "./routes/sepay";
 import { setupBotCommands } from "./services/telegram";
 import { webauthnRoutes } from "./routes/webauthn";
 import { magicLinkRoutes } from "./routes/magic-link";
@@ -359,6 +360,7 @@ export const buildServer = () => {
   app.register(telegramAuthRoutes);
 
   app.register(subscriptionRoutes);
+  app.register(sepayRoutes);
   app.register(apiKeysRoutes);
   app.register(notificationRoutes, { prefix: "/notifications" });
   app.register(uploadRoutes, { prefix: "/uploads" });

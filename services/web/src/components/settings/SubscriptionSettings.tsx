@@ -2,10 +2,12 @@
  * Subscription Settings component
  * Manages subscription plans, billing, and payment history
  * Refactored to use modular hooks and components
+ * Updated: Added VietQR checkout modal for SePay integration
  */
 import { useState } from "react";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import { VietQRCheckoutModal } from "../billing/vietqr-checkout-modal";
 
 // Import modular components
 import {
@@ -50,8 +52,18 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
         handleCheckout,
         handleRedeem,
         handleExportReport,
-        handleDownloadInvoice
+        handleDownloadInvoice,
+        sepayCheckout,
+        sepayPackageName,
+        isSepayModalOpen,
+        closeSepayModal
     } = useSubscriptionActions({ loadProfile, payments });
+
+    // Wrapper to pass package name to checkout
+    const onCheckout = (packageId: string) => {
+        const pkg = packages.find(p => p.id === packageId);
+        handleCheckout(packageId, pkg?.name || "Gói dịch vụ");
+    };
 
     const onRedeem = async () => {
         if (!redeemCode.trim()) return;
@@ -110,8 +122,19 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
                 packages={packages}
                 loading={loadingPackages}
                 currentTier={profile?.tier || 'FREE'}
-                onCheckout={handleCheckout}
+                onCheckout={onCheckout}
             />
+
+            {/* VietQR Checkout Modal */}
+            {sepayCheckout && (
+                <VietQRCheckoutModal
+                    isOpen={isSepayModalOpen}
+                    onClose={closeSepayModal}
+                    checkoutData={sepayCheckout}
+                    packageName={sepayPackageName}
+                    onSuccess={closeSepayModal}
+                />
+            )}
 
             {/* Tier Comparison Table */}
             <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border">

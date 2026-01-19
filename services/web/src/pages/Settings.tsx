@@ -87,8 +87,8 @@ export function Settings() {
     const loadInboxes = useCallback(async () => {
         if (!token) return;
         try {
-            const res = await api<{ inboxes: Inbox[] }>("/inboxes", { token });
-            const inboxesData = res?.inboxes || [];
+            const res = await api<{ data: Inbox[] }>("/inboxes", { token });
+            const inboxesData = res?.data || [];
             setInboxes(inboxesData);
 
             // Set default selected inbox ONLY if not already set

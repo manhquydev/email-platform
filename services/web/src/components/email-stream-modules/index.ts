@@ -9,3 +9,4 @@ export {
     TIME_GROUP_LABELS
 } from "./email-stream-types";
 export { EmptyInbox, GroupHeader, EmailItem } from "./email-stream-components";
+export { VirtualizedEmailList } from "./virtualized-email-list";

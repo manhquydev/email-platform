@@ -1,5 +1,6 @@
 /**
  * EmailStream - Email list with time-based grouping and OTP detection
+ * Uses virtualization for 50+ messages to maintain 60fps performance
  * Modules extracted to email-stream-modules/
  */
 import { useMemo } from "react";
@@ -11,8 +12,10 @@ import {
     TIME_GROUP_LABELS,
     EmptyInbox,
     GroupHeader,
-    EmailItem
+    EmailItem,
+    VirtualizedEmailList,
 } from "./email-stream-modules";
+import { VIRTUALIZATION_THRESHOLD } from "./email-stream-modules/virtualized-email-list";
 
 export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCopyOTP, className }: EmailStreamProps) {
     const groupedMessages = useMemo(() => groupMessagesByTime(messages), [messages]);
@@ -28,6 +31,20 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
         return <EmptyInbox />;
     }
 
+    // Use virtualized list for large datasets (50+ messages)
+    if (messages.length >= VIRTUALIZATION_THRESHOLD) {
+        return (
+            <VirtualizedEmailList
+                messages={messages}
+                selectedMessageId={selectedMessageId}
+                onSelectMessage={onSelectMessage}
+                onCopyOTP={handleCopyOTP}
+                className={className}
+            />
+        );
+    }
+
+    // Regular rendering for small datasets
     const renderGroup = (groupKey: 'today' | 'yesterday' | 'thisWeek' | 'earlier') => {
         const groupMessages = groupedMessages[groupKey];
         if (groupMessages.length === 0) return null;
@@ -51,7 +68,7 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
     };
 
     return (
-        <div className={cn("h-full overflow-y-auto custom-scrollbar", className)}>
+        <div className={cn("h-full overflow-y-auto custom-scrollbar", className)} role="list" aria-label="Danh sách email">
             {renderGroup('today')}
             {renderGroup('yesterday')}
             {renderGroup('thisWeek')}

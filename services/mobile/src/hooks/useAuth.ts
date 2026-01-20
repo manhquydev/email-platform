@@ -6,11 +6,14 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     error,
+    pending2FAToken,
     login,
+    verify2FA,
     register,
     logout,
     checkAuth,
     clearError,
+    clear2FA,
   } = useAuthStore();
 
   return {
@@ -18,10 +21,13 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     error,
+    pending2FAToken,
     login,
+    verify2FA,
     register,
     logout,
     checkAuth,
     clearError,
+    clear2FA,
   };
 }

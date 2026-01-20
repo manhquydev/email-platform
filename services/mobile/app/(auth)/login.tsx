@@ -16,8 +16,10 @@ import { useAuth } from '@/hooks/useAuth';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totpCode, setTotpCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, error, clearError } = useAuth();
+  const [show2FA, setShow2FA] = useState(false);
+  const { login, verify2FA, error, clearError, clear2FA } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) return;
@@ -26,7 +28,27 @@ export default function LoginScreen() {
     clearError();
 
     try {
-      await login(email, password);
+      const result = await login(email, password);
+      if (result.requires2FA) {
+        setShow2FA(true);
+      } else {
+        router.replace('/(tabs)/inboxes');
+      }
+    } catch {
+      // Error handled by store
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    if (!totpCode || totpCode.length < 6) return;
+
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      await verify2FA(totpCode);
       router.replace('/(tabs)/inboxes');
     } catch {
       // Error handled by store
@@ -35,6 +57,70 @@ export default function LoginScreen() {
     }
   };
 
+  const handleBack = () => {
+    setShow2FA(false);
+    setTotpCode('');
+    clear2FA();
+    clearError();
+  };
+
+  // 2FA Verification Screen
+  if (show2FA) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.content}
+        >
+          <View style={styles.header}>
+            <Text style={styles.logo}>🔐</Text>
+            <Text style={styles.title}>Xác thực 2 bước</Text>
+            <Text style={styles.subtitle}>Nhập mã từ ứng dụng xác thực</Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Mã TOTP</Text>
+              <TextInput
+                style={[styles.input, styles.otpInput]}
+                placeholder="000000"
+                value={totpCode}
+                onChangeText={setTotpCode}
+                keyboardType="number-pad"
+                maxLength={6}
+                autoFocus
+                editable={!isSubmitting}
+              />
+            </View>
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[styles.button, isSubmitting && styles.buttonDisabled]}
+              onPress={handleVerify2FA}
+              disabled={isSubmitting || totpCode.length < 6}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.buttonText}>Xác nhận</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+              <Text style={styles.backButtonText}>← Quay lại</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
+
+  // Login Screen
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -156,6 +242,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
   },
+  otpInput: {
+    textAlign: 'center',
+    fontSize: 24,
+    letterSpacing: 8,
+    fontWeight: '600',
+  },
   errorContainer: {
     backgroundColor: '#FEE2E2',
     borderRadius: 8,
@@ -180,6 +272,14 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  backButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  backButtonText: {
+    color: '#6B7280',
+    fontSize: 14,
   },
   footer: {
     flexDirection: 'row',

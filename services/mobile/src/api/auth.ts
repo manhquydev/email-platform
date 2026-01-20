@@ -1,25 +1,28 @@
 import { api } from './client';
 import type { User } from '@/types';
 
-interface LoginResponse {
+interface AuthResponse {
   token: string;
+  refreshToken?: string;
   user: User;
+  requires2FA?: boolean;
 }
 
-interface RegisterResponse {
+interface Verify2FAResponse {
   token: string;
+  refreshToken?: string;
   user: User;
 }
 
 export const authApi = {
   login: (email: string, password: string) =>
-    api.request<LoginResponse>('/auth/login', {
+    api.request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
 
   register: (email: string, password: string, name?: string) =>
-    api.request<RegisterResponse>('/auth/register', {
+    api.request<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password, name }),
     }),
@@ -32,7 +35,14 @@ export const authApi = {
     }),
 
   refreshToken: () =>
-    api.request<{ token: string }>('/auth/refresh', {
+    api.request<{ token: string; refreshToken?: string }>('/auth/refresh', {
       method: 'POST',
+    }),
+
+  /** Verify 2FA TOTP code */
+  verify2FA: (code: string, tempToken: string) =>
+    api.request<Verify2FAResponse>('/auth/2fa/verify', {
+      method: 'POST',
+      body: JSON.stringify({ code, tempToken }),
     }),
 };

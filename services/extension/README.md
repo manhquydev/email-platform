@@ -28,7 +28,18 @@ A modernized, multi-browser extension for the Ephemera Temporary Email service. 
    npm install
    ```
 
-2. **Run in Development Mode**
+2. **Configure Environment (Optional)**
+
+   For local development with a different API endpoint, create `.env`:
+   ```bash
+   # .env (optional - defaults to production API)
+   VITE_API_URL=http://localhost:3001
+   VITE_WEB_URL=http://localhost:3000
+   ```
+
+   The extension uses these environment variables in `src/shared/config.ts`.
+
+3. **Run in Development Mode**
    ```bash
    # Chrome
    npm run dev
@@ -69,3 +80,56 @@ The extension integrates with the Ephemera API (`https://api.manhquy.click`).
 - **Standard Auth**: Email/Password and 2FA support.
 - **Anonymous Auth**: Session-less inbox creation via `deviceId`.
 - **Push Service**: Secure subscription to incoming message events.
+
+## 🧪 Testing
+
+```bash
+# Run all unit tests
+npm test
+
+# Run with coverage report
+npm run test:coverage
+
+# Run E2E tests (requires built extension)
+npm run test:e2e
+```
+
+**Test Coverage:** 183 tests covering shared modules, components, and content scripts.
+
+## 🔧 Troubleshooting
+
+### Extension not loading
+1. Ensure you're on Chrome 88+ (MV3 requirement)
+2. Check `chrome://extensions` for error messages
+3. Verify API endpoint is reachable
+
+### Push notifications not working
+1. Check notification permissions in browser settings
+2. Verify service worker is active in `chrome://serviceworker-internals`
+3. Ensure user is authenticated
+
+### Content script not injecting
+1. Check if site is in CSP blocklist
+2. Verify `activeTab` permission is granted
+3. Try refreshing the page after extension install
+
+### Login issues
+1. Clear extension storage: Settings → Sign Out
+2. Check network tab for API errors
+3. Verify API endpoint in `src/shared/config.ts`
+
+## 📋 API Endpoints Used
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/auth/login` | POST | User authentication |
+| `/auth/me` | GET | Get current user |
+| `/dashboard` | GET | Fetch inboxes and stats |
+| `/inboxes` | POST | Create new inbox |
+| `/inboxes/:id` | PATCH/DELETE | Update/delete inbox |
+| `/inboxes/:id/messages` | GET | Fetch messages |
+| `/push/subscribe` | POST | Register push subscription |
+
+## 📄 License
+
+Private - Ephemera © 2026

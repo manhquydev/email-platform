@@ -3,6 +3,7 @@ import { z } from "zod";
 import { outboundService } from "../services/outbound";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
+import { enforceDailyEmailLimit } from "../services/tier-enforcement.service";
 
 export async function outboundRoutes(app: FastifyInstance) {
     // Validation schema for outbound email
@@ -16,7 +17,7 @@ export async function outboundRoutes(app: FastifyInstance) {
     });
 
     // Updated route: Allow authenticated users to send emails, costing credits
-    app.post("/messages/outbound", { preHandler: app.authenticate }, async (request, reply) => {
+    app.post("/messages/outbound", { preHandler: [app.authenticate, enforceDailyEmailLimit] }, async (request, reply) => {
         const userId = (request.user as any).userId;
         const user = await prisma.user.findUnique({ where: { id: userId } });
 

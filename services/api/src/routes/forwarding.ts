@@ -14,6 +14,7 @@ import {
     removeVerifiedEmail,
 } from "../services/emailForwarder";
 import { getForwardingStats } from "../services/forwarding";
+import { createTierEnforceHandler } from "../services/tier-enforcement.service";
 
 // Schema for conditions
 const conditionSchema = z.object({
@@ -118,7 +119,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
     });
 
     // Create forwarding rule (enhanced)
-    app.post("/forwarding/rules", { preHandler: app.authenticate }, async (request, reply) => {
+    app.post("/forwarding/rules", { preHandler: [app.authenticate, createTierEnforceHandler('forwardingRules')] }, async (request, reply) => {
         const user = request.user as { userId: string };
 
         const parsed = ruleBodySchema.safeParse(request.body);

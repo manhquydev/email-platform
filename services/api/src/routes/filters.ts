@@ -7,6 +7,7 @@ import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { getMatchingFilters, type EmailData } from '../services/emailFilters';
+import { createTierEnforceHandler } from '../services/tier-enforcement.service';
 
 // Validation schemas
 const createFilterSchema = z.object({
@@ -66,7 +67,7 @@ export const filterRoutes: FastifyPluginAsync = async (app) => {
     });
 
     // Create a filter
-    app.post('/filters', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
+    app.post('/filters', { preHandler: [app.authenticate, createTierEnforceHandler('filters')] }, async (req: FastifyRequest, reply: FastifyReply) => {
         const user = req.user as { userId: string };
         const parsed = createFilterSchema.safeParse(req.body);
         if (!parsed.success) {
@@ -269,7 +270,7 @@ export const filterRoutes: FastifyPluginAsync = async (app) => {
     });
 
     // Create a label
-    app.post('/labels', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
+    app.post('/labels', { preHandler: [app.authenticate, createTierEnforceHandler('labels')] }, async (req: FastifyRequest, reply: FastifyReply) => {
         const user = req.user as { userId: string };
         const parsed = createLabelSchema.safeParse(req.body);
         if (!parsed.success) {

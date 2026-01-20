@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { generateWebhookSecret, triggerWebhook, getAvailableEvents, WEBHOOK_EVENTS, signPayload } from '../services/webhookService';
+import { createTierEnforceHandler } from '../services/tier-enforcement.service';
 import crypto from 'crypto';
 
 // SSRF Protection: Block internal network URLs
@@ -85,7 +86,7 @@ export async function webhookRoutes(app: FastifyInstance) {
     });
 
     // Create a new webhook
-    app.post('/webhooks', { preHandler: app.authenticate }, async (request, reply) => {
+    app.post('/webhooks', { preHandler: [app.authenticate, createTierEnforceHandler('webhooks')] }, async (request, reply) => {
         const user = request.user as { userId: string };
 
         const bodySchema = z.object({

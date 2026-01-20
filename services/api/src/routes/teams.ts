@@ -1,10 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
+import { createTierEnforceHandler, TierEnforcementService } from "../services/tier-enforcement.service";
 
 export async function teamRoutes(app: FastifyInstance) {
     // Create a new team
-    app.post("/teams", { preHandler: app.authenticate }, async (request, reply) => {
+    app.post("/teams", { preHandler: [app.authenticate, createTierEnforceHandler('teams')] }, async (request, reply) => {
         const userId = (request.user as any).userId;
 
         const schema = z.object({
@@ -168,6 +169,18 @@ export async function teamRoutes(app: FastifyInstance) {
     app.post("/teams/:teamId/members", { preHandler: app.authenticate }, async (request, reply) => {
         const userId = (request.user as any).userId;
         const { teamId } = request.params as { teamId: string };
+
+        // Check tier limit for team members
+        const memberCheck = await TierEnforcementService.canAddTeamMember(userId, teamId);
+        if (!memberCheck.allowed) {
+            return reply.status(403).send({
+                error: 'TIER_LIMIT_EXCEEDED',
+                message: memberCheck.message,
+                currentCount: memberCheck.currentCount,
+                limit: memberCheck.limit,
+                upgradeRequired: memberCheck.upgradeRequired
+            });
+        }
 
         // Check if user is owner or admin
         const membership = await prisma.teamMember.findFirst({

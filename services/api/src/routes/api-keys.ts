@@ -3,10 +3,11 @@ import { z } from "zod";
 import crypto from "crypto";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
+import { enforceApiAccess } from "../services/tier-enforcement.service";
 
 export async function apiKeysRoutes(app: FastifyInstance) {
     // List API Keys
-    app.get("/api-keys", { preHandler: app.authenticate }, async (req, reply) => {
+    app.get("/api-keys", { preHandler: [app.authenticate, enforceApiAccess] }, async (req, reply) => {
         const userId = (req.user as any).userId;
         const keys = await prisma.apiKey.findMany({
             where: { userId },
@@ -24,7 +25,7 @@ export async function apiKeysRoutes(app: FastifyInstance) {
     });
 
     // Create API Key
-    app.post("/api-keys", { preHandler: app.authenticate }, async (req, reply) => {
+    app.post("/api-keys", { preHandler: [app.authenticate, enforceApiAccess] }, async (req, reply) => {
         const userId = (req.user as any).userId;
         const schema = z.object({
             name: z.string().min(1).max(50),

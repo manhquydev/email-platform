@@ -1,9 +1,16 @@
-import { View, Text, FlatList, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { useCallback } from 'react';
+import { View, Text, RefreshControl, StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '@/api/client';
+import { InboxCard } from '@/components/InboxCard';
+import { InboxListSkeleton } from '@/components/InboxListSkeleton';
 import type { Inbox, PaginatedResponse } from '@/types';
+
+/** Stable separator component to avoid re-renders */
+const ItemSeparator = () => <View style={styles.separator} />;
 
 export default function InboxesScreen() {
   const { data, isLoading, refetch, isRefetching } = useQuery({
@@ -11,37 +18,18 @@ export default function InboxesScreen() {
     queryFn: () => api.request<PaginatedResponse<Inbox>>('/inboxes'),
   });
 
-  const handleInboxPress = (id: string) => {
+  const handleInboxPress = useCallback((id: string) => {
     router.push(`/inbox/${id}`);
-  };
+  }, []);
 
-  const renderInbox = ({ item }: { item: Inbox }) => {
-    const email = `${item.localPart}@${item.domain?.name || 'unknown'}`;
-    const messageCount = item._count?.messages ?? 0;
+  const renderInbox = useCallback(
+    ({ item }: { item: Inbox }) => (
+      <InboxCard inbox={item} onPress={handleInboxPress} />
+    ),
+    [handleInboxPress]
+  );
 
-    return (
-      <TouchableOpacity
-        style={styles.inboxCard}
-        onPress={() => handleInboxPress(item.id)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.iconContainer}>
-          <Ionicons name="mail" size={24} color="#8B5CF6" />
-        </View>
-        <View style={styles.content}>
-          <Text style={styles.email} numberOfLines={1}>
-            {email}
-          </Text>
-          <Text style={styles.meta}>
-            {messageCount} tin nhắn
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-      </TouchableOpacity>
-    );
-  };
-
-  const renderEmpty = () => {
+  const renderEmpty = useCallback(() => {
     if (isLoading) return null;
     return (
       <View style={styles.emptyContainer}>
@@ -52,11 +40,20 @@ export default function InboxesScreen() {
         </Text>
       </View>
     );
-  };
+  }, [isLoading]);
+
+  // Show skeleton while loading
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <InboxListSkeleton />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlashList
         data={data?.data}
         keyExtractor={(item) => item.id}
         renderItem={renderInbox}
@@ -68,11 +65,8 @@ export default function InboxesScreen() {
           />
         }
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[
-          styles.list,
-          !data?.data?.length && styles.emptyList,
-        ]}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        contentContainerStyle={styles.list}
+        ItemSeparatorComponent={ItemSeparator}
       />
     </View>
   );
@@ -85,43 +79,6 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
-  },
-  emptyList: {
-    flex: 1,
-  },
-  inboxCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F3E8FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  content: {
-    flex: 1,
-  },
-  email: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  meta: {
-    fontSize: 14,
-    color: '#6B7280',
   },
   separator: {
     height: 12,

@@ -30,8 +30,6 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +37,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+.env
+
+# Play Store credentials (sensitive)
+play-store-credentials.json
+google-services.json

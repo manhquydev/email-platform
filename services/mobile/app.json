@@ -23,6 +23,7 @@
     },
     "android": {
       "package": "app.ephemera.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#8B5CF6"
@@ -32,7 +33,20 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "USE_BIOMETRIC",
-        "USE_FINGERPRINT"
+        "USE_FINGERPRINT",
+        "POST_NOTIFICATIONS"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "ephemera"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     "web": {
@@ -58,7 +72,8 @@
     "extra": {
       "eas": {
         "projectId": "your-project-id"
-      }
+      },
+      "apiUrl": "${EXPO_PUBLIC_API_URL}"
     },
     "experiments": {
       "typedRoutes": true

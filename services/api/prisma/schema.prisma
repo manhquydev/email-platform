@@ -462,6 +462,7 @@ enum SubscriptionTier {
   FREE
   STARTER
   PROFESSIONAL
+  BUSINESS
   ENTERPRISE
 }
 

@@ -23,7 +23,6 @@ interface UserProfile {
     createdAt: string;
     tier: string;
     subscriptionEndsAt?: string | null;
-    credits: number;
     emailVerified: string | null;
     twoFactorEnabled: boolean;
     retentionDays?: number | null;

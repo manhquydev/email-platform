@@ -21,7 +21,6 @@ model User {
   stripeSubscriptionId       String?
   subscriptionStatus         SubscriptionStatus     @default(ACTIVE)
   tier                       SubscriptionTier       @default(FREE)
-  credits                    Int                    @default(0)
   subscriptionEndsAt         DateTime?
   trialEndsAt                DateTime?
   retentionDays              Int?                   // Custom retention period (null = use tier default)
@@ -53,7 +52,6 @@ model User {
   pendingPayments            PendingPayment[]
   passkeyCredentials         PasskeyCredential[]
   magicLinkTokens            MagicLinkToken[]
-  creditTransactions         CreditTransaction[]
   notifications              Notification[]
   apiKeys                    ApiKey[]
   webhooks                   Webhook[]
@@ -76,28 +74,6 @@ model ApiKey {
 
   @@index([userId])
   @@index([expiresAt])
-}
-
-model CreditTransaction {
-  id          String                @id @default(uuid())
-  userId      String
-  amount      Int // Positive for credit, Negative for debit
-  description String
-  type        CreditTransactionType
-  createdAt   DateTime              @default(now())
-  metadata    Json? // Extra info (e.g., related paymentId, messageId)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-enum CreditTransactionType {
-  DEPOSIT // From Payment/Redemption
-  WITHDRAWAL // Manual Admin Removal
-  USAGE // Consumed for services (e.g. sending email)
-  REFUND // Returned credits
-  ADJUSTMENT // Admin correction
 }
 
 model PasskeyCredential {
@@ -517,9 +493,6 @@ model ServicePackage {
   // Time based params
   durationDays Int?
   targetTier   SubscriptionTier?
-
-  // Usage based params
-  creditAmount Int?
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

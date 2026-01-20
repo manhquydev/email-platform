@@ -65,7 +65,7 @@ export function AISummaryCard({ messageId, initialSummary }: AISummaryCardProps)
                 setError("Nâng cấp lên gói Starter để sử dụng tính năng AI");
             } else if (apiError.status === 402) {
                 setState("error");
-                setError("Không đủ credits. Vui lòng nạp thêm.");
+                setError("Tính năng không khả dụng. Vui lòng nâng cấp gói.");
             } else if (apiError.status === 503) {
                 setState("error");
                 setError("Tính năng AI chưa được kích hoạt trên server");

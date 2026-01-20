@@ -1,12 +1,11 @@
 /**
  * Subscription Stats Cards component
- * Displays current plan, credits, domain usage, storage usage
+ * Displays current plan, daily email limit, domain usage, storage usage
  */
 import { GlassCard } from "../../ui/GlassCard";
 
 interface UserProfile {
     tier: string;
-    credits: number;
     subscriptionEndsAt?: string | null;
     usage?: { domains: number; inboxes: number; storage: number };
     limits?: { domains: number; inboxes: number; storageGB: number; dailyEmails: number };
@@ -57,17 +56,19 @@ export function SubscriptionStatsCards({ profile }: SubscriptionStatsCardsProps)
                 </p>
             </GlassCard>
 
-            {/* Credits */}
+            {/* Daily Email Limit */}
             <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-nebula-surface border border-nebula-border shadow-sm">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <span className="material-symbols-outlined text-6xl text-nebula-text">account_balance_wallet</span>
+                    <span className="material-symbols-outlined text-6xl text-nebula-text">mail</span>
                 </div>
                 <div>
-                    <p className="text-nebula-text-muted text-sm font-medium uppercase tracking-wider">Số dư</p>
-                    <p className="text-3xl font-bold mt-1 text-success">{profile?.credits || 0}</p>
+                    <p className="text-nebula-text-muted text-sm font-medium uppercase tracking-wider">Email/Ngày</p>
+                    <p className="text-3xl font-bold mt-1 text-success">
+                        {profile?.limits?.dailyEmails === -1 ? 'Vô hạn' : profile?.limits?.dailyEmails || 5}
+                    </p>
                 </div>
                 <p className="text-sm text-nebula-text-muted font-medium flex items-center gap-1">
-                    Số dư khả dụng
+                    Giới hạn gửi email mỗi ngày
                 </p>
             </GlassCard>
 

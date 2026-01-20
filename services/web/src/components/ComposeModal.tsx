@@ -69,7 +69,6 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
     };
 
     const canSend = !!(composeFrom && composeTo && composeSubject);
-    const hasCredits = user?.credits === undefined || user.credits >= 1;
 
     return (
         <motion.div

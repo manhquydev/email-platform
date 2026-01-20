@@ -96,17 +96,13 @@ function PackageRow({ pkg, onEdit, onDelete, onToggleStatus }: PackageRowProps) 
                 </div>
             </TableCell>
             <TableCell>
-                <span className={`text-xs px-2 py-1 rounded font-medium ${pkg.type === 'TIME_BASED' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'}`}>
-                    {pkg.type === 'TIME_BASED' ? 'Theo thời gian' : 'Theo lượt dùng'}
+                <span className="text-xs px-2 py-1 rounded font-medium bg-blue-50 text-blue-700">
+                    Theo thời gian
                 </span>
             </TableCell>
             <TableCell>
                 <div className="text-xs">
-                    {pkg.type === 'TIME_BASED' ? (
-                        <span>{pkg.durationDays} ngày / {pkg.targetTier}</span>
-                    ) : (
-                        <span>+{pkg.creditAmount} credits</span>
-                    )}
+                    <span>{pkg.durationDays} ngày / {pkg.targetTier}</span>
                 </div>
             </TableCell>
             <TableCell>

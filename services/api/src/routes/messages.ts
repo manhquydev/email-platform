@@ -615,26 +615,6 @@ export const messageRoutes = async (app: FastifyInstance) => {
     const inReplyTo = originalMessage.messageId;
     const references = originalMessage.messageId;
 
-    // Credit check and deduction
-    const CREDIT_COST = 1;
-    const { CreditService } = await import("../services/credit.service");
-    const { CreditTransactionType } = await import("@prisma/client");
-
-    try {
-      await CreditService.deductCredits(
-        userId,
-        CREDIT_COST,
-        CreditTransactionType.USAGE,
-        `Reply to ${toAddress}`,
-        { originalMessageId: originalMessage.id, subject: replySubject }
-      );
-    } catch (error: any) {
-      if (error.message === "Insufficient credits") {
-        return reply.status(402).send({ error: "Insufficient credits. Please top up your account." });
-      }
-      throw error;
-    }
-
     // Create outbound message record
     const outboundMsg = await prisma.outboundMessage.create({
       data: {
@@ -684,16 +664,12 @@ export const messageRoutes = async (app: FastifyInstance) => {
         originalMessageId: originalMessage.id,
         from: fromAddress,
         to: toAddress,
-        cost: CREDIT_COST,
       });
-
-      const user = await prisma.user.findUnique({ where: { id: userId } });
 
       return {
         ok: true,
         messageId: info.messageId,
         outboundId: outboundMsg.id,
-        remainingCredits: (user?.credits || 0),
       };
     } catch (err: any) {
       // Update record to FAILED
@@ -704,15 +680,6 @@ export const messageRoutes = async (app: FastifyInstance) => {
           bounceMessage: err.message,
         },
       }).catch(() => {});
-
-      // Refund credits
-      await CreditService.addCredits(
-        userId,
-        CREDIT_COST,
-        CreditTransactionType.REFUND,
-        `Refund for failed reply to ${toAddress}`,
-        { error: err.message, outboundId: outboundMsg.id }
-      );
 
       request.log.error(err, "Failed to send reply");
       return reply.status(500).send({ error: "Failed to send reply", details: err.message });
@@ -818,26 +785,6 @@ To: ${originalMessage.toAddress || "unknown"}
       }
     }
 
-    // Credit check and deduction
-    const CREDIT_COST = 1;
-    const { CreditService } = await import("../services/credit.service");
-    const { CreditTransactionType } = await import("@prisma/client");
-
-    try {
-      await CreditService.deductCredits(
-        userId,
-        CREDIT_COST,
-        CreditTransactionType.USAGE,
-        `Forward to ${toAddress}`,
-        { originalMessageId: originalMessage.id, subject: forwardSubject }
-      );
-    } catch (error: any) {
-      if (error.message === "Insufficient credits") {
-        return reply.status(402).send({ error: "Insufficient credits. Please top up your account." });
-      }
-      throw error;
-    }
-
     // Create outbound message record
     const outboundMsg = await prisma.outboundMessage.create({
       data: {
@@ -879,17 +826,13 @@ To: ${originalMessage.toAddress || "unknown"}
         originalMessageId: originalMessage.id,
         from: fromAddress,
         to: toAddress,
-        cost: CREDIT_COST,
         attachmentCount: attachments.length,
       });
-
-      const user = await prisma.user.findUnique({ where: { id: userId } });
 
       return {
         ok: true,
         messageId: info.messageId,
         outboundId: outboundMsg.id,
-        remainingCredits: (user?.credits || 0),
       };
     } catch (err: any) {
       await prisma.outboundMessage.update({
@@ -899,14 +842,6 @@ To: ${originalMessage.toAddress || "unknown"}
           bounceMessage: err.message,
         },
       }).catch(() => {});
-
-      await CreditService.addCredits(
-        userId,
-        CREDIT_COST,
-        CreditTransactionType.REFUND,
-        `Refund for failed forward to ${toAddress}`,
-        { error: err.message, outboundId: outboundMsg.id }
-      );
 
       request.log.error(err, "Failed to forward message");
       return reply.status(500).send({ error: "Failed to forward message", details: err.message });
@@ -944,7 +879,7 @@ To: ${originalMessage.toAddress || "unknown"}
     // Check user tier access
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { tier: true, credits: true },
+      select: { tier: true },
     });
 
     if (!user) {
@@ -975,41 +910,6 @@ To: ${originalMessage.toAddress || "unknown"}
       return reply.status(403).send({ error: "Unauthorized" });
     }
 
-    // Check if we need to charge credits (only for new summaries)
-    const needsGeneration = !message.aiSummary || forceRegenerate;
-    const creditCost = appConfig.ai.summaryCreditCost;
-
-    if (needsGeneration) {
-      // Check credits before generating
-      if (user.credits < creditCost) {
-        return reply.status(402).send({
-          error: "Insufficient credits",
-          message: `AI summarization requires ${creditCost} credit(s). You have ${user.credits}.`,
-          required: creditCost,
-          available: user.credits,
-        });
-      }
-
-      // Deduct credits
-      const { CreditService } = await import("../services/credit.service");
-      const { CreditTransactionType } = await import("@prisma/client");
-
-      try {
-        await CreditService.deductCredits(
-          userId,
-          creditCost,
-          CreditTransactionType.USAGE,
-          `AI summary for message`,
-          { messageId: params.data.id }
-        );
-      } catch (error: any) {
-        if (error.message === "Insufficient credits") {
-          return reply.status(402).send({ error: "Insufficient credits" });
-        }
-        throw error;
-      }
-    }
-
     try {
       const result = await AISummarizationService.summarize(
         params.data.id,
@@ -1017,33 +917,11 @@ To: ${originalMessage.toAddress || "unknown"}
         forceRegenerate
       );
 
-      // Get updated user credits
-      const updatedUser = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { credits: true },
-      });
-
       return {
         summary: result.summary,
         cached: result.cached,
-        creditCost: needsGeneration ? creditCost : 0,
-        remainingCredits: updatedUser?.credits ?? 0,
       };
     } catch (error: any) {
-      // Refund credits on failure
-      if (needsGeneration) {
-        const { CreditService } = await import("../services/credit.service");
-        const { CreditTransactionType } = await import("@prisma/client");
-
-        await CreditService.addCredits(
-          userId,
-          creditCost,
-          CreditTransactionType.REFUND,
-          `Refund for failed AI summary`,
-          { messageId: params.data.id, error: error.message }
-        );
-      }
-
       request.log.error(error, "Failed to generate AI summary");
       return reply.status(500).send({
         error: "Failed to generate summary",

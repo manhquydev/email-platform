@@ -16,10 +16,9 @@ export async function outboundRoutes(app: FastifyInstance) {
         attachments: z.any().optional(),
     });
 
-    // Updated route: Allow authenticated users to send emails, costing credits
+    // Send outbound email - uses tier-based daily limits (enforced by preHandler)
     app.post("/messages/outbound", { preHandler: [app.authenticate, enforceDailyEmailLimit] }, async (request, reply) => {
         const userId = (request.user as any).userId;
-        const user = await prisma.user.findUnique({ where: { id: userId } });
 
         // Validate request body with Zod
         const parsed = outboundEmailSchema.safeParse(request.body);
@@ -34,14 +33,11 @@ export async function outboundRoutes(app: FastifyInstance) {
         const text = body.text ? (typeof body.text === 'object' ? body.text.value : body.text) : undefined;
         const html = body.html ? (typeof body.html === 'object' ? body.html.value : body.html) : undefined;
 
-        // 2. Validate Ownership of Sender Domain/Inbox
-        // Logic: 'from' must be an address owned by the user.
-        // Check if from matches an Inbox owned by user OR a verified Domain owned by user.
+        // Validate Ownership of Sender Domain/Inbox
         const fromEmailParts = from.split("@");
         if (fromEmailParts.length !== 2) return reply.status(400).send({ error: "Invalid sender format" });
         const [localPart, domainName] = fromEmailParts;
 
-        // Check if domain exists and is owned by user
         const domain = await prisma.domain.findUnique({
             where: { name: domainName },
             include: { owner: true }
@@ -52,8 +48,6 @@ export async function outboundRoutes(app: FastifyInstance) {
         }
 
         if (domain.ownerId !== userId) {
-            // If user doesn't own domain, maybe they own the specific inbox? (Shared domain scenario?)
-            // For now, strict ownership: User must own the domain.
             return reply.status(403).send({ error: "You do not own this domain" });
         }
 
@@ -61,7 +55,7 @@ export async function outboundRoutes(app: FastifyInstance) {
             return reply.status(403).send({ error: "Domain not verified" });
         }
 
-        // 3. Process Attachments
+        // Process Attachments
         let attachments: any[] = [];
         if (body.attachments) {
             const files = Array.isArray(body.attachments) ? body.attachments : [body.attachments];
@@ -77,30 +71,7 @@ export async function outboundRoutes(app: FastifyInstance) {
             }
         }
 
-        // 4. Credit Check & Deduction
-        const CREDIT_COST = 1; // 1 Credit per email
-        // Import dynamically to avoid circular ref issues if any (though unlikely here)
-        const { CreditService } = await import("../services/credit.service");
-        const { CreditTransactionType } = await import("@prisma/client");
-
-        try {
-            // This throws if insufficient credits
-            await CreditService.deductCredits(
-                userId,
-                CREDIT_COST,
-                CreditTransactionType.USAGE,
-                `Sent email to ${to}`,
-                { from, subject }
-            );
-        } catch (error: any) {
-            if (error.message === "Insufficient credits") {
-                return reply.status(402).send({ error: "Insufficient credits. Please top up your account." });
-            }
-            throw error;
-        }
-
-        // 5. Create Outbound Message record (Status: SENDING)
-        // Check if from matches an existing inbox for this user to link them
+        // Create Outbound Message record (Status: SENDING)
         const senderInbox = await prisma.inbox.findFirst({
             where: {
                 localPart,
@@ -118,16 +89,15 @@ export async function outboundRoutes(app: FastifyInstance) {
                 fromAddress: from,
                 toAddress: to,
                 subject,
-                messageId: `tmp-${Date.now()}-${Math.random().toString(36).substring(2)}`, // Temporary until sent
+                messageId: `tmp-${Date.now()}-${Math.random().toString(36).substring(2)}`,
                 status: "SENDING"
             }
         });
 
-        // 6. Send Email
+        // Send Email
         try {
             const info = await outboundService.sendEmail(from, to, subject, text, html, attachments);
 
-            // Update record with real Message-ID and SENT status
             await prisma.outboundMessage.update({
                 where: { id: outboundMsg.id },
                 data: {
@@ -141,35 +111,22 @@ export async function outboundRoutes(app: FastifyInstance) {
                 msgId: info.messageId,
                 outboundMessageId: outboundMsg.id,
                 from,
-                to,
-                cost: CREDIT_COST
+                to
             });
 
             return {
                 ok: true,
                 messageId: info.messageId,
-                outboundId: outboundMsg.id,
-                remainingCredits: (user?.credits || 0) - CREDIT_COST
+                outboundId: outboundMsg.id
             };
         } catch (err: any) {
-            // Update record to FAILED
             await prisma.outboundMessage.update({
                 where: { id: outboundMsg.id },
                 data: {
                     status: "FAILED",
                     bounceMessage: err.message
                 }
-            }).catch(() => { }); // Ignore secondary errors
-
-            // Refund credits if sending failed!
-            // This is crucial for "professional" consistency.
-            await CreditService.addCredits(
-                userId,
-                CREDIT_COST,
-                CreditTransactionType.REFUND,
-                `Refund for failed send to ${to}`,
-                { error: err.message, outboundId: outboundMsg.id }
-            );
+            }).catch(() => { });
 
             request.log.error(err, "Failed to send outbound email");
             return reply.status(500).send({ error: "Failed to send email", details: err.message });

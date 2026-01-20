@@ -4,7 +4,6 @@ export type User = {
     name?: string;
     role: string;
     tier?: string;
-    credits?: number;
 };
 
 export type ContributionStatus = 'NONE' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
@@ -234,8 +233,8 @@ export interface ForwardingRule {
 // SUBSCRIPTION & PACKAGES
 // ==================
 
-export type PackageType = 'TIME_BASED' | 'USAGE_BASED';
-export type SubscriptionTier = 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
+export type PackageType = 'TIME_BASED';
+export type SubscriptionTier = 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
 export type SubscriptionStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING';
 
 export interface ServicePackage {
@@ -247,7 +246,6 @@ export interface ServicePackage {
     type: PackageType;
     durationDays?: number;
     targetTier?: SubscriptionTier;
-    creditAmount?: number;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;

@@ -22,7 +22,6 @@ import {
 
 interface UserProfile {
     tier: string;
-    credits: number;
     subscriptionEndsAt?: string | null;
     usage?: { domains: number; inboxes: number; storage: number };
     limits?: { domains: number; inboxes: number; storageGB: number; dailyEmails: number };

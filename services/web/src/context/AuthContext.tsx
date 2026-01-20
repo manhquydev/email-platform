@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
 
-                        // Fetch fresh user data (for credits, etc.)
+                        // Fetch fresh user data
                         try {
                             const res = await api<{ user: User }>("/auth/me", { token });
                             setUser(res.user);

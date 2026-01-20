@@ -51,8 +51,7 @@ export function PackageFormModal({
                 <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                     <BasicInfoSection formData={formData} setFormData={setFormData} />
                     <PricingSection formData={formData} setFormData={setFormData} />
-                    {formData.type === 'TIME_BASED' && <TimeBasedSection formData={formData} setFormData={setFormData} />}
-                    {formData.type === 'USAGE_BASED' && <UsageBasedSection formData={formData} setFormData={setFormData} />}
+                    <TimeBasedSection formData={formData} setFormData={setFormData} />
                     <DisplayConfigSection
                         formData={formData}
                         setFormData={setFormData}
@@ -129,14 +128,12 @@ function PricingSection({ formData, setFormData }: FormSectionProps) {
             </div>
             <div>
                 <label className="block text-sm font-medium mb-1">Loại gói</label>
-                <select
-                    className="input-nebula w-full"
-                    value={formData.type}
-                    onChange={e => setFormData({ ...formData, type: e.target.value as "TIME_BASED" | "USAGE_BASED" })}
-                >
-                    <option value="TIME_BASED">Theo thời gian</option>
-                    <option value="USAGE_BASED">Theo lượt dùng</option>
-                </select>
+                <input
+                    className="input-nebula w-full bg-slate-100 dark:bg-slate-800"
+                    value="Theo thời gian"
+                    disabled
+                />
+                <input type="hidden" value="TIME_BASED" />
             </div>
         </div>
     );
@@ -165,24 +162,10 @@ function TimeBasedSection({ formData, setFormData }: FormSectionProps) {
                     <option value="FREE">FREE</option>
                     <option value="STARTER">STARTER</option>
                     <option value="PROFESSIONAL">PROFESSIONAL</option>
+                    <option value="BUSINESS">BUSINESS</option>
                     <option value="ENTERPRISE">ENTERPRISE</option>
                 </select>
             </div>
-        </div>
-    );
-}
-
-function UsageBasedSection({ formData, setFormData }: FormSectionProps) {
-    return (
-        <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
-            <label className="block text-xs font-medium mb-1 text-muted">Số lượng Credits cộng thêm</label>
-            <input
-                type="number"
-                className="input-nebula w-full"
-                value={formData.creditAmount}
-                onChange={e => setFormData({ ...formData, creditAmount: Number(e.target.value) })}
-                placeholder="100"
-            />
         </div>
     );
 }

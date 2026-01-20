@@ -210,16 +210,9 @@ export class SepayService {
         },
       });
 
-      // 3. Apply package benefits
+      // 3. Apply package benefits (TIME_BASED only - USAGE_BASED removed)
       const pkg = pending.package;
-      if (pkg.type === PackageType.USAGE_BASED && pkg.creditAmount) {
-        await tx.user.update({
-          where: { id: pending.userId },
-          data: {
-            credits: { increment: pkg.creditAmount },
-          },
-        });
-      } else if (pkg.type === PackageType.TIME_BASED && pkg.durationDays) {
+      if (pkg.durationDays) {
         const user = await tx.user.findUnique({ where: { id: pending.userId } });
         const now = new Date();
         const currentEnd = user?.subscriptionEndsAt && user.subscriptionEndsAt > now

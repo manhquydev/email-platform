@@ -148,14 +148,8 @@ export class StripeService {
         const pkg = await prisma.servicePackage.findUnique({ where: { id: packageId } });
         if (!pkg) return;
 
-        if (pkg.type === PackageType.USAGE_BASED && pkg.creditAmount) {
-            await prisma.user.update({
-                where: { id: userId },
-                data: {
-                    credits: { increment: pkg.creditAmount },
-                },
-            });
-        } else if (pkg.type === PackageType.TIME_BASED && pkg.durationDays) {
+        // Apply package benefits (TIME_BASED only - USAGE_BASED removed)
+        if (pkg.durationDays) {
             const endsAt = new Date();
             endsAt.setDate(endsAt.getDate() + pkg.durationDays);
 

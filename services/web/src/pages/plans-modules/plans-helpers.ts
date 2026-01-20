@@ -72,9 +72,8 @@ export function getCurrencySymbol(currency: string): string {
     return currency === 'VND' ? 'đ' : currency;
 }
 
-// Get period text
+// Get period text (TIME_BASED only)
 export function getPeriod(pkg: DisplayPackage): string {
-    if (pkg.type === 'USAGE_BASED') return ' lượt';
     return pkg.durationDays && pkg.durationDays > 45 ? '/năm' : '/tháng';
 }
 

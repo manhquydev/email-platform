@@ -233,42 +233,27 @@ export async function subscriptionRoutes(app: FastifyInstance) {
                 }
             });
 
-            // 4. Update User Benefits
-            // Update User
-            if (pkg.type === "TIME_BASED") {
-                const now = new Date();
-                // Re-fetch user inside TX to get lock/latest data if needed, 
-                // but strictly for expiration date calculation, using the previously fetched user is 'okay' 
-                // as long as we don't overwrite concurrent unrelated updates.
-                // However, let's just use the current user state for safety.
-                const userInTx = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+            // 4. Update User Benefits (TIME_BASED only - USAGE_BASED removed)
+            const now = new Date();
+            const userInTx = await tx.user.findUniqueOrThrow({ where: { id: userId } });
 
-                const currentEnd = userInTx.subscriptionEndsAt && userInTx.subscriptionEndsAt > now
-                    ? userInTx.subscriptionEndsAt
-                    : now;
+            const currentEnd = userInTx.subscriptionEndsAt && userInTx.subscriptionEndsAt > now
+                ? userInTx.subscriptionEndsAt
+                : now;
 
-                // Add duration
-                const days = pkg.durationDays || 30;
-                const newEnd = new Date(currentEnd);
-                newEnd.setDate(newEnd.getDate() + days);
+            // Add duration
+            const days = pkg.durationDays || 30;
+            const newEnd = new Date(currentEnd);
+            newEnd.setDate(newEnd.getDate() + days);
 
-                await tx.user.update({
-                    where: { id: userId },
-                    data: {
-                        tier: pkg.targetTier || userInTx.tier, // Upgrade tier if specified
-                        subscriptionStatus: "ACTIVE",
-                        subscriptionEndsAt: newEnd
-                    }
-                });
-            } else if (pkg.type === "USAGE_BASED") {
-                const creditsToAdd = pkg.creditAmount || 0;
-                await tx.user.update({
-                    where: { id: userId },
-                    data: {
-                        credits: { increment: creditsToAdd }
-                    }
-                });
-            }
+            await tx.user.update({
+                where: { id: userId },
+                data: {
+                    tier: pkg.targetTier || userInTx.tier,
+                    subscriptionStatus: "ACTIVE",
+                    subscriptionEndsAt: newEnd
+                }
+            });
         });
 
         await recordAudit(userId, "REDEEM_CODE", { code: redemptionCode.code, package: pkg.name });

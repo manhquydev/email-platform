@@ -25,16 +25,15 @@ export async function adminPackagesRoutes(app: FastifyInstance) {
         return { packages };
     });
 
-    // Create new package
+    // Create new package (TIME_BASED only - USAGE_BASED removed)
     app.post("/admin/packages", { preHandler: app.requireAdmin }, async (request, reply) => {
         const body = z.object({
             name: z.string().min(1),
             description: z.string().optional(),
             price: z.number().min(0),
-            type: z.enum(["TIME_BASED", "USAGE_BASED"]),
+            type: z.literal("TIME_BASED").optional().default("TIME_BASED"),
             durationDays: z.number().optional(),
-            creditAmount: z.number().optional(),
-            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
+            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"]).optional(),
             stripePriceId: z.string().optional(),
             stripeProductId: z.string().optional(),
             isActive: z.boolean().optional().default(true),
@@ -67,17 +66,16 @@ export async function adminPackagesRoutes(app: FastifyInstance) {
         return { package: pkg };
     });
 
-    // Update Service Package
+    // Update Service Package (TIME_BASED only)
     app.patch("/admin/packages/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
         const params = z.object({ id: z.string() }).safeParse(request.params);
         const body = z.object({
             name: z.string().optional(),
             description: z.string().optional(),
             price: z.number().optional(),
-            type: z.enum(["TIME_BASED", "USAGE_BASED"]).optional(),
+            type: z.literal("TIME_BASED").optional(),
             durationDays: z.number().optional(),
-            creditAmount: z.number().optional(),
-            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
+            targetTier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"]).optional(),
             stripePriceId: z.string().optional(),
             stripeProductId: z.string().optional(),
             isActive: z.boolean().optional(),

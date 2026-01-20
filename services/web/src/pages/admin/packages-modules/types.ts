@@ -1,5 +1,6 @@
 /**
  * Types and constants for PackagesPage
+ * TIME_BASED only - USAGE_BASED removed
  */
 
 export interface PlanFeature {
@@ -13,10 +14,9 @@ export interface ServicePackage {
     description?: string;
     price: number;
     currency: string;
-    type: "TIME_BASED" | "USAGE_BASED";
+    type: "TIME_BASED";
     durationDays?: number;
     targetTier?: string;
-    creditAmount?: number;
     isActive: boolean;
     stripePriceId?: string;
     stripeProductId?: string;
@@ -33,10 +33,9 @@ export interface PackageFormData {
     name: string;
     description: string;
     price: number;
-    type: "TIME_BASED" | "USAGE_BASED";
+    type: "TIME_BASED";
     durationDays: number;
     targetTier: string;
-    creditAmount: number;
     stripePriceId: string;
     stripeProductId: string;
     isActive: boolean;
@@ -53,7 +52,6 @@ export const DEFAULT_FORM_DATA: PackageFormData = {
     type: "TIME_BASED",
     durationDays: 30,
     targetTier: "PROFESSIONAL",
-    creditAmount: 0,
     stripePriceId: "",
     stripeProductId: "",
     isActive: true,

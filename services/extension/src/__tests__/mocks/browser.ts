@@ -81,6 +81,21 @@ export const mockBrowser = {
     getMessage: vi.fn((key: string) => mockMessages[key] || key),
     getUILanguage: vi.fn(() => 'en'),
   },
+  action: {
+    setBadgeText: vi.fn().mockResolvedValue(undefined),
+    setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+    setIcon: vi.fn().mockResolvedValue(undefined),
+  },
+  browserAction: {
+    setBadgeText: vi.fn().mockResolvedValue(undefined),
+    setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+    setIcon: vi.fn().mockResolvedValue(undefined),
+  },
+  tabs: {
+    create: vi.fn().mockResolvedValue({ id: 1 }),
+    query: vi.fn().mockResolvedValue([]),
+    update: vi.fn().mockResolvedValue(undefined),
+  },
 };
 
 /**

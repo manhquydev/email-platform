@@ -41,6 +41,34 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock ResizeObserver (not available in jsdom)
+class MockResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+globalThis.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+
+// Mock IntersectionObserver (not available in jsdom)
+class MockIntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn().mockReturnValue([]);
+}
+globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
+// Mock requestIdleCallback (not available in jsdom)
+if (typeof globalThis.requestIdleCallback === 'undefined') {
+  globalThis.requestIdleCallback = ((cb: IdleRequestCallback) => {
+    return setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 } as IdleDeadline), 1);
+  }) as typeof requestIdleCallback;
+  globalThis.cancelIdleCallback = ((id: number) => clearTimeout(id)) as typeof cancelIdleCallback;
+}
+
 // Reset mocks before each test
 beforeEach(() => {
   vi.clearAllMocks();

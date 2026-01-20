@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const crypto = require('crypto');
 const prisma = new PrismaClient();
 
 /**
@@ -19,11 +20,9 @@ async function main() {
     console.log('Cleared existing packages\n');
 
     // === STARTER TIER ===
-    const starterMonthly = await prisma.servicePackage.upsert({
-        where: { id: 'starter-monthly' },
-        update: {},
-        create: {
-            id: 'starter-monthly',
+    const starterMonthly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Khởi Đầu (Tháng)',
             description: 'Dành cho cá nhân và freelancer',
             price: 49000,
@@ -36,13 +35,11 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', starterMonthly.name, '- 49,000 VND');
+    console.log('Created:', starterMonthly.name, '- 49,000 VND', `[${starterMonthly.id}]`);
 
-    const starterYearly = await prisma.servicePackage.upsert({
-        where: { id: 'starter-yearly' },
-        update: {},
-        create: {
-            id: 'starter-yearly',
+    const starterYearly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Khởi Đầu (Năm)',
             description: 'Dành cho cá nhân - Tiết kiệm 20%',
             price: 470000,
@@ -55,14 +52,12 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', starterYearly.name, '- 470,000 VND');
+    console.log('Created:', starterYearly.name, '- 470,000 VND', `[${starterYearly.id}]`);
 
     // === PROFESSIONAL TIER ===
-    const proMonthly = await prisma.servicePackage.upsert({
-        where: { id: 'professional-monthly' },
-        update: {},
-        create: {
-            id: 'professional-monthly',
+    const proMonthly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Chuyên Nghiệp (Tháng)',
             description: 'Tốt nhất cho team đang phát triển',
             price: 99000,
@@ -75,13 +70,11 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', proMonthly.name, '- 99,000 VND');
+    console.log('Created:', proMonthly.name, '- 99,000 VND', `[${proMonthly.id}]`);
 
-    const proYearly = await prisma.servicePackage.upsert({
-        where: { id: 'professional-yearly' },
-        update: {},
-        create: {
-            id: 'professional-yearly',
+    const proYearly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Chuyên Nghiệp (Năm)',
             description: 'Tốt nhất cho team - Tiết kiệm 20%',
             price: 950000,
@@ -94,14 +87,12 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', proYearly.name, '- 950,000 VND');
+    console.log('Created:', proYearly.name, '- 950,000 VND', `[${proYearly.id}]`);
 
-    // === BUSINESS TIER (NEW) ===
-    const businessMonthly = await prisma.servicePackage.upsert({
-        where: { id: 'business-monthly' },
-        update: {},
-        create: {
-            id: 'business-monthly',
+    // === BUSINESS TIER ===
+    const businessMonthly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Doanh Nghiệp (Tháng)',
             description: 'Dành cho doanh nghiệp vừa và nhỏ',
             price: 199000,
@@ -114,13 +105,11 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', businessMonthly.name, '- 199,000 VND');
+    console.log('Created:', businessMonthly.name, '- 199,000 VND', `[${businessMonthly.id}]`);
 
-    const businessYearly = await prisma.servicePackage.upsert({
-        where: { id: 'business-yearly' },
-        update: {},
-        create: {
-            id: 'business-yearly',
+    const businessYearly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Doanh Nghiệp (Năm)',
             description: 'Dành cho doanh nghiệp - Tiết kiệm 20%',
             price: 1900000,
@@ -133,14 +122,12 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', businessYearly.name, '- 1,900,000 VND');
+    console.log('Created:', businessYearly.name, '- 1,900,000 VND', `[${businessYearly.id}]`);
 
     // === ENTERPRISE TIER ===
-    const enterpriseMonthly = await prisma.servicePackage.upsert({
-        where: { id: 'enterprise-monthly' },
-        update: {},
-        create: {
-            id: 'enterprise-monthly',
+    const enterpriseMonthly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Enterprise (Tháng)',
             description: 'Dành cho tổ chức lớn',
             price: 499000,
@@ -153,13 +140,11 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', enterpriseMonthly.name, '- 499,000 VND');
+    console.log('Created:', enterpriseMonthly.name, '- 499,000 VND', `[${enterpriseMonthly.id}]`);
 
-    const enterpriseYearly = await prisma.servicePackage.upsert({
-        where: { id: 'enterprise-yearly' },
-        update: {},
-        create: {
-            id: 'enterprise-yearly',
+    const enterpriseYearly = await prisma.servicePackage.create({
+        data: {
+            id: crypto.randomUUID(),
             name: 'Gói Enterprise (Năm)',
             description: 'Dành cho tổ chức lớn - Tiết kiệm 20%',
             price: 4790000,
@@ -172,7 +157,7 @@ async function main() {
             isActive: true
         }
     });
-    console.log('Created:', enterpriseYearly.name, '- 4,790,000 VND');
+    console.log('Created:', enterpriseYearly.name, '- 4,790,000 VND', `[${enterpriseYearly.id}]`);
 
     console.log('\n✅ All packages seeded successfully!');
     console.log('\nPricing Summary (VND):');

@@ -9,6 +9,15 @@ vi.mock("../../utils/api", () => ({
     api: (path: string) => mockApi(path),
 }));
 
+// Mock AuthContext
+vi.mock("../../context/AuthContext", () => ({
+    useAuth: () => ({
+        token: "mock-token",
+        user: { id: "test-user", email: "test@example.com" },
+        isAuthenticated: true,
+    }),
+}));
+
 // Mock props for Toast
 vi.mock("react-hot-toast", () => ({
     toast: {

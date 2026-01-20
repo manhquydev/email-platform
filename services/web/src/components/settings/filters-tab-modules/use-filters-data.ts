@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { api } from "../../../utils/api";
+import { useAuth } from "../../../context/AuthContext";
 import type { EmailFilter, Label, FilterCondition, FilterAction } from "../../../types";
 
 /** Test filter result from API */
@@ -14,6 +15,7 @@ export interface FilterTestResult {
 }
 
 export function useFiltersData(effectiveInboxId: string | undefined) {
+    const { token } = useAuth();
     const [filters, setFilters] = useState<EmailFilter[]>([]);
     const [labels, setLabels] = useState<Label[]>([]);
     const [loading, setLoading] = useState(false);
@@ -37,12 +39,12 @@ export function useFiltersData(effectiveInboxId: string | undefined) {
     ]);
 
     const loadData = useCallback(async () => {
-        if (!effectiveInboxId) return;
+        if (!effectiveInboxId || !token) return;
         setLoading(true);
         try {
             const [filterRes, labelRes] = await Promise.all([
-                api<{ filters: EmailFilter[] }>(`/inboxes/${effectiveInboxId}/filters`),
-                api<{ labels: Label[] }>(`/inboxes/${effectiveInboxId}/labels`)
+                api<{ filters: EmailFilter[] }>(`/inboxes/${effectiveInboxId}/filters`, { token }),
+                api<{ labels: Label[] }>(`/inboxes/${effectiveInboxId}/labels`, { token })
             ]);
             setFilters(filterRes.filters);
             setLabels(labelRes.labels);
@@ -52,7 +54,7 @@ export function useFiltersData(effectiveInboxId: string | undefined) {
         } finally {
             setLoading(false);
         }
-    }, [effectiveInboxId]);
+    }, [effectiveInboxId, token]);
 
     useEffect(() => {
         if (effectiveInboxId) {
@@ -100,14 +102,16 @@ export function useFiltersData(effectiveInboxId: string | undefined) {
             if (editingFilter) {
                 const updated = await api<EmailFilter>(`/filters/${editingFilter.id}`, {
                     method: "PATCH",
-                    body: payload
+                    body: payload,
+                    token
                 });
                 setFilters(filters.map(f => f.id === updated.id ? updated : f));
                 toast.success("Đã cập nhật bộ lọc");
             } else {
                 const created = await api<EmailFilter>("/filters", {
                     method: "POST",
-                    body: payload
+                    body: payload,
+                    token
                 });
                 setFilters([...filters, created]);
                 toast.success("Đã tạo bộ lọc mới");
@@ -122,7 +126,7 @@ export function useFiltersData(effectiveInboxId: string | undefined) {
     const handleDelete = async (id: string) => {
         if (!window.confirm("Xóa bộ lọc này?")) return;
         try {
-            await api(`/filters/${id}`, { method: "DELETE" });
+            await api(`/filters/${id}`, { method: "DELETE", token });
             setFilters(filters.filter(f => f.id !== id));
             toast.success("Đã xóa bộ lọc");
         } catch {
@@ -188,7 +192,8 @@ export function useFiltersData(effectiveInboxId: string | undefined) {
         try {
             const result = await api<FilterTestResult>(`/filters/${testingFilter.id}/test`, {
                 method: "POST",
-                body: testData
+                body: testData,
+                token
             });
             setTestResult(result);
         } catch (err) {

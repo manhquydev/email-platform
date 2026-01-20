@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { api } from "../../../utils/api";
+import { useAuth } from "../../../context/AuthContext";
 import type { Label } from "../../../types";
 import { DEFAULT_LABEL_COLOR } from "./labels-tab-utils";
 
@@ -13,6 +14,7 @@ interface UseLabelsOptions {
 
 /** Hook to manage labels CRUD operations */
 export function useLabels({ effectiveInboxId }: UseLabelsOptions) {
+    const { token } = useAuth();
     const [labels, setLabels] = useState<Label[]>([]);
     const [loading, setLoading] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -23,10 +25,10 @@ export function useLabels({ effectiveInboxId }: UseLabelsOptions) {
     const [color, setColor] = useState(DEFAULT_LABEL_COLOR);
 
     const loadLabels = useCallback(async () => {
-        if (!effectiveInboxId) return;
+        if (!effectiveInboxId || !token) return;
         setLoading(true);
         try {
-            const res = await api<{ labels: Label[] }>(`/inboxes/${effectiveInboxId}/labels`);
+            const res = await api<{ labels: Label[] }>(`/inboxes/${effectiveInboxId}/labels`, { token });
             setLabels(res.labels);
         } catch (err) {
             console.error("Failed to load labels", err);
@@ -34,7 +36,7 @@ export function useLabels({ effectiveInboxId }: UseLabelsOptions) {
         } finally {
             setLoading(false);
         }
-    }, [effectiveInboxId]);
+    }, [effectiveInboxId, token]);
 
     useEffect(() => {
         if (effectiveInboxId) {
@@ -71,6 +73,7 @@ export function useLabels({ effectiveInboxId }: UseLabelsOptions) {
                 const updated = await api<Label>(`/labels/${editingLabel.id}`, {
                     method: "PATCH",
                     body: { name, color },
+                    token
                 });
                 setLabels(labels.map((l) => (l.id === updated.id ? updated : l)));
                 toast.success("Đã cập nhật nhãn");
@@ -79,6 +82,7 @@ export function useLabels({ effectiveInboxId }: UseLabelsOptions) {
                 const created = await api<Label>("/labels", {
                     method: "POST",
                     body: { inboxId: effectiveInboxId, name, color },
+                    token
                 });
                 setLabels([...labels, created]);
                 toast.success("Đã tạo nhãn mới");
@@ -94,7 +98,7 @@ export function useLabels({ effectiveInboxId }: UseLabelsOptions) {
         if (!window.confirm("Bạn có chắc chắn muốn xóa nhãn này?")) return;
 
         try {
-            await api(`/labels/${id}`, { method: "DELETE" });
+            await api(`/labels/${id}`, { method: "DELETE", token });
             setLabels(labels.filter((l) => l.id !== id));
             toast.success("Đã xóa nhãn");
         } catch (err) {

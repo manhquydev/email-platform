@@ -67,7 +67,7 @@ describe('Settings', () => {
   it('should display back button', async () => {
     render(<Settings onBack={mockOnBack} onLogout={mockOnLogout} />);
 
-    const backButton = screen.getByRole('button', { name: '' });
+    const backButton = screen.getByRole('button', { name: /go back/i });
     expect(backButton).toBeInTheDocument();
   });
 

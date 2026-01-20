@@ -10,6 +10,7 @@ import { CONFIG } from '../../shared/config';
 import { TIER_LIMITS, COUNTDOWN_INTERVAL_MS } from '../../shared/constants';
 import CreateInboxModal from '../shared/CreateInboxModal';
 import QRCodeModal from '../shared/QRCodeModal';
+import { InboxSkeleton } from '../shared/Skeleton';
 
 interface InboxListProps {
   onSelectInbox: (id: string, email: string) => void;
@@ -238,8 +239,18 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
 
   if (loading && inboxes.length === 0) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+      <div className="p-4 space-y-4" role="status" aria-label="Loading inboxes">
+        <div className="flex justify-between items-center px-1">
+          <div className="flex flex-col">
+            <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('activeInboxes')}</h2>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <InboxSkeleton />
+          <InboxSkeleton />
+          <InboxSkeleton />
+        </div>
+        <span className="sr-only">Loading your inboxes, please wait...</span>
       </div>
     );
   }

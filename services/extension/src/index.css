@@ -70,3 +70,34 @@ body {
 .skip-link {
   @apply sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-500 focus:text-white focus:rounded-lg focus:font-bold;
 }
+
+/* Shimmer animation for skeleton loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    theme('colors.slate.200') 25%,
+    theme('colors.slate.100') 50%,
+    theme('colors.slate.200') 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    theme('colors.slate.700') 25%,
+    theme('colors.slate.600') 50%,
+    theme('colors.slate.700') 75%
+  );
+  background-size: 200% 100%;
+}

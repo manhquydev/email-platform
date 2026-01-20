@@ -89,7 +89,7 @@ describe('InboxList', () => {
   });
 
   describe('rendering', () => {
-    it('should show loading spinner initially', () => {
+    it('should show loading skeletons initially', () => {
       // Make getDashboard hang
       (api.getDashboard as ReturnType<typeof vi.fn>).mockImplementation(
         () => new Promise(() => {})
@@ -97,8 +97,8 @@ describe('InboxList', () => {
 
       render(<InboxList onSelectInbox={mockOnSelectInbox} />);
 
-      // Should show loader
-      expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+      // Should show skeleton loading state (with aria-label for accessibility)
+      expect(screen.getByRole('status', { name: /loading inboxes/i })).toBeInTheDocument();
     });
 
     it('should render inbox list after loading', async () => {

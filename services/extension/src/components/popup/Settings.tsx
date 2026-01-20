@@ -112,9 +112,10 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
       <div className="glass-morphism sticky top-0 flex items-center gap-3 p-3 z-20 border border-white/20 dark:border-slate-800/50 rounded-2xl">
         <button
           onClick={onBack}
+          aria-label="Go back to inbox list"
           className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         </button>
         <h2 className="font-bold text-xs text-slate-800 dark:text-slate-100 uppercase tracking-widest">Settings</h2>
       </div>
@@ -171,6 +172,8 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
               <button
                 key={item.id}
                 onClick={() => updateTheme(item.id as any)}
+                aria-pressed={theme === item.id}
+                aria-label={`${item.label} theme${theme === item.id ? ' (selected)' : ''}`}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-all duration-300",
                   theme === item.id
@@ -178,7 +181,7 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 )}
               >
-                <item.icon className="w-3.5 h-3.5" />
+                <item.icon className="w-3.5 h-3.5" aria-hidden="true" />
                 {item.label}
               </button>
             ))}
@@ -193,6 +196,8 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
             <button
               onClick={toggleNotifications}
               disabled={notifLoading}
+              aria-pressed={notificationsEnabled}
+              aria-label={`Push notifications ${notificationsEnabled ? 'enabled' : 'disabled'}. Click to toggle.`}
               className="w-full card-material p-4 flex items-center justify-between group hover:border-primary-200 dark:hover:border-primary-900/50"
             >
               <div className="flex items-center gap-3">
@@ -225,6 +230,8 @@ export default function Settings({ onBack, onLogout }: SettingsProps) {
 
             <button
               onClick={toggleAutoCopy}
+              aria-pressed={autoCopy}
+              aria-label={`Auto-copy address ${autoCopy ? 'enabled' : 'disabled'}. Click to toggle.`}
               className="w-full card-material p-4 flex items-center justify-between group hover:border-primary-200 dark:hover:border-primary-900/50"
             >
               <div className="flex items-center gap-3">

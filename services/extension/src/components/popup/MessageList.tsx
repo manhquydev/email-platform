@@ -2,10 +2,11 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { api } from '../../shared/api';
 import { analytics } from '../../shared/analytics';
 import { Message } from '../../shared/types';
-import { ArrowLeft, Loader2, Calendar, User, FileText, RefreshCw, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, User, FileText, RefreshCw, ChevronRight, Mail, Inbox } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { cn } from '../../utils/cn';
 import SearchInput from '../shared/SearchInput';
+import { MessageSkeleton } from '../shared/Skeleton';
 
 interface MessageListProps {
   inboxId: string;
@@ -71,9 +72,10 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
         <div className="glass-morphism sticky top-0 flex items-center gap-3 p-3 z-20 border border-white/20 dark:border-slate-800/50 rounded-2xl mx-1 mt-1">
           <button
             onClick={() => setSelectedMessage(null)}
+            aria-label="Go back to message list"
             className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           </button>
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate uppercase tracking-widest">{selectedMessage.subject || '(No Subject)'}</h3>

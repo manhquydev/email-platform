@@ -1,9 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* Nebula Glass Design System */
+/* Nebula Glass Design System (Legacy - to be deprecated) */
 @import './styles/nebula-glass.css';
 /* Phase 3: Design Tokens, Typography Scale, Cursor States */
 @import './styles/design-tokens.css';
+/* Version C Design System (Superhuman Style) */
+@import './styles/version-c-tokens.css';
 
 @tailwind base;
 @tailwind components;

@@ -1,0 +1,118 @@
+/**
+ * Version C Design System Tokens (Superhuman Style)
+ * Ultra-minimal, keyboard-first, maximum contrast
+ * Reference: docs/design-system-version-c.md
+ */
+
+:root {
+  /* ========================================
+     BACKGROUNDS
+     ======================================== */
+  --v3-bg-primary: #000000;      /* Pure black - page background */
+  --v3-bg-elevated: #09090b;     /* zinc-950 - sections, modals */
+  --v3-bg-surface: #18181b;      /* zinc-900 - cards, inputs */
+  --v3-bg-hover: #27272a;        /* zinc-800 - hover states */
+
+  /* ========================================
+     BORDERS
+     ======================================== */
+  --v3-border-subtle: #18181b;   /* zinc-900 - subtle dividers */
+  --v3-border-default: #27272a;  /* zinc-800 - card borders */
+  --v3-border-strong: #3f3f46;   /* zinc-700 - focus, emphasis */
+
+  /* ========================================
+     TEXT
+     ======================================== */
+  --v3-text-primary: #ffffff;    /* White - headings, important */
+  --v3-text-secondary: #a1a1aa;  /* zinc-400 - body text */
+  --v3-text-muted: #71717a;      /* zinc-500 - secondary info */
+  --v3-text-disabled: #52525b;   /* zinc-600 - disabled, hints */
+
+  /* ========================================
+     ACCENT COLORS (Use Sparingly)
+     ======================================== */
+  --v3-accent-primary: #ffffff;  /* White - primary buttons */
+  --v3-accent-success: #34d399;  /* emerald-400 - success, active */
+  --v3-accent-error: #f87171;    /* red-400 - errors only */
+  --v3-accent-warning: #fbbf24;  /* amber-400 - warnings only */
+
+  /* ========================================
+     SPACING (4px base unit)
+     ======================================== */
+  --v3-space-1: 0.25rem;   /* 4px */
+  --v3-space-2: 0.5rem;    /* 8px */
+  --v3-space-3: 0.75rem;   /* 12px */
+  --v3-space-4: 1rem;      /* 16px */
+  --v3-space-6: 1.5rem;    /* 24px */
+  --v3-space-8: 2rem;      /* 32px */
+  --v3-space-12: 3rem;     /* 48px */
+  --v3-space-24: 6rem;     /* 96px */
+
+  /* ========================================
+     BORDER RADIUS (Max 8px)
+     ======================================== */
+  --v3-radius-none: 0;
+  --v3-radius-sm: 4px;     /* Badges, tags */
+  --v3-radius-md: 6px;     /* Buttons, inputs */
+  --v3-radius-lg: 8px;     /* Cards, dropdowns - MAX */
+
+  /* ========================================
+     SHADOWS (Minimal - prefer borders)
+     ======================================== */
+  --v3-shadow-none: none;
+  --v3-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);  /* Dropdowns only */
+
+  /* ========================================
+     TRANSITIONS (Max 200ms)
+     ======================================== */
+  --v3-transition-fast: 150ms ease;
+  --v3-transition-normal: 200ms ease;
+
+  /* ========================================
+     LAYOUT
+     ======================================== */
+  --v3-nav-height: 56px;           /* h-14 */
+  --v3-sidebar-width: 256px;       /* w-64 */
+  --v3-max-w-narrow: 48rem;        /* 768px */
+  --v3-max-w-medium: 64rem;        /* 1024px */
+  --v3-max-w-wide: 72rem;          /* 1152px */
+}
+
+/* ========================================
+   VERSION C UTILITY CLASSES
+   ======================================== */
+
+/* Background utilities */
+.v3-bg-primary { background-color: var(--v3-bg-primary); }
+.v3-bg-elevated { background-color: var(--v3-bg-elevated); }
+.v3-bg-surface { background-color: var(--v3-bg-surface); }
+
+/* Border utilities */
+.v3-border-subtle { border-color: var(--v3-border-subtle); }
+.v3-border-default { border-color: var(--v3-border-default); }
+.v3-border-strong { border-color: var(--v3-border-strong); }
+
+/* Text utilities */
+.v3-text-primary { color: var(--v3-text-primary); }
+.v3-text-secondary { color: var(--v3-text-secondary); }
+.v3-text-muted { color: var(--v3-text-muted); }
+.v3-text-disabled { color: var(--v3-text-disabled); }
+
+/* Transition utilities */
+.v3-transition-colors {
+  transition: color var(--v3-transition-fast),
+              background-color var(--v3-transition-fast),
+              border-color var(--v3-transition-fast);
+}
+
+.v3-transition-all {
+  transition: all var(--v3-transition-normal);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .v3-transition-colors,
+  .v3-transition-all {
+    transition-duration: 0.01ms !important;
+  }
+}

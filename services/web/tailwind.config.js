@@ -56,6 +56,29 @@ export default {
                 'warning-bg': 'var(--color-warning-bg)',
                 info: 'var(--color-info)',
                 'info-bg': 'var(--color-info-bg)',
+
+                // VERSION C PALETTE (Superhuman Style)
+                v3: {
+                    // Backgrounds
+                    'bg-primary': 'var(--v3-bg-primary)',
+                    'bg-elevated': 'var(--v3-bg-elevated)',
+                    'bg-surface': 'var(--v3-bg-surface)',
+                    'bg-hover': 'var(--v3-bg-hover)',
+                    // Borders
+                    'border-subtle': 'var(--v3-border-subtle)',
+                    'border-default': 'var(--v3-border-default)',
+                    'border-strong': 'var(--v3-border-strong)',
+                    // Text
+                    'text-primary': 'var(--v3-text-primary)',
+                    'text-secondary': 'var(--v3-text-secondary)',
+                    'text-muted': 'var(--v3-text-muted)',
+                    'text-disabled': 'var(--v3-text-disabled)',
+                    // Accent
+                    'accent-primary': 'var(--v3-accent-primary)',
+                    'accent-success': 'var(--v3-accent-success)',
+                    'accent-error': 'var(--v3-accent-error)',
+                    'accent-warning': 'var(--v3-accent-warning)',
+                },
             },
             fontFamily: {
                 sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
@@ -73,6 +96,9 @@ export default {
                 'nebula-lg': 'var(--nebula-shadow-lg)',
                 'nebula-xl': 'var(--nebula-shadow-xl)',
                 'nebula-glow': 'var(--nebula-shadow-glow)',
+                // Version C Shadows (minimal)
+                'v3-none': 'var(--v3-shadow-none)',
+                'v3-sm': 'var(--v3-shadow-sm)',
             },
             // Mobile touch targets (44px minimum per WCAG 2.1)
             minHeight: {
@@ -93,6 +119,10 @@ export default {
                 'nebula-md': 'var(--nebula-radius-md)',
                 'nebula-lg': 'var(--nebula-radius-lg)',
                 'nebula-xl': 'var(--nebula-radius-xl)',
+                // Version C Radius (max 8px)
+                'v3-sm': 'var(--v3-radius-sm)',
+                'v3-md': 'var(--v3-radius-md)',
+                'v3-lg': 'var(--v3-radius-lg)',
             },
             transitionTimingFunction: {
                 'nebula-fast': 'cubic-bezier(0.4, 0, 0.2, 1)', // 150ms

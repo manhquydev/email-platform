@@ -62,6 +62,7 @@ export function UserTableRow({
                     <option value="FREE">FREE</option>
                     <option value="STARTER">STARTER</option>
                     <option value="PROFESSIONAL">PROFESSIONAL</option>
+                    <option value="BUSINESS">BUSINESS</option>
                     <option value="ENTERPRISE">ENTERPRISE</option>
                 </select>
             </TableCell>

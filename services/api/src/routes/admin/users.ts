@@ -126,7 +126,7 @@ export async function adminUsersRoutes(app: FastifyInstance) {
     app.patch("/admin/users/:id/tier", { preHandler: app.requireAdmin }, async (request, reply) => {
         const params = z.object({ id: z.string().uuid() }).parse(request.params);
         const body = z.object({
-            tier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]),
+            tier: z.enum(["FREE", "STARTER", "PROFESSIONAL", "BUSINESS", "ENTERPRISE"]),
             status: z.enum(["ACTIVE", "PAST_DUE", "CANCELED", "TRIALING"]).optional(),
         }).safeParse(request.body);
 

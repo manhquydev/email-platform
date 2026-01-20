@@ -1,50 +1,91 @@
 # Chrome Web Store Permission Justifications
 
-This document provides justifications for each permission requested by the Ephemera browser extension, as required for Chrome Web Store submission.
+## Required Permissions
 
-## Permissions
+### 1. `storage`
+**Justification:** Store user preferences (theme, auto-copy setting, notification preferences) and cache inbox data locally for faster load times. No sensitive data stored; only settings and temporary email metadata.
 
-### `storage`
-**Justification:** Store user authentication tokens and settings locally for persistent login across browser sessions. This allows users to remain logged in without re-entering credentials each time they open the browser.
+**User Benefit:** Faster extension startup, persistent preferences across sessions.
 
-### `alarms`
-**Justification:** Schedule periodic badge updates to show unread email count without continuous background activity. The alarm triggers every 5 minutes to refresh the badge counter, ensuring battery efficiency.
+---
 
-### `clipboardWrite`
-**Justification:** Allow users to copy email addresses to clipboard with one click for easy pasting into forms. When a user clicks the copy button next to an inbox, the email address is copied to their clipboard automatically.
+### 2. `alarms`
+**Justification:** Schedule periodic checks for inbox expiration and new message notifications. Alarms trigger background sync every 5 minutes when extension is active.
 
-### `activeTab`
-**Justification:** Required for the content script to detect email input fields on the currently active tab and inject the auto-fill icon. This permission is only used when the user interacts with a page containing email fields.
+**User Benefit:** Timely notifications for new emails, automatic cleanup of expired temporary inboxes.
+
+---
+
+### 3. `clipboardWrite`
+**Justification:** Allow one-click copying of temporary email addresses to clipboard. Only writes to clipboard when user explicitly clicks "Copy" button.
+
+**User Benefit:** Quick copy of email addresses without manual selection.
+
+---
+
+### 4. `activeTab`
+**Justification:** Detect email input fields on the current webpage when user activates the extension. Only accesses the active tab, not browsing history or other tabs.
+
+**User Benefit:** Auto-detect email signup forms and offer to fill with temporary address.
+
+---
+
+### 5. `notifications`
+**Justification:** Display desktop notifications when new emails arrive in user's temporary inboxes. Fully optional and can be disabled in settings.
+
+**User Benefit:** Real-time alerts for important verification emails without keeping extension open.
+
+---
+
+### 6. `sidePanel`
+**Justification:** Display extension interface in Chrome's side panel for persistent access while browsing. Alternative to popup for users who prefer side-by-side view.
+
+**User Benefit:** Manage emails while viewing other content without popup closing.
+
+---
+
+### 7. `contextMenus`
+**Justification:** Add right-click menu options to quickly create new temporary email or paste existing address into text fields.
+
+**User Benefit:** Faster workflow without opening popup; context-aware actions.
+
+---
+
+### 8. `scripting`
+**Justification:** Inject temporary email addresses into form fields when user requests auto-fill. Only executes on explicit user action (click "Fill" button).
+
+**User Benefit:** One-click form filling with temporary email addresses.
+
+---
 
 ## Host Permissions
 
 ### `https://api.manhquy.click/*`
-**Justification:** Connect to Ephemera API to create inboxes, fetch messages, and manage user account. All API communication is encrypted via HTTPS. No other domains are accessed.
+**Justification:** Connect to Ephemera backend API for:
+- User authentication
+- Creating/managing temporary inboxes
+- Fetching email messages
+- Push notification registration
 
-## Content Scripts
+**User Benefit:** Core functionality requires API communication. No other domains accessed.
 
-### `<all_urls>` Match Pattern
-**Justification:** Content scripts are used to detect email input fields on web pages and inject a small icon that allows users to auto-fill the field with a disposable Ephemera email address. This provides seamless integration with signup forms across the web.
+---
 
-**Scope of functionality:**
-- Detects `<input type="email">` and similar email fields
-- Injects a small Ephemera icon (20x20px) inside detected fields
-- Shows dropdown with existing inboxes when icon is clicked
-- Fills selected email address into the form field
-- Does NOT read or modify any other page content
-- Does NOT access cookies, localStorage, or other page data
-- Does NOT inject scripts into the page context
+## Permissions NOT Requested
 
-## Single Purpose Declaration
+We intentionally avoid requesting:
+- `tabs` - No need to access all tabs
+- `history` - No browsing history access
+- `bookmarks` - No bookmark access
+- `downloads` - No file download access
+- `webRequest` - No network request interception
+- `<all_urls>` - No broad host access
 
-**Purpose:** Manage disposable email addresses for privacy protection.
+---
 
-The extension has a single, clearly defined purpose: to help users create and manage temporary email addresses to protect their privacy when signing up for websites and services.
+## Privacy Commitment
 
-## Data Usage
-
-- **Collected:** Email addresses created, messages received, authentication tokens
-- **Stored locally:** Auth tokens, user preferences
-- **Sent to server:** API requests for inbox/message management only
-- **Not collected:** Browsing history, form data (except email fields), personal information beyond what's needed for the service
-- **Not shared:** No data is shared with third parties
+- All permissions used for stated purposes only
+- No data collection beyond core functionality
+- No third-party analytics or advertising
+- User data never sold or shared

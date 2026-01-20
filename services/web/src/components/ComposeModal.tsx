@@ -6,7 +6,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../utils/api";
 import { Editor } from "./Editor";
-import { useAuth } from "../context/AuthContext";
 import { useModalAccessibility } from "../hooks/useModalAccessibility";
 import {
     type ComposeModalProps,
@@ -19,7 +18,6 @@ import {
 } from "./compose-modal-modules";
 
 export function ComposeModal({ token, inboxes, onClose, initialSubject = "", initialBody = "", initialTo = "", initialFrom = "" }: ComposeModalProps) {
-    const { user } = useAuth();
     const [composeFrom, setComposeFrom] = useState(initialFrom);
     const [composeTo, setComposeTo] = useState(initialTo);
     const [composeCc, setComposeCc] = useState("");
@@ -131,7 +129,6 @@ export function ComposeModal({ token, inboxes, onClose, initialSubject = "", ini
                 <ModalFooter
                     busy={busy}
                     canSend={canSend}
-                    hasCredits={hasCredits}
                     onClose={onClose}
                     onSend={handleCompose}
                 />

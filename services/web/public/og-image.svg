@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera OG Image - 1200x630 for social sharing -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A0A0B"/>
+      <stop offset="50%" style="stop-color:#0F172A"/>
+      <stop offset="100%" style="stop-color:#0A0A0B"/>
+    </linearGradient>
+
+    <!-- Blue gradient for logo -->
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#1D4ED8"/>
+    </linearGradient>
+
+    <!-- Fade gradient for dissolving effect -->
+    <linearGradient id="fade-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="70%" style="stop-color:#60A5FA"/>
+      <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:0"/>
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Nebula glow -->
+    <radialGradient id="nebula-glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+
+  <!-- Nebula effect -->
+  <ellipse cx="600" cy="280" rx="400" ry="250" fill="url(#nebula-glow)"/>
+
+  <!-- Broken Infinity Logo - Centered -->
+  <g transform="translate(500, 180)" filter="url(#glow)">
+    <!-- Left loop - complete -->
+    <path d="
+      M 100 85
+      C 100 30, 20 30, 20 85
+      C 20 140, 100 140, 100 85
+    " fill="none" stroke="url(#logo-gradient)" stroke-width="18" stroke-linecap="round"/>
+
+    <!-- Right loop - fading -->
+    <path d="
+      M 100 85
+      C 100 30, 180 30, 180 85
+    " fill="none" stroke="url(#fade-gradient)" stroke-width="18" stroke-linecap="round"/>
+
+    <!-- Dissolving particles -->
+    <circle cx="185" cy="85" r="8" fill="#60A5FA" opacity="0.6"/>
+    <circle cx="195" cy="65" r="6" fill="#60A5FA" opacity="0.4"/>
+    <circle cx="200" cy="95" r="5" fill="#93C5FD" opacity="0.3"/>
+    <circle cx="190" cy="110" r="4" fill="#93C5FD" opacity="0.25"/>
+    <circle cx="205" cy="75" r="3" fill="#BFDBFE" opacity="0.2"/>
+    <circle cx="210" cy="90" r="2.5" fill="#BFDBFE" opacity="0.15"/>
+  </g>
+
+  <!-- Brand Name -->
+  <text x="600" y="420" text-anchor="middle" font-family="'Inter', 'Segoe UI', -apple-system, sans-serif" font-size="72" font-weight="700" fill="white" letter-spacing="-1">
+    Ephemera
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="480" text-anchor="middle" font-family="'Inter', 'Segoe UI', -apple-system, sans-serif" font-size="28" font-weight="400" fill="#94A3B8" letter-spacing="0.5">
+    Email Tạm Thời Chuyên Nghiệp
+  </text>
+
+  <!-- Subtle decorative line -->
+  <line x1="450" y1="520" x2="750" y2="520" stroke="#3B82F6" stroke-width="2" opacity="0.3"/>
+</svg>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Apple Touch Icon 180x180 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <linearGradient id="icon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="icon-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="70%" style="stop-color:#60A5FA"/>
+      <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="180" height="180" rx="36" fill="#0A0A0B"/>
+
+  <!-- Broken Infinity Logo -->
+  <g transform="translate(30, 49)">
+    <!-- Left loop -->
+    <path d="
+      M 60 41
+      C 60 12, 15 12, 15 41
+      C 15 70, 60 70, 60 41
+    " fill="none" stroke="url(#icon-grad)" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- Right loop - fading -->
+    <path d="
+      M 60 41
+      C 60 12, 105 12, 105 41
+    " fill="none" stroke="url(#icon-fade)" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- Dissolving particles -->
+    <circle cx="110" cy="41" r="5" fill="#60A5FA" opacity="0.5"/>
+    <circle cx="117" cy="30" r="3.5" fill="#60A5FA" opacity="0.35"/>
+    <circle cx="120" cy="48" r="3" fill="#93C5FD" opacity="0.25"/>
+  </g>
+</svg>

@@ -3,7 +3,7 @@
  * Thumb-friendly zone, safe area support, smooth transitions
  */
 
-import { BottomTabItem, type BottomTabItemProps } from './BottomTabItem';
+import { BottomTabItem } from './BottomTabItem';
 import { cn } from '../../utils/cn';
 
 export interface TabItem {

@@ -3,7 +3,7 @@
  * Provides bottom tab navigation, FAB, and proper spacing
  */
 
-import { useState, useCallback, type ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { BottomTabBar, type TabItem } from './BottomTabBar';
 import { FloatingActionButton } from './FloatingActionButton';
 

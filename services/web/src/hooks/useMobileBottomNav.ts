@@ -3,7 +3,7 @@
  * Enables gradual rollout of new mobile UI
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 const FEATURE_KEY = 'feature_mobile_bottom_nav';
 

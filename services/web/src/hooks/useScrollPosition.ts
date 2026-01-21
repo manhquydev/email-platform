@@ -18,7 +18,7 @@ interface UseScrollPositionOptions {
 
 interface ScrollPositionReturn {
     /** Ref to attach to scroll container */
-    scrollRef: React.RefObject<HTMLDivElement>;
+    scrollRef: React.RefObject<HTMLDivElement | null>;
     /** Manually save current position */
     savePosition: () => void;
     /** Manually restore saved position */

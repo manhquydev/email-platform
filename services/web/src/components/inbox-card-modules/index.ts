@@ -1,7 +1,7 @@
 /**
  * Barrel export for inbox-card-modules
  */
-export type { InboxCardProps } from "./inbox-card-types";
+export type { InboxCardProps, InboxCardVariant } from "./inbox-card-types";
 export {
     SelectCheckbox,
     StatsRow,

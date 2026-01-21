@@ -16,6 +16,7 @@ import {
 import 'react-swipeable-list/dist/styles.css';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
+import { haptic } from '../../hooks/useHaptic';
 
 interface SwipeableInboxCardProps {
     /** The inbox card content */
@@ -41,12 +42,14 @@ export function SwipeableInboxCard({
     className,
 }: SwipeableInboxCardProps) {
     const handleCopy = useCallback(() => {
+        haptic('success');
         navigator.clipboard.writeText(email);
         toast.success(`Đã sao chép: ${email}`);
         onCopy?.();
     }, [email, onCopy]);
 
     const handleDelete = useCallback(() => {
+        haptic('warning');
         onDelete();
     }, [onDelete]);
 

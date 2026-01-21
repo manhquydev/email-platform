@@ -6,6 +6,8 @@
 @import './styles/design-tokens.css';
 /* Version C Design System (Superhuman Style) */
 @import './styles/version-c-tokens.css';
+/* Mobile Safe Area Support */
+@import './styles/mobile-safe-area.css';
 
 @tailwind base;
 @tailwind components;

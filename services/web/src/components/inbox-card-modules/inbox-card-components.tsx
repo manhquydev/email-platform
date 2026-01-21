@@ -3,6 +3,7 @@
  */
 import type { Inbox } from "../../types";
 import { cn } from "../../utils/cn";
+import { haptic } from "../../hooks/useHaptic";
 
 /** Checkbox for selecting inbox */
 interface SelectCheckboxProps {
@@ -121,7 +122,11 @@ export function ActionButtons({
 }: ActionButtonsProps) {
     return (
         <div className={cn(
-            "flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
+            // Responsive layout: row on mobile, column on desktop
+            "flex flex-row sm:flex-col",
+            "gap-0.5 sm:gap-1",
+            // Visibility
+            "opacity-0 group-hover:opacity-100 transition-opacity",
             isVisible && "opacity-100"
         )}>
             {onTransfer && (
@@ -189,14 +194,32 @@ interface ActionButtonProps {
 }
 
 function ActionButton({ onClick, title, ariaLabel, className, icon }: ActionButtonProps) {
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        haptic('light');
+        onClick();
+    };
+
     return (
         <button
-            onClick={(e) => { e.stopPropagation(); onClick(); }}
-            className={cn("p-1.5 rounded-lg text-text-secondary transition-colors", className)}
+            onClick={handleClick}
+            className={cn(
+                // Responsive padding and touch target
+                "p-1 sm:p-1.5",
+                "min-w-[32px] min-h-[32px] sm:min-w-0 sm:min-h-0",
+                "rounded-lg text-text-secondary transition-colors",
+                className
+            )}
             title={title}
             aria-label={ariaLabel}
         >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+            >
                 {icon}
             </svg>
         </button>

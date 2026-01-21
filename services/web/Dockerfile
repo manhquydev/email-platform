@@ -15,7 +15,7 @@ ENV VITE_CLARITY_PROJECT_ID=${VITE_CLARITY_PROJECT_ID}
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .

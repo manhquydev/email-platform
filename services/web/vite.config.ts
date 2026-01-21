@@ -1,11 +1,31 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import Sitemap from 'vite-plugin-sitemap'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    Sitemap({
+      hostname: 'https://manhquy.click',
+      dynamicRoutes: [
+        '/',
+        '/login',
+        '/register',
+        '/pricing',
+        '/features',
+        '/docs',
+        '/privacy-policy',
+        '/terms-of-service',
+        '/acceptable-use',
+        '/gdpr'
+      ],
+      generateRobotsTxt: false, // We manage robots.txt manually
+      lastmod: new Date(),
+      changefreq: 'weekly',
+      priority: 0.8,
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],

@@ -1,10 +1,18 @@
 # Ephemera - robots.txt
 # https://manhquy.click/
+# Updated: 2026-01-22
 
 User-agent: *
 Allow: /
 Allow: /login
 Allow: /register
+Allow: /pricing
+Allow: /features
+Allow: /docs
+Allow: /privacy-policy
+Allow: /terms-of-service
+Allow: /acceptable-use
+Allow: /gdpr
 
 # Disallow private/authenticated areas
 Disallow: /app
@@ -12,6 +20,7 @@ Disallow: /app/*
 Disallow: /admin
 Disallow: /admin/*
 Disallow: /verify-email
+Disallow: /api
 
 # Sitemap location
 Sitemap: https://manhquy.click/sitemap.xml

@@ -9,6 +9,20 @@
     "needHelp": "Need help?",
     "contactSupport": "Contact Support"
   },
+  "seo": {
+    "landing": {
+      "title": "Ephemera - Professional Disposable Email",
+      "description": "Create premium disposable email with Nebula Glass interface. Privacy protection, realtime email delivery, powerful API for developers."
+    },
+    "login": {
+      "title": "Login",
+      "description": "Login to your Ephemera account to manage your disposable emails."
+    },
+    "register": {
+      "title": "Register",
+      "description": "Create a free Ephemera account to use secure and private disposable emails."
+    }
+  },
   "errors": {
     "404": {
       "title": "Page Not Found",

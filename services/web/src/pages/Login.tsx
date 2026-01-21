@@ -3,7 +3,9 @@
  * Modules extracted to login-modules/
  */
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { GlassCard } from "../components/ui/GlassCard";
+import { SEOHead } from "../components/seo/SEOHead";
 import {
     useLoginForm,
     BrandLogo,
@@ -15,6 +17,7 @@ import {
 } from "./login-modules";
 
 export function Login() {
+    const { t } = useTranslation();
     const {
         email,
         setEmail,
@@ -33,6 +36,11 @@ export function Login() {
 
     return (
         <div className="flex-1 w-full flex flex-col p-4 py-12 relative">
+            <SEOHead
+                title={t('seo.login.title', 'Đăng Nhập')}
+                description={t('seo.login.description', 'Đăng nhập vào tài khoản Ephemera để quản lý email tạm thời của bạn.')}
+                path="/login"
+            />
             <SecurityBadge />
 
             <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center mx-auto">

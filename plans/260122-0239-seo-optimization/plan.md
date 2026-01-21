@@ -62,7 +62,7 @@ Ephemera is a React 19 + Vite SPA with basic SEO (meta tags, OG, JSON-LD). Main 
 | Phase | Description | Effort | Status |
 |-------|-------------|--------|--------|
 | [Phase 1](./phase-01-og-image-and-assets.md) | Create og-image.png + verify assets | 1h | ✅ done |
-| [Phase 2](./phase-02-react-helmet-async.md) | Add react-helmet-async for dynamic meta | 2h | pending |
+| [Phase 2](./phase-02-react-helmet-async.md) | Add react-helmet-async for dynamic meta | 2h | ✅ done |
 | [Phase 3](./phase-03-enhanced-sitemap.md) | Expand sitemap + add hreflang | 1.5h | pending |
 | [Phase 4](./phase-04-prerender-middleware.md) | Setup Prerender.io or equivalent | 2h | pending |
 | [Phase 5](./phase-05-core-web-vitals.md) | Optimize LCP, CLS, INP | 1.5h | pending |

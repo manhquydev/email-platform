@@ -3,7 +3,9 @@
  * Modules extracted to register-modules/
  */
 import { Link, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { GlassCard } from "../components/ui/GlassCard";
+import { SEOHead } from "../components/seo/SEOHead";
 import {
     useRegisterForm,
     BrandLogo,
@@ -17,6 +19,7 @@ import {
 } from "./register-modules";
 
 export function Register() {
+    const { t } = useTranslation();
     const {
         busy,
         passwordValue,
@@ -35,6 +38,11 @@ export function Register() {
 
     return (
         <div className="flex-1 w-full flex flex-col p-4 py-12">
+            <SEOHead
+                title={t('seo.register.title', 'Đăng Ký')}
+                description={t('seo.register.description', 'Tạo tài khoản Ephemera miễn phí để sử dụng email tạm thời an toàn và bảo mật.')}
+                path="/register"
+            />
             <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center mx-auto">
 
                 {/* Register Form */}

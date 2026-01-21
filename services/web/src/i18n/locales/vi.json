@@ -9,6 +9,20 @@
     "needHelp": "Cần hỗ trợ?",
     "contactSupport": "Liên hệ hỗ trợ"
   },
+  "seo": {
+    "landing": {
+      "title": "Ephemera - Email Tạm Thời Chuyên Nghiệp",
+      "description": "Tạo email tạm thời cao cấp với giao diện Nebula Glass. Bảo vệ quyền riêng tư, nhận email realtime, API mạnh mẽ cho nhà phát triển."
+    },
+    "login": {
+      "title": "Đăng Nhập",
+      "description": "Đăng nhập vào tài khoản Ephemera để quản lý email tạm thời của bạn."
+    },
+    "register": {
+      "title": "Đăng Ký",
+      "description": "Tạo tài khoản Ephemera miễn phí để sử dụng email tạm thời an toàn và bảo mật."
+    }
+  },
   "errors": {
     "404": {
       "title": "Không tìm thấy trang",

@@ -3,7 +3,9 @@
  * Sections extracted to landing-page-modules/
  */
 import { Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import { SEOHead } from "../components/seo/SEOHead";
 import {
     HeroSection,
     FeaturesSection,
@@ -15,11 +17,18 @@ import {
 
 export function LandingPage() {
     const { token } = useAuth();
+    const { t } = useTranslation();
 
     if (token) return <Navigate to="/app" replace />;
 
     return (
         <div className="landing neo-mesh-bg overflow-x-hidden">
+            <SEOHead
+                title={t('seo.landing.title', 'Ephemera - Email Tạm Thời Chuyên Nghiệp')}
+                description={t('seo.landing.description', 'Tạo email tạm thời cao cấp với giao diện Nebula Glass. Bảo vệ quyền riêng tư, nhận email realtime, API mạnh mẽ cho nhà phát triển.')}
+                path="/"
+                noSuffix
+            />
             {/* Background Effects */}
             <div className="landing-bg fixed inset-0 z-0 pointer-events-none">
                 <div className="landing-bg-gradient absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.15),transparent_60%)]" />

@@ -1,7 +1,7 @@
 ---
 title: "SEO Optimization for Ephemera"
 description: "Improve Google Search visibility for email platform"
-status: pending
+status: completed
 priority: P2
 effort: 8h (Approach A) / 24h (Approach B)
 branch: main
@@ -65,12 +65,12 @@ Ephemera is a React 19 + Vite SPA with basic SEO (meta tags, OG, JSON-LD). Main 
 | [Phase 2](./phase-02-react-helmet-async.md) | Add react-helmet-async for dynamic meta | 2h | ✅ done |
 | [Phase 3](./phase-03-enhanced-sitemap.md) | Expand sitemap + add hreflang | 1.5h | ✅ done |
 | [Phase 4](./phase-04-prerender-middleware.md) | Setup Prerender.io or equivalent | 2h | ✅ done |
-| [Phase 5](./phase-05-core-web-vitals.md) | Optimize LCP, CLS, INP | 1.5h | pending |
+| [Phase 5](./phase-05-core-web-vitals.md) | Optimize LCP, CLS, INP | 1.5h | ✅ done |
 
 ## Success Criteria
-- [ ] og-image.png exists and displays on social shares
-- [ ] Each route has unique meta title/description
-- [ ] sitemap.xml includes all public pages with 2026 dates
+- [x] og-image.png exists and displays on social shares
+- [x] Each route has unique meta title/description
+- [x] sitemap.xml includes all public pages with 2026 dates
 - [ ] Google Search Console shows no crawl errors
 - [ ] Lighthouse SEO score >= 95
 

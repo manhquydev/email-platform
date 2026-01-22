@@ -47,6 +47,7 @@ import realtimeWsRoutes from "./routes/realtime-ws";
 import realtimeSseRoutes from "./routes/realtime-sse";
 import pushRoutes from "./routes/push";
 import { extensionRoutes } from "./routes/extension";
+import { webhookTestReceiverRoutes } from "./routes/webhook-test-receiver";
 
 // ... existing imports ...
 
@@ -376,6 +377,7 @@ export const buildServer = () => {
 
   // Extension routes
   app.register(extensionRoutes);
+  app.register(webhookTestReceiverRoutes);
 
   if (appConfig.outboundEnabled) {
     app.register(outboundRoutes);

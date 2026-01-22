@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supportService } from "../../services/supportService";
-import { SupportTicket, CreateTicketInput, TicketFilters } from "./types";
+import type { SupportTicket, CreateTicketInput, TicketFilters } from "./types";
 
 export function useTickets(filters?: TicketFilters) {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);

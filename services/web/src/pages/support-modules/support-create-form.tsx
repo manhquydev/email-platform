@@ -8,7 +8,8 @@ import { GlassCard } from "../../components/ui/GlassCard";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { useCreateTicket } from "./use-support-data";
-import { TicketCategory, CATEGORY_CONFIG } from "./types";
+import type { TicketCategory } from "./types";
+import { CATEGORY_CONFIG } from "./types";
 
 interface CreateFormProps {
   onSuccess?: () => void;

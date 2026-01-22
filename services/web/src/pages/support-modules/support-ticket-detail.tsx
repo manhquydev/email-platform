@@ -7,7 +7,8 @@ import { useParams, Link } from "react-router-dom";
 import { GlassCard } from "../../components/ui/GlassCard";
 import { Button } from "../../components/ui/Button";
 import { useTicket } from "./use-support-data";
-import { STATUS_CONFIG, CATEGORY_CONFIG, TicketMessage } from "./types";
+import type { TicketMessage } from "./types";
+import { STATUS_CONFIG, CATEGORY_CONFIG } from "./types";
 
 export function SupportTicketDetail() {
   const { id } = useParams<{ id: string }>();

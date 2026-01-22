@@ -2,7 +2,7 @@
  * Support Ticket Service - Frontend API Client
  */
 
-import { SupportTicket, CreateTicketInput, CreateMessageInput, TicketMessage, TicketFilters } from "../pages/support-modules/types";
+import type { SupportTicket, CreateTicketInput, CreateMessageInput, TicketMessage, TicketFilters } from "../pages/support-modules/types";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 

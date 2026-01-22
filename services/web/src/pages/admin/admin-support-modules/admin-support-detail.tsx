@@ -148,7 +148,7 @@ export function AdminSupportDetail() {
   );
 }
 
-function MessageBubble({ message, ticketUserId }: { message: TicketMessage; ticketUserId: string }) {
+function MessageBubble({ message, ticketUserId: _ticketUserId }: { message: TicketMessage; ticketUserId: string }) {
   const isAdmin = message.user?.role === "ADMIN";
   
 

@@ -4,7 +4,8 @@
 
 import { Link } from "react-router-dom";
 import { GlassCard } from "../../components/ui/GlassCard";
-import { SupportTicket, STATUS_CONFIG, CATEGORY_CONFIG } from "./types";
+import type { SupportTicket } from "./types";
+import { STATUS_CONFIG, CATEGORY_CONFIG } from "./types";
 
 interface TicketListProps {
   tickets: SupportTicket[];

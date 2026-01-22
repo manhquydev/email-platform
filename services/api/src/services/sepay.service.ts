@@ -99,9 +99,13 @@ export class SepayService {
   static verifyWebhook(headers: Record<string, string | string[] | undefined>, rawBody: string): boolean {
     const { secretKey } = appConfig.sepay;
 
-    // If no secret configured, accept all (dev mode only)
+    // If no secret configured, only allow in development
     if (!secretKey) {
-      console.warn("⚠️ SePay secret key not configured - accepting all webhook requests (DEV MODE)");
+      if (process.env.NODE_ENV === 'production') {
+        console.error("SECURITY: SePay secret key required in production - rejecting webhook");
+        return false;
+      }
+      console.warn("⚠️ SePay secret key not configured - accepting webhook (DEV MODE ONLY)");
       return true;
     }
 

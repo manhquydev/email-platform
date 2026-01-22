@@ -103,16 +103,16 @@ export const buildServer = () => {
 
   app.setErrorHandler(errorHandler);
 
-  // Raw body needed for Stripe webhooks
+  // Raw body needed for Stripe/SePay webhook signature verification
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const rawBody = require("fastify-raw-body");
   // @ts-ignore: fastify-raw-body types not loaded via require
-  // app.register(rawBody, {
-  //   field: "rawBody", // request.rawBody
-  //   global: false, // Only for specific routes
-  //   encoding: "utf8",
-  //   runFirst: true,
-  // });
+  app.register(rawBody, {
+    field: "rawBody", // request.rawBody
+    global: false, // Only for specific routes with config: { rawBody: true }
+    encoding: "utf8",
+    runFirst: true, // Ensure raw body captured before JSON parsing
+  });
 
   app.register(helmet, {
     global: true,

@@ -43,6 +43,7 @@ export const WEBHOOK_EVENTS = {
     'email.received': 'Triggered when a new email arrives',
     'email.read': 'Triggered when an email is marked as read',
     'email.deleted': 'Triggered when an email is deleted',
+    'email.forwarded': 'Triggered when an email is forwarded',
 
     // Inbox events
     'inbox.created': 'Triggered when a new inbox is created',

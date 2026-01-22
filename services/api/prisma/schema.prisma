@@ -58,6 +58,8 @@ model User {
   outboundMsgs               OutboundMessage[]
   ownedTeams                 Team[]             @relation("TeamOwner")
   teamMemberships            TeamMember[]       @relation("TeamMembership")
+  supportTickets             SupportTicket[]
+  ticketMessages             TicketMessage[]
 }
 
 model ApiKey {
@@ -913,4 +915,61 @@ model PushSubscription {
 
   @@index([userId])
   @@index([lastSuccessfulSend])
+}
+
+// Phase 11: Support Ticket System
+
+enum TicketStatus {
+  OPEN
+  WAITING_USER
+  WAITING_SUPPORT
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  TECHNICAL
+  BILLING
+  ABUSE
+  OTHER
+}
+
+model SupportTicket {
+  id        String         @id @default(uuid())
+  userId    String
+  subject   String
+  category  TicketCategory
+  status    TicketStatus   @default(OPEN)
+  priority  TicketPriority @default(NORMAL)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  closedAt  DateTime?
+
+  user     User            @relation(fields: [userId], references: [id])
+  messages TicketMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model TicketMessage {
+  id         String   @id @default(uuid())
+  ticketId   String
+  userId     String
+  content    String   @db.Text
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id])
+
+  @@index([ticketId])
 }

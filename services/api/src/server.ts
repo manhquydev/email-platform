@@ -15,6 +15,7 @@ import { inboxRoutes } from "./routes/inboxes";
 import { messageRoutes } from "./routes/messages";
 import { healthRoutes } from "./routes/health";
 import { abuseRoutes } from "./routes/abuse";
+import { supportRoutes } from "./routes/support";
 import { publicRoutes } from "./routes/public";
 import { publicInboxRoutes } from "./routes/public-inbox";
 import { publicTelegramRoutes } from "./routes/public-telegram";
@@ -350,6 +351,7 @@ export const buildServer = () => {
   app.register(messageRoutes);
   app.register(healthRoutes);
   app.register(abuseRoutes);
+  app.register(supportRoutes);
   app.register(adminRoutes);
   app.register(billingRoutes);
   app.register(filterRoutes);

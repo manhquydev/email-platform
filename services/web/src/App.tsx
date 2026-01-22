@@ -7,6 +7,7 @@ import { RealtimeProvider } from "./context/RealtimeContext";
 import { LandingPage } from "./pages/LandingPage";
 import { TermsOfService, PrivacyPolicy, AcceptableUse, GDPR } from "./pages/Legal";
 import { Support, Contact, Sales } from "./pages/Support";
+import { SupportTicketDetailPage } from "./pages/SupportTicketDetailPage";
 import { MainLayout } from "./layouts/MainLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AuthLayout } from "./layouts/AuthLayout";
@@ -80,6 +81,7 @@ function App() {
                     <Route path="/acceptable-use" element={<AcceptableUse />} />
                     <Route path="/gdpr" element={<GDPR />} />
                     <Route path="/support" element={<Support />} />
+                    <Route path="/support/tickets/:id" element={<SupportTicketDetailPage />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/sales" element={<Sales />} />
                     <Route path="/docs" element={<Docs />} />

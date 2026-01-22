@@ -15,6 +15,7 @@ export function getNavItems(counts: SidebarCounts): NavItem[] {
         { id: "rules", label: "Quy tắc bảo vệ", path: "/admin/rules", icon: adminIcons.shield },
         { id: "domains", label: "Tên miền", path: "/admin/domains", icon: adminIcons.globe, badge: counts.totalDomains },
         { id: "reports", label: "Báo cáo", path: "/admin/reports", icon: adminIcons.flag, badge: counts.openReports },
+        { id: "support", label: "Hỗ trợ", path: "/admin/support", icon: adminIcons.ticket },
         { id: "logs", label: "Nhật ký", path: "/admin/logs", icon: adminIcons.clock },
         { id: "system", label: "Hệ thống", path: "/admin/system", icon: adminIcons.server },
         { id: "notifications", label: "Thông báo", path: "/admin/notifications", icon: adminIcons.notifications },

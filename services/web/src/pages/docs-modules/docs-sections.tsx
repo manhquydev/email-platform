@@ -69,7 +69,7 @@ function VibeCodingBanner() {
 }
 
 // Code block with copy button
-function CodeBlock({ code, language = "bash" }: { code: string; language?: string }) {
+function CodeBlock({ code }: { code: string }) {
     return (
         <div className="relative group">
             <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -234,7 +234,7 @@ export function WebhooksSection() {
 
             <GlassCard className="p-8">
                 <h2 className="text-2xl font-bold mb-4">Payload Example</h2>
-                <CodeBlock code={CODE_EXAMPLES.webhookPayload} language="json" />
+                <CodeBlock code={CODE_EXAMPLES.webhookPayload} />
             </GlassCard>
 
             <GlassCard className="p-8">
@@ -242,7 +242,7 @@ export function WebhooksSection() {
                 <p className="text-nebula-text-muted mb-4">
                     Mỗi webhook request có header <code className="text-nebula-violet">X-Ephemera-Signature</code> chứa HMAC-SHA256 của body.
                 </p>
-                <CodeBlock code={CODE_EXAMPLES.verifyWebhook} language="javascript" />
+                <CodeBlock code={CODE_EXAMPLES.verifyWebhook} />
             </GlassCard>
 
             <GlassCard className="p-8">

@@ -59,6 +59,9 @@ export interface NotificationNewEvent extends BaseEvent {
     title: string;
     message: string;
     type: string;
+    link?: string;
+    read?: boolean;
+    createdAt?: string;
   };
 }
 

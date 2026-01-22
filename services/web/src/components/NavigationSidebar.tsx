@@ -144,6 +144,24 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                         <span className="material-symbols-outlined text-[24px] shrink-0">settings</span>
                         {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Cài đặt</span>}
                     </Link>
+                                    <Link to="/support"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden",
+                            isActive("/support")
+                                ? "bg-nebula-violet/10 text-nebula-violet border border-nebula-violet/20 shadow-sm"
+                                : "text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
+                        )}
+                        title="Hỗ trợ">
+                        <span className="material-symbols-outlined text-[24px] shrink-0">support_agent</span>
+                        {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Hỗ trợ</span>}
+                    </Link>
+
+                    <a href="/"
+                        className="flex items-center gap-3 px-3 py-3 rounded-lg transition-all group whitespace-nowrap overflow-hidden text-nebula-text-muted hover:text-nebula-text hover:bg-nebula-elevated"
+                        title="Trang chủ">
+                        <span className="material-symbols-outlined text-[24px] shrink-0">home</span>
+                        {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Trang chủ</span>}
+                    </a>
                 </nav>
             </div>
 

@@ -12,7 +12,7 @@ import type {
   AdminTicketsResponse
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
+import { API_BASE } from "../../../utils/api";
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");

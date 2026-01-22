@@ -62,8 +62,8 @@ export function Support() {
                             <p className="text-text-secondary text-sm mb-4">
                                 Bạn cũng có thể gửi email trực tiếp cho chúng tôi.
                             </p>
-                            <a href="mailto:support@ephemera.io" className="text-white hover:text-primary transition-colors font-mono bg-white/5 px-3 py-1 rounded border border-white/10 block w-fit">
-                                support@ephemera.io
+                            <a href="mailto:support@manhquy.click" className="text-white hover:text-primary transition-colors font-mono bg-white/5 px-3 py-1 rounded border border-white/10 block w-fit">
+                                support@manhquy.click
                             </a>
                         </GlassCard>
 

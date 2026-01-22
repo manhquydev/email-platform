@@ -61,7 +61,7 @@ export function GDPR() {
                     vui lòng liên hệ với Nhân viên Bảo vệ Dữ liệu của chúng tôi tại:
                 </p>
                 <p>
-                    <strong>Email:</strong> privacy@ephemera.io<br />
+                    <strong>Email:</strong> privacy@manhquy.click<br />
                     <strong>Địa chỉ:</strong> [Địa chỉ công ty của bạn]
                 </p>
             </section>

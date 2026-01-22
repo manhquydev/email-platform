@@ -23,7 +23,7 @@ import {
     createErrorFromResponse,
 } from './errors';
 
-const DEFAULT_BASE_URL = 'https://api.ephemera.email';
+const DEFAULT_BASE_URL = 'https://api.manhquy.click';
 const DEFAULT_TIMEOUT = 30000;
 
 export class EphemeraClient {

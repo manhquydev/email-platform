@@ -56,7 +56,7 @@ auth
     const spinner = ora('Verifying API key...').start();
 
     try {
-      const baseUrl = options.baseUrl || 'https://api.ephemera.email';
+      const baseUrl = options.baseUrl || 'https://api.manhquy.click';
       const response = await fetch(`${baseUrl}/auth/me`, {
         headers: { 'Authorization': `Bearer ${apiKey}` },
       });

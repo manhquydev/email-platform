@@ -6,7 +6,7 @@
 export interface EphemeraConfig {
     /** API key for authentication */
     apiKey: string;
-    /** Base URL for API (default: https://api.ephemera.email) */
+    /** Base URL for API (default: https://api.manhquy.click) */
     baseUrl?: string;
     /** Request timeout in milliseconds (default: 30000) */
     timeout?: number;

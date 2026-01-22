@@ -14,7 +14,7 @@ const config = new Conf<ConfigSchema>({
   projectName: 'ephemera-cli',
   schema: {
     apiKey: { type: 'string', default: '' },
-    baseUrl: { type: 'string', default: 'https://api.ephemera.email' },
+    baseUrl: { type: 'string', default: 'https://api.manhquy.click' },
     defaultExpireMinutes: { type: 'number', default: 60 },
   },
 });

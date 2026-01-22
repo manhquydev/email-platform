@@ -28,7 +28,7 @@ class EphemeraClient:
     def __init__(
         self,
         api_key: str,
-        base_url: str = "https://api.ephemera.email",
+        base_url: str = "https://api.manhquy.click",
         timeout: float = 30.0,
     ):
         if not api_key:

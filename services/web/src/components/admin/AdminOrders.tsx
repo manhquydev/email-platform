@@ -14,7 +14,8 @@ interface Payment {
     amount: string;
     currency: string;
     status: string;
-    stripePaymentId: string;
+    stripePaymentId?: string;
+    sepayTransactionId?: string;
     packageId?: string;
     createdAt: string;
     user: {
@@ -116,8 +117,8 @@ export function AdminOrders({ token }: { token: string }) {
                             {orders.map((order) => (
                                 <TableRow key={order.id}>
                                     <TableCell>
-                                        <div className="font-mono text-xs text-nebula-text-muted truncate w-32" title={order.stripePaymentId}>
-                                            {order.stripePaymentId || "—"}
+                                        <div className="font-mono text-xs text-nebula-text-muted truncate w-32" title={order.sepayTransactionId || order.stripePaymentId}>
+                                            {order.sepayTransactionId || order.stripePaymentId || "—"}
                                         </div>
                                     </TableCell>
                                     <TableCell>

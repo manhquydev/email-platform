@@ -17,6 +17,7 @@ import { healthRoutes } from "./routes/health";
 import { abuseRoutes } from "./routes/abuse";
 import { supportRoutes } from "./routes/support";
 import { publicRoutes } from "./routes/public";
+import { contactRoutes } from "./routes/contact";
 import { publicInboxRoutes } from "./routes/public-inbox";
 import { publicTelegramRoutes } from "./routes/public-telegram";
 import { outboundRoutes } from "./routes/outbound";
@@ -344,6 +345,7 @@ export const buildServer = () => {
 
   app.register(authRoutes);
   app.register(publicRoutes);
+  app.register(contactRoutes);
   app.register(publicInboxRoutes, { prefix: "/api" });
   app.register(publicTelegramRoutes, { prefix: "/api" });
   app.register(domainRoutes);

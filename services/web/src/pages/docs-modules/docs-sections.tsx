@@ -1,14 +1,93 @@
 /**
  * Section components for Docs page
+ * Vibe Coding Ready - Easy copy/download for AI assistants
  */
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { GlassCard } from "../../components/ui/GlassCard";
 import { CODE_EXAMPLES, API_ENDPOINTS, PLANNED_SDKS } from "./docs-data";
+
+// Copy button component for code blocks
+function CopyButton({ text, className = "" }: { text: string; className?: string }) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <button
+            onClick={handleCopy}
+            className={`flex items-center gap-1 px-2 py-1 text-xs rounded bg-white/10 hover:bg-white/20 transition-colors ${className}`}
+            title="Copy to clipboard"
+        >
+            <span className="material-symbols-outlined !text-[14px]">
+                {copied ? "check" : "content_copy"}
+            </span>
+            {copied ? "Copied!" : "Copy"}
+        </button>
+    );
+}
+
+// Download markdown docs banner
+function VibeCodingBanner() {
+    return (
+        <GlassCard className="p-6 mb-8 border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-transparent">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="material-symbols-outlined text-purple-400">magic_button</span>
+                        <h3 className="text-lg font-bold text-purple-300">Vibe Coding Ready</h3>
+                    </div>
+                    <p className="text-nebula-text-muted text-sm">
+                        Tải tài liệu Markdown để đưa vào AI assistant (Claude, Cursor, Copilot) và generate code tự động.
+                    </p>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                    <a
+                        href="/docs/api-reference.md"
+                        download="ephemera-api-reference.md"
+                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-medium transition-colors"
+                    >
+                        <span className="material-symbols-outlined !text-[18px]">download</span>
+                        API Reference
+                    </a>
+                    <a
+                        href="/docs/webhook-guide.md"
+                        download="ephemera-webhook-guide.md"
+                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-medium transition-colors"
+                    >
+                        <span className="material-symbols-outlined !text-[18px]">download</span>
+                        Webhook Guide
+                    </a>
+                </div>
+            </div>
+        </GlassCard>
+    );
+}
+
+// Code block with copy button
+function CodeBlock({ code, language = "bash" }: { code: string; language?: string }) {
+    return (
+        <div className="relative group">
+            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <CopyButton text={code} />
+            </div>
+            <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
+                <code className="text-sm text-slate-300">{code}</code>
+            </pre>
+        </div>
+    );
+}
 
 // --- Quickstart Section ---
 export function QuickstartSection() {
     return (
         <div className="space-y-8 animate-fade-in-up">
+            <VibeCodingBanner />
+
             <GlassCard className="p-8">
                 <h2 className="text-2xl font-bold mb-4">1. Lấy API Key</h2>
                 <p className="text-nebula-text-muted mb-4">
@@ -24,9 +103,7 @@ export function QuickstartSection() {
                 <p className="text-nebula-text-muted mb-4">
                     Gọi API để tạo inbox mới. Inbox sẽ có địa chỉ email ngẫu nhiên thuộc domain của bạn.
                 </p>
-                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
-                    <code className="text-sm text-slate-300">{CODE_EXAMPLES.createInbox}</code>
-                </pre>
+                <CodeBlock code={CODE_EXAMPLES.createInbox} />
             </GlassCard>
 
             <GlassCard className="p-8">
@@ -110,6 +187,8 @@ export function ApiReferenceSection() {
 export function WebhooksSection() {
     return (
         <div className="space-y-6 animate-fade-in-up">
+            <VibeCodingBanner />
+
             <GlassCard className="p-8">
                 <h2 className="text-2xl font-bold mb-4">Cấu hình Webhook</h2>
                 <p className="text-nebula-text-muted mb-4">
@@ -135,7 +214,19 @@ export function WebhooksSection() {
                         <p className="text-sm text-nebula-text-muted mt-1">Khi có email mới đến inbox</p>
                     </div>
                     <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
-                        <code className="text-blue-400">test.event</code>
+                        <code className="text-blue-400">email.read</code>
+                        <p className="text-sm text-nebula-text-muted mt-1">Khi email được đánh dấu đã đọc</p>
+                    </div>
+                    <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                        <code className="text-red-400">email.deleted</code>
+                        <p className="text-sm text-nebula-text-muted mt-1">Khi email bị xóa</p>
+                    </div>
+                    <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                        <code className="text-yellow-400">email.forwarded</code>
+                        <p className="text-sm text-nebula-text-muted mt-1">Khi email được forward</p>
+                    </div>
+                    <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
+                        <code className="text-purple-400">test.event</code>
                         <p className="text-sm text-nebula-text-muted mt-1">Sự kiện test từ nút "Test" trong dashboard</p>
                     </div>
                 </div>
@@ -143,19 +234,15 @@ export function WebhooksSection() {
 
             <GlassCard className="p-8">
                 <h2 className="text-2xl font-bold mb-4">Payload Example</h2>
-                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
-                    <code className="text-sm text-slate-300">{CODE_EXAMPLES.webhookPayload}</code>
-                </pre>
+                <CodeBlock code={CODE_EXAMPLES.webhookPayload} language="json" />
             </GlassCard>
 
             <GlassCard className="p-8">
                 <h2 className="text-2xl font-bold mb-4">Xác thực Signature</h2>
                 <p className="text-nebula-text-muted mb-4">
-                    Mỗi webhook request có header <code className="text-nebula-violet">X-Webhook-Signature</code> chứa HMAC-SHA256 của body.
+                    Mỗi webhook request có header <code className="text-nebula-violet">X-Ephemera-Signature</code> chứa HMAC-SHA256 của body.
                 </p>
-                <pre className="bg-nebula-elevated rounded-lg p-4 border border-nebula-border overflow-x-auto">
-                    <code className="text-sm text-slate-300">{CODE_EXAMPLES.verifyWebhook}</code>
-                </pre>
+                <CodeBlock code={CODE_EXAMPLES.verifyWebhook} language="javascript" />
             </GlassCard>
 
             <GlassCard className="p-8">
@@ -167,7 +254,7 @@ export function WebhooksSection() {
                     </li>
                     <li className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-nebula-violet text-sm">schedule</span>
-                        Delays: 1m, 5m, 30m, 2h, 24h
+                        Delays: 1s, 2s, 4s, 8s, 16s
                     </li>
                     <li className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-nebula-violet text-sm">schedule</span>

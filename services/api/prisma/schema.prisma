@@ -510,6 +510,12 @@ model ServicePackage {
   recommended  Boolean  @default(false)
   badge        String?  // e.g. "KHUYÊN DÙNG", "PHỔ BIẾN"
 
+  // Resource limits configuration (Single Source of Truth)
+  // All tier limits managed here - replaces hardcoded TIER_LIMITS
+  // Structure: { domains, inboxes, storageGB, dailyEmails, retentionDays, webhooks,
+  //              apiAccess, prioritySupport, requestsPerMinute, inboxesPerDay, ... }
+  limits       Json?
+
   codes RedemptionCode[]
   pendingPayments PendingPayment[]
 }

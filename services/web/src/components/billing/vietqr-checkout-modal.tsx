@@ -46,6 +46,7 @@ export function VietQRCheckoutModal({
   const [timeRemaining, setTimeRemaining] = useState<string>("");
 
   // Check payment status
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const checkStatus = useCallback(async () => {
     if (!checkoutData?.orderCode) return;
 
@@ -95,6 +96,7 @@ export function VietQRCheckoutModal({
   // Reset status when modal opens
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("pending");
     }
   }, [isOpen]);

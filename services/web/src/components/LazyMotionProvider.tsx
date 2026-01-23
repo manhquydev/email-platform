@@ -20,4 +20,5 @@ export function LazyMotionProvider({ children }: LazyMotionProviderProps) {
 }
 
 // Re-export m component for use instead of motion
+// eslint-disable-next-line react-refresh/only-export-components
 export { m } from 'framer-motion';

@@ -4,6 +4,7 @@
  */
 import { PremiumToggle } from "../../../components/admin/AdminUIComponents";
 import type { PackageFormData, PlanFeature } from "./types";
+import { ResourceLimitsSection } from "./resource-limits-section";
 
 export interface PackageFormModalProps {
     isOpen: boolean;
@@ -63,6 +64,12 @@ export function PackageFormModal({
                         onRemoveFeature={onRemoveFeature}
                     />
                     <StripeConfigSection formData={formData} setFormData={setFormData} />
+
+                    <ResourceLimitsSection
+                        limits={formData.limits || {}}
+                        targetTier={formData.targetTier}
+                        onChange={(limits) => setFormData({ ...formData, limits })}
+                    />
                 </div>
 
                 {/* Footer */}

@@ -10,6 +10,9 @@ import { appConfig } from '../config';
 
 // Stripe import - will be installed separately
 import { StripeService } from '../services/stripe.service';
+// Import dynamic tier limits service
+import { getAllTiersWithLimits, getTierLimits, clearTierLimitsCache } from "../services/tier-limits.service";
+import { SubscriptionTier, DEFAULT_TIER_LIMITS, DEFAULT_TIER_INFO } from "../config/unified-tier-limits";
 
 // Tier limits configuration - Extended with all features
 export const TIER_LIMITS = {
@@ -202,26 +205,7 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
     const stripeEnabled = !!appConfig.stripe.apiKey && appConfig.stripe.enabled;
     const sepayEnabled = appConfig.sepay.enabled;
 
-    // Get all tier information with limits and pricing (public endpoint)
-    app.get('/billing/tiers', async () => {
-        const tiers = Object.entries(TIER_LIMITS).map(([key, limits]) => {
-            const info = TIER_INFO[key as keyof typeof TIER_INFO];
-            return {
-                id: key,
-                ...info,
-                limits,
-            };
-        });
-        return {
-            tiers,
-            stripeEnabled,
-            sepayEnabled,
-            paymentMethods: {
-                stripe: stripeEnabled,
-                sepay: sepayEnabled,
-            }
-        };
-    });
+// Get all tier information with limits and pricing (public endpoint)    // NOW FETCHES FROM DATABASE - Admin can edit via /admin/packages    app.get("/billing/tiers", async () => {        const tiers = await getAllTiersWithLimits();        return {            tiers,            stripeEnabled,            sepayEnabled,            paymentMethods: {                stripe: stripeEnabled,                sepay: sepayEnabled,            }        };    });    // Clear tier cache (admin only) - call after updating packages    app.post("/billing/clear-cache", { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {        const user = req.user as { userId: string; role?: string };        if (user.role !== "ADMIN") {            return reply.status(403).send({ error: "Admin access required" });        }        clearTierLimitsCache();        return { success: true, message: "Tier limits cache cleared" };    });
 
     // Compare user's current tier with target tier
     app.get('/billing/compare/:targetTier', { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {

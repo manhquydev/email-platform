@@ -20,8 +20,8 @@ export function useAdminTickets(initialFilters?: AdminTicketFilters) {
       const response = await adminSupportService.getTickets(filters);
       setTickets(response.data);
       setTotal(response.total);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -51,8 +51,8 @@ export function useAdminTicket(id: string | undefined) {
     try {
       const data = await adminSupportService.getTicket(id);
       setTicket(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }

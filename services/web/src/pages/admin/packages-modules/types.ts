@@ -25,6 +25,8 @@ export interface ServicePackage {
     displayOrder?: number;
     recommended?: boolean;
     badge?: string;
+    // Resource limits (Single Source of Truth)
+    limits?: Record<string, number | boolean>;
     createdAt: string;
     _count: { codes: number };
 }
@@ -43,6 +45,8 @@ export interface PackageFormData {
     displayOrder: number;
     recommended: boolean;
     badge: string;
+    // Resource limits
+    limits: Record<string, number | boolean>;
 }
 
 export const DEFAULT_FORM_DATA: PackageFormData = {
@@ -58,5 +62,6 @@ export const DEFAULT_FORM_DATA: PackageFormData = {
     features: [],
     displayOrder: 0,
     recommended: false,
-    badge: ""
+    badge: "",
+    limits: {},
 };

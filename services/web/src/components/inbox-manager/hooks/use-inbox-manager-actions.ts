@@ -99,7 +99,11 @@ export function useInboxManagerActions({
     const handleToggleSelect = useCallback((inboxId: string) => {
         setSelectedInboxIds(prev => {
             const next = new Set(prev);
-            next.has(inboxId) ? next.delete(inboxId) : next.add(inboxId);
+            if (next.has(inboxId)) {
+                next.delete(inboxId);
+            } else {
+                next.add(inboxId);
+            }
             return next;
         });
     }, []);

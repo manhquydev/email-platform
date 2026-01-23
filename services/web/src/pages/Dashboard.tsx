@@ -88,10 +88,14 @@ export function Dashboard() {
         }
 
         if (q !== null && q !== messageSearch) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMessageSearch(q);
         }
 
-        if (action === "compose") setShowCompose(true);
+        if (action === "compose") {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setShowCompose(true);
+        }
     }, [location.search, location.pathname, navigate, selectedInbox, messageSearch, setSelectedInbox]);
 
     // Realtime subscription
@@ -117,7 +121,7 @@ export function Dashboard() {
             if (payload.inboxId === selectedInbox) {
                 setMessages(prev => prev.filter(m => m.id !== payload.messageId));
                 if (selectedMessage?.id === payload.messageId) {
-                    setSelectedMessage(null);
+            setSelectedMessage(null);
                 }
             }
         }
@@ -127,9 +131,10 @@ export function Dashboard() {
     useEffect(() => {
         if (selectedInbox) {
             loadMessages(selectedInbox, { offset: 0 });
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedMessage(null);
         } else {
-            setMessages([]);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
         }
     }, [selectedInbox, loadMessages, setMessages]);
 

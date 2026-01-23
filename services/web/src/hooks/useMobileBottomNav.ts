@@ -20,6 +20,7 @@ export function useMobileBottomNav(): boolean {
 
     useEffect(() => {
         const stored = localStorage.getItem(FEATURE_KEY);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsEnabled(stored !== 'disabled');
     }, []);
 

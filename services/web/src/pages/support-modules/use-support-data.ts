@@ -17,12 +17,12 @@ export function useTickets(filters?: TicketFilters) {
     try {
       const data = await supportService.getTickets(filters);
       setTickets(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [filters?.status, filters?.category]);
+  }, [filters?.status, filters?.category]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     refresh();
@@ -43,8 +43,8 @@ export function useTicket(id: string | undefined) {
     try {
       const data = await supportService.getTicket(id);
       setTicket(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -73,8 +73,8 @@ export function useCreateTicket() {
     try {
       const ticket = await supportService.createTicket(input);
       return ticket;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
       return null;
     } finally {
       setLoading(false);

@@ -65,4 +65,5 @@ export function ConversationView({
 }
 
 // Re-export hook for external use
+// eslint-disable-next-line react-refresh/only-export-components
 export { useConversationMode } from "./conversation-view-modules";

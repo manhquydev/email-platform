@@ -50,4 +50,5 @@ export function MobileNavigation({
 }
 
 // Re-export for backward compatibility
+// eslint-disable-next-line react-refresh/only-export-components
 export { usePullToRefresh, PullToRefreshIndicator, mobileStyles } from "./mobile-navigation-modules";

@@ -10,3 +10,4 @@ export { PackageFormModal } from './package-form-modal';
 export type { PackageFormModalProps } from './package-form-modal';
 export { PackagesTable } from './packages-table';
 export type { PackagesTableProps } from './packages-table';
+export { ResourceLimitsSection } from './resource-limits-section';

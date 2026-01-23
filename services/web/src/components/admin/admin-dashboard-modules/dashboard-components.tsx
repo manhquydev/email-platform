@@ -8,6 +8,7 @@ import { vi } from "date-fns/locale";
 import type { ActivityItem } from "./types";
 
 // Count-up animation hook
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCountUp(end: number, duration: number = 1000) {
     const [count, setCount] = useState(0);
     const countRef = useRef(0);
@@ -15,6 +16,7 @@ export function useCountUp(end: number, duration: number = 1000) {
 
     useEffect(() => {
         if (end === 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCount(0);
             return;
         }

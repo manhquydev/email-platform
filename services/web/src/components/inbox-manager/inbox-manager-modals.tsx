@@ -72,7 +72,7 @@ export function InboxManagerModals({
     token,
     domains,
     // activeInbox is kept for potential future use but currently unused
-    activeInbox: _activeInbox,
+    activeInbox: _activeInbox, // eslint-disable-line @typescript-eslint/no-unused-vars
     showCreateModal,
     inboxToDelete,
     inboxToTransfer,

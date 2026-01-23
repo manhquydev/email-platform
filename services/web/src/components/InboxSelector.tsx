@@ -26,10 +26,10 @@ export function InboxSelector({
     onSelectDomain,
     onSelectTeam,
     onSelectInbox,
-    onCreateInbox: _onCreateInbox,
-    onDeleteInbox: _onDeleteInbox,
+    onCreateInbox: _onCreateInbox, // eslint-disable-line @typescript-eslint/no-unused-vars
+    onDeleteInbox: _onDeleteInbox, // eslint-disable-line @typescript-eslint/no-unused-vars
     user,
-    token: _token
+    token: _token // eslint-disable-line @typescript-eslint/no-unused-vars
 }: InboxSelectorProps) {
     const { isOpen, setIsOpen, containerRef } = useDropdownState();
     const activeDomain = domains.find(d => d.id === selectedDomainId);

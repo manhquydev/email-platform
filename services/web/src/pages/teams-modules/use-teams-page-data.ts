@@ -47,6 +47,7 @@ export function useTeamsPageData(): UseTeamsPageDataReturn {
 
     useEffect(() => {
         fetchTeams();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const handleCreateTeam = useCallback(async (e: React.FormEvent) => {

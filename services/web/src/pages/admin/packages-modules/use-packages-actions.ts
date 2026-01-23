@@ -84,7 +84,9 @@ export function usePackagesActions({
                 price: Number(formData.price),
                 displayOrder: Number(formData.displayOrder),
                 features: formData.features.length > 0 ? formData.features : undefined,
-                badge: formData.badge || undefined
+                badge: formData.badge || undefined,
+                // Include limits if any are set
+                limits: Object.keys(formData.limits || {}).length > 0 ? formData.limits : undefined
             };
 
             if (editingId) {
@@ -127,7 +129,8 @@ export function usePackagesActions({
             features: (pkg.features as PlanFeature[]) || [],
             displayOrder: pkg.displayOrder || 0,
             recommended: pkg.recommended || false,
-            badge: pkg.badge || ""
+            badge: pkg.badge || "",
+            limits: (pkg.limits as Record<string, number | boolean>) || {}
         });
         setShowModal(true);
     }, []);

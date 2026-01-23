@@ -1,6 +1,6 @@
 import { cn } from "../../utils/cn";
 
-interface IconProps extends React.ComponentProps<'svg'> {}
+type IconProps = React.ComponentProps<'svg'>;
 
 export function IconLock({ className, ...props }: IconProps) {
     return (

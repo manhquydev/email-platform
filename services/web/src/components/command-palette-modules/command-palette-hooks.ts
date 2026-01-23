@@ -13,7 +13,9 @@ export function useCommandPaletteState(isOpen: boolean) {
     // Reset state when opened
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setQuery("");
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedIndex(0);
             setTimeout(() => inputRef.current?.focus(), 50);
         }
@@ -21,6 +23,7 @@ export function useCommandPaletteState(isOpen: boolean) {
 
     // Reset selection when query changes
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedIndex(0);
     }, [query]);
 

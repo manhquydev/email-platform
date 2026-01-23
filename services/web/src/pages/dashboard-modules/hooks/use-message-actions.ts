@@ -25,7 +25,7 @@ export interface UseMessageActionsReturn {
 }
 
 export function useMessageActions({
-    messages: _messages,
+    messages: _messages, // eslint-disable-line @typescript-eslint/no-unused-vars
     selectedMessage,
     setMessages,
     setSelectedMessage

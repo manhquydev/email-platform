@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { TabConfig, PullToRefreshIndicatorProps } from "./mobile-navigation-types";
 
 /** Tab icons - extracted for reuse */
+// eslint-disable-next-line react-refresh/only-export-components
 export const TabIcons = {
     inbox: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -36,6 +37,7 @@ export const TabIcons = {
 };
 
 /** Build tabs configuration */
+// eslint-disable-next-line react-refresh/only-export-components
 export function buildTabs(unreadCount: number): TabConfig[] {
     return [
         { id: "inbox", label: "Hộp thư", icon: TabIcons.inbox, badge: unreadCount },

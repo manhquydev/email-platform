@@ -62,6 +62,14 @@ function VibeCodingBanner() {
                         <span className="material-symbols-outlined !text-[18px]">download</span>
                         Webhook Guide
                     </a>
+                    <a
+                        href="/docs/sdk-guide.md"
+                        download="ephemera-sdk-guide.md"
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm font-medium transition-colors"
+                    >
+                        <span className="material-symbols-outlined !text-[18px]">download</span>
+                        SDK Guide
+                    </a>
                 </div>
             </div>
         </GlassCard>

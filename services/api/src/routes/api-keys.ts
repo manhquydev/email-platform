@@ -68,7 +68,8 @@ export async function apiKeysRoutes(app: FastifyInstance) {
     });
 
     // Delete API Key
-    app.delete("/api-keys/:id", { preHandler: app.authenticate }, async (req, reply) => {
+    // SECURITY: Added enforceApiAccess middleware for consistent access control
+    app.delete("/api-keys/:id", { preHandler: [app.authenticate, enforceApiAccess] }, async (req, reply) => {
         const userId = (req.user as any).userId;
         const idResult = z.object({ id: z.string().uuid() }).safeParse(req.params);
         if (!idResult.success) {

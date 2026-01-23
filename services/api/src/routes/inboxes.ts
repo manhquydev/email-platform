@@ -408,6 +408,7 @@ export async function inboxRoutes(app: FastifyInstance) {
       .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled")
       .map(r => r.value);
 
+    // SECURITY: Sanitize error responses to prevent ID leakage
     const failed = results
       .map((r, index) => ({ result: r, index }))
       .filter((item): item is { result: PromiseRejectedResult; index: number } =>
@@ -415,7 +416,7 @@ export async function inboxRoutes(app: FastifyInstance) {
       )
       .map(item => ({
         index: item.index,
-        error: item.result.reason?.message || "Unknown error",
+        error: "Operation failed", // Don't expose specific error details
       }));
 
     return { success, failed };
@@ -463,6 +464,7 @@ export async function inboxRoutes(app: FastifyInstance) {
       .filter((r): r is PromiseFulfilledResult<{ id: string }> => r.status === "fulfilled")
       .map(r => r.value);
 
+    // SECURITY: Sanitize error responses to prevent ID leakage
     const failed = results
       .map((r, index) => ({ result: r, index, id: ids[index] }))
       .filter((item): item is { result: PromiseRejectedResult; index: number; id: string } =>
@@ -470,8 +472,7 @@ export async function inboxRoutes(app: FastifyInstance) {
       )
       .map(item => ({
         index: item.index,
-        id: item.id,
-        error: item.result.reason?.message || "Unknown error",
+        error: "Operation failed", // Don't expose specific IDs or error details
       }));
 
     return { success, failed };

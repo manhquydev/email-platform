@@ -239,6 +239,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   // Fuzzy search using pg_trgm similarity ranking
+  // SECURITY: Added ownership filter to prevent BOLA vulnerability
   app.get("/messages/search/fuzzy", { preHandler: app.authenticate }, async (request, reply) => {
     const query = z
       .object({
@@ -252,23 +253,50 @@ export const messageRoutes = async (app: FastifyInstance) => {
     }
 
     const { q, limit = 20, threshold = 0.3 } = query.data;
+    const userId = (request.user as any).userId;
+    const isAdmin = (request.user as any).role === "ADMIN";
 
-    // Use raw SQL for pg_trgm similarity search
-    const messages = await prisma.$queryRaw`
-      SELECT m.*, 
-             GREATEST(
-               COALESCE(similarity(m.subject, ${q}), 0),
-               COALESCE(similarity(m."textBody", ${q}), 0)
-             ) as relevance
-      FROM "Message" m
-      WHERE m."deletedAt" IS NULL
-        AND (
-          similarity(m.subject, ${q}) > ${threshold}
-          OR similarity(m."textBody", ${q}) > ${threshold}
-        )
-      ORDER BY relevance DESC
-      LIMIT ${limit}
-    `;
+    // SECURITY FIX: Get accessible inbox IDs for ownership filtering
+    const accessibleInboxIds = await TeamService.getAccessibleInboxIds(userId);
+
+    // If user has no accessible inboxes and is not admin, return empty
+    if (accessibleInboxIds.length === 0 && !isAdmin) {
+      return { data: [], meta: { query: q, threshold, total: 0 } };
+    }
+
+    // Use raw SQL for pg_trgm similarity search with ownership filter
+    const messages = isAdmin
+      ? await prisma.$queryRaw`
+          SELECT m.*,
+                 GREATEST(
+                   COALESCE(similarity(m.subject, ${q}), 0),
+                   COALESCE(similarity(m."textBody", ${q}), 0)
+                 ) as relevance
+          FROM "Message" m
+          WHERE m."deletedAt" IS NULL
+            AND (
+              similarity(m.subject, ${q}) > ${threshold}
+              OR similarity(m."textBody", ${q}) > ${threshold}
+            )
+          ORDER BY relevance DESC
+          LIMIT ${limit}
+        `
+      : await prisma.$queryRaw`
+          SELECT m.*,
+                 GREATEST(
+                   COALESCE(similarity(m.subject, ${q}), 0),
+                   COALESCE(similarity(m."textBody", ${q}), 0)
+                 ) as relevance
+          FROM "Message" m
+          WHERE m."deletedAt" IS NULL
+            AND m."inboxId" = ANY(${accessibleInboxIds}::uuid[])
+            AND (
+              similarity(m.subject, ${q}) > ${threshold}
+              OR similarity(m."textBody", ${q}) > ${threshold}
+            )
+          ORDER BY relevance DESC
+          LIMIT ${limit}
+        `;
 
     return { data: messages, meta: { query: q, threshold } };
   });
@@ -434,29 +462,46 @@ export const messageRoutes = async (app: FastifyInstance) => {
     return { message: updated };
   });
 
+  // SECURITY: Optimized attachment download - check ownership BEFORE loading file
   app.get("/attachments/:id/download", { preHandler: app.authenticate }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const attachment = await prisma.attachment.findUnique({
-      where: { id: params.data.id },
-      include: { message: { include: { inbox: true } } },
-    });
-    if (!attachment) return reply.status(404).send("Not found");
     const userId = (request.user as any)?.userId ?? null;
-    const hasAccess = await TeamService.canAccessInbox(userId, attachment.message.inboxId);
-    if (!hasAccess && (request.user as any).role !== "ADMIN") return reply.status(403).send("Unauthorized");
+    const role = (request.user as any)?.role;
+
+    // SECURITY FIX: Check ownership BEFORE loading full attachment data
+    const attachmentMeta = await prisma.attachment.findUnique({
+      where: { id: params.data.id },
+      select: {
+        id: true,
+        storageKey: true,
+        filename: true,
+        mimeType: true,
+        message: { select: { inboxId: true } }
+      },
+    });
+
+    if (!attachmentMeta) {
+      return reply.status(404).send({ error: "Attachment not found" });
+    }
+
+    // Check access before streaming file
+    const hasAccess = await TeamService.canAccessInbox(userId, attachmentMeta.message.inboxId);
+    if (!hasAccess && role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
 
     try {
-      const stream = await storageService.getReadStream(attachment.storageKey);
-      reply.header("Content-Disposition", `attachment; filename="${attachment.filename}"`);
-      reply.header("Content-Type", attachment.mimeType || "application/octet-stream");
+      const stream = await storageService.getReadStream(attachmentMeta.storageKey);
+      reply.header("Content-Disposition", `attachment; filename="${attachmentMeta.filename}"`);
+      reply.header("Content-Type", attachmentMeta.mimeType || "application/octet-stream");
       return reply.send(stream);
     } catch (e) {
       request.log.error(e);
-      return reply.status(404).send("File not found");
+      return reply.status(404).send({ error: "File not found" });
     }
   });
 

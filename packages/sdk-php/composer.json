@@ -1,0 +1,39 @@
+{
+    "name": "ephemera/sdk",
+    "description": "Official PHP SDK for Ephemera temporary email platform",
+    "version": "1.0.0",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ephemera Team",
+            "email": "support@ephemera.email"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ephemera\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ephemera\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ephemera\\Laravel\\EphemeraServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

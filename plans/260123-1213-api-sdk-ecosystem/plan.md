@@ -33,7 +33,7 @@ Phát triển hệ thống API hỗ trợ SDKs toàn diện cho Ephemera Email P
 |-------|------|----------|--------|
 | 1 | [Foundation](./phase-01-foundation.md) | 4-6 weeks | ✅ DONE (5d7ebd0) |
 | 2 | [Core SDKs](./phase-02-core-sdks.md) | 6-8 weeks | 🔄 IN_PROGRESS |
-| 3 | [Extended SDKs](./phase-03-extended-sdks.md) | 4-6 weeks | pending |
+| 3 | [Extended SDKs](./phase-03-extended-sdks.md) | 4-6 weeks | ✅ DONE |
 | 4 | [Developer Portal](./phase-04-developer-portal.md) | 3-4 weeks | pending |
 
 ## Architecture

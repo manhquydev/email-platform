@@ -54,5 +54,56 @@ export {
     type ErrorCode,
 } from './errors';
 
+// Pagination utilities
+export {
+    paginate,
+    collectAll,
+    createPaginatedIterator,
+    type PaginateOptions,
+    type CursorPaginatedResponse,
+    type PaginatedRequestFn,
+} from './pagination';
+
+// Rate limit handling
+export {
+    parseRateLimitHeaders,
+    calculateRateLimitDelay,
+    isRateLimitWarning,
+    RateLimitTracker,
+    type RateLimitInfo,
+    type RateLimitEvent,
+    type RateLimitHandler,
+} from './rate-limit';
+
+// Retry utilities
+export {
+    withRetry,
+    makeRetryable,
+    calculateBackoff,
+    sleep,
+    isRetryableError,
+    type RetryOptions,
+} from './retry';
+
+// Webhook verification
+export {
+    verifyWebhookSignature,
+    extractWebhookHeaders,
+    parseWebhook,
+    type WebhookVerifyResult,
+    type WebhookPayload,
+    type WebhookEventType,
+    type WebhookHeaders,
+} from './webhook';
+
+// Realtime SSE client
+export {
+    RealtimeClient,
+    type RealtimeEventType,
+    type RealtimeEvent,
+    type RealtimeOptions,
+    type RealtimeHandler,
+} from './realtime';
+
 // Default export for convenience
 export { EphemeraClient as default } from './client';

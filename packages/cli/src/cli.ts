@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { registerInboxCommands } from './commands/inbox';
 import { registerMessageCommands } from './commands/message';
+import { registerWebhookCommands } from './commands/webhook';
 import {
   getApiKey,
   setApiKey,
@@ -194,5 +195,6 @@ program
 // Register subcommands
 registerInboxCommands(program);
 registerMessageCommands(program);
+registerWebhookCommands(program);
 
 program.parse();

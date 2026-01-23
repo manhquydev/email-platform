@@ -4,9 +4,10 @@ import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 import { realtimeEvents } from "../services/realtime-events";
 import { TeamService } from "../services/team.service";
+import { createTierEnforceHandler } from "../services/tier-enforcement.service";
 
 export async function inboxRoutes(app: FastifyInstance) {
-  app.get("/inboxes", { preHandler: app.authenticate }, async (request, reply) => {
+  app.get("/inboxes", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
     const query = z
       .object({
         domain: z.string().optional(),
@@ -72,7 +73,7 @@ export async function inboxRoutes(app: FastifyInstance) {
     return { data: inboxes, meta: { total } };
   });
 
-  app.post("/inboxes", { preHandler: app.authenticate }, async (request, reply) => {
+  app.post("/inboxes", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
     const bodySchema = z.object({
       domainId: z.string().uuid(),
       localPart: z.string().min(1),
@@ -144,7 +145,7 @@ export async function inboxRoutes(app: FastifyInstance) {
   });
 
   // DELETE inbox (soft delete)
-  app.delete("/inboxes/:id", { preHandler: app.authenticate }, async (request, reply) => {
+  app.delete("/inboxes/:id", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid ID" });
@@ -200,7 +201,7 @@ export async function inboxRoutes(app: FastifyInstance) {
   });
 
   // PATCH inbox - Admin update (transfer ownership)
-  app.patch("/inboxes/:id", { preHandler: app.authenticate }, async (request, reply) => {
+  app.patch("/inboxes/:id", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     const body = z.object({
       ownerId: z.string().uuid().optional(),
@@ -320,7 +321,7 @@ export async function inboxRoutes(app: FastifyInstance) {
   });
 
   // BULK CREATE inboxes
-  app.post("/inboxes/bulk", { preHandler: app.authenticate }, async (request, reply) => {
+  app.post("/inboxes/bulk", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
     const bodySchema = z.object({
       inboxes: z.array(z.object({
         domainId: z.string().uuid().optional(),
@@ -421,7 +422,7 @@ export async function inboxRoutes(app: FastifyInstance) {
   });
 
   // BULK DELETE inboxes
-  app.delete("/inboxes/bulk", { preHandler: app.authenticate }, async (request, reply) => {
+  app.delete("/inboxes/bulk", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
     const bodySchema = z.object({
       ids: z.array(z.string().uuid()).min(1).max(100),
     });

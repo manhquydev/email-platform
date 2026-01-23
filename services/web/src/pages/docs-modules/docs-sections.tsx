@@ -5,7 +5,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { GlassCard } from "../../components/ui/GlassCard";
-import { CODE_EXAMPLES, API_ENDPOINTS, PLANNED_SDKS } from "./docs-data";
+import { CODE_EXAMPLES, API_ENDPOINTS, AVAILABLE_SDKS } from "./docs-data";
 
 // Copy button component for code blocks
 function CopyButton({ text, className = "" }: { text: string; className?: string }) {
@@ -222,7 +222,7 @@ export function WebhooksSection() {
                         <p className="text-sm text-nebula-text-muted mt-1">Khi email bị xóa</p>
                     </div>
                     <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
-                        <code className="text-yellow-400">email.forwarded</code>
+                        <code className="text-green-400">email.forwarded</code>
                         <p className="text-sm text-nebula-text-muted mt-1">Khi email được forward</p>
                     </div>
                     <div className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
@@ -270,20 +270,20 @@ export function WebhooksSection() {
 export function SdksSection() {
     return (
         <div className="space-y-6 animate-fade-in-up">
-            <GlassCard className="p-8 border-l-4 border-l-yellow-500">
+            <GlassCard className="p-8 border-l-4 border-l-green-500">
                 <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-yellow-400">construction</span>
-                    <h3 className="text-lg font-bold text-yellow-400">Coming Soon</h3>
+                    <span className="material-symbols-outlined text-green-400">check_circle</span>
+                    <h3 className="text-lg font-bold text-green-400">SDKs Available</h3>
                 </div>
                 <p className="text-nebula-text-muted">
-                    SDK chính thức đang được phát triển. Hiện tại, bạn có thể sử dụng REST API trực tiếp với bất kỳ HTTP client nào.
+                    7 SDK chính thức đã sẵn sàng! Cài đặt SDK cho ngôn ngữ của bạn và bắt đầu tích hợp API.
                 </p>
             </GlassCard>
 
             <GlassCard className="p-8">
-                <h2 className="text-2xl font-bold mb-4">Planned SDKs</h2>
+                <h2 className="text-2xl font-bold mb-4">Official SDKs</h2>
                 <div className="grid md:grid-cols-2 gap-4">
-                    {PLANNED_SDKS.map((sdk, i) => (
+                    {AVAILABLE_SDKS.map((sdk, i) => (
                         <div key={i} className="p-4 bg-nebula-elevated/50 rounded-lg border border-nebula-border">
                             <div className="flex items-center gap-2 mb-2">
                                 <span>{sdk.icon}</span>

@@ -12,12 +12,12 @@ export const DOC_TABS = [
 ] as const;
 
 export const CODE_EXAMPLES = {
-    createInbox: `curl -X POST https://api.manhquy.click/inboxes \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
+    createInbox: `curl -X POST https://api.manhquy.click/inboxes \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
   -d '{"domainId": "your-domain-id"}'`,
 
-    listMessages: `curl https://api.manhquy.click/inboxes/{inbox_id}/messages \\
+    listMessages: `curl https://api.manhquy.click/inboxes/{inbox_id}/messages \
   -H "Authorization: Bearer YOUR_API_KEY"`,
 
     webhookPayload: `{
@@ -55,7 +55,39 @@ function verifyWebhookSignature(payload, signature, secret) {
 });
 
 const inbox = await response.json();
-console.log(inbox.address); // random@yourdomain.com`
+console.log(inbox.address); // random@yourdomain.com`,
+
+    // SDK code examples
+    sdkJs: `import { EphemeraClient } from '@ephemera/sdk';
+
+const client = new EphemeraClient(process.env.EPHEMERA_API_KEY);
+
+// Create inbox and wait for email
+const inbox = await client.createInbox();
+const message = await client.waitForEmail(inbox.id, { subject: 'Verify' });
+const code = client.extractCode(message);
+console.log('OTP:', code);`,
+
+    sdkPython: `from ephemera import EphemeraClient
+
+client = EphemeraClient(os.environ["EPHEMERA_API_KEY"])
+
+# Create inbox and wait for email
+inbox = client.create_inbox()
+message = client.wait_for_email(inbox.id, subject="Verify")
+code = client.extract_code(message)
+print(f"OTP: {code}")`,
+
+    sdkGo: `client := ephemera.NewClient(os.Getenv("EPHEMERA_API_KEY"))
+ctx := context.Background()
+
+inbox, _ := client.CreateInbox(ctx, nil)
+message, _ := client.WaitForEmail(ctx, inbox.ID, &ephemera.WaitOptions{
+    Subject: "Verify",
+    Timeout: 60 * time.Second,
+})
+code := ephemera.ExtractCode(message)
+fmt.Println("OTP:", code)`,
 };
 
 export const API_ENDPOINTS = [
@@ -76,9 +108,12 @@ export const API_ENDPOINTS = [
     { method: "DELETE", path: "/api-keys/:id", desc: "Thu hồi API key" },
 ];
 
-export const PLANNED_SDKS = [
-    { name: "JavaScript/TypeScript", icon: "🟨", status: "Đang phát triển" },
-    { name: "Python", icon: "🐍", status: "Planned Q2 2024" },
-    { name: "Go", icon: "🔵", status: "Planned Q3 2024" },
-    { name: "PHP", icon: "🐘", status: "Community" },
+export const AVAILABLE_SDKS = [
+    { name: "JavaScript/TypeScript", icon: "🟨", status: "✅ Available", install: "npm install @ephemera/sdk" },
+    { name: "Python", icon: "🐍", status: "✅ Available", install: "pip install ephemera" },
+    { name: "Go", icon: "🔵", status: "✅ Available", install: "go get github.com/ephemera/sdk-go" },
+    { name: "PHP", icon: "🐘", status: "✅ Available", install: "composer require ephemera/sdk" },
+    { name: "Java", icon: "☕", status: "✅ Available", install: "Maven: com.ephemera:sdk" },
+    { name: ".NET", icon: "🟣", status: "✅ Available", install: "dotnet add package Ephemera.Sdk" },
+    { name: "CLI", icon: "⌨️", status: "✅ Available", install: "npm install -g @ephemera/cli" },
 ];

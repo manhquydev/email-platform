@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "Ephemera API",
+    "description": "Official Postman collection for Ephemera temporary email API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{api_key}}" }]
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://api.manhquy.click/v1" },
+    { "key": "api_key", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Inboxes",
+      "item": [
+        {
+          "name": "Create Inbox",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/inboxes", "host": ["{{base_url}}"], "path": ["inboxes"] },
+            "body": { "mode": "raw", "raw": "{\"expiresIn\": 3600}" }
+          }
+        },
+        {
+          "name": "List Inboxes",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/inboxes?limit=20", "host": ["{{base_url}}"], "path": ["inboxes"], "query": [{ "key": "limit", "value": "20" }] }
+          }
+        },
+        {
+          "name": "Get Inbox",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/inboxes/:id", "host": ["{{base_url}}"], "path": ["inboxes", ":id"], "variable": [{ "key": "id", "value": "inb_xxx" }] }
+          }
+        },
+        {
+          "name": "Delete Inbox",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/inboxes/:id", "host": ["{{base_url}}"], "path": ["inboxes", ":id"], "variable": [{ "key": "id", "value": "inb_xxx" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "List Messages",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/inboxes/:inboxId/messages", "host": ["{{base_url}}"], "path": ["inboxes", ":inboxId", "messages"], "variable": [{ "key": "inboxId", "value": "inb_xxx" }] }
+          }
+        },
+        {
+          "name": "Get Message",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/messages/:id", "host": ["{{base_url}}"], "path": ["messages", ":id"], "variable": [{ "key": "id", "value": "msg_xxx" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Domains",
+      "item": [
+        {
+          "name": "List Domains",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/domains", "host": ["{{base_url}}"], "path": ["domains"] } }
+        },
+        {
+          "name": "Add Domain",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/domains", "host": ["{{base_url}}"], "path": ["domains"] },
+            "body": { "mode": "raw", "raw": "{\"domain\": \"mail.example.com\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Create Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/webhooks", "host": ["{{base_url}}"], "path": ["webhooks"] },
+            "body": { "mode": "raw", "raw": "{\"url\": \"https://example.com/webhook\", \"events\": [\"message.received\"]}" }
+          }
+        },
+        {
+          "name": "List Webhooks",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/webhooks", "host": ["{{base_url}}"], "path": ["webhooks"] } }
+        }
+      ]
+    }
+  ]
+}

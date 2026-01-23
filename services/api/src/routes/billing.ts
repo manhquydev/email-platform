@@ -207,7 +207,7 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
 
     // Get all tier information with limits and pricing (public endpoint)
     // NOW FETCHES FROM DATABASE - Admin can edit via /admin/packages
-    app.get("/tiers", async () => {
+    app.get("/billing/tiers", async () => {
         const tiers = await getAllTiersWithLimits();
         return {
             tiers,
@@ -221,7 +221,7 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
     });
 
     // Clear tier cache (admin only) - call after updating packages
-    app.post("/clear-cache", { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
+    app.post("/billing/clear-cache", { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
         const user = req.user as { userId: string; role?: string };
         if (user.role !== "ADMIN") {
             return reply.status(403).send({ error: "Admin access required" });

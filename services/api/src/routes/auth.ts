@@ -13,6 +13,7 @@ import { recordAuditFromRequest, AuditAction } from "../utils/audit";
 import { TIER_LIMITS } from "./billing";
 import { tokenRevocationService } from "../services/token-revocation.service";
 import { RefreshTokenService } from "../services/refresh-token.service";
+import { twoFactorBackoff } from "../middleware/rate-limit-config";
 
 // Password validation with complexity requirements
 const passwordSchema = z.string()
@@ -345,10 +346,11 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   // 2FA: Verify TOTP after login (strict rate limit to prevent brute force)
+  // SECURITY: Enhanced with exponential backoff (Phase 3)
   app.post("/auth/2fa/verify", {
     config: {
       rateLimit: {
-        max: 5,
+        max: 3, // Reduced from 5 to 3 for stricter security
         timeWindow: "5 minutes",
         keyGenerator: (request) => {
           // Rate limit by temp token to prevent user enumeration
@@ -369,6 +371,17 @@ export async function authRoutes(app: FastifyInstance) {
     }
 
     const { tempToken, code } = parsed.data;
+
+    // SECURITY: Check exponential backoff before processing (Phase 3)
+    const backoffKey = tempToken.slice(0, 50);
+    const backoffStatus = await twoFactorBackoff.isInBackoff(backoffKey);
+    if (backoffStatus.blocked) {
+      const waitSeconds = Math.ceil(backoffStatus.waitTime / 1000);
+      return reply.status(429).send({
+        error: `Too many failed attempts. Please wait ${waitSeconds} seconds.`,
+        retryAfter: waitSeconds,
+      });
+    }
 
     let decoded: { userId: string; pending2FA?: boolean };
     try {

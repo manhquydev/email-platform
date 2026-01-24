@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from "fastify"
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import rateLimit from "@fastify/rate-limit";
+import { getRateLimitConfig, createRateLimitRedis, userKeyGenerator, getTierBasedMax } from "./middleware/rate-limit-config";
 import { register as promRegister, collectDefaultMetrics, Histogram, Counter } from "prom-client";
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
@@ -214,10 +215,19 @@ export const buildServer = () => {
   });
 
   app.register(jwt, { secret: appConfig.jwtSecret });
+
+  // SECURITY: Enhanced rate limiting with production hardening (Phase 3)
+  const rateLimitConfig = getRateLimitConfig();
   app.register(rateLimit, {
-    max: appConfig.rateLimitMax,
-    timeWindow: appConfig.rateLimitTimeWindow,
-    allowList: ["127.0.0.1", "::1"],
+    max: appConfig.rateLimitMax || rateLimitConfig.max,
+    timeWindow: appConfig.rateLimitTimeWindow || rateLimitConfig.timeWindow,
+    // SECURITY: Remove localhost bypass in production
+    allowList: rateLimitConfig.allowList,
+    // Add rate limit headers for client awareness
+    addHeadersOnExceeding: rateLimitConfig.addHeadersOnExceeding,
+    addHeaders: rateLimitConfig.addHeaders,
+    // Use Redis for distributed rate limiting if available
+    redis: createRateLimitRedis(),
   });
   // Check if metrics are already registered to avoid errors in tests
   try {

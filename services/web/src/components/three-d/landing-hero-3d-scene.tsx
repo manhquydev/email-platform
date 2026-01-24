@@ -6,17 +6,25 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { EphemeralParticles } from './ephemeral-particles'
 import { FloatingOrbs } from './floating-orbs'
+import { PostprocessingEffects } from './postprocessing-effects'
+import type { GPUTier } from '../../hooks/use-gpu-tier'
 
 interface LandingHero3DSceneProps {
     /** Reduced motion mode - fewer particles, no animation */
     reducedMotion?: boolean
+    /** GPU tier for adaptive rendering */
+    gpuTier?: GPUTier
 }
 
 export function LandingHero3DScene({
-    reducedMotion = false
+    reducedMotion = false,
+    gpuTier = 'high'
 }: LandingHero3DSceneProps) {
+    // Enable postprocessing only on high-tier GPUs and when motion is allowed
+    const enablePostprocessing = gpuTier === 'high' && !reducedMotion
+
     return (
-        <div className="absolute inset-0 -z-10">
+        <div className="fixed inset-0 -z-10">
             <Canvas
                 frameloop="always"
                 dpr={[1, 2]}
@@ -49,6 +57,9 @@ export function LandingHero3DScene({
 
                     {/* Floating geometric shapes */}
                     <FloatingOrbs reducedMotion={reducedMotion} />
+
+                    {/* Postprocessing effects - GPU tier gated */}
+                    <PostprocessingEffects enabled={enablePostprocessing} />
                 </Suspense>
             </Canvas>
         </div>

@@ -38,7 +38,7 @@ export function LazyLanding3DScene() {
 
     return (
         <Suspense fallback={<CSSFallbackBackground />}>
-            <LandingHero3DScene reducedMotion={reducedMotion} />
+            <LandingHero3DScene reducedMotion={reducedMotion} gpuTier={tier} />
         </Suspense>
     )
 }

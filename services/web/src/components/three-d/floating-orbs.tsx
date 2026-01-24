@@ -21,6 +21,8 @@ export function FloatingOrbs({ reducedMotion = false }: FloatingOrbsProps) {
                 <Sphere args={[0.5, 32, 32]} position={[-2, 1, -2]}>
                     <meshStandardMaterial
                         color="#8b5cf6"
+                        emissive="#8b5cf6"
+                        emissiveIntensity={1.2}
                         roughness={0.1}
                         metalness={0.8}
                         transparent
@@ -34,6 +36,8 @@ export function FloatingOrbs({ reducedMotion = false }: FloatingOrbsProps) {
                 <Sphere args={[0.3, 32, 32]} position={[2, -1, -1]}>
                     <meshStandardMaterial
                         color="#a855f7"
+                        emissive="#a855f7"
+                        emissiveIntensity={1.0}
                         roughness={0.2}
                         metalness={0.6}
                         transparent
@@ -47,6 +51,8 @@ export function FloatingOrbs({ reducedMotion = false }: FloatingOrbsProps) {
                 <Sphere args={[0.2, 32, 32]} position={[0, 0.5, -3]}>
                     <meshStandardMaterial
                         color="#06b6d4"
+                        emissive="#06b6d4"
+                        emissiveIntensity={0.8}
                         roughness={0.3}
                         metalness={0.5}
                         transparent

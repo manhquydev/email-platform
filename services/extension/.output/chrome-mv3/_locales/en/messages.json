@@ -1,0 +1,91 @@
+{
+  "extName": {
+    "message": "Ephemera - Temporary Email",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Create disposable email addresses instantly. Protect your privacy and avoid spam.",
+    "description": "Extension description"
+  },
+  "signIn": {
+    "message": "Sign In"
+  },
+  "email": {
+    "message": "Email"
+  },
+  "emailAddress": {
+    "message": "Email Address"
+  },
+  "password": {
+    "message": "Password"
+  },
+  "loginFailed": {
+    "message": "Login failed"
+  },
+  "activeInboxes": {
+    "message": "Active Inboxes"
+  },
+  "createNewInbox": {
+    "message": "Create New Inbox"
+  },
+  "generateNew": {
+    "message": "Generate New Email"
+  },
+  "copied": {
+    "message": "Copied!"
+  },
+  "viewMessages": {
+    "message": "View Messages"
+  },
+  "dashboard": {
+    "message": "Dashboard"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "logout": {
+    "message": "Log Out"
+  },
+  "noInboxes": {
+    "message": "No inboxes yet"
+  },
+  "createFirstInbox": {
+    "message": "Create your first inbox"
+  },
+  "loading": {
+    "message": "Loading..."
+  },
+  "signInRequired": {
+    "message": "Sign in Required"
+  },
+  "signInRequiredDesc": {
+    "message": "Please sign in to your Ephemera account to use temporary emails."
+  },
+  "goAnonymous": {
+    "message": "Go Anonymous"
+  },
+  "secureEntry": {
+    "message": "Secure Entry"
+  },
+  "newToEphemera": {
+    "message": "New to Ephemera?"
+  },
+  "createAccount": {
+    "message": "Create Account"
+  },
+  "securityCheck": {
+    "message": "Security Check"
+  },
+  "verifyAndContinue": {
+    "message": "Verify & Continue"
+  },
+  "backToLogin": {
+    "message": "Back to Login"
+  },
+  "expired": {
+    "message": "Expired"
+  },
+  "refresh": {
+    "message": "Refresh"
+  }
+}

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { generateWebhookSecret, triggerWebhook, getAvailableEvents, WEBHOOK_EVENTS, signPayload } from '../services/webhookService';
 import { createTierEnforceHandler } from '../services/tier-enforcement.service';
-import { isInternalUrl } from '../utils/network';
+import { validateWebhookUrl } from '../utils/input-sanitizer';
 import crypto from 'crypto';
 
 export async function webhookRoutes(app: FastifyInstance) {
@@ -63,9 +63,10 @@ export async function webhookRoutes(app: FastifyInstance) {
             return reply.status(400).send({ error: parsed.error.format() });
         }
 
-        // SSRF Protection: Block internal network URLs
-        if (isInternalUrl(parsed.data.url)) {
-            return reply.status(400).send({ error: 'Webhook URL cannot point to internal networks' });
+        // SSRF Protection: Enhanced validation using input-sanitizer
+        const urlValidation = validateWebhookUrl(parsed.data.url);
+        if (!urlValidation.valid) {
+            return reply.status(400).send({ error: `Invalid webhook URL: ${urlValidation.reason}` });
         }
 
         const webhook = await prisma.webhook.create({
@@ -118,9 +119,12 @@ export async function webhookRoutes(app: FastifyInstance) {
             return reply.status(400).send({ error: 'Invalid payload', details: parsed.error.flatten() });
         }
 
-        // SSRF Protection: Block internal network URLs
-        if (parsed.data.url && isInternalUrl(parsed.data.url)) {
-            return reply.status(400).send({ error: 'Webhook URL cannot point to internal networks' });
+        // SSRF Protection: Enhanced validation using input-sanitizer
+        if (parsed.data.url) {
+            const urlValidation = validateWebhookUrl(parsed.data.url);
+            if (!urlValidation.valid) {
+                return reply.status(400).send({ error: `Invalid webhook URL: ${urlValidation.reason}` });
+            }
         }
 
         const webhook = await prisma.webhook.findFirst({

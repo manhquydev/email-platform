@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import { createReadStream } from "fs";
 import path from "path";
 import { Readable } from "stream";
+import { sanitizeStorageKey, isPathWithinBase, logInjectionAttempt } from "../utils/input-sanitizer";
 
 export interface IStorageService {
     save(key: string, content: Buffer | string, contentType?: string): Promise<void>;
@@ -20,24 +21,42 @@ class LocalStorage implements IStorageService {
         this.rootDir = rootDir;
     }
 
-    private getPath(key: string) {
-        return path.join(this.rootDir, key);
+    /**
+     * SECURITY: Sanitize key and validate path stays within root directory
+     * Defense in depth: sanitize + path validation prevents path traversal
+     */
+    private getSecurePath(key: string): string {
+        const safeKey = sanitizeStorageKey(key);
+        const targetPath = path.join(this.rootDir, safeKey);
+
+        // Double-check: ensure resolved path is within root directory
+        if (!isPathWithinBase(targetPath, this.rootDir)) {
+            logInjectionAttempt("path_traversal", {
+                originalKey: key,
+                sanitizedKey: safeKey,
+                attemptedPath: targetPath
+            });
+            throw new Error("Path traversal detected");
+        }
+
+        return targetPath;
     }
 
     async save(key: string, content: Buffer | string, contentType?: string): Promise<void> {
-        const targetPath = this.getPath(key);
+        const targetPath = this.getSecurePath(key);
         await fs.mkdir(path.dirname(targetPath), { recursive: true });
         await fs.writeFile(targetPath, content);
     }
 
     async getReadStream(key: string): Promise<Readable> {
-        const targetPath = this.getPath(key);
+        const targetPath = this.getSecurePath(key);
         return createReadStream(targetPath);
     }
 
     async exists(key: string): Promise<boolean> {
         try {
-            await fs.access(this.getPath(key));
+            const targetPath = this.getSecurePath(key);
+            await fs.access(targetPath);
             return true;
         } catch {
             return false;
@@ -46,7 +65,8 @@ class LocalStorage implements IStorageService {
 
     async delete(key: string): Promise<void> {
         try {
-            await fs.unlink(this.getPath(key));
+            const targetPath = this.getSecurePath(key);
+            await fs.unlink(targetPath);
         } catch (e) {
             // ignore if not found
         }
@@ -70,19 +90,29 @@ class S3Storage implements IStorageService {
         this.bucket = appConfig.s3.bucket;
     }
 
+    /**
+     * SECURITY: Sanitize S3 key for consistency with LocalStorage
+     * S3 handles arbitrary keys, but sanitization ensures consistent behavior across providers
+     */
+    private getSafeKey(key: string): string {
+        return sanitizeStorageKey(key);
+    }
+
     async save(key: string, content: Buffer | string, contentType?: string): Promise<void> {
+        const safeKey = this.getSafeKey(key);
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
-            Key: key,
+            Key: safeKey,
             Body: content,
             ContentType: contentType || "application/octet-stream",
         }));
     }
 
     async getReadStream(key: string): Promise<Readable> {
+        const safeKey = this.getSafeKey(key);
         const command = new GetObjectCommand({
             Bucket: this.bucket,
-            Key: key,
+            Key: safeKey,
         });
         const response = await this.client.send(command);
         if (!response.Body) {
@@ -93,9 +123,10 @@ class S3Storage implements IStorageService {
 
     async exists(key: string): Promise<boolean> {
         try {
+            const safeKey = this.getSafeKey(key);
             await this.client.send(new GetObjectCommand({
                 Bucket: this.bucket,
-                Key: key,
+                Key: safeKey,
             }));
             return true;
         } catch (e: any) {
@@ -107,6 +138,7 @@ class S3Storage implements IStorageService {
     async delete(key: string): Promise<void> {
         // Not strictly implemented for now as strict deletes might be handled by lifecycle policies or manual
         // But for completeness:
+        // const safeKey = this.getSafeKey(key);
         // await this.client.send(new DeleteObjectCommand(...));
     }
 }

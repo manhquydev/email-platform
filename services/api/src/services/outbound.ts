@@ -4,6 +4,7 @@ import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "../lib/prisma";
 import { decrypt } from "../utils/encryption";
+import { sanitizeEmailHeader, sanitizeEmailSubject } from "../utils/input-sanitizer";
 
 export class OutboundService {
     private transporter: nodemailer.Transporter;
@@ -60,9 +61,29 @@ export class OutboundService {
             senderName?: string;
         }
     ) {
+        // SECURITY: Sanitize email headers to prevent header injection attacks
+        const safeSubject = sanitizeEmailSubject(subject);
+        const safeTo = sanitizeEmailHeader(to);
+        const safeFrom = sanitizeEmailHeader(from);
+        const safeReplyTo = options?.replyTo ? sanitizeEmailHeader(options.replyTo) : undefined;
+        const safeSenderName = options?.senderName ? sanitizeEmailHeader(options.senderName) : undefined;
+
+        // Sanitize custom headers if provided
+        const safeHeaders: Record<string, string> = {};
+        if (options?.headers) {
+            for (const [key, value] of Object.entries(options.headers)) {
+                safeHeaders[sanitizeEmailHeader(key)] = sanitizeEmailHeader(value);
+            }
+        }
+
         // Fallback to Google API if configured and SMTP is suspected to be blocked
         if (this.oauth2Client && (process.env.OUTBOUND_PROVIDER === "google" || !process.env.OUTBOUND_SMTP_HOST)) {
-            return this.sendEmailViaGoogleAPI(from, to, subject, text, html, attachments, options);
+            return this.sendEmailViaGoogleAPI(safeFrom, safeTo, safeSubject, text, html, attachments, {
+                ...options,
+                replyTo: safeReplyTo,
+                senderName: safeSenderName,
+                headers: safeHeaders
+            });
         }
 
         if (!process.env.OUTBOUND_SMTP_HOST) {
@@ -70,11 +91,11 @@ export class OutboundService {
         }
 
         // Get mail configuration from environment
-        const mailFromAddress = process.env.MAIL_FROM_ADDRESS || from;
+        const mailFromAddress = process.env.MAIL_FROM_ADDRESS || safeFrom;
         const mailDomain = process.env.MAIL_DOMAIN || "localhost";
 
-        // Allow overriding sender name
-        const mailFromName = options?.senderName || process.env.MAIL_FROM_NAME || "Ephemera";
+        // Allow overriding sender name (use sanitized value)
+        const mailFromName = safeSenderName || process.env.MAIL_FROM_NAME || "Ephemera";
 
         // Generate proper message ID
         const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${mailDomain}>`;
@@ -107,9 +128,9 @@ export class OutboundService {
             const info = await this.transporter.sendMail({
                 from: `"${mailFromName}" <${mailFromAddress}>`,
                 dkim: dkimOptions,
-                to,
-                replyTo: options?.replyTo,
-                subject,
+                to: safeTo,
+                replyTo: safeReplyTo,
+                subject: safeSubject,
                 text,
                 html,
                 attachments,
@@ -118,7 +139,7 @@ export class OutboundService {
                     'X-Mailer': 'Ephemera',
                     'X-Priority': '3',
                     'List-Unsubscribe': `<mailto:unsubscribe@${mailDomain}>`,
-                    ...options?.headers // Merge custom headers
+                    ...safeHeaders // Merge sanitized custom headers
                 },
             });
             return info;
@@ -270,12 +291,6 @@ export class OutboundService {
      * Send magic login link email
      */
     async sendMagicLoginEmail(to: string, loginUrl: string) {
-        // Create a simple inline template or we should update emailTemplates.ts properly.
-        // For now, I'll inline the template generation or reuse a generic structure.
-        // Ideally, I should update emailTemplates.ts, but let's keep it simple and consistent.
-        // I'll dynamically import a new template function if I added it, or construct it here.
-        // Let's modify emailTemplates.ts next, but for this file edit, let's assume it exists or use inline.
-        // Actually, I can write the method to use a template I WILL create in the next step.
         const { magicLinkEmailTemplate } = await import("./emailTemplates");
         const template = magicLinkEmailTemplate({
             recipientEmail: to,

@@ -167,6 +167,7 @@ describe('VirtualizedInboxList', () => {
                 getVirtualItems: () => [{ index: 0, key: 'item-0', start: 0, size: 140 }],
                 getTotalSize: () => 140,
                 measureElement: vi.fn(),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any);
 
             const inboxWithoutDomain = [{

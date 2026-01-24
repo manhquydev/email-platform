@@ -9,6 +9,7 @@ declare module "@fastify/jwt" {
       tier?: SubscriptionTier;
       pending2FA?: boolean;
       type?: "access" | "refresh";
+      jti?: string; // SECURITY: JWT ID for token revocation (Phase 2)
       // Telegram temp token fields (for registration flow)
       telegramAuth?: boolean;
       telegramId?: string;
@@ -22,6 +23,7 @@ declare module "@fastify/jwt" {
       tier?: SubscriptionTier;
       pending2FA?: boolean;
       type?: "access" | "refresh";
+      jti?: string; // SECURITY: JWT ID for token revocation (Phase 2)
       iat: number;
       exp: number;
     };

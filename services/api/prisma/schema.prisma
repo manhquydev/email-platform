@@ -60,6 +60,7 @@ model User {
   teamMemberships            TeamMember[]       @relation("TeamMembership")
   supportTickets             SupportTicket[]
   ticketMessages             TicketMessage[]
+  refreshTokens              RefreshToken[]     @relation("UserRefreshTokens")
 }
 
 model ApiKey {
@@ -68,6 +69,7 @@ model ApiKey {
   keyHash    String    @unique
   prefix     String // First 8 chars for display
   name       String
+  scopes     String[]  @default(["read"]) // SECURITY: API key scopes (Phase 2)
   lastUsedAt DateTime?
   expiresAt  DateTime? // Optional expiration date for the API key
   createdAt  DateTime  @default(now())
@@ -75,6 +77,26 @@ model ApiKey {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([expiresAt])
+}
+
+// SECURITY: RefreshToken model for secure token rotation (Phase 2 JWT Security)
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique // SHA256 hash of the refresh token
+  userId    String
+  familyId  String    // Token family for reuse detection
+  usedAt    DateTime? // Null if not yet used, set when rotated
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime? // Set when explicitly revoked
+  userAgent String?   // Device/browser info for session management
+  ipAddress String?   // IP for security auditing
+
+  user User @relation("UserRefreshTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
   @@index([expiresAt])
 }
 

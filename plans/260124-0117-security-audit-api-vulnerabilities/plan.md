@@ -29,7 +29,7 @@ Rà soát và fix lỗ hổng bảo mật backend API theo chuẩn OWASP API Sec
 
 | Phase | Name | Status | Effort | Link |
 |-------|------|--------|--------|------|
-| 1 | Critical BOLA/IDOR Fixes | ⬜ Pending | 1-2d | [phase-01-critical-bola-idor-fixes.md](./phase-01-critical-bola-idor-fixes.md) |
+| 1 | Critical BOLA/IDOR Fixes | ✅ Complete | 1-2d | [phase-01-critical-bola-idor-fixes.md](./phase-01-critical-bola-idor-fixes.md) |
 | 2 | JWT & Token Security | ⬜ Pending | 2-3d | [phase-02-jwt-token-security.md](./phase-02-jwt-token-security.md) |
 | 3 | Rate Limiting Enhancement | ⬜ Pending | 1-2d | [phase-03-rate-limiting-enhancement.md](./phase-03-rate-limiting-enhancement.md) |
 | 4 | Input Validation & Injection Prevention | ⬜ Pending | 1-2d | [phase-04-input-validation-injection.md](./phase-04-input-validation-injection.md) |

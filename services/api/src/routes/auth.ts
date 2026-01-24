@@ -11,6 +11,8 @@ import { outboundService } from "../services/outbound";
 import { isEmailVerificationRequired } from "../utils/system-settings";
 import { recordAuditFromRequest, AuditAction } from "../utils/audit";
 import { TIER_LIMITS } from "./billing";
+import { tokenRevocationService } from "../services/token-revocation.service";
+import { RefreshTokenService } from "../services/refresh-token.service";
 
 // Password validation with complexity requirements
 const passwordSchema = z.string()
@@ -84,8 +86,11 @@ export async function authRoutes(app: FastifyInstance) {
       }
     }
 
-    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access" }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh" }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    // SECURITY: Add jti (JWT ID) for token revocation support
+    const accessJti = crypto.randomUUID();
+    const refreshJti = crypto.randomUUID();
+    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
     await recordAuditFromRequest(request, "auth.register", { email: user.email });
 
@@ -298,8 +303,11 @@ export async function authRoutes(app: FastifyInstance) {
       return { requires2FA: true, tempToken };
     }
 
-    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access" }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh" }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    // SECURITY: Add jti (JWT ID) for token revocation support
+    const loginAccessJti = crypto.randomUUID();
+    const loginRefreshJti = crypto.randomUUID();
+    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: loginAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: loginRefreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
     await recordAuditFromRequest(request, AuditAction.LOGIN_SUCCESS, { email: user.email, userId: user.id });
 
@@ -408,8 +416,11 @@ export async function authRoutes(app: FastifyInstance) {
       });
     }
 
-    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access" }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh" }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    // SECURITY: Add jti (JWT ID) for token revocation support
+    const twoFaAccessJti = crypto.randomUUID();
+    const twoFaRefreshJti = crypto.randomUUID();
+    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: twoFaAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: twoFaRefreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
 
     await recordAuditFromRequest(request, AuditAction.TWO_FACTOR_VERIFIED, { email: user.email, userId: user.id });
 
@@ -419,6 +430,36 @@ export async function authRoutes(app: FastifyInstance) {
       expiresIn: 900,
       user: { id: user.id, email: user.email, role: user.role }
     };
+  });
+
+  // SECURITY: Logout endpoint - revoke current token (Phase 2 JWT Security)
+  app.post("/auth/logout", { preHandler: app.authenticate }, async (request, reply) => {
+    const user = request.user as any;
+    const jti = user?.jti;
+
+    if (jti) {
+      // Revoke the current access token (15 min TTL matches token expiry)
+      await tokenRevocationService.revokeToken(jti, 900);
+    }
+
+    await recordAuditFromRequest(request, "auth.logout", { userId: user.userId });
+
+    return { ok: true, message: "Logged out successfully" };
+  });
+
+  // SECURITY: Logout all devices - revoke all user tokens (Phase 2 JWT Security)
+  app.post("/auth/logout-all", { preHandler: app.authenticate }, async (request, reply) => {
+    const user = request.user as any;
+
+    // Revoke all refresh tokens in database
+    await RefreshTokenService.revokeAllUserTokens(user.userId);
+
+    // Also revoke via Redis for immediate effect on access tokens
+    await tokenRevocationService.revokeAllUserTokens(user.userId, 86400);
+
+    await recordAuditFromRequest(request, "auth.logout_all", { userId: user.userId });
+
+    return { ok: true, message: "All sessions terminated" };
   });
 
   // 2FA: Setup - Generate secret and QR code

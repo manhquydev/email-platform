@@ -51,6 +51,8 @@ import pushRoutes from "./routes/push";
 import { extensionRoutes } from "./routes/extension";
 import { webhookTestReceiverRoutes } from "./routes/webhook-test-receiver";
 
+import { tokenRevocationService } from "./services/token-revocation.service";
+
 // ... existing imports ...
 
 // Register routes
@@ -312,6 +314,25 @@ export const buildServer = () => {
 
     try {
       await request.jwtVerify();
+
+      // SECURITY: Check if token has been revoked (Phase 2 JWT Security)
+      const decoded = request.user as any;
+      if (decoded?.jti) {
+        const isRevoked = await tokenRevocationService.isRevoked(decoded.jti);
+        if (isRevoked) {
+          request.log.warn({ jti: decoded.jti?.slice(0, 8) }, "Revoked token used");
+          return reply.status(401).send({ error: "Token has been revoked" });
+        }
+      }
+
+      // Check user-wide token revocation (for "logout all devices")
+      if (decoded?.userId && decoded?.iat) {
+        const isUserRevoked = await tokenRevocationService.isUserTokenRevoked(decoded.userId, decoded.iat);
+        if (isUserRevoked) {
+          request.log.warn({ userId: decoded.userId?.slice(0, 8) }, "User tokens revoked");
+          return reply.status(401).send({ error: "Session expired, please login again" });
+        }
+      }
     } catch (err) {
       request.log.warn({
         err,

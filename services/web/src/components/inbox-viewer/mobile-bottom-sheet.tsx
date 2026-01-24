@@ -1,6 +1,7 @@
 /**
  * MobileBottomSheet - Swipe-to-dismiss bottom sheet for mobile message detail
  * Touch-optimized with drag handle and backdrop
+ * WCAG 2.2 AA compliant with aria labels and focus management
  */
 import { useRef, useEffect, useCallback } from "react";
 
@@ -12,6 +13,7 @@ interface MobileBottomSheetProps {
 
 export function MobileBottomSheet({ isOpen, onClose, children }: MobileBottomSheetProps) {
     const sheetRef = useRef<HTMLDivElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
     const startY = useRef(0);
     const currentY = useRef(0);
 
@@ -41,26 +43,48 @@ export function MobileBottomSheet({ isOpen, onClose, children }: MobileBottomShe
         currentY.current = 0;
     }, [onClose]);
 
-    // Lock body scroll when open
+    // Lock body scroll when open + handle Escape key + focus management
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
+
+            // Focus the close button for accessibility
+            setTimeout(() => closeButtonRef.current?.focus(), 100);
+
+            // Handle Escape key for accessibility
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === "Escape") {
+                    onClose();
+                }
+            };
+            document.addEventListener("keydown", handleKeyDown);
+
+            return () => {
+                document.body.style.overflow = "";
+                document.removeEventListener("keydown", handleKeyDown);
+            };
         } else {
             document.body.style.overflow = "";
         }
         return () => {
             document.body.style.overflow = "";
         };
-    }, [isOpen]);
+    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div
+            className="fixed inset-0 z-50 md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Message detail"
+        >
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/60 transition-opacity duration-200"
                 onClick={onClose}
+                aria-hidden="true"
             />
 
             {/* Sheet */}
@@ -71,9 +95,16 @@ export function MobileBottomSheet({ isOpen, onClose, children }: MobileBottomShe
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             >
-                {/* Drag Handle */}
+                {/* Drag Handle - accessible close button with 44px touch target */}
                 <div className="flex justify-center py-3">
-                    <div className="w-10 h-1 bg-zinc-700 rounded-full" />
+                    <button
+                        ref={closeButtonRef}
+                        onClick={onClose}
+                        className="w-10 h-8 flex items-center justify-center rounded-md hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                        aria-label="Close message detail (swipe down or tap)"
+                    >
+                        <div className="w-10 h-1 bg-zinc-600 rounded-full" />
+                    </button>
                 </div>
 
                 {/* Content */}

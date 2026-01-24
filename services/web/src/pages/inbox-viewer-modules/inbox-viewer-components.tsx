@@ -134,52 +134,56 @@ export function MessageListPane({
             <HeroEmailAddress email={email} />
 
             {/* Simplified Toolbar - Density, Share, Refresh, Change */}
-            <div className="px-3 py-2 border-b border-zinc-800 flex justify-end gap-2">
+            <div className="px-3 py-2 border-b border-zinc-800 flex justify-end gap-2" role="toolbar" aria-label="Message list actions">
                 {/* Density Toggle */}
                 <button
                     onClick={toggleDensity}
-                    className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100"
+                    className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title={density === "compact" ? "Chế độ thoải mái" : "Chế độ gọn"}
+                    aria-label={density === "compact" ? "Switch to comfortable view" : "Switch to compact view"}
                 >
                     {density === "compact" ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                         </svg>
                     )}
                 </button>
                 <button
                     onClick={onCopyShareLink}
-                    className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100"
+                    className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Sao chép link chia sẻ"
+                    aria-label="Copy share link"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                 </button>
                 <button
                     onClick={onRefresh}
                     disabled={loading}
-                    className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100 disabled:opacity-50"
+                    className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100 disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Tải lại"
+                    aria-label="Refresh inbox"
                 >
-                    <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                 </button>
                 <button
                     onClick={onChangeEmail}
-                    className="px-2 py-1 text-sm text-zinc-500 hover:text-white transition-colors duration-100"
+                    className="px-2 py-1 text-sm text-zinc-400 hover:text-white transition-colors duration-100 min-h-[44px] flex items-center"
+                    aria-label="Change email address"
                 >
                     Đổi
                 </button>
             </div>
 
             {/* Keyboard shortcuts hint - Always visible per validated decision */}
-            <div className="px-3 py-1.5 border-b border-zinc-900 flex items-center gap-3 text-xs text-zinc-600">
+            <div className="px-3 py-1.5 border-b border-zinc-900 flex items-center gap-3 text-xs text-zinc-500" aria-hidden="true">
                 <span className="flex items-center gap-1">
                     <kbd className="px-1 py-0.5 bg-zinc-900 border border-zinc-800 rounded font-mono">j</kbd>
                     <kbd className="px-1 py-0.5 bg-zinc-900 border border-zinc-800 rounded font-mono">k</kbd>

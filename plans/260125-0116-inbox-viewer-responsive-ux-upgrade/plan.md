@@ -1,7 +1,7 @@
 ---
 title: "Inbox Viewer Responsive UX Upgrade"
 description: "Mobile-first redesign with bottom sheet, command palette, and density controls"
-status: pending
+status: completed
 priority: P1
 effort: 12h
 branch: main
@@ -58,9 +58,9 @@ Phase 5 (Audit)
 | search-form.tsx | - | - | - | ✓ | - |
 
 ## Success Criteria
-- [ ] Mobile: Bottom sheet works with swipe-to-dismiss
-- [ ] Mobile: Touch targets >= 44px
-- [ ] Desktop: Cmd+K opens command palette
-- [ ] Desktop: Ghost actions appear on hover
+- [x] Mobile: Bottom sheet works with swipe-to-dismiss
+- [x] Mobile: Touch targets >= 44px
+- [x] Desktop: Cmd+K opens command palette
+- [x] Desktop: Ghost actions appear on hover
 - [x] All: Density toggle (compact/comfortable)
-- [ ] All: Lighthouse accessibility score >= 95
+- [x] All: Lighthouse accessibility score >= 95

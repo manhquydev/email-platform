@@ -2,7 +2,7 @@
 
 ## Overview
 - **Priority:** P1
-- **Status:** Pending
+- **Status:** ✅ Done (2026-01-24)
 - **Effort:** 6h
 
 Create 3D background component với ephemeral particles và floating geometric shapes.

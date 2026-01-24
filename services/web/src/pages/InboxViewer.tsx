@@ -2,9 +2,13 @@
  * InboxViewer - Public inbox viewer page
  * Allows viewing public inboxes without authentication
  */
+import { useState } from "react";
 import { SearchForm } from "../components/inbox-viewer/search-form";
 import { TelegramLinkModal } from "../components/telegram-link-modal";
 import { BackgroundEffects } from "../components/BackgroundEffects";
+import { MobileBottomSheet } from "../components/inbox-viewer/mobile-bottom-sheet";
+import { CommandPalette } from "../components/inbox-viewer/command-palette";
+import { MessageDetail } from "../components/inbox-viewer/message-detail";
 import { useKeyboardNavigation } from "../hooks/use-keyboard-navigation";
 import {
     useInboxViewerData,
@@ -13,8 +17,11 @@ import {
     MessageListPane,
     MessageDetailPane
 } from "./inbox-viewer-modules";
+import { API_URL } from "./inbox-viewer-modules/types";
 
 export function InboxViewer() {
+    const [showCommandPalette, setShowCommandPalette] = useState(false);
+
     const {
         email,
         messages,
@@ -40,14 +47,33 @@ export function InboxViewer() {
         handleKeyboardEscape,
     } = useInboxViewerData();
 
-    // Keyboard navigation (j/k, Enter, Esc)
+    // Handle command palette actions
+    const handleCommand = (commandId: string) => {
+        switch (commandId) {
+            case "refresh":
+                handleRefresh();
+                break;
+            case "change-email":
+                handleChangeEmail();
+                break;
+            case "copy-link":
+                handleCopyShareLink();
+                break;
+            case "telegram":
+                setShowTelegramModal(true);
+                break;
+        }
+    };
+
+    // Keyboard navigation (j/k, Enter, Esc, Cmd+K)
     const { setFocusedIndex } = useKeyboardNavigation({
         itemCount: messages.length,
         onSelect: handleKeyboardSelect,
         onEnter: handleKeyboardEnter,
         onEscape: handleKeyboardEscape,
         onRefresh: handleRefresh,
-        enabled: !!email && !accessError && messages.length > 0,
+        onOpenCommandPalette: () => setShowCommandPalette(true),
+        enabled: !!email && !accessError && messages.length > 0 && !showCommandPalette,
     });
 
     // Sync focused index with keyboard navigation
@@ -112,6 +138,25 @@ export function InboxViewer() {
                     onClose={() => setShowTelegramModal(false)}
                 />
             )}
+
+            {/* Command Palette (Desktop) */}
+            <CommandPalette
+                isOpen={showCommandPalette}
+                onClose={() => setShowCommandPalette(false)}
+                onCommand={handleCommand}
+            />
+
+            {/* Mobile Bottom Sheet */}
+            <MobileBottomSheet
+                isOpen={!!selectedMessage}
+                onClose={handleKeyboardEscape}
+            >
+                <MessageDetail
+                    message={selectedMessage}
+                    loading={detailLoading}
+                    apiUrl={API_URL}
+                />
+            </MobileBottomSheet>
         </div>
     );
 }

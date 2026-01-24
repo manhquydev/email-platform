@@ -6,6 +6,7 @@ import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { SEOHead } from "../components/seo/SEOHead";
+import { LazyLanding3DScene } from "../components/three-d";
 import {
     HeroSection,
     FeaturesSection,
@@ -29,22 +30,9 @@ export function LandingPage() {
                 path="/"
                 noSuffix
             />
-            {/* Background Effects */}
-            <div className="landing-bg fixed inset-0 z-0 pointer-events-none">
-                <div className="landing-bg-gradient absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.15),transparent_60%)]" />
-                <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px] animate-pulse"
-                    style={{ background: 'rgba(139, 92, 246, 0.2)', opacity: 0.5 }}
-                />
-                <div
-                    className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[150px] animate-pulse"
-                    style={{ background: 'rgba(139, 92, 246, 0.15)', opacity: 0.5 }}
-                />
-                <div
-                    className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] animate-pulse"
-                    style={{ background: 'rgba(147, 51, 234, 0.12)', opacity: 0.4, animationDelay: '1s' }}
-                />
-            </div>
+
+            {/* 3D Background Scene - Auto-fallback to CSS on mobile */}
+            <LazyLanding3DScene />
 
             {/* Page Sections */}
             <HeroSection />

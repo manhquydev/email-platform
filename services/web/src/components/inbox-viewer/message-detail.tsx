@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { format } from "date-fns";
+import { MessageDetailSkeleton } from "./skeletons";
 
 interface Attachment {
   id: string;
@@ -44,17 +45,21 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
   }, [message?.htmlBody]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin w-8 h-8 border-4 border-nebula-violet border-t-transparent rounded-full" />
-      </div>
-    );
+    return <MessageDetailSkeleton />;
   }
 
   if (!message) {
     return (
-      <div className="flex items-center justify-center h-full text-nebula-text-muted">
-        Chọn một email để xem
+      <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+        <svg className="w-12 h-12 mb-3 text-zinc-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <p className="text-sm">Chọn một email để xem</p>
+        <p className="text-xs text-zinc-600 mt-1">
+          Sử dụng <kbd className="px-1 py-0.5 bg-zinc-900 border border-zinc-800 rounded font-mono text-[10px]">j</kbd> /
+          <kbd className="px-1 py-0.5 bg-zinc-900 border border-zinc-800 rounded font-mono text-[10px]">k</kbd> để điều hướng
+        </p>
       </div>
     );
   }
@@ -69,21 +74,21 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
   return (
     <div className="flex flex-col h-full overflow-auto">
       {/* Header */}
-      <div className="p-4 border-b border-nebula-border">
-        <h2 className="text-xl font-bold mb-2">{message.subject || "(không có tiêu đề)"}</h2>
-        <div className="text-sm text-nebula-text-muted space-y-1">
-          <div><strong>Từ:</strong> {message.fromAddress || "(không rõ)"}</div>
-          <div><strong>Đến:</strong> {message.toAddress || "(không rõ)"}</div>
+      <div className="p-4 border-b border-zinc-800">
+        <h2 className="text-xl font-bold text-white mb-2">{message.subject || "(không có tiêu đề)"}</h2>
+        <div className="text-sm text-zinc-500 space-y-1">
+          <div><strong className="text-zinc-400">Từ:</strong> {message.fromAddress || "(không rõ)"}</div>
+          <div><strong className="text-zinc-400">Đến:</strong> {message.toAddress || "(không rõ)"}</div>
           <div>
-            <strong>Ngày:</strong> {format(new Date(message.receivedAt), "PPpp")}
+            <strong className="text-zinc-400">Ngày:</strong> {format(new Date(message.receivedAt), "PPpp")}
           </div>
         </div>
       </div>
 
       {/* Attachments */}
       {message.attachments.length > 0 && (
-        <div className="p-4 border-b border-nebula-border bg-nebula-elevated">
-          <div className="text-sm font-medium mb-2">
+        <div className="p-4 border-b border-zinc-800 bg-zinc-950">
+          <div className="text-sm font-medium text-zinc-300 mb-2">
             Tệp đính kèm ({message.attachments.length})
           </div>
           <div className="flex flex-wrap gap-2">
@@ -91,28 +96,28 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
               <a
                 key={att.id}
                 href={`${apiUrl}/api/public/attachments/${att.id}/download`}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-nebula-surface border border-nebula-border rounded-lg text-sm hover:bg-nebula-elevated"
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors duration-100"
                 download
               >
                 <span className="truncate max-w-[150px]">{att.filename}</span>
-                <span className="text-xs text-nebula-text-muted">({formatSize(att.size)})</span>
+                <span className="text-xs text-zinc-500">({formatSize(att.size)})</span>
               </a>
             ))}
           </div>
         </div>
       )}
 
-      {/* Body */}
+      {/* Body - White container for HTML emails per validated decision */}
       <div className="flex-1 p-4">
         {sanitizedHtml ? (
           <div
-            className="prose dark:prose-invert max-w-none"
+            className="prose max-w-none bg-white text-black p-4 rounded-lg"
             dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         ) : message.textBody ? (
-          <pre className="whitespace-pre-wrap font-sans text-sm">{message.textBody}</pre>
+          <pre className="whitespace-pre-wrap font-sans text-sm text-zinc-300">{message.textBody}</pre>
         ) : (
-          <div className="text-nebula-text-muted italic">(không có nội dung)</div>
+          <div className="text-zinc-500 italic">(không có nội dung)</div>
         )}
       </div>
     </div>

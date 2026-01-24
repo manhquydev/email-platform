@@ -96,7 +96,8 @@ export function InstancedParticles({
                 const dist = Math.sqrt(dx * dx + dy * dy)
 
                 if (dist < 2 && dist > 0.01) {
-                    const force = 0.015 / (dist * dist + 0.1)
+                    // V3: Reduced force for calmer interaction
+                    const force = 0.008 / (dist * dist + 0.1)
                     p.velocity.x += (dx / dist) * force
                     p.velocity.y += (dy / dist) * force
                 }
@@ -111,15 +112,15 @@ export function InstancedParticles({
             p.currentPosition.add(p.velocity)
             p.velocity.multiplyScalar(0.92)
 
-            // Set dummy position (with floating animation)
+            // V3: Slower floating animation for eye comfort
             dummy.position.copy(p.currentPosition)
             if (animate) {
-                dummy.position.y += Math.sin(time * p.speed + p.offset) * 0.1
+                dummy.position.y += Math.sin(time * p.speed * 0.5 + p.offset) * 0.05
             }
 
-            // Apply scroll drift
+            // V3: Reduced scroll drift
             if (enableScrollAnimation) {
-                dummy.position.y -= scrollProgress * 3
+                dummy.position.y -= scrollProgress * 1.5
             }
 
             // Set scale
@@ -131,22 +132,23 @@ export function InstancedParticles({
         // Update instance matrices
         meshRef.current.instanceMatrix.needsUpdate = true
 
-        // Update material opacity for scroll fade
+        // V3: Lower base opacity for eye comfort
         if (enableScrollAnimation && materialRef.current) {
-            materialRef.current.opacity = 0.7 * (1 - scrollProgress * 0.8)
+            materialRef.current.opacity = 0.5 * (1 - scrollProgress * 0.6)
         }
     })
 
     return (
         <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
             <sphereGeometry args={[1, 8, 8]} />
+            {/* V3: Reduced emissive for eye comfort */}
             <meshStandardMaterial
                 ref={materialRef}
                 color="#8b5cf6"
                 emissive="#8b5cf6"
-                emissiveIntensity={1.2}
+                emissiveIntensity={0.4}
                 transparent
-                opacity={0.7}
+                opacity={0.5}
             />
         </instancedMesh>
     )

@@ -20,11 +20,11 @@ const LandingHero3DScene = lazy(() =>
  * - Low/Mobile: CSS-only animated background
  */
 export function LazyLanding3DScene() {
-    const tier = useGPUTier()
+    const { tier, loading } = useGPUTier()
     const prefersReducedMotion = usePrefersReducedMotion()
 
     // Show loading state while detecting GPU tier
-    if (tier === 'unknown') {
+    if (loading) {
         return <CSSFallbackBackground variant="subtle" />
     }
 

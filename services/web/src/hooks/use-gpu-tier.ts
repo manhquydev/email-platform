@@ -1,37 +1,54 @@
 /**
  * GPU Tier Detection Hook
- * Detects device capability to determine 3D rendering strategy
+ * Uses detect-gpu library for accurate GPU benchmarking
  */
 import { useState, useEffect } from 'react'
+import { getGPUTier } from 'detect-gpu'
 
-export type GPUTier = 'high' | 'medium' | 'low' | 'unknown'
+export type GPUTier = 'high' | 'medium' | 'low'
+
+/** GPU tier configuration for adaptive rendering */
+export interface GPUTierConfig {
+    particles: number
+    postprocessing: boolean
+    chromaticAberration: boolean
+    orbs: boolean
+}
+
+/** Tier-based feature configuration */
+export const GPU_TIER_CONFIG: Record<GPUTier, GPUTierConfig> = {
+    high: { particles: 1000, postprocessing: true, chromaticAberration: true, orbs: true },
+    medium: { particles: 500, postprocessing: true, chromaticAberration: false, orbs: true },
+    low: { particles: 100, postprocessing: false, chromaticAberration: false, orbs: true }
+}
 
 /**
- * Detects GPU capability tier for adaptive 3D rendering
- * - high: Desktop with WebGL2 support
- * - medium: Desktop without WebGL2
- * - low: Mobile devices (use CSS fallback)
- * - unknown: Initial state before detection
+ * Detects GPU capability tier using detect-gpu library
+ * Maps detect-gpu tiers (0-3) to our GPUTier type
+ * - tier 3 → 'high': All effects, 1000 particles
+ * - tier 2 → 'medium': No chromatic aberration, 500 particles
+ * - tier 0-1 → 'low': No postprocessing, 100 particles
  */
-export function useGPUTier(): GPUTier {
-    const [tier, setTier] = useState<GPUTier>('unknown')
+export function useGPUTier(): { tier: GPUTier; loading: boolean; config: GPUTierConfig } {
+    const [tier, setTier] = useState<GPUTier>('medium') // default medium while loading
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        // Simple heuristic based on device type and WebGL support
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-        const canvas = document.createElement('canvas')
-        const hasWebGL2 = !!canvas.getContext('webgl2')
-
-        if (isMobile) {
-            setTier('low')
-        } else if (hasWebGL2) {
-            setTier('high')
-        } else {
+        getGPUTier().then((result) => {
+            // Map detect-gpu tier (0-3) to our tier system
+            const mappedTier: GPUTier =
+                result.tier >= 3 ? 'high' :
+                result.tier >= 2 ? 'medium' : 'low'
+            setTier(mappedTier)
+            setLoading(false)
+        }).catch(() => {
+            // Fallback to medium on error
             setTier('medium')
-        }
+            setLoading(false)
+        })
     }, [])
 
-    return tier
+    return { tier, loading, config: GPU_TIER_CONFIG[tier] }
 }
 
 /**

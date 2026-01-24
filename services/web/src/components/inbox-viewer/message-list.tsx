@@ -1,5 +1,11 @@
-// services/web/src/components/inbox-viewer/message-list.tsx
-import { formatDistanceToNow } from "date-fns";
+/**
+ * MessageList - Virtualized message list using react-virtuoso
+ * Efficiently renders 1000+ messages with smooth scrolling
+ */
+import { useEffect, useRef, useCallback } from "react";
+import { Virtuoso } from "react-virtuoso";
+import type { VirtuosoHandle } from "react-virtuoso";
+import { MessageListItem } from "./message-list-item";
 
 interface Message {
   id: string;
@@ -19,18 +25,50 @@ interface MessageListProps {
   page: number;
   onPageChange: (page: number) => void;
   loading?: boolean;
+  focusedIndex?: number;
+  onFocusChange?: (index: number) => void;
 }
 
+// Constants
+const PAGE_SIZE = 20;
+
 // Loading skeleton component
-function MessageSkeleton() {
+function MessageListSkeleton() {
   return (
-    <div className="p-4 animate-pulse">
-      <div className="flex justify-between items-start mb-2">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-      </div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+    <div className="divide-y divide-zinc-900">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="p-4 animate-pulse">
+          <div className="flex justify-between items-start mb-2">
+            <div className="h-4 bg-zinc-900 rounded w-32" />
+            <div className="h-3 bg-zinc-900 rounded w-16" />
+          </div>
+          <div className="h-4 bg-zinc-900 rounded w-3/4 mb-2" />
+          <div className="h-3 bg-zinc-900 rounded w-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Empty state component
+function MessageListEmpty() {
+  return (
+    <div className="p-8 text-center">
+      <svg
+        className="w-16 h-16 mx-auto text-zinc-700 mb-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+        />
+      </svg>
+      <p className="text-zinc-400 text-lg font-medium mb-1">Không có email nào</p>
+      <p className="text-zinc-600 text-sm">Hộp thư này chưa nhận được email hoặc đã hết hạn</p>
     </div>
   );
 }
@@ -43,79 +81,79 @@ export function MessageList({
   page,
   onPageChange,
   loading = false,
+  focusedIndex = 0,
+  onFocusChange,
 }: MessageListProps) {
-  const pageSize = 20;
-  const totalPages = Math.ceil(total / pageSize);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Scroll to focused index when it changes
+  const scrollToIndex = useCallback((index: number) => {
+    virtuosoRef.current?.scrollToIndex({
+      index,
+      align: "center",
+      behavior: "smooth",
+    });
+  }, []);
+
+  // Scroll to focused item when focusedIndex changes
+  useEffect(() => {
+    if (focusedIndex >= 0 && focusedIndex < messages.length) {
+      scrollToIndex(focusedIndex);
+    }
+  }, [focusedIndex, messages.length, scrollToIndex]);
+
+  // Stable callback for item clicks (fixes memoization)
+  const handleItemClick = useCallback((id: string, index: number) => {
+    onFocusChange?.(index);
+    onSelect(id);
+  }, [onFocusChange, onSelect]);
+
+  if (loading) {
+    return <MessageListSkeleton />;
+  }
+
+  if (messages.length === 0) {
+    return <MessageListEmpty />;
+  }
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-auto">
-        {loading ? (
-          // Loading skeleton
-          <div className="divide-y divide-nebula-border">
-            {[...Array(5)].map((_, i) => (
-              <MessageSkeleton key={i} />
-            ))}
-          </div>
-        ) : messages.length === 0 ? (
-          // Enhanced empty state
-          <div className="p-8 text-center">
-            <svg className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            <p className="text-nebula-text-muted text-lg font-medium mb-1">Không có email nào</p>
-            <p className="text-nebula-text-muted text-sm">Hộp thư này chưa nhận được email hoặc đã hết hạn</p>
-          </div>
-        ) : (
-          <ul className="divide-y divide-nebula-border">
-            {messages.map((msg) => (
-              <li
-                key={msg.id}
-                onClick={() => onSelect(msg.id)}
-                className={`p-4 cursor-pointer hover:bg-nebula-elevated hover:border-l-2 hover:border-l-nebula-violet ${
-                  selectedId === msg.id ? "bg-nebula-violet/10 border-l-2 border-l-nebula-violet" : ""
-                }`}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <span className="font-medium text-sm truncate max-w-[200px]">
-                    {msg.fromAddress || "(không rõ)"}
-                  </span>
-                  <span className="text-xs text-nebula-text-muted">
-                    {formatDistanceToNow(new Date(msg.receivedAt), { addSuffix: true })}
-                  </span>
-                </div>
-                <div className="text-sm font-medium mb-1 truncate">
-                  {msg.subject || "(không có tiêu đề)"}
-                </div>
-                <div className="text-xs text-nebula-text-muted truncate">{msg.preview}</div>
-                {msg.attachmentCount > 0 && (
-                  <span className="text-xs text-info mt-1 inline-block">
-                    {msg.attachmentCount} tệp đính kèm
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="flex-1" role="listbox">
+        <Virtuoso
+          ref={virtuosoRef}
+          data={messages}
+          itemContent={(index, message) => (
+            <MessageListItem
+              message={message}
+              isSelected={selectedId === message.id}
+              isFocused={focusedIndex === index}
+              index={index}
+              onItemClick={handleItemClick}
+            />
+          )}
+          style={{ height: "100%" }}
+          className="divide-y divide-zinc-900"
+        />
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 p-4 border-t border-nebula-border">
+        <div className="flex justify-center gap-2 p-3 border-t border-zinc-800">
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
-            className="px-3 py-1 rounded border disabled:opacity-50"
+            className="px-3 py-1 rounded-md border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white disabled:opacity-50 transition-colors duration-100 text-sm"
           >
             Trước
           </button>
-          <span className="px-3 py-1">
+          <span className="px-3 py-1 text-zinc-500 text-sm">
             {page} / {totalPages}
           </span>
           <button
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
-            className="px-3 py-1 rounded border disabled:opacity-50"
+            className="px-3 py-1 rounded-md border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white disabled:opacity-50 transition-colors duration-100 text-sm"
           >
             Sau
           </button>

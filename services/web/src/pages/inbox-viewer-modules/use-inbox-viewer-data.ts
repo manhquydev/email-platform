@@ -19,6 +19,7 @@ export interface UseInboxViewerDataReturn {
     detailLoading: boolean;
     showTelegramModal: boolean;
     accessError: AccessError | null;
+    focusedIndex: number;
     // Actions
     setShowTelegramModal: (show: boolean) => void;
     handleSearch: (emailAddr: string) => Promise<void>;
@@ -29,6 +30,10 @@ export interface UseInboxViewerDataReturn {
     handleCopyShareLink: () => void;
     handleCopyEmail: () => void;
     handleRefresh: () => void;
+    // Keyboard navigation
+    handleKeyboardSelect: (index: number) => void;
+    handleKeyboardEnter: (index: number) => void;
+    handleKeyboardEscape: () => void;
 }
 
 /**
@@ -83,6 +88,7 @@ export function useInboxViewerData(): UseInboxViewerDataReturn {
     const [showTelegramModal, setShowTelegramModal] = useState(false);
     const [initialLoadDone, setInitialLoadDone] = useState(false);
     const [accessError, setAccessError] = useState<AccessError | null>(null);
+    const [focusedIndex, setFocusedIndex] = useState(0);
 
     // Update URL when email changes (for shareable links)
     const updateUrlWithEmail = useCallback((emailAddr: string) => {
@@ -216,6 +222,21 @@ export function useInboxViewerData(): UseInboxViewerDataReturn {
         if (email) fetchMessages(email, page);
     };
 
+    // Keyboard navigation handlers
+    const handleKeyboardSelect = useCallback((index: number) => {
+        setFocusedIndex(index);
+    }, []);
+
+    const handleKeyboardEnter = useCallback((index: number) => {
+        if (messages[index]) {
+            handleSelectMessage(messages[index].id);
+        }
+    }, [messages, handleSelectMessage]);
+
+    const handleKeyboardEscape = useCallback(() => {
+        setSelectedMessage(null);
+    }, []);
+
     // Auto-load inbox from URL query param
     useEffect(() => {
         if (initialLoadDone) return;
@@ -263,5 +284,10 @@ export function useInboxViewerData(): UseInboxViewerDataReturn {
         handleCopyShareLink,
         handleCopyEmail,
         handleRefresh,
+        // Keyboard navigation
+        focusedIndex,
+        handleKeyboardSelect,
+        handleKeyboardEnter,
+        handleKeyboardEscape,
     };
 }

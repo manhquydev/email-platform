@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, beforeEach } from 'vitest';
 import { mockBrowser } from './mocks/browser';
 import './mocks/fetch';
 
@@ -65,7 +65,7 @@ globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof 
 if (typeof globalThis.requestIdleCallback === 'undefined') {
   globalThis.requestIdleCallback = ((cb: IdleRequestCallback) => {
     return setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 } as IdleDeadline), 1);
-  }) as typeof requestIdleCallback;
+  }) as unknown as typeof requestIdleCallback;
   globalThis.cancelIdleCallback = ((id: number) => clearTimeout(id)) as typeof cancelIdleCallback;
 }
 

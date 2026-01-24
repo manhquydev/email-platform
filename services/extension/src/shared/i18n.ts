@@ -35,7 +35,9 @@ export type MessageKey =
   | 'verifyAndContinue'
   | 'backToLogin'
   | 'expired'
-  | 'refresh';
+  | 'refresh'
+  | 'errorBoundary_title'
+  | 'errorBoundary_message';
 
 /**
  * Get a translated message by key.

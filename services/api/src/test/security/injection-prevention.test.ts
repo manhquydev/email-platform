@@ -18,7 +18,7 @@ describe("Phase 4 Security: Injection Prevention", () => {
     it("should remove parent directory references", () => {
       expect(sanitizeStorageKey("../../../etc/passwd")).toBe("etc/passwd");
       expect(sanitizeStorageKey("foo/../bar")).toBe("foo/bar");
-      expect(sanitizeStorageKey("..")).toBe("");
+      expect(() => sanitizeStorageKey("..")).toThrow("Invalid storage key");
     });
 
     it("should remove leading slashes", () => {

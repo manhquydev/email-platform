@@ -8,7 +8,7 @@ import jwt from "@fastify/jwt";
 
 // Mock Redis for token revocation
 vi.mock("ioredis", () => {
-  const mockRedis = {
+  const mockMethods = {
     get: vi.fn(),
     set: vi.fn(),
     setex: vi.fn(),
@@ -18,7 +18,12 @@ vi.mock("ioredis", () => {
     connect: vi.fn().mockResolvedValue(undefined),
     on: vi.fn(),
   };
-  return { default: vi.fn(() => mockRedis) };
+  class MockRedis {
+    constructor() {
+      Object.assign(this, mockMethods);
+    }
+  }
+  return { default: MockRedis };
 });
 
 vi.mock("../../lib/prisma", () => ({

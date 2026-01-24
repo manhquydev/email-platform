@@ -3,8 +3,11 @@
  * Uses zod-to-openapi for automatic schema generation
  */
 
-import { OpenAPIRegistry, OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi';
+import { OpenAPIRegistry, OpenApiGeneratorV31, extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
+
+// Extend Zod with OpenAPI support - MUST be called before using .openapi()
+extendZodWithOpenApi(z);
 
 // Initialize the registry
 export const registry = new OpenAPIRegistry();

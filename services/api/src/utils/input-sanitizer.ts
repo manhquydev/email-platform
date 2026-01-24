@@ -24,7 +24,8 @@ export function sanitizeStorageKey(key: string): string {
     .replace(/\.\./g, "") // Remove parent directory references
     .replace(/^\/+/, "") // Remove leading slashes
     .replace(/[<>:"|?*\x00-\x1f]/g, "") // Remove dangerous characters
-    .replace(/\\/g, "/"); // Normalize path separators
+    .replace(/\\/g, "/") // Normalize path separators
+    .replace(/\/+/g, "/"); // Collapse consecutive slashes
 
   // Validate against allowed pattern (alphanumeric, dash, underscore, slash, dot)
   if (!/^[a-zA-Z0-9\-_\/\.]+$/.test(sanitized)) {

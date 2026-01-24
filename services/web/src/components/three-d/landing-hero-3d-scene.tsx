@@ -22,6 +22,8 @@ export function LandingHero3DScene({
 }: LandingHero3DSceneProps) {
     // Enable postprocessing only on high-tier GPUs and when motion is allowed
     const enablePostprocessing = gpuTier === 'high' && !reducedMotion
+    // Enable mouse interaction only on high/medium tier (not mobile)
+    const enableMouseInteraction = gpuTier !== 'low' && !reducedMotion
 
     return (
         <div className="fixed inset-0 -z-10">
@@ -49,10 +51,11 @@ export function LandingHero3DScene({
                         color="#8b5cf6"
                     />
 
-                    {/* Particle system */}
+                    {/* Particle system with mouse repulsion */}
                     <EphemeralParticles
                         count={reducedMotion ? 100 : 500}
                         animate={!reducedMotion}
+                        enableMouseInteraction={enableMouseInteraction}
                     />
 
                     {/* Floating geometric shapes */}

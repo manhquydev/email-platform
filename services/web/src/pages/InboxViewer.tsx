@@ -9,6 +9,7 @@ import { BackgroundEffects } from "../components/BackgroundEffects";
 import { MobileBottomSheet } from "../components/inbox-viewer/mobile-bottom-sheet";
 import { CommandPalette } from "../components/inbox-viewer/command-palette";
 import { MessageDetail } from "../components/inbox-viewer/message-detail";
+import { DensityProvider } from "../components/inbox-viewer/density-context";
 import { useKeyboardNavigation } from "../hooks/use-keyboard-navigation";
 import {
     useInboxViewerData,
@@ -83,6 +84,7 @@ export function InboxViewer() {
     };
 
     return (
+        <DensityProvider>
         <div className="min-h-screen bg-black relative">
             {/* Background Effects */}
             <BackgroundEffects variant="subtle" />
@@ -158,5 +160,6 @@ export function InboxViewer() {
                 />
             </MobileBottomSheet>
         </div>
+        </DensityProvider>
     );
 }

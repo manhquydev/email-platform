@@ -8,6 +8,7 @@ import { MessageList } from "../../components/inbox-viewer/message-list";
 import { MessageDetail } from "../../components/inbox-viewer/message-detail";
 import { HeroEmailAddress } from "../../components/inbox-viewer/hero-email-address";
 import { RefreshIndicator } from "../../components/inbox-viewer/skeletons";
+import { useDensity } from "../../components/inbox-viewer/density-context";
 
 // --- Access Error Display ---
 export interface AccessErrorDisplayProps {
@@ -122,6 +123,8 @@ export function MessageListPane({
     email, messages, selectedMessage, total, page, loading, focusedIndex,
     onSelect, onPageChange, onCopyShareLink, onRefresh, onChangeEmail, onFocusChange
 }: MessageListPaneProps) {
+    const { density, toggleDensity } = useDensity();
+
     return (
         <div className="w-full bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden relative">
             {/* Refresh progress indicator */}
@@ -130,8 +133,24 @@ export function MessageListPane({
             {/* Hero Email Address - Prominent display with copy */}
             <HeroEmailAddress email={email} />
 
-            {/* Simplified Toolbar - Share, Refresh, Change */}
+            {/* Simplified Toolbar - Density, Share, Refresh, Change */}
             <div className="px-3 py-2 border-b border-zinc-800 flex justify-end gap-2">
+                {/* Density Toggle */}
+                <button
+                    onClick={toggleDensity}
+                    className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100"
+                    title={density === "compact" ? "Chế độ thoải mái" : "Chế độ gọn"}
+                >
+                    {density === "compact" ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    )}
+                </button>
                 <button
                     onClick={onCopyShareLink}
                     className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-md transition-colors duration-100"

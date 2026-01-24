@@ -26,7 +26,7 @@ Tích hợp React Three Fiber (R3F) vào landing page của Ephemera email platf
 |---|-------|--------|--------|------|
 | 1 | Setup & Dependencies | ✅ Done | 2h | [phase-01](./phase-01-setup-dependencies.md) |
 | 2 | 3D Background Component | ✅ Done | 6h | [phase-02-3d-background-component.md](./phase-02-3d-background-component.md) |
-| 3 | Performance & Fallbacks | Pending | 4h | [phase-03-performance-fallbacks.md](./phase-03-performance-fallbacks.md) |
+| 3 | Performance & Fallbacks | ✅ Done | 4h | [phase-03-performance-fallbacks.md](./phase-03-performance-fallbacks.md) |
 | 4 | Integration & Testing | Pending | 4h | [phase-04-integration-testing.md](./phase-04-integration-testing.md) |
 
 ## Dependencies

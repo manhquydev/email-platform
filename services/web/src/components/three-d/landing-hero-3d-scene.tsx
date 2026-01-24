@@ -5,7 +5,7 @@
  */
 import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
-import { EphemeralParticles } from './ephemeral-particles'
+import { InstancedParticles } from './instanced-particles'
 import { FloatingOrbs } from './floating-orbs'
 import { PostprocessingEffects } from './postprocessing-effects'
 import type { GPUTier } from '../../hooks/use-gpu-tier'
@@ -19,6 +19,20 @@ interface LandingHero3DSceneProps {
     enableScrollAnimation?: boolean
 }
 
+/**
+ * Get particle count based on GPU tier
+ * High: 1000, Medium: 300, Low: 100
+ */
+function getParticleCount(gpuTier: GPUTier, reducedMotion: boolean): number {
+    if (reducedMotion) return 50
+    switch (gpuTier) {
+        case 'high': return 1000
+        case 'medium': return 300
+        case 'low': return 100
+        default: return 300
+    }
+}
+
 export function LandingHero3DScene({
     reducedMotion = false,
     gpuTier = 'high',
@@ -30,6 +44,8 @@ export function LandingHero3DScene({
     const enableMouseInteraction = gpuTier !== 'low' && !reducedMotion
     // Enable scroll animation only when motion is allowed
     const scrollEnabled = enableScrollAnimation && !reducedMotion
+    // Particle count based on GPU tier
+    const particleCount = getParticleCount(gpuTier, reducedMotion)
 
     return (
         <div className="fixed inset-0 -z-10">
@@ -57,9 +73,9 @@ export function LandingHero3DScene({
                         color="#8b5cf6"
                     />
 
-                    {/* Particle system with mouse repulsion and scroll fade */}
-                    <EphemeralParticles
-                        count={reducedMotion ? 100 : 500}
+                    {/* Instanced particle system (1 draw call) */}
+                    <InstancedParticles
+                        count={particleCount}
                         animate={!reducedMotion}
                         enableMouseInteraction={enableMouseInteraction}
                         enableScrollAnimation={scrollEnabled}

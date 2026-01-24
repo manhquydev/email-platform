@@ -4,6 +4,7 @@
  */
 export { CanvasTest } from './canvas-test'
 export { EphemeralParticles } from './ephemeral-particles'
+export { InstancedParticles } from './instanced-particles'
 export { FloatingOrbs } from './floating-orbs'
 export { LandingHero3DScene } from './landing-hero-3d-scene'
 export { LazyLanding3DScene } from './lazy-landing-scene'

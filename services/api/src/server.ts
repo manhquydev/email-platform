@@ -53,6 +53,7 @@ import pushRoutes from "./routes/push";
 import { extensionRoutes } from "./routes/extension";
 import { webhookTestReceiverRoutes } from "./routes/webhook-test-receiver";
 import { v1Routes } from "./routes/v1";
+import { identityBundleRoutes } from "./routes/identity-bundles";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -410,6 +411,9 @@ export const buildServer = () => {
 
   // API v1 - Developer API
   app.register(v1Routes);
+
+  // Phase 4: Identity Suite Bundles
+  app.register(identityBundleRoutes);
 
   // Realtime routes (WebSocket, SSE, Push)
   app.register(realtimeWsRoutes);

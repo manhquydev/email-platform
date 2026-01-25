@@ -11,6 +11,9 @@ import Mailbuild from "mailbuild";
 import { realtimeEvents } from "../services/realtime-events";
 import { TeamService } from "../services/team.service";
 import { outboundService } from "../services/outbound";
+import { OTPExtractorService } from "../services/otp-extractor.service";
+import { PhishingDetectorService } from "../services/phishing-detector.service";
+import { EmailCategorizerService } from "../services/email-categorizer.service";
 
 export const messageRoutes = async (app: FastifyInstance) => {
   app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
@@ -973,5 +976,97 @@ To: ${originalMessage.toAddress || "unknown"}
         details: error.message,
       });
     }
+  });
+
+  // --- AI Gatekeeper Endpoints ---
+
+  // GET /messages/:id/otp - Extract OTP from message
+  app.get("/messages/:id/otp", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid message ID" });
+    }
+
+    const userId = (request.user as any).userId;
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true },
+    });
+
+    if (!message) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    // Check access
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    try {
+      const result = await OTPExtractorService.extractAndSave(params.data.id);
+      if (!result) {
+        return reply.send({ found: false, otp: null });
+      }
+      return reply.send({ found: true, otp: result });
+    } catch (error: any) {
+      request.log.error(error, "Failed to extract OTP");
+      return reply.status(500).send({ error: "Failed to extract OTP" });
+    }
+  });
+
+  // GET /messages/:id/phishing - Analyze message for phishing
+  app.get("/messages/:id/phishing", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid message ID" });
+    }
+
+    const userId = (request.user as any).userId;
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      select: {
+        id: true, inboxId: true, fromAddress: true, subject: true,
+        textBody: true, htmlBody: true, spfResult: true, dkimResult: true, dmarcResult: true,
+      },
+    });
+
+    if (!message) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    const result = PhishingDetectorService.analyze(message);
+    return reply.send(result);
+  });
+
+  // GET /messages/:id/category - Get message category
+  app.get("/messages/:id/category", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid message ID" });
+    }
+
+    const userId = (request.user as any).userId;
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      select: { id: true, inboxId: true, fromAddress: true, subject: true, textBody: true, htmlBody: true },
+    });
+
+    if (!message) {
+      return reply.status(404).send({ error: "Message not found" });
+    }
+
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    const result = EmailCategorizerService.categorize(message);
+    return reply.send(result);
   });
 }

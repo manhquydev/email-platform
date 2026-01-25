@@ -102,16 +102,32 @@ model RefreshToken {
 
 model PasskeyCredential {
   id           String    @id @default(uuid())
-  userId       String
+  userId       String?   // Optional for anonymous accounts
   credentialID String    @unique // Base64URL encoded
   publicKey    String // Base64URL encoded
   counter      BigInt
   transports   String[] // e.g. ["internal", "usb"]
   createdAt    DateTime  @default(now())
   lastUsedAt   DateTime?
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anonymousAccount AnonymousAccount?
 
   @@index([userId])
+}
+
+// Phase 1: Anonymous Identity Layer - Mullvad-style accounts
+model AnonymousAccount {
+  id           String    @id @default(uuid())
+  accountCode  String    @unique // Format: "xxxx-xxxx-xxxx-xxxx"
+  visitorToken String?   @unique // For session recovery without passkey
+  passkeyId    String?   @unique
+  passkey      PasskeyCredential? @relation(fields: [passkeyId], references: [id])
+  tier         String    @default("FREE")
+  createdAt    DateTime  @default(now())
+  lastSeenAt   DateTime  @default(now())
+
+  @@index([accountCode])
+  @@index([visitorToken])
 }
 
 model MagicLinkToken {

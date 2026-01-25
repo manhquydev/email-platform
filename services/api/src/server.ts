@@ -11,6 +11,7 @@ import path from "path";
 import { appConfig } from "./config";
 import { errorHandler } from "./utils/errorHandler";
 import { authRoutes } from "./routes/auth";
+import { anonymousAuthRoutes } from "./routes/anonymous-auth";
 import { domainRoutes } from "./routes/domains";
 import { inboxRoutes } from "./routes/inboxes";
 import { messageRoutes } from "./routes/messages";
@@ -375,6 +376,7 @@ export const buildServer = () => {
   setupSwagger(app);
 
   app.register(authRoutes);
+  app.register(anonymousAuthRoutes); // Phase 1: Anonymous Identity Layer
   app.register(publicRoutes);
   app.register(contactRoutes);
   app.register(publicInboxRoutes, { prefix: "/api" });

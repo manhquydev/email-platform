@@ -30,6 +30,8 @@ const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login }
 const Register = lazy(() => import("./pages/Register").then(m => ({ default: m.Register })));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail").then(m => ({ default: m.VerifyEmail })));
 const MagicLinkVerify = lazy(() => import("./pages/MagicLinkVerify").then(m => ({ default: m.MagicLinkVerify })));
+const AnonymousRegister = lazy(() => import("./pages/AnonymousRegister").then(m => ({ default: m.AnonymousRegister })));
+const AnonymousLogin = lazy(() => import("./pages/AnonymousLogin").then(m => ({ default: m.AnonymousLogin })));
 
 // Lazy load app pages
 const InboxManager = lazy(() => import("./pages/InboxManager").then(m => ({ default: m.InboxManager })));
@@ -94,6 +96,8 @@ function App() {
                   <Route element={<AuthLayout />}>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/anonymous" element={<AnonymousRegister />} />
+                    <Route path="/anonymous/login" element={<AnonymousLogin />} />
                   </Route>
 
                   {/* Classic Dashboard (Wireframe Implementation) */}

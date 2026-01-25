@@ -59,7 +59,7 @@ services:
     env_file:
       - ./services/api/.env
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/email_service
+      # DATABASE_URL inherited from .env
       HTTP_PORT: 3001
       SMTP_PORT: 2525
       REDIS_HOST: redis
@@ -78,12 +78,15 @@ services:
       # Use env var for WEB_URL or default to production domain
       WEB_URL: ${WEB_URL:-https://app.manhquy.click}
       STORAGE_DIR: /app/storage
+      BACKUP_DIR: /app/backups
     depends_on:
       - postgres
       - mailpit
       - redis
     volumes:
       - email_storage:/app/storage
+      - ./backups:/app/backups
+      - /root/.config/rclone:/root/.config/rclone:ro
     ports:
       - "3001:3001"
       - "25:2525"

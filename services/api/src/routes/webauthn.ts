@@ -237,6 +237,9 @@ export async function webauthnRoutes(app: FastifyInstance) {
 
             // Login success: Issue JWT
             const user = credential.user;
+            if (!user) {
+                return reply.status(400).send({ error: "User not found" });
+            }
             if (user.isDisabled) {
                 return reply.status(403).send({ error: "Account is disabled" });
             }

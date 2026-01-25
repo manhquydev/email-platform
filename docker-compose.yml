@@ -72,6 +72,7 @@ services:
       OUTBOUND_SMTP_SECURE: "false"
       OUTBOUND_ENABLED: "true"
       ALLOW_AUTO_DOMAIN_CREATION: "true"
+      EPHEMERA_EDITION: "community"
       DEFAULT_ADMIN_EMAIL: "manhquydev@gmail.com"
       DEFAULT_ADMIN_PASSWORD: "Manhquy203@"
       # Use env var for WEB_URL or default to production domain

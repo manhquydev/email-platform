@@ -55,6 +55,7 @@ import { webhookTestReceiverRoutes } from "./routes/webhook-test-receiver";
 import { v1Routes } from "./routes/v1";
 import { identityBundleRoutes } from "./routes/identity-bundles";
 import { ephemeralInboxRoutes } from "./routes/ephemeral-inbox";
+import { referralRoutes } from "./routes/referral";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -418,6 +419,9 @@ export const buildServer = () => {
 
   // Phase 5: Public Ephemeral Inbox
   app.register(ephemeralInboxRoutes);
+
+  // Phase 6: Open-Core & Community
+  app.register(referralRoutes);
 
   // Realtime routes (WebSocket, SSE, Push)
   app.register(realtimeWsRoutes);

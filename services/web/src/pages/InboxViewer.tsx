@@ -3,7 +3,7 @@
  * Allows viewing public inboxes without authentication
  */
 import { useState } from "react";
-import { SearchForm } from "../components/inbox-viewer/search-form";
+import { InboxHeroSection } from "../components/inbox-viewer/inbox-hero-section";
 import { TelegramLinkModal } from "../components/telegram-link-modal";
 import { BackgroundEffects } from "../components/BackgroundEffects";
 import { MobileBottomSheet } from "../components/inbox-viewer/mobile-bottom-sheet";
@@ -48,7 +48,6 @@ export function InboxViewer() {
         handleKeyboardEscape,
     } = useInboxViewerData();
 
-    // Handle command palette actions
     const handleCommand = (commandId: string) => {
         switch (commandId) {
             case "refresh":
@@ -66,7 +65,6 @@ export function InboxViewer() {
         }
     };
 
-    // Keyboard navigation (j/k, Enter, Esc, Cmd+K)
     const { setFocusedIndex } = useKeyboardNavigation({
         itemCount: messages.length,
         onSelect: handleKeyboardSelect,
@@ -77,7 +75,6 @@ export function InboxViewer() {
         enabled: !!email && !accessError && messages.length > 0 && !showCommandPalette,
     });
 
-    // Sync focused index with keyboard navigation
     const handleFocusChange = (index: number) => {
         setFocusedIndex(index);
         handleKeyboardSelect(index);
@@ -86,10 +83,8 @@ export function InboxViewer() {
     return (
         <DensityProvider>
         <div className="min-h-screen bg-black relative">
-            {/* Background Effects */}
             <BackgroundEffects variant="subtle" />
 
-            {/* Header */}
             <InboxViewerHeader
                 email={email}
                 hasError={!!accessError}
@@ -101,12 +96,9 @@ export function InboxViewer() {
                 {accessError ? (
                     <AccessErrorDisplay error={accessError} onClear={handleClearError} />
                 ) : !email ? (
-                    <div className="py-20">
-                        <SearchForm onSearch={handleSearch} loading={loading} />
-                    </div>
+                    <InboxHeroSection onSearch={handleSearch} loading={loading} />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-[40%_60%] lg:grid-cols-[33%_67%] gap-0 md:gap-4 h-[calc(100vh-180px)]">
-                        {/* Message List */}
                         <MessageListPane
                             email={email}
                             messages={messages}
@@ -124,7 +116,6 @@ export function InboxViewer() {
                             onFocusChange={handleFocusChange}
                         />
 
-                        {/* Message Detail */}
                         <MessageDetailPane
                             message={selectedMessage}
                             loading={detailLoading}
@@ -133,7 +124,6 @@ export function InboxViewer() {
                 )}
             </main>
 
-            {/* Telegram Modal */}
             {showTelegramModal && (
                 <TelegramLinkModal
                     inboxEmail={email}
@@ -141,14 +131,12 @@ export function InboxViewer() {
                 />
             )}
 
-            {/* Command Palette (Desktop) */}
             <CommandPalette
                 isOpen={showCommandPalette}
                 onClose={() => setShowCommandPalette(false)}
                 onCommand={handleCommand}
             />
 
-            {/* Mobile Bottom Sheet */}
             <MobileBottomSheet
                 isOpen={!!selectedMessage}
                 onClose={handleKeyboardEscape}
@@ -159,6 +147,19 @@ export function InboxViewer() {
                     apiUrl={API_URL}
                 />
             </MobileBottomSheet>
+
+            {/* Minimal Footer - Branding (only on empty state) */}
+            {!email && (
+                <footer className="absolute bottom-0 left-0 right-0 py-4 text-center text-zinc-600 text-xs z-10">
+                    <div className="flex items-center justify-center gap-4">
+                        <span>© 2026 Ephemera</span>
+                        <span className="w-px h-3 bg-zinc-800" />
+                        <a href="/terms" className="hover:text-zinc-400 transition-colors">Điều khoản</a>
+                        <span className="w-px h-3 bg-zinc-800" />
+                        <a href="/privacy" className="hover:text-zinc-400 transition-colors">Bảo mật</a>
+                    </div>
+                </footer>
+            )}
         </div>
         </DensityProvider>
     );

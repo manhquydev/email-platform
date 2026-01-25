@@ -73,9 +73,14 @@ export function InboxViewerHeader({ email, hasError, onCopyShareLink, onOpenTele
     return (
         <header className="bg-black border-b border-zinc-800 relative z-10">
             <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-                <h1 className="text-xl font-bold text-white">
-                    Xem hộp thư công khai
-                </h1>
+                {/* Brand Logo + Title */}
+                <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <img src="/assets/logos/v2/ephemera-icon.svg" alt="Ephemera" className="w-8 h-8" />
+                    <div className="flex flex-col">
+                        <span className="text-lg font-bold text-white leading-tight">Ephemera</span>
+                        <span className="text-xs text-zinc-500 hidden sm:block">Xem hộp thư công khai</span>
+                    </div>
+                </a>
                 {email && !hasError && (
                     <div className="flex items-center gap-2">
                         <button

@@ -54,6 +54,7 @@ import { extensionRoutes } from "./routes/extension";
 import { webhookTestReceiverRoutes } from "./routes/webhook-test-receiver";
 import { v1Routes } from "./routes/v1";
 import { identityBundleRoutes } from "./routes/identity-bundles";
+import { ephemeralInboxRoutes } from "./routes/ephemeral-inbox";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -414,6 +415,9 @@ export const buildServer = () => {
 
   // Phase 4: Identity Suite Bundles
   app.register(identityBundleRoutes);
+
+  // Phase 5: Public Ephemeral Inbox
+  app.register(ephemeralInboxRoutes);
 
   // Realtime routes (WebSocket, SSE, Push)
   app.register(realtimeWsRoutes);

@@ -29,10 +29,15 @@ export interface ReferralStats {
 /**
  * Generate anonymous referral code from user ID
  * One-way hash ensures privacy
+ * SECURITY: Require secret in production to prevent forgeable codes
  */
 function generateReferralCode(userId: string): string {
+  const secret = process.env.REFERRAL_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('REFERRAL_SECRET is required in production');
+  }
   const hash = crypto.createHash('sha256')
-    .update(`referral:${userId}:${process.env.REFERRAL_SECRET || 'ephemera'}`)
+    .update(`referral:${userId}:${secret || 'dev-secret'}`)
     .digest('hex')
     .slice(0, 12)
     .toUpperCase();

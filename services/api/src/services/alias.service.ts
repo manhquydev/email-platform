@@ -28,7 +28,14 @@ export interface Alias {
 }
 
 // Simple encryption for forward addresses (use proper KMS in production)
-const ENCRYPTION_KEY = process.env.ALIAS_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex').slice(0, 32);
+// SECURITY: Require encryption key in production to prevent data loss on restart
+const ENCRYPTION_KEY = (() => {
+  const key = process.env.ALIAS_ENCRYPTION_KEY;
+  if (!key && process.env.NODE_ENV === 'production') {
+    throw new Error('ALIAS_ENCRYPTION_KEY is required in production');
+  }
+  return key || 'dev-only-key-do-not-use-in-prod!';
+})();
 
 function encrypt(text: string): string {
   const iv = crypto.randomBytes(16);

@@ -52,6 +52,7 @@ import realtimeSseRoutes from "./routes/realtime-sse";
 import pushRoutes from "./routes/push";
 import { extensionRoutes } from "./routes/extension";
 import { webhookTestReceiverRoutes } from "./routes/webhook-test-receiver";
+import { v1Routes } from "./routes/v1";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -406,6 +407,9 @@ export const buildServer = () => {
   app.register(teamRoutes);
   app.register(apiUsageRoutes);
   app.register(visibilityRulesRoutes);
+
+  // API v1 - Developer API
+  app.register(v1Routes);
 
   // Realtime routes (WebSocket, SSE, Push)
   app.register(realtimeWsRoutes);

@@ -1,0 +1,21 @@
+{
+  "name": "@ephemera/sdk",
+  "version": "1.0.0",
+  "description": "Official Node.js SDK for Ephemera API - Privacy-first temporary email",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["ephemera", "email", "temporary", "privacy", "api", "sdk"],
+  "author": "Ephemera",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

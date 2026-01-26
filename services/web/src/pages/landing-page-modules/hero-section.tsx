@@ -1,49 +1,38 @@
 /**
- * Hero Section - Main headline, CTAs, and terminal preview
+ * Hero Section - Instant ephemeral email widget + CTAs
+ * Redesigned to show temp email prominently like TempMail/Guerrilla Mail
  */
 import { Link } from "react-router-dom";
+import { HeroInboxWidget } from "./components/hero-inbox-widget";
 
 export function HeroSection() {
     return (
-        <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 min-h-screen flex flex-col justify-center z-10">
+        <section className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 min-h-screen flex flex-col justify-center z-10">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 {/* Version Badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm neo-animate-fade-in-up">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-sm neo-animate-fade-in-up">
                     <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    <span className="text-xs font-medium text-slate-300 tracking-wide uppercase">v2.0 Hiện Đã Có Mặt</span>
+                    <span className="text-xs font-medium text-slate-300 tracking-wide uppercase">Email Tạm Thời Miễn Phí</span>
                 </div>
 
                 {/* Headline */}
-                <h1 className="text-5xl sm:text-7xl font-bold tracking-tight mb-6 leading-[1.1] text-white neo-animate-fade-in-up neo-stagger-1">
-                    Inbox Vô Hình. <br />
-                    <span className="neo-text-gradient-animated">Khả Năng Vô Hạn.</span>
+                <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-4 leading-[1.1] text-white neo-animate-fade-in-up neo-stagger-1">
+                    Email Ẩn Danh. <br />
+                    <span className="neo-text-gradient-animated">Không Cần Đăng Ký.</span>
                 </h1>
 
                 {/* Subheadline */}
-                <p className="text-lg sm:text-xl text-[var(--nebula-text-secondary)] max-w-2xl mx-auto mb-10 font-light neo-animate-fade-in-up neo-stagger-2">
-                    Nền tảng email tạm thời và riêng tư cao cấp với hỗ trợ domain riêng và API cho nhà phát triển.
-                    Xây dựng cho bảo mật, ẩn danh và giao tiếp không để lại dấu vết.
+                <p className="text-base sm:text-lg text-[var(--nebula-text-secondary)] max-w-xl mx-auto mb-8 font-light neo-animate-fade-in-up neo-stagger-2">
+                    Tạo email tạm thời ngay lập tức. Nhận email realtime. Tự hủy sau 2 giờ.
                 </p>
 
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 neo-animate-fade-in-up neo-stagger-3">
-                    <Link to="/e" className="w-full sm:w-auto h-12 px-8 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg font-bold text-sm tracking-wide transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"><span className="material-symbols-outlined !text-[20px]">bolt</span>Thử ngay</Link>
-                    <Link to="/register" className="w-full sm:w-auto h-12 px-8 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg font-bold text-sm tracking-wide transition-all shadow-lg shadow-[var(--nebula-violet)]/25 flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined !text-[20px]">rocket_launch</span>
-                        Bắt đầu dùng thử
-                    </Link>
-                    <Link to="/docs" className="w-full sm:w-auto h-12 px-8 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-bold text-sm tracking-wide transition-all backdrop-blur-sm flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined !text-[20px]">description</span>
-                        Tài liệu
-                    </Link>
-                    <Link to="/inbox-viewer" className="w-full sm:w-auto h-12 px-8 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-bold text-sm tracking-wide transition-all backdrop-blur-sm flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined !text-[20px]">mail</span>
-                        Xem hộp thư
-                    </Link>
+                {/* INSTANT EMAIL WIDGET - Main attraction */}
+                <div className="neo-animate-fade-in-up neo-stagger-3 mb-10">
+                    <HeroInboxWidget />
                 </div>
 
                 {/* Trust Badge */}
-                <div className="mt-8 neo-animate-fade-in-up neo-stagger-3">
+                <div className="neo-animate-fade-in-up neo-stagger-4 mb-8">
                     <Link
                         to="/privacy"
                         className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/15 hover:border-green-500/50 transition-all group"
@@ -55,7 +44,23 @@ export function HeroSection() {
                     </Link>
                 </div>
 
-                {/* Terminal Preview */}
+                {/* Secondary CTAs */}
+                <div className="flex flex-wrap items-center justify-center gap-3 neo-animate-fade-in-up neo-stagger-5">
+                    <Link to="/register" className="h-10 px-6 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg font-medium text-sm transition-all shadow-lg shadow-[var(--nebula-violet)]/25 flex items-center gap-2">
+                        <span className="material-symbols-outlined !text-[18px]">person_add</span>
+                        Đăng ký tài khoản
+                    </Link>
+                    <Link to="/docs" className="h-10 px-6 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium text-sm transition-all backdrop-blur-sm flex items-center gap-2">
+                        <span className="material-symbols-outlined !text-[18px]">description</span>
+                        API Docs
+                    </Link>
+                    <Link to="/inbox-viewer" className="h-10 px-6 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium text-sm transition-all backdrop-blur-sm flex items-center gap-2">
+                        <span className="material-symbols-outlined !text-[18px]">search</span>
+                        Tìm hộp thư
+                    </Link>
+                </div>
+
+                {/* Terminal Preview - Moved down, smaller */}
                 <TerminalPreview />
             </div>
         </section>

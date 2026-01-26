@@ -6,7 +6,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { GlassCard } from "../components/ui/GlassCard";
 import { SEOHead } from "../components/seo/SEOHead";
-import { Fingerprint, KeyRound, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { loginWithPasskey } from "../services/anonymous-auth.service";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -70,7 +69,7 @@ export function AnonymousLogin() {
             to="/anonymous"
             className="inline-flex items-center gap-2 mb-6 text-text-secondary hover:text-white transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <span className="material-symbols-outlined !text-[16px]">arrow_back</span>
             <span className="text-sm">Quay lại</span>
           </Link>
 
@@ -80,7 +79,7 @@ export function AnonymousLogin() {
             className="inline-flex items-center gap-2 mb-8 hover:opacity-80 transition-opacity"
           >
             <div className="p-2 rounded-xl bg-primary/10 shadow-glow">
-              <Fingerprint className="w-6 h-6 text-primary" />
+              <span className="material-symbols-outlined !text-[24px] text-primary">fingerprint</span>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
               Ephemera
@@ -128,7 +127,7 @@ export function AnonymousLogin() {
                   </>
                 ) : (
                   <>
-                    <KeyRound className="w-5 h-5" />
+                    <span className="material-symbols-outlined !text-[20px]">key</span>
                     Đăng Nhập bằng Passkey
                   </>
                 )}

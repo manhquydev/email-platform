@@ -7,7 +7,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { GlassCard } from "../components/ui/GlassCard";
 import { SEOHead } from "../components/seo/SEOHead";
-import { Fingerprint, Shield, Copy, Check, ArrowRight, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   createAnonymousAccount,
@@ -39,7 +38,7 @@ export function AnonymousRegister() {
       setVisitorToken(result.visitorToken);
       setStep("success");
       toast.success("Tài khoản ẩn danh đã được tạo!");
-    } catch (error) {
+    } catch {
       toast.error("Không thể tạo tài khoản. Vui lòng thử lại.");
       setStep("intro");
     } finally {
@@ -63,7 +62,7 @@ export function AnonymousRegister() {
       await registerPasskey(account.accessToken);
       toast.success("Passkey đã được thiết lập!");
       navigate("/app");
-    } catch (error) {
+    } catch {
       toast.error("Không thể thiết lập Passkey. Vui lòng thử lại.");
       setStep("success");
     } finally {
@@ -88,7 +87,7 @@ export function AnonymousRegister() {
 
       {/* Security Badge */}
       <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-text-secondary">
-        <Shield className="w-4 h-4 text-green-500" />
+        <span className="material-symbols-outlined !text-[16px] text-green-500">shield</span>
         <span>Zero PII Collection</span>
       </div>
 
@@ -102,7 +101,7 @@ export function AnonymousRegister() {
             className="inline-flex items-center gap-2 mb-8 hover:opacity-80 transition-opacity"
           >
             <div className="p-2 rounded-xl bg-primary/10 shadow-glow">
-              <Fingerprint className="w-6 h-6 text-primary" />
+              <span className="material-symbols-outlined !text-[24px] text-primary">fingerprint</span>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
               Ephemera
@@ -123,17 +122,17 @@ export function AnonymousRegister() {
 
               <div className="space-y-4 py-4">
                 <FeatureItem
-                  icon={<Shield className="w-5 h-5 text-green-500" />}
+                  icon={<span className="material-symbols-outlined !text-[20px] text-green-500">shield</span>}
                   title="Zero PII"
                   description="Không thu thập thông tin cá nhân nào"
                 />
                 <FeatureItem
-                  icon={<KeyRound className="w-5 h-5 text-blue-500" />}
+                  icon={<span className="material-symbols-outlined !text-[20px] text-blue-500">key</span>}
                   title="Passkey Security"
                   description="Bảo mật bằng sinh trắc học thiết bị"
                 />
                 <FeatureItem
-                  icon={<Fingerprint className="w-5 h-5 text-purple-500" />}
+                  icon={<span className="material-symbols-outlined !text-[20px] text-purple-500">fingerprint</span>}
                   title="Mã Tài Khoản"
                   description="Mã 16 ký tự để khôi phục tài khoản"
                 />
@@ -144,7 +143,7 @@ export function AnonymousRegister() {
                 disabled={busy}
                 className="w-full py-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 shadow-glow"
               >
-                <Fingerprint className="w-5 h-5" />
+                <span className="material-symbols-outlined !text-[20px]">fingerprint</span>
                 Tạo Tài Khoản Ẩn Danh
               </button>
 
@@ -161,7 +160,7 @@ export function AnonymousRegister() {
           {step === "creating" && (
             <div className="py-12 text-center space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-                <Fingerprint className="w-8 h-8 text-primary" />
+                <span className="material-symbols-outlined !text-[32px] text-primary">fingerprint</span>
               </div>
               <p className="text-text-secondary">Đang tạo tài khoản ẩn danh...</p>
             </div>
@@ -172,7 +171,7 @@ export function AnonymousRegister() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <Check className="w-8 h-8 text-green-500" />
+                  <span className="material-symbols-outlined !text-[32px] text-green-500">check</span>
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Tài Khoản Đã Tạo!</h2>
                 <p className="text-text-secondary text-sm">
@@ -194,9 +193,9 @@ export function AnonymousRegister() {
                   title="Sao chép mã"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-green-500" />
+                    <span className="material-symbols-outlined !text-[16px] text-green-500">check</span>
                   ) : (
-                    <Copy className="w-4 h-4 text-text-secondary" />
+                    <span className="material-symbols-outlined !text-[16px] text-text-secondary">content_copy</span>
                   )}
                 </button>
               </div>
@@ -215,7 +214,7 @@ export function AnonymousRegister() {
                   disabled={busy}
                   className="w-full py-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
                 >
-                  <KeyRound className="w-5 h-5" />
+                  <span className="material-symbols-outlined !text-[20px]">key</span>
                   Thiết Lập Passkey (Khuyến nghị)
                 </button>
                 <button
@@ -223,7 +222,7 @@ export function AnonymousRegister() {
                   className="w-full py-3 bg-transparent border border-border hover:bg-white/5 rounded-xl text-text-secondary transition-colors flex items-center justify-center gap-2"
                 >
                   Bỏ qua, tiếp tục
-                  <ArrowRight className="w-4 h-4" />
+                  <span className="material-symbols-outlined !text-[16px]">arrow_forward</span>
                 </button>
               </div>
             </div>
@@ -233,7 +232,7 @@ export function AnonymousRegister() {
           {step === "passkey" && (
             <div className="py-12 text-center space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full bg-blue-500/20 flex items-center justify-center animate-pulse">
-                <KeyRound className="w-8 h-8 text-blue-500" />
+                <span className="material-symbols-outlined !text-[32px] text-blue-500">key</span>
               </div>
               <p className="text-text-secondary">
                 Đang thiết lập Passkey...

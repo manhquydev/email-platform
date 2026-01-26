@@ -62,7 +62,8 @@ export async function registerPasskey(token: string): Promise<boolean> {
   );
 
   // Step 2: Create credential with browser WebAuthn API
-  const credential = await startRegistration({ optionsJSON: options });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const credential = await startRegistration({ optionsJSON: options as any });
 
   // Step 3: Verify with server
   const result = await api<{ success: boolean }>(
@@ -93,7 +94,8 @@ export async function loginWithPasskey(
   );
 
   // Step 2: Authenticate with browser WebAuthn API
-  const credential = await startAuthentication({ optionsJSON: options });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const credential = await startAuthentication({ optionsJSON: options as any });
 
   // Step 3: Verify with server
   const result = await api<{ accessToken: string; accountCode: string }>(

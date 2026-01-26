@@ -49,7 +49,7 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
     const [error, setError] = useState<string | null>(null);
     const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Load token from localStorage on mount
     useEffect(() => {

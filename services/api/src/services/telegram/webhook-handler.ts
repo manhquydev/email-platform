@@ -24,6 +24,7 @@ import {
     handleUnlinkInbox,
     handleNoop,
     handleCancelAction,
+    handleAcknowledge,
 } from './commands';
 import type { TelegramUpdate, TelegramMessage, TelegramCallbackQuery } from './types';
 
@@ -56,6 +57,7 @@ const callbackHandlers: Record<string, CallbackHandler> = {
     'unlink_inbox': handleUnlinkInbox,
     'noop': handleNoop,
     'cancel_action': handleCancelAction,
+    'ack': handleAcknowledge,
 };
 
 /**

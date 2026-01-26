@@ -361,3 +361,29 @@ export async function handleNoop(_chatId: string, _data: string, query: Telegram
 export async function handleCancelAction(_chatId: string, _data: string, query: TelegramCallbackQuery): Promise<void> {
     await respondToCallbackQuery(query.id, { text: 'Đã hủy thao tác' });
 }
+
+/**
+ * Handle acknowledge button press for admin notifications
+ */
+export async function handleAcknowledge(chatId: string, notificationId: string, query: TelegramCallbackQuery): Promise<void> {
+    try {
+        // Update notification log to mark as acknowledged
+        await prisma.notificationLog.updateMany({
+            where: {
+                notificationId,
+                channel: 'TELEGRAM',
+            },
+            data: {
+                metadata: {
+                    acknowledgedAt: new Date().toISOString(),
+                    acknowledgedBy: chatId,
+                },
+            },
+        });
+
+        await respondToCallbackQuery(query.id, { text: '✓ Đã xác nhận đọc thông báo' });
+    } catch (error) {
+        console.error('[Telegram] Acknowledge error:', error);
+        await respondToCallbackQuery(query.id, { text: 'Có lỗi xảy ra' });
+    }
+}

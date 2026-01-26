@@ -7,6 +7,8 @@ import { prisma } from '../../lib/prisma';
 import { extractOTP } from '../../utils/otpExtractor';
 import { MAX_MESSAGE_LENGTH, PREVIEW_LENGTH, NOTIFICATION_EMOJIS, getWebUrl } from './constants';
 import { sendTelegramMessage, sendTelegramPhoto, escapeHtml } from './api';
+import { formatNotificationMessage, stripHtmlForTelegram } from './notification-formatter';
+import { buildNotificationKeyboard } from './inline-keyboard-builder';
 
 /**
  * Send email notification via Telegram
@@ -66,10 +68,11 @@ export async function notifyNewEmail(
         ].filter(row => row.length > 0)
     };
 
-    return sendTelegramMessage(user.telegramChatId, lines.join('\n'), {
+    const result = await sendTelegramMessage(user.telegramChatId, lines.join('\n'), {
         parseMode: 'Markdown',
         replyMarkup,
     });
+    return result.success;
 }
 
 /**
@@ -134,12 +137,13 @@ export async function notifyInboxTelegramSubscribers(
             let errorMessage: string | null = null;
 
             try {
-                success = await sendTelegramMessage(link.telegramChatId, text, {
+                const result = await sendTelegramMessage(link.telegramChatId, text, {
                     parseMode: "HTML",
                     replyMarkup: {
                         inline_keyboard: inlineKeyboard,
                     },
                 });
+                success = result.success;
                 if (!success) {
                     errorMessage = "Send failed";
                 }
@@ -165,35 +169,60 @@ export async function notifyInboxTelegramSubscribers(
     );
 }
 
+export interface SendNotificationOptions {
+    silent?: boolean;
+    notificationId?: string;
+    showAcknowledge?: boolean;
+}
+
+export interface SendNotificationResult {
+    success: boolean;
+    messageId?: number;
+}
+
 /**
  * Send a notification to a user via Telegram
+ * Enhanced with inline keyboards and delivery tracking
  */
 export async function sendNotificationToUser(
     userId: string,
     title: string,
     message: string,
     type: string,
-    imageUrl?: string
-): Promise<boolean> {
+    imageUrl?: string,
+    options?: SendNotificationOptions
+): Promise<SendNotificationResult> {
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { telegramChatId: true }
     });
 
     if (!user?.telegramChatId) {
-        return false;
+        return { success: false };
     }
 
-    const emoji = NOTIFICATION_EMOJIS[type] || NOTIFICATION_EMOJIS.DEFAULT;
-    const text = `${emoji} *${title}*\n\n${message}`;
+    // Strip HTML if present and format message
+    const cleanMessage = stripHtmlForTelegram(message);
+    const text = formatNotificationMessage({ title, message: cleanMessage, type });
+
+    // Build inline keyboard with acknowledge button
+    const webUrl = getWebUrl();
+    const replyMarkup = buildNotificationKeyboard({
+        showAcknowledge: options?.showAcknowledge,
+        notificationId: options?.notificationId,
+        webUrl: `${webUrl}/app`,
+    });
+
+    const sendOptions = {
+        parseMode: 'MarkdownV2' as const,
+        replyMarkup: replyMarkup.inline_keyboard.length > 0 ? replyMarkup : undefined,
+        silent: options?.silent,
+    };
 
     if (imageUrl) {
-        return sendTelegramPhoto(user.telegramChatId, imageUrl, text, {
-            parseMode: 'Markdown'
-        });
+        const success = await sendTelegramPhoto(user.telegramChatId, imageUrl, text, sendOptions);
+        return { success };
     }
 
-    return sendTelegramMessage(user.telegramChatId, text, {
-        parseMode: 'Markdown'
-    });
+    return sendTelegramMessage(user.telegramChatId, text, sendOptions);
 }

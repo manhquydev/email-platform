@@ -49,16 +49,17 @@ export async function setupBotCommands(): Promise<boolean> {
 
 /**
  * Send a message via Telegram Bot API
+ * Returns message_id on success, null on failure
  */
 export async function sendTelegramMessage(
     chatId: string,
     text: string,
     options?: SendMessageOptions
-): Promise<boolean> {
+): Promise<{ success: boolean; messageId?: number }> {
     const token = getBotToken();
     if (!token) {
         console.error('[Telegram] Bot token not configured');
-        return false;
+        return { success: false };
     }
 
     try {
@@ -70,19 +71,22 @@ export async function sendTelegramMessage(
                 text,
                 parse_mode: options?.parseMode || 'Markdown',
                 reply_markup: options?.replyMarkup,
+                disable_notification: options?.silent,
+                protect_content: options?.protectContent,
             }),
         });
 
         if (!response.ok) {
             const error = await response.json();
             console.error('[Telegram] Send message failed:', error);
-            return false;
+            return { success: false };
         }
 
-        return true;
+        const result = await response.json();
+        return { success: true, messageId: result.result?.message_id };
     } catch (error) {
         console.error('[Telegram] Send message error:', error);
-        return false;
+        return { success: false };
     }
 }
 
@@ -119,7 +123,8 @@ export async function sendTelegramPhoto(
             console.error('[Telegram] Send photo failed:', error);
             // Fallback to text message if photo fails
             if (caption) {
-                return sendTelegramMessage(chatId, caption, options);
+                const result = await sendTelegramMessage(chatId, caption, options);
+                return result.success;
             }
             return false;
         }

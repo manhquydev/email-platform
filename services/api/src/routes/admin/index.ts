@@ -15,6 +15,8 @@ import { adminSystemRoutes } from "./system";
 import { adminAnalyticsRoutes } from "./analytics";
 import { adminTelegramRoutes } from "./telegram";
 import { adminBackupRoutes } from "./backup";
+import { notificationTemplateRoutes } from "./notification-templates";
+import { notificationLogRoutes } from "./notification-logs";
 
 export async function adminRoutes(app: FastifyInstance) {
     // Register all admin route modules
@@ -29,6 +31,10 @@ export async function adminRoutes(app: FastifyInstance) {
     await adminAnalyticsRoutes(app);
     await adminTelegramRoutes(app);
     await adminBackupRoutes(app);
+
+    // Notification management routes
+    app.register(notificationTemplateRoutes, { prefix: '/notifications/templates' });
+    app.register(notificationLogRoutes, { prefix: '/notifications/logs' });
 }
 
 // Re-export individual modules for selective use

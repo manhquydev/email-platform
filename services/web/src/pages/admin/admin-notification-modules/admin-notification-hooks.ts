@@ -17,6 +17,8 @@ export interface NotificationFormState {
     targetUserId: string;
     imageUrl: string;
     busy: boolean;
+    isScheduled: boolean;
+    scheduledFor: string;
 }
 
 /** Hook to manage notification form state and submission */
@@ -28,6 +30,8 @@ export function useNotificationForm(token: string | null) {
     const [targetUserId, setTargetUserId] = useState("");
     const [imageUrl, setImageUrl] = useState("");
     const [busy, setBusy] = useState(false);
+    const [isScheduled, setIsScheduled] = useState(false);
+    const [scheduledFor, setScheduledFor] = useState("");
 
     const resetForm = () => {
         setTitle("");
@@ -35,6 +39,8 @@ export function useNotificationForm(token: string | null) {
         setType("INFO");
         setTargetUserId("");
         setImageUrl("");
+        setIsScheduled(false);
+        setScheduledFor("");
     };
 
     const submit = async (e: FormEvent) => {
@@ -50,26 +56,53 @@ export function useNotificationForm(token: string | null) {
             return;
         }
 
+        if (isScheduled && !scheduledFor) {
+            toast.error("Vui lòng chọn thời gian gửi");
+            return;
+        }
+
         setBusy(true);
-        const toastId = toast.loading("Đang gửi thông báo...");
+        const toastId = toast.loading(isScheduled ? "Đang lên lịch..." : "Đang gửi thông báo...");
 
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const payload: any = { title, message, type, imageUrl };
+            if (isScheduled) {
+                // Schedule notification
+                const payload = {
+                    title,
+                    message,
+                    type,
+                    targetMode: targetMode === "all" ? "ALL" : "SPECIFIC",
+                    targetUserId: targetMode === "specific" ? targetUserId : undefined,
+                    imageUrl: imageUrl || undefined,
+                    scheduledFor: new Date(scheduledFor).toISOString(),
+                };
 
-            if (targetMode === "specific") {
-                payload.targetUserId = targetUserId;
+                await api<{ success: boolean }>("/notifications/admin/schedule", {
+                    method: "POST",
+                    token: token || undefined,
+                    body: payload
+                });
+
+                toast.success("Đã lên lịch thông báo thành công", { id: toastId });
             } else {
-                payload.sendToAll = true;
+                // Send immediately
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const payload: any = { title, message, type, imageUrl };
+
+                if (targetMode === "specific") {
+                    payload.targetUserId = targetUserId;
+                } else {
+                    payload.sendToAll = true;
+                }
+
+                const res = await api<{ success: boolean; count?: number }>("/notifications/admin/send", {
+                    method: "POST",
+                    token: token || undefined,
+                    body: payload
+                });
+
+                toast.success(`Gửi thành công cho ${res.count || 1} người dùng`, { id: toastId });
             }
-
-            const res = await api<{ success: boolean; count?: number }>("/notifications/admin/send", {
-                method: "POST",
-                token: token || undefined,
-                body: payload
-            });
-
-            toast.success(`Gửi thành công cho ${res.count || 1} người dùng`, { id: toastId });
             resetForm();
         } catch (error) {
             toast.error(getFriendlyErrorMessage((error as Error).message), { id: toastId });
@@ -107,6 +140,8 @@ export function useNotificationForm(token: string | null) {
         targetMode, setTargetMode,
         targetUserId, setTargetUserId,
         imageUrl, setImageUrl,
+        isScheduled, setIsScheduled,
+        scheduledFor, setScheduledFor,
         busy,
         submit,
         handleImageUpload

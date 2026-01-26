@@ -642,18 +642,109 @@ model PendingPayment {
 }
 
 model Notification {
-  id        String           @id @default(uuid())
-  userId    String? // Null if system-wide/all users (logic handled in app) or specific user
-  type      NotificationType @default(INFO)
-  title     String
-  message   String           @db.Text
-  imageUrl  String?
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
+  id         String           @id @default(uuid())
+  userId     String? // Null if system-wide/all users (logic handled in app) or specific user
+  type       NotificationType @default(INFO)
+  title      String
+  message    String           @db.Text
+  imageUrl   String?
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  templateId String?
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template NotificationTemplate? @relation(fields: [templateId], references: [id])
+  logs     NotificationLog[]
 
   @@index([userId])
+  @@index([templateId])
+  @@index([createdAt])
+}
+
+// Phase: Admin Notifications Upgrade - Templates, Logs, Scheduling
+
+model NotificationTemplate {
+  id         String           @id @default(uuid())
+  name       String           @unique
+  title      String
+  message    String           @db.Text
+  type       NotificationType @default(INFO)
+  variables  Json?            // [{name: "username", required: true, description: "User name"}]
+  imageUrl   String?
+  isArchived Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  notifications          Notification[]
+  scheduledNotifications ScheduledNotification[]
+
+  @@index([isArchived])
+  @@index([name])
+}
+
+model NotificationLog {
+  id             String              @id @default(uuid())
+  notificationId String
+  channel        NotificationChannel
+  status         DeliveryStatus
+  errorMessage   String?
+  metadata       Json?               // Telegram message_id, retry count, etc.
+  sentAt         DateTime            @default(now())
+  acknowledgedAt DateTime?
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([channel, status])
+  @@index([sentAt])
+}
+
+model ScheduledNotification {
+  id           String         @id @default(uuid())
+  templateId   String?
+  title        String
+  message      String         @db.Text
+  type         NotificationType @default(INFO)
+  imageUrl     String?
+  targetMode   TargetMode
+  targetUserId String?
+  scheduledFor DateTime
+  status       ScheduleStatus @default(PENDING)
+  executedAt   DateTime?
+  createdBy    String
+  createdAt    DateTime       @default(now())
+
+  template NotificationTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([status, scheduledFor])
+  @@index([createdBy])
+}
+
+enum NotificationChannel {
+  WEB
+  TELEGRAM
+  PUSH
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  ACKNOWLEDGED
+}
+
+enum ScheduleStatus {
+  PENDING
+  EXECUTED
+  CANCELLED
+  FAILED
+}
+
+enum TargetMode {
+  SPECIFIC
+  ALL
+  SEGMENT
 }
 
 enum NotificationType {

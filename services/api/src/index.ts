@@ -11,6 +11,7 @@ import { runDomainVerificationSweep } from "./services/domain-verification.servi
 import cron from "node-cron";
 import { runAutomatedCleanup } from "./utils/cleanup";
 import { syncPostfixRelayDomains } from "./utils/postfix-sync";
+import { startNotificationScheduler } from "./jobs/notification-scheduler-cron";
 
 const ensureStorageDir = async () => {
   await fs.mkdir(appConfig.storageDir, { recursive: true });
@@ -101,6 +102,10 @@ const main = async () => {
   const cleanupJob = cron.schedule("0 3 * * *", () => {
     runAutomatedCleanup().catch(err => app.log.error({ err }, "Daily cleanup failed"));
   });
+
+  // Start notification scheduler for scheduled notifications
+  startNotificationScheduler();
+  app.log.info("Notification scheduler started");
 
   const close = async () => {
     app.log.info("Graceful shutdown initiated...");

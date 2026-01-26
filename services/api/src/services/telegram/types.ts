@@ -38,8 +38,10 @@ export interface TelegramUpdate {
 }
 
 export interface SendMessageOptions {
-    parseMode?: 'Markdown' | 'HTML';
+    parseMode?: 'Markdown' | 'HTML' | 'MarkdownV2';
     replyMarkup?: object;
+    silent?: boolean;
+    protectContent?: boolean;
 }
 
 export interface CallbackQueryOptions {

@@ -3,6 +3,7 @@
  * Used in hero-inbox-widget for ephemeral inbox customization
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { ephemeralService, type EphemeralDomain } from '../../services/ephemeralService';
 
 // Alias validation regex (matches backend)
@@ -23,6 +24,7 @@ export function AliasCustomizer({ onAliasChange, disabled = false }: AliasCustom
     const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle');
     const [validationError, setValidationError] = useState<string | null>(null);
     const [isLoadingDomains, setIsLoadingDomains] = useState(false);
+    const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
 
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -119,8 +121,16 @@ export function AliasCustomizer({ onAliasChange, disabled = false }: AliasCustom
         onAliasChange(sanitized, selectedDomainId);
     }, [validateAliasFormat, checkAvailability, selectedDomainId, onAliasChange]);
 
-    // Handle domain change
+    // Handle domain change with premium check
     const handleDomainChange = useCallback((domainId: string) => {
+        const domain = domains.find(d => d.id === domainId);
+
+        // Show premium prompt if selecting premium domain
+        if (domain?.isPremium) {
+            setShowPremiumPrompt(true);
+            return; // Don't actually select it
+        }
+
         setSelectedDomainId(domainId);
         onAliasChange(alias || null, domainId);
 
@@ -128,7 +138,7 @@ export function AliasCustomizer({ onAliasChange, disabled = false }: AliasCustom
         if (alias && domainId) {
             checkAvailability(alias, domainId);
         }
-    }, [alias, checkAvailability, onAliasChange]);
+    }, [alias, domains, checkAvailability, onAliasChange]);
 
     // Get selected domain name
     const selectedDomain = domains.find(d => d.id === selectedDomainId);
@@ -224,6 +234,47 @@ export function AliasCustomizer({ onAliasChange, disabled = false }: AliasCustom
                             Email: <span className="text-white">{alias}@{selectedDomain.name}</span>
                         </p>
                     )}
+
+                    {/* Premium domains info */}
+                    {domains.some(d => d.isPremium) && (
+                        <p className="text-xs text-white/40 flex items-center gap-1">
+                            <span className="material-symbols-outlined !text-[14px]">lock</span>
+                            Domain có 🔒 cần tài khoản Premium
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* Premium Upgrade Prompt Modal */}
+            {showPremiumPrompt && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="neo-glass rounded-2xl p-6 max-w-sm mx-4 border border-white/20 shadow-2xl">
+                        <div className="text-center">
+                            <span className="material-symbols-outlined text-amber-400 !text-[48px] mb-3">
+                                workspace_premium
+                            </span>
+                            <h3 className="text-lg font-semibold text-white mb-2">
+                                Domain Premium
+                            </h3>
+                            <p className="text-sm text-white/70 mb-4">
+                                Domain này chỉ dành cho tài khoản Premium. Nâng cấp để sử dụng domain riêng biệt và nhiều tính năng khác.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowPremiumPrompt(false)}
+                                    className="flex-1 px-4 py-2 text-sm bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg transition-all"
+                                >
+                                    Để sau
+                                </button>
+                                <Link
+                                    to="/register"
+                                    className="flex-1 px-4 py-2 text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg font-medium transition-all text-center"
+                                >
+                                    Nâng cấp
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

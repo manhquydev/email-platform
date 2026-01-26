@@ -11,6 +11,9 @@ const DEFAULT_EXPIRY_HOURS = 2;
 const EPHEMERAL_DOMAIN = process.env.EPHEMERAL_DOMAIN || "ephemera.email";
 const CLEANUP_BATCH_SIZE = 1000; // Process in batches to avoid memory issues
 
+// Premium domains require STARTER+ subscription (comma-separated list from env)
+const PREMIUM_DOMAINS = (process.env.PREMIUM_DOMAINS || "").split(",").filter(Boolean).map(d => d.trim().toLowerCase());
+
 // Domain cache to avoid repeated DB lookups
 let cachedDomainId: string | null = null;
 
@@ -374,12 +377,11 @@ export const ephemeralInboxService = {
       orderBy: { name: 'asc' },
     });
 
-    // For now, all public domains are non-premium
-    // Premium gating will be added in Phase 3
+    // Mark domains as premium based on env config
     return domains.map(d => ({
       id: d.id,
       name: d.name,
-      isPremium: false,
+      isPremium: PREMIUM_DOMAINS.includes(d.name.toLowerCase()),
     }));
   },
 

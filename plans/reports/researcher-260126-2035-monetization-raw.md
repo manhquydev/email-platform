@@ -1,0 +1,1 @@
+MCP server 'supabase' requires authentication using: /mcp auth supabase

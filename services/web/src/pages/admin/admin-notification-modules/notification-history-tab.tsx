@@ -7,8 +7,8 @@ import {
   useNotificationDetail,
   useResendNotification,
   useExportLogs,
-  HistoryFilters,
-  NotificationHistoryItem,
+  type HistoryFilters,
+  type NotificationHistoryItem,
 } from './notification-history-hooks';
 import { NotificationHistoryTable } from './notification-history-table';
 import { NotificationHistoryFilters } from './notification-history-filters';

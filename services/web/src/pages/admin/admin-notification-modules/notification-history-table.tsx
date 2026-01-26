@@ -7,11 +7,11 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   flexRender,
-  ColumnDef,
+  type ColumnDef,
 } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { NotificationHistoryItem } from './notification-history-hooks';
+import type { NotificationHistoryItem } from './notification-history-hooks';
 
 interface Props {
   data: NotificationHistoryItem[];

@@ -134,6 +134,7 @@ export default {
                 'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
                 'float': 'float 6s ease-in-out infinite',
                 'slide-in-left': 'slide-in-left 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                'slide-right': 'slideRight 1s ease-in-out infinite',
             },
             keyframes: {
                 'glow-pulse': {
@@ -147,7 +148,13 @@ export default {
                 'slide-in-left': {
                     '0%': { transform: 'translateX(-100%)' },
                     '100%': { transform: 'translateX(0)' },
-                }
+                },
+                'slideRight': {
+                    // Progress bar slides from -100% to 400% (with w-1/3 width = 33%,
+                    // traveling 500% total ensures it fully exits the container)
+                    '0%': { transform: 'translateX(-100%)' },
+                    '100%': { transform: 'translateX(400%)' },
+                },
             },
         },
     },

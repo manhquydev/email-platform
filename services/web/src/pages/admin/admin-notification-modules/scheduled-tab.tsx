@@ -2,13 +2,13 @@
  * ScheduledTab - Tab for managing scheduled notifications
  */
 import { useState, useEffect } from 'react';
-import { useScheduledNotifications, useScheduleActions, ScheduledNotification } from './scheduled-notification-hooks';
+import { useScheduledNotifications, useScheduleActions, type ScheduledNotification } from './scheduled-notification-hooks';
 import { ScheduledList } from './scheduled-list';
 
 export function ScheduledTab() {
   const { items, loading, error, fetchScheduled } = useScheduledNotifications();
   const { cancelScheduled, loading: actionLoading } = useScheduleActions();
-  const [editingItem, setEditingItem] = useState<ScheduledNotification | null>(null);
+  const [_editingItem, setEditingItem] = useState<ScheduledNotification | null>(null);
 
   useEffect(() => {
     fetchScheduled();

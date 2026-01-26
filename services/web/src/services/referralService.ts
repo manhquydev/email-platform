@@ -83,7 +83,7 @@ export const referralService = {
     /**
      * Generate social share URLs
      */
-    generateSocialLinks(code: string, shareUrl: string) {
+    generateSocialLinks(_code: string, shareUrl: string) {
         const message = encodeURIComponent('Tham gia Ephemera để bảo vệ quyền riêng tư email của bạn! Dùng mã giới thiệu của tôi để nhận +10 bí danh miễn phí:');
         return {
             twitter: `https://twitter.com/intent/tweet?text=${message}&url=${encodeURIComponent(shareUrl)}`,

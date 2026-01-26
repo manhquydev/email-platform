@@ -2,7 +2,7 @@
  * ScheduledList - Table view for scheduled notifications with countdown
  */
 import { useState, useEffect } from 'react';
-import { ScheduledNotification } from './scheduled-notification-hooks';
+import type { ScheduledNotification } from './scheduled-notification-hooks';
 
 interface Props {
   items: ScheduledNotification[];

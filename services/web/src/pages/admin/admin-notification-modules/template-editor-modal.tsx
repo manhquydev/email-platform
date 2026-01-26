@@ -2,7 +2,7 @@
  * TemplateEditorModal - Modal for creating/editing templates
  */
 import { useState, useEffect } from 'react';
-import { NotificationTemplate, TemplatePayload } from './template-hooks';
+import type { NotificationTemplate, TemplatePayload } from './template-hooks';
 import { TiptapEditor } from './tiptap-editor';
 
 interface Props {

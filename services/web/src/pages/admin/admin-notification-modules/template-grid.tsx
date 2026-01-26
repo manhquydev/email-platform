@@ -1,7 +1,7 @@
 /**
  * TemplateGrid - Card grid layout for browsing templates
  */
-import { NotificationTemplate } from './template-hooks';
+import type { NotificationTemplate } from './template-hooks';
 
 interface Props {
   templates: NotificationTemplate[];

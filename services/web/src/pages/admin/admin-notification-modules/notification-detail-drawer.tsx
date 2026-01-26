@@ -3,7 +3,7 @@
  */
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { NotificationHistoryItem } from './notification-history-hooks';
+import type { NotificationHistoryItem } from './notification-history-hooks';
 
 interface Props {
   item: NotificationHistoryItem | null;

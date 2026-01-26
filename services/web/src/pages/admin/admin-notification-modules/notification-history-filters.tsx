@@ -2,7 +2,7 @@
  * NotificationHistoryFilters - Filter popover for notification logs
  */
 import { useState } from 'react';
-import { HistoryFilters } from './notification-history-hooks';
+import type { HistoryFilters } from './notification-history-hooks';
 
 interface Props {
   filters: HistoryFilters;

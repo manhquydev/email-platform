@@ -19,7 +19,8 @@ const {
   getGitRoot,
   resolvePlanPath,
   getReportsPath,
-  normalizePath
+  normalizePath,
+  extractTaskListId
 } = require('./lib/ck-config-utils.cjs');
 
 /**
@@ -60,13 +61,16 @@ async function main() {
 
     // Use payload.cwd if provided for git operations (monorepo support)
     // This ensures subagent resolves paths relative to its own CWD, not process.cwd()
-    const effectiveCwd = payload.cwd || process.cwd();
+    // Issue #327: Use trim() to handle empty string edge case
+    const effectiveCwd = payload.cwd?.trim() || process.cwd();
 
     // Compute naming pattern directly (don't rely on env vars which may not propagate)
     // Pass effectiveCwd to git commands to support monorepo/submodule scenarios
     const gitBranch = getGitBranch(effectiveCwd);
     const gitRoot = getGitRoot(effectiveCwd);
-    const baseDir = gitRoot || effectiveCwd;
+    // Issue #327: Use CWD as base for subdirectory workflow support
+    // Git root is kept for reference but CWD determines where files are created
+    const baseDir = effectiveCwd;
 
     // Debug logging for path resolution troubleshooting
     if (process.env.CK_DEBUG) {
@@ -74,11 +78,16 @@ async function main() {
     }
     const namePattern = resolveNamingPattern(config.plan, gitBranch);
 
-    // Resolve plan and reports path - use absolute paths based on git root (Issue #291)
-    const resolved = resolvePlanPath(null, config);
+    // Resolve plan and reports path - use absolute paths based on CWD (Issue #327)
+    // Use session_id from payload to resolve active plan context (Issue #321)
+    const sessionId = payload.session_id || process.env.CK_SESSION_ID || null;
+    const resolved = resolvePlanPath(sessionId, config);
     const reportsPath = getReportsPath(resolved.path, resolved.resolvedBy, config.plan, config.paths, baseDir);
     const activePlan = resolved.resolvedBy === 'session' ? resolved.path : '';
     const suggestedPlan = resolved.resolvedBy === 'branch' ? resolved.path : '';
+
+    // Extract task list ID for Claude Code Tasks coordination (shared helper, DRY)
+    const taskListId = extractTaskListId(resolved);
     const plansPath = path.join(baseDir, normalizePath(config.paths?.plans) || 'plans');
     const docsPath = path.join(baseDir, normalizePath(config.paths?.docs) || 'docs');
     const thinkingLanguage = config.locale?.thinkingLanguage || '';
@@ -98,6 +107,9 @@ async function main() {
     lines.push(`## Context`);
     if (activePlan) {
       lines.push(`- Plan: ${activePlan}`);
+      if (taskListId) {
+        lines.push(`- Task List: ${taskListId} (shared with session)`);
+      }
     } else if (suggestedPlan) {
       lines.push(`- Plan: none | Suggested: ${suggestedPlan}`);
     } else {

@@ -2,7 +2,7 @@
  * TemplateManagementTab - Main orchestrating component for template management
  */
 import { useState, useEffect } from 'react';
-import { useTemplates, useTemplateActions, NotificationTemplate, TemplatePayload } from './template-hooks';
+import { useTemplates, useTemplateActions, type NotificationTemplate, type TemplatePayload } from './template-hooks';
 import { TemplateGrid } from './template-grid';
 import { TemplateEditorModal } from './template-editor-modal';
 import { TemplatePreviewModal } from './template-preview-modal';

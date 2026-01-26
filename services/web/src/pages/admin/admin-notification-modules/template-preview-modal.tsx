@@ -2,7 +2,8 @@
  * TemplatePreviewModal - Preview template in different formats
  */
 import { useState } from 'react';
-import { NotificationTemplate, TEMPLATE_VARIABLES } from './template-hooks';
+import type { NotificationTemplate } from './template-hooks';
+import { TEMPLATE_VARIABLES } from './template-hooks';
 
 interface Props {
   template: NotificationTemplate | null;

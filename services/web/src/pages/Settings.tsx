@@ -12,6 +12,7 @@ import { LabelsTab } from "../components/settings/LabelsTab";
 import { TeamSettings } from "../components/settings/TeamSettings";
 import { RetentionSettings } from "../components/settings/RetentionSettings";
 import { SettingsTabs } from "../components/settings/SettingsTabs";
+import { ReferralSection } from "./settings-modules/referral-section";
 import type { Inbox } from "../types";
 
 // Types
@@ -31,7 +32,7 @@ interface UserProfile {
     limits: { domains: number; inboxes: number; storageGB: number; dailyEmails: number };
 }
 
-type SettingsTab = 'general' | 'security' | 'subscription' | 'developer' | 'notifications' | 'filters' | 'labels' | 'teams' | 'retention' | 'domains';
+type SettingsTab = 'general' | 'security' | 'subscription' | 'developer' | 'notifications' | 'filters' | 'labels' | 'teams' | 'retention' | 'domains' | 'referral';
 
 export function Settings() {
     const { token } = useAuth();
@@ -46,7 +47,7 @@ export function Settings() {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const tab = params.get('tab') as SettingsTab;
-        if (tab && ['general', 'security', 'subscription', 'developer', 'notifications', 'filters', 'labels', 'teams', 'retention'].includes(tab)) {
+        if (tab && ['general', 'security', 'subscription', 'developer', 'notifications', 'filters', 'labels', 'teams', 'retention', 'referral'].includes(tab)) {
             if (tab !== activeTab) {
                 setActiveTab(tab);
             }
@@ -122,6 +123,7 @@ export function Settings() {
                     {activeTab === 'labels' && <LabelsTab inboxes={inboxes} selectedInboxId={selectedInboxId} onInboxChange={setSelectedInboxId} />}
                     {activeTab === 'retention' && <RetentionSettings userInboxes={inboxes} userTier={profile?.tier} userRetentionDays={profile?.retentionDays} />}
                     {activeTab === 'teams' && <TeamSettings userInboxes={inboxes} />}
+                    {activeTab === 'referral' && <ReferralSection />}
                 </div>
             </main>
         </div>

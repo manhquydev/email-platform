@@ -46,6 +46,8 @@ const Plans = lazy(() => import("./pages/Plans").then(m => ({ default: m.Plans }
 const Teams = lazy(() => import("./pages/Teams").then(m => ({ default: m.Teams })));
 const InboxViewer = lazy(() => import("./pages/InboxViewer").then(m => ({ default: m.InboxViewer })));
 const EphemeralInbox = lazy(() => import("./pages/EphemeralInbox").then(m => ({ default: m.EphemeralInbox })));
+const IdentitySuite = lazy(() => import("./pages/IdentitySuite").then(m => ({ default: m.IdentitySuite })));
+const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal").then(m => ({ default: m.DeveloperPortal })));
 
 function App() {
   return (
@@ -125,6 +127,8 @@ function App() {
                     <Route path="/forwarding" element={<Forwarding />} />
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/plans" element={<Plans />} />
+                    <Route path="/app/identity" element={<IdentitySuite />} />
+                    <Route path="/app/developer" element={<DeveloperPortal />} />
                   </Route>
 
                   {/* Error Pages */}

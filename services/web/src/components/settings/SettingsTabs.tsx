@@ -30,6 +30,9 @@ const tabs: TabConfig[] = [
 
     // Developer group
     { id: 'developer', label: 'Khóa API', icon: 'code', group: 'developer' },
+
+    // Referral group
+    { id: 'referral', label: 'Giới thiệu', icon: 'diversity_3', group: 'referral' },
 ];
 
 export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {

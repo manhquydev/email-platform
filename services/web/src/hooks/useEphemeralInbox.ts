@@ -3,7 +3,7 @@
  * Extracted from EphemeralInbox page for use in homepage widget and standalone page
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ephemeralService, type EphemeralInbox, type EphemeralMessage } from '../services/ephemeralService';
+import { ephemeralService, type EphemeralInbox, type EphemeralMessage, type CreateEphemeralOptions } from '../services/ephemeralService';
 
 const POLL_INTERVAL = 10000; // 10 seconds
 const STORAGE_KEY = 'ephemeral_inbox_token';
@@ -28,7 +28,7 @@ export interface UseEphemeralInboxReturn {
     isExtending: boolean;
     error: string | null;
     lastRefresh: Date | null;
-    createInbox: () => Promise<EphemeralInbox | null>;
+    createInbox: (options?: CreateEphemeralOptions) => Promise<EphemeralInbox | null>;
     extendInbox: () => Promise<boolean>;
     refreshMessages: () => Promise<void>;
     clearInbox: () => void;
@@ -91,12 +91,12 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
     }, []);
 
     // Create new inbox
-    const createInbox = useCallback(async (): Promise<EphemeralInbox | null> => {
+    const createInbox = useCallback(async (options: CreateEphemeralOptions = {}): Promise<EphemeralInbox | null> => {
         setIsCreating(true);
         setError(null);
 
         try {
-            const newInbox = await ephemeralService.create();
+            const newInbox = await ephemeralService.create(options);
             setInbox(newInbox);
             setToken(newInbox.token);
             setMessages([]);
@@ -106,6 +106,8 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
         } catch (err: any) {
             if (err?.status === 429) {
                 setError('Bạn đã tạo quá nhiều inbox. Vui lòng thử lại sau 1 giờ.');
+            } else if (err?.message?.includes('alias')) {
+                setError(err.message);
             } else {
                 setError('Không thể tạo inbox. Vui lòng thử lại.');
             }

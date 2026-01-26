@@ -3,10 +3,11 @@
  * Shows email address + mini inbox directly on landing page
  * Icons: outline/monochrome only (material-symbols-outlined)
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useEphemeralInbox } from '../../../hooks/useEphemeralInbox';
+import { AliasCustomizer } from '../../../components/ephemeral/alias-customizer';
 
 /** Format remaining time as HH:MM:SS */
 function formatTimeRemaining(expiresAt: string): string {
@@ -33,6 +34,14 @@ export function HeroInboxWidget() {
 
     const [timeRemaining, setTimeRemaining] = useState('--:--:--');
     const [copied, setCopied] = useState(false);
+    const [customAlias, setCustomAlias] = useState<string | null>(null);
+    const [customDomainId, setCustomDomainId] = useState<string | null>(null);
+
+    // Handle alias customization changes
+    const handleAliasChange = useCallback((localPart: string | null, domainId: string | null) => {
+        setCustomAlias(localPart);
+        setCustomDomainId(domainId);
+    }, []);
 
     // Update countdown timer
     useEffect(() => {
@@ -62,7 +71,10 @@ export function HeroInboxWidget() {
     // Generate new inbox
     const handleRefresh = async () => {
         clearInbox();
-        await createInbox();
+        await createInbox({
+            localPart: customAlias || undefined,
+            domainId: customDomainId || undefined,
+        });
     };
 
     // Loading state
@@ -105,6 +117,14 @@ export function HeroInboxWidget() {
                     <span className="material-symbols-outlined !text-[16px]">schedule</span>
                     <span className="font-mono">{timeRemaining}</span>
                 </div>
+            </div>
+
+            {/* Alias Customizer (collapsible) */}
+            <div className="mb-4">
+                <AliasCustomizer
+                    onAliasChange={handleAliasChange}
+                    disabled={isCreating}
+                />
             </div>
 
             {/* Email Address */}

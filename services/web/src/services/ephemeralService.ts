@@ -35,6 +35,26 @@ export interface EphemeralMessage {
     }>;
 }
 
+/** Public domain for ephemeral inbox */
+export interface EphemeralDomain {
+    id: string;
+    name: string;
+    isPremium: boolean;
+}
+
+/** Options for creating ephemeral inbox */
+export interface CreateEphemeralOptions {
+    expiryHours?: number;
+    localPart?: string;   // Custom alias
+    domainId?: string;    // Domain selection
+}
+
+/** Alias availability check result */
+export interface AliasAvailability {
+    available: boolean;
+    error?: string;
+}
+
 /** Messages response with pagination */
 export interface EphemeralMessagesResponse {
     data: EphemeralMessage[];
@@ -52,20 +72,55 @@ export interface EphemeralMessagesResponse {
 /** Ephemeral inbox API service */
 export const ephemeralService = {
     /**
+     * Get available public domains for ephemeral inboxes
+     */
+    getDomains: async (): Promise<EphemeralDomain[]> => {
+        log.debug('Fetching public domains');
+
+        try {
+            const response = await api<{ domains: EphemeralDomain[] }>('/ephemeral/domains', {
+                skipErrorRedirect: true,
+            });
+            return response.domains;
+        } catch (error) {
+            log.error(error instanceof Error ? error : new Error('Failed to fetch domains'));
+            throw error;
+        }
+    },
+
+    /**
+     * Check alias availability for a domain
+     */
+    checkAliasAvailability: async (localPart: string, domainId: string): Promise<AliasAvailability> => {
+        log.debug('Checking alias availability', { localPart, domainId });
+
+        try {
+            return await api<AliasAvailability>('/ephemeral/check-alias', {
+                method: 'POST',
+                body: { localPart, domainId },
+                skipErrorRedirect: true,
+            });
+        } catch (error) {
+            log.error(error instanceof Error ? error : new Error('Failed to check alias'));
+            return { available: false, error: 'Không thể kiểm tra alias' };
+        }
+    },
+
+    /**
      * Create new ephemeral inbox (no auth)
      */
-    create: async (expiryHours?: number): Promise<EphemeralInbox> => {
-        log.debug('Creating ephemeral inbox', { expiryHours });
+    create: async (options: CreateEphemeralOptions = {}): Promise<EphemeralInbox> => {
+        log.debug('Creating ephemeral inbox', options);
 
         try {
             const response = await api<EphemeralInbox>('/ephemeral/inbox', {
                 method: 'POST',
-                body: expiryHours ? { expiryHours } : {},
+                body: options,
                 skipErrorRedirect: true,
             });
             log.info('Ephemeral inbox created', { address: response.address });
             return response;
-        } catch (error) {
+        } catch (error: any) {
             log.error(error instanceof Error ? error : new Error('Failed to create ephemeral inbox'));
             throw error;
         }

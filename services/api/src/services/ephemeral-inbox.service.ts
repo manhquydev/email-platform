@@ -5,6 +5,7 @@
 
 import { prisma } from "../lib/prisma";
 import crypto from "crypto";
+import { validateAlias, sanitizeAlias } from "../lib/alias-validation";
 
 const DEFAULT_EXPIRY_HOURS = 2;
 const EPHEMERAL_DOMAIN = process.env.EPHEMERAL_DOMAIN || "ephemera.email";
@@ -12,6 +13,13 @@ const CLEANUP_BATCH_SIZE = 1000; // Process in batches to avoid memory issues
 
 // Domain cache to avoid repeated DB lookups
 let cachedDomainId: string | null = null;
+
+// Options for creating ephemeral inbox
+export interface CreateEphemeralInboxOptions {
+  expiryHours?: number;
+  localPart?: string;  // Custom alias (optional)
+  domainId?: string;   // Specific domain (optional)
+}
 
 export interface EphemeralInbox {
   id: string;
@@ -46,65 +54,131 @@ function generateToken(): string {
 export const ephemeralInboxService = {
   /**
    * Create a new ephemeral inbox
+   * @param options - Optional configuration for custom alias and domain
    */
-  async create(expiryHours = DEFAULT_EXPIRY_HOURS): Promise<EphemeralInbox> {
-    // Use cached domain ID if available
-    let domainId = cachedDomainId;
-    let domainName = EPHEMERAL_DOMAIN;
+  async create(options: CreateEphemeralInboxOptions = {}): Promise<EphemeralInbox> {
+    const { expiryHours = DEFAULT_EXPIRY_HOURS, localPart: customAlias, domainId: customDomainId } = options;
 
-    if (!domainId) {
-      let domain = await prisma.domain.findFirst({
-        where: { name: EPHEMERAL_DOMAIN, isPublic: true },
+    // Resolve domain (custom or default)
+    let domainId: string;
+    let domainName: string;
+
+    if (customDomainId) {
+      // Use custom domain if provided
+      const domain = await prisma.domain.findFirst({
+        where: { id: customDomainId, isPublic: true },
       });
-
-      // Create domain if not exists (for development)
       if (!domain) {
-        domain = await prisma.domain.upsert({
-          where: { name: EPHEMERAL_DOMAIN },
-          update: { isPublic: true },
-          create: {
-            name: EPHEMERAL_DOMAIN,
-            isPublic: true,
-            status: "VERIFIED",
-            verificationToken: crypto.randomBytes(16).toString('hex'),
-          },
-        });
+        throw new Error('Invalid or unavailable domain');
       }
-
       domainId = domain.id;
       domainName = domain.name;
-      cachedDomainId = domainId; // Cache for future calls
+    } else {
+      // Use default ephemeral domain (with caching)
+      if (!cachedDomainId) {
+        let domain = await prisma.domain.findFirst({
+          where: { name: EPHEMERAL_DOMAIN, isPublic: true },
+        });
+
+        // Create domain if not exists (for development)
+        if (!domain) {
+          domain = await prisma.domain.upsert({
+            where: { name: EPHEMERAL_DOMAIN },
+            update: { isPublic: true },
+            create: {
+              name: EPHEMERAL_DOMAIN,
+              isPublic: true,
+              status: "VERIFIED",
+              verificationToken: crypto.randomBytes(16).toString('hex'),
+            },
+          });
+        }
+        cachedDomainId = domain.id;
+      }
+      domainId = cachedDomainId;
+      domainName = EPHEMERAL_DOMAIN;
     }
 
-    const localPart = generateLocalPart();
+    // Resolve local part (custom alias or random)
+    let localPart: string;
+    const isCustomAlias = !!customAlias;
+
+    if (customAlias) {
+      // Validate custom alias
+      const validation = validateAlias(customAlias);
+      if (!validation.valid) {
+        throw new Error(validation.error || 'Invalid alias format');
+      }
+      localPart = sanitizeAlias(customAlias);
+
+      // Check uniqueness within domain (pre-check for better UX)
+      const existing = await prisma.inbox.findFirst({
+        where: {
+          localPart,
+          domainId,
+          deletedAt: null,
+        },
+      });
+      if (existing) {
+        throw new Error('This alias is already taken for this domain');
+      }
+    } else {
+      // Generate random alias (will be assigned in retry loop)
+      localPart = generateLocalPart();
+    }
+
     const token = generateToken();
     const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
 
-    // Create inbox with ephemeral flag
-    const inbox = await prisma.inbox.create({
-      data: {
-        localPart,
-        domainId,
-        expiresAt,
-        flags: {
-          isEphemeral: true,
-          token,
-          createdVia: 'public',
-        },
-      },
-      include: { domain: true },
-    });
+    // Create inbox with retry logic for collision handling
+    const MAX_RETRIES = 3;
+    let lastError: Error | null = null;
 
-    return {
-      id: inbox.id,
-      token,
-      address: `${localPart}@${domainName}`,
-      localPart,
-      domain: domainName,
-      expiresAt,
-      createdAt: inbox.createdAt,
-      messageCount: 0,
-    };
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const inbox = await prisma.inbox.create({
+          data: {
+            localPart,
+            domainId,
+            expiresAt,
+            flags: {
+              isEphemeral: true,
+              token,
+              createdVia: 'public',
+              isCustomAlias,
+            },
+          },
+          include: { domain: true },
+        });
+
+        return {
+          id: inbox.id,
+          token,
+          address: `${localPart}@${inbox.domain.name}`,
+          localPart,
+          domain: inbox.domain.name,
+          expiresAt,
+          createdAt: inbox.createdAt,
+          messageCount: 0,
+        };
+      } catch (error: any) {
+        // Handle unique constraint violation (race condition or random collision)
+        if (error.code === 'P2002') {
+          if (isCustomAlias) {
+            // Custom alias collision (race condition) - don't retry
+            throw new Error('This alias is already taken for this domain');
+          }
+          // Random alias collision - regenerate and retry
+          localPart = generateLocalPart();
+          lastError = error;
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    // All retries exhausted (should be rare)
+    throw lastError || new Error('Failed to create inbox after retries');
   },
 
   /**
@@ -285,5 +359,48 @@ export const ephemeralInboxService = {
     ]);
 
     return { activeEphemeral, expiringIn10Min, totalMessages };
+  },
+
+  /**
+   * Get list of public domains available for ephemeral inboxes
+   */
+  async getPublicDomains(): Promise<{ id: string; name: string; isPremium: boolean }[]> {
+    const domains = await prisma.domain.findMany({
+      where: { isPublic: true },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    // For now, all public domains are non-premium
+    // Premium gating will be added in Phase 3
+    return domains.map(d => ({
+      id: d.id,
+      name: d.name,
+      isPremium: false,
+    }));
+  },
+
+  /**
+   * Check if alias is available for a domain
+   */
+  async checkAliasAvailability(localPart: string, domainId: string): Promise<{ available: boolean; error?: string }> {
+    const validation = validateAlias(localPart);
+    if (!validation.valid) {
+      return { available: false, error: validation.error };
+    }
+
+    const sanitized = sanitizeAlias(localPart);
+    const existing = await prisma.inbox.findFirst({
+      where: {
+        localPart: sanitized,
+        domainId,
+        deletedAt: null,
+      },
+    });
+
+    return { available: !existing };
   },
 };

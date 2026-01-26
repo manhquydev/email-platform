@@ -11,6 +11,13 @@ import { ephemeralInboxService } from "../services/ephemeral-inbox.service";
 
 const createSchema = z.object({
   expiryHours: z.number().min(1).max(24).optional(),
+  localPart: z.string().min(3).max(30).optional(),  // Custom alias
+  domainId: z.string().uuid().optional(),            // Domain selection
+});
+
+const checkAliasSchema = z.object({
+  localPart: z.string().min(3).max(30),
+  domainId: z.string().uuid(),
 });
 
 const tokenParamsSchema = z.object({
@@ -38,15 +45,28 @@ export async function ephemeralInboxRoutes(app: FastifyInstance) {
     },
   }, async (request, reply) => {
     const body = createSchema.parse(request.body || {});
-    const inbox = await ephemeralInboxService.create(body.expiryHours);
 
-    return reply.status(201).send({
-      id: inbox.id,
-      token: inbox.token,
-      address: inbox.address,
-      expiresAt: inbox.expiresAt.toISOString(),
-      expiresIn: Math.floor((inbox.expiresAt.getTime() - Date.now()) / 1000),
-    });
+    try {
+      const inbox = await ephemeralInboxService.create({
+        expiryHours: body.expiryHours,
+        localPart: body.localPart,
+        domainId: body.domainId,
+      });
+
+      return reply.status(201).send({
+        id: inbox.id,
+        token: inbox.token,
+        address: inbox.address,
+        expiresAt: inbox.expiresAt.toISOString(),
+        expiresIn: Math.floor((inbox.expiresAt.getTime() - Date.now()) / 1000),
+      });
+    } catch (error: any) {
+      // Handle validation/uniqueness errors
+      if (error.message?.includes('alias') || error.message?.includes('domain')) {
+        return reply.status(400).send({ error: error.message });
+      }
+      throw error;
+    }
   });
 
   // Get inbox by session token
@@ -131,6 +151,30 @@ export async function ephemeralInboxRoutes(app: FastifyInstance) {
       };
     }
   );
+
+  // Get available public domains for ephemeral inboxes
+  app.get("/ephemeral/domains", async () => {
+    const domains = await ephemeralInboxService.getPublicDomains();
+    return { domains };
+  });
+
+  // Check alias availability for a domain
+  app.post("/ephemeral/check-alias", {
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+        keyGenerator: (request: any) => request.ip || 'unknown',
+      },
+    },
+  }, async (request, reply) => {
+    const body = checkAliasSchema.parse(request.body);
+    const result = await ephemeralInboxService.checkAliasAvailability(
+      body.localPart,
+      body.domainId
+    );
+    return result;
+  });
 
   // Get ephemeral inbox stats (admin/monitoring)
   app.get("/ephemeral/stats", async () => {

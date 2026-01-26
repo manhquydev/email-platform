@@ -45,6 +45,7 @@ const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default:
 const Plans = lazy(() => import("./pages/Plans").then(m => ({ default: m.Plans })));
 const Teams = lazy(() => import("./pages/Teams").then(m => ({ default: m.Teams })));
 const InboxViewer = lazy(() => import("./pages/InboxViewer").then(m => ({ default: m.InboxViewer })));
+const EphemeralInbox = lazy(() => import("./pages/EphemeralInbox").then(m => ({ default: m.EphemeralInbox })));
 
 function App() {
   return (
@@ -108,6 +109,9 @@ function App() {
 
                   {/* Legacy Focus Stream Dashboard */}
                   <Route path="/app/stream" element={<FocusDashboard />} />
+
+                  {/* Public Ephemeral Inbox - No auth required */}
+                  <Route path="/e/:token?" element={<EphemeralInbox />} />
 
                   {/* Public Inbox Viewer */}
                   <Route path="/inbox-viewer" element={<InboxViewer />} />

@@ -27,6 +27,7 @@ export function HeroSection() {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 neo-animate-fade-in-up neo-stagger-3">
+                    <Link to="/e" className="w-full sm:w-auto h-12 px-8 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg font-bold text-sm tracking-wide transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"><span className="material-symbols-outlined !text-[20px]">bolt</span>Thử ngay</Link>
                     <Link to="/register" className="w-full sm:w-auto h-12 px-8 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg font-bold text-sm tracking-wide transition-all shadow-lg shadow-[var(--nebula-violet)]/25 flex items-center justify-center gap-2">
                         <span className="material-symbols-outlined !text-[20px]">rocket_launch</span>
                         Bắt đầu dùng thử

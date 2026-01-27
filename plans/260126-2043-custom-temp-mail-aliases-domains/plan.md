@@ -82,7 +82,7 @@ Enable users to choose custom aliases (e.g., `john.doe@ephemera.email`) instead 
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 1 | Backend: Custom alias + domain params | Pending |
-| 2 | Frontend: UI controls for alias/domain | Pending |
+| 1 | Backend: Custom alias + domain params | Completed |
+| 2 | Frontend: UI controls for alias/domain | Completed |
 | 3 | Premium: Domain tier gating | Pending |
 | 4 | Polish: Validation, UX, error handling | Pending |

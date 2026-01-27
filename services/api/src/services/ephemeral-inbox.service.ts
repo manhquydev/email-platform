@@ -278,6 +278,8 @@ export const ephemeralInboxService = {
           receivedAt: true,
           isRead: true,
           extractedOtp: true,
+          htmlBody: true,
+          textBody: true,
         },
       }),
       prisma.message.count({ where: { inboxId: inbox.id } }),

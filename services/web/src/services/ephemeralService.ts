@@ -24,9 +24,8 @@ export interface EphemeralMessage {
     id: string;
     fromAddress: string;
     subject: string;
-    snippet: string;
-    html?: string;
-    text?: string;
+    htmlBody?: string;
+    textBody?: string;
     receivedAt: string;
     attachments?: Array<{
         filename: string;

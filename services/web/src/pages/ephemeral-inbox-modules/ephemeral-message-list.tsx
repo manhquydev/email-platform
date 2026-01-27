@@ -106,7 +106,7 @@ function MessageRow({
                         {message.subject || '(Không có tiêu đề)'}
                     </p>
                     <p className="text-xs text-[var(--nebula-text-secondary)] truncate mt-0.5">
-                        {message.snippet || '(Không có nội dung)'}
+                        {message.textBody?.substring(0, 100) || '(Không có nội dung)'}
                     </p>
                 </div>
 
@@ -178,14 +178,14 @@ function MessageDetailModal({
 
                 {/* Body */}
                 <div className="flex-1 overflow-auto p-6">
-                    {message.html ? (
+                    {message.htmlBody ? (
                         <div
                             className="prose prose-invert max-w-none text-sm"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.html) }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.htmlBody) }}
                         />
                     ) : (
                         <pre className="whitespace-pre-wrap text-sm text-[var(--nebula-text-secondary)] font-sans">
-                            {message.text || message.snippet || '(Không có nội dung)'}
+                            {message.textBody || '(Không có nội dung)'}
                         </pre>
                     )}
                 </div>

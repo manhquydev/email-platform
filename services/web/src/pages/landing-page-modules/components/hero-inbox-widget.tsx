@@ -4,7 +4,7 @@
  * Icons: outline/monochrome only (material-symbols-outlined)
  */
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useEphemeralInbox } from '../../../hooks/useEphemeralInbox';
 import { AliasCustomizer } from '../../../components/ephemeral/alias-customizer';
@@ -22,6 +22,7 @@ function formatTimeRemaining(expiresAt: string): string {
 }
 
 export function HeroInboxWidget() {
+    const navigate = useNavigate();
     const {
         inbox,
         messages,
@@ -176,7 +177,11 @@ export function HeroInboxWidget() {
                     ) : (
                         <div className="divide-y divide-white/5">
                             {messages.slice(0, 3).map((msg) => (
-                                <div key={msg.id} className="px-4 py-2 hover:bg-white/5 transition-colors">
+                                <button
+                                    key={msg.id}
+                                    onClick={() => navigate(`/e/${inbox?.token}`)}
+                                    className="w-full px-4 py-2 hover:bg-white/5 transition-colors text-left"
+                                >
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-[var(--nebula-text-secondary)] !text-[16px]">
                                             person
@@ -191,7 +196,7 @@ export function HeroInboxWidget() {
                                     <p className="text-xs text-[var(--nebula-text-secondary)] truncate mt-1">
                                         {msg.subject || '(Không có tiêu đề)'}
                                     </p>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     )}

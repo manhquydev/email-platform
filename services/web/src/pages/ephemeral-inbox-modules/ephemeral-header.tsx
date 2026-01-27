@@ -54,59 +54,61 @@ export function EphemeralHeader({ inbox, onExtend, isExtending }: EphemeralHeade
     const isExpired = timeLeft <= 0;
 
     return (
-        <div className="neo-glass rounded-xl p-6 mb-6">
-            {/* Email Address */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-                <div className="flex-1 min-w-0">
-                    <p className="text-xs text-[var(--nebula-text-secondary)] mb-1 uppercase tracking-wide">
-                        Email tạm thời của bạn
+        <div className="neo-glass rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+            {/* Email Address Row - Grid for consistent alignment */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 sm:gap-4 mb-4">
+                {/* Email display - constrained to prevent overflow */}
+                <div className="min-w-0 overflow-hidden">
+                    <p className="text-[10px] sm:text-xs text-[var(--nebula-text-secondary)] mb-1 uppercase tracking-wide">
+                        Email tạm thời
                     </p>
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl sm:text-2xl font-mono font-bold text-white truncate">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <span className="text-base sm:text-xl lg:text-2xl font-mono font-bold text-white truncate min-w-0 flex-1">
                             {inbox.address}
                         </span>
                         <button
                             onClick={copyToClipboard}
-                            className={`p-2 rounded-lg transition-all ${
+                            className={`p-1.5 sm:p-2 rounded-lg transition-all flex-shrink-0 ${
                                 copied
                                     ? 'bg-green-500/20 text-green-400'
                                     : 'bg-white/5 hover:bg-white/10 text-white'
                             }`}
                             title="Sao chép"
                         >
-                            <span className="material-symbols-outlined !text-[20px]">
+                            <span className="material-symbols-outlined !text-[18px] sm:!text-[20px]">
                                 {copied ? 'check' : 'content_copy'}
                             </span>
                         </button>
                     </div>
                 </div>
 
-                {/* Timer */}
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                {/* Timer - fixed width, won't shrink */}
+                <div className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg flex-shrink-0 self-end ${
                     isExpired
                         ? 'bg-red-500/20 text-red-400'
                         : isUrgent
                             ? 'bg-orange-500/20 text-orange-400 animate-pulse'
                             : 'bg-white/5 text-white'
                 }`}>
-                    <span className="material-symbols-outlined !text-[20px]">timer</span>
-                    <span className="font-mono font-bold text-lg">
+                    <span className="material-symbols-outlined !text-[18px] sm:!text-[20px]">timer</span>
+                    <span className="font-mono font-bold text-sm sm:text-lg whitespace-nowrap">
                         {isExpired ? 'Hết hạn' : formatTime(timeLeft)}
                     </span>
                 </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-wrap gap-3">
+            {/* Actions - compact on mobile */}
+            <div className="flex flex-wrap gap-2 sm:gap-3">
                 <button
                     onClick={onExtend}
                     disabled={isExtending || isExpired}
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-all"
+                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium text-xs sm:text-sm transition-all"
                 >
-                    <span className="material-symbols-outlined !text-[18px]">
+                    <span className="material-symbols-outlined !text-[16px] sm:!text-[18px]">
                         {isExtending ? 'sync' : 'add_circle'}
                     </span>
-                    {isExtending ? 'Đang gia hạn...' : 'Gia hạn thêm 1 giờ'}
+                    <span className="hidden sm:inline">{isExtending ? 'Đang gia hạn...' : 'Gia hạn +1h'}</span>
+                    <span className="sm:hidden">{isExtending ? '...' : '+1h'}</span>
                 </button>
 
                 <button
@@ -115,10 +117,10 @@ export function EphemeralHeader({ inbox, onExtend, isExtending }: EphemeralHeade
                         navigator.clipboard.writeText(url);
                         toast.success('Đã sao chép link chia sẻ!');
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium text-sm transition-all"
+                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium text-xs sm:text-sm transition-all"
                 >
-                    <span className="material-symbols-outlined !text-[18px]">share</span>
-                    Chia sẻ link
+                    <span className="material-symbols-outlined !text-[16px] sm:!text-[18px]">share</span>
+                    <span className="hidden sm:inline">Chia sẻ</span>
                 </button>
             </div>
 

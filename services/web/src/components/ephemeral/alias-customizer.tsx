@@ -179,40 +179,47 @@ export function AliasCustomizer({ onAliasChange, disabled = false }: AliasCustom
                     {/* Alias input + Domain selector */}
                     <div className="flex gap-2 items-center">
                         {/* Alias input */}
-                        <div className="flex-1 relative">
+                        <div className="flex-[2] min-w-0 relative">
                             <input
                                 type="text"
                                 value={alias}
                                 onChange={(e) => handleAliasChange(e.target.value)}
                                 placeholder="my-alias"
                                 disabled={disabled}
-                                className="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg
+                                className="w-full px-3 py-2.5 text-sm bg-white/10 border border-white/20 rounded-lg
                                          text-white placeholder-white/40 focus:outline-none focus:border-primary-400
                                          disabled:opacity-50"
                                 maxLength={30}
                             />
                             {/* Status icon */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                            <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
                                 {getStatusIcon()}
                             </div>
                         </div>
 
-                        <span className="text-white/50">@</span>
+                        <span className="text-white/50 text-lg">@</span>
 
                         {/* Domain selector */}
                         <select
                             value={selectedDomainId || ''}
                             onChange={(e) => handleDomainChange(e.target.value)}
                             disabled={disabled || isLoadingDomains}
-                            className="px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg
+                            className="flex-1 px-3 py-2.5 text-sm bg-slate-800 border border-white/20 rounded-lg
                                      text-white focus:outline-none focus:border-primary-400
-                                     disabled:opacity-50 min-w-[140px]"
+                                     disabled:opacity-50 min-w-[120px] appearance-none cursor-pointer
+                                     bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27%3e%3cpath d=%27M6 9l6 6 6-6%27/%3e%3c/svg%3e')]
+                                     bg-no-repeat bg-[length:16px] bg-[right_8px_center] pr-8"
                         >
                             {isLoadingDomains ? (
-                                <option>Loading...</option>
+                                <option className="bg-slate-800 text-white">Loading...</option>
                             ) : (
                                 domains.map(d => (
-                                    <option key={d.id} value={d.id} disabled={d.isPremium}>
+                                    <option
+                                        key={d.id}
+                                        value={d.id}
+                                        disabled={d.isPremium}
+                                        className="bg-slate-800 text-white py-2"
+                                    >
                                         {d.name} {d.isPremium ? '🔒' : ''}
                                     </option>
                                 ))

@@ -37,12 +37,25 @@ export interface UseEphemeralInboxReturn {
 /**
  * Hook for managing ephemeral inbox state and operations
  */
+/**
+ * Get initial token synchronously to prevent race condition
+ * Priority: initialToken (URL param) > localStorage > null
+ */
+const getInitialToken = (initialToken?: string): string | null => {
+    if (initialToken) return initialToken;
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem(STORAGE_KEY);
+    }
+    return null;
+};
+
 export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEphemeralInboxReturn {
     const { autoCreate = false, initialToken, enablePolling = true, onCreated } = options;
 
+    // Initialize token synchronously from localStorage to prevent creating duplicate inbox on reload
+    const [token, setToken] = useState<string | null>(() => getInitialToken(initialToken));
     const [inbox, setInbox] = useState<EphemeralInbox | null>(null);
     const [messages, setMessages] = useState<EphemeralMessage[]>([]);
-    const [token, setToken] = useState<string | null>(initialToken || null);
     const [isLoading, setIsLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [isExtending, setIsExtending] = useState(false);
@@ -51,14 +64,6 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
 
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const initialLoadDoneRef = useRef(false);
-
-    // Load token from localStorage on mount
-    useEffect(() => {
-        if (!initialToken) {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) setToken(stored);
-        }
-    }, [initialToken]);
 
     // Fetch inbox data
     const fetchInbox = useCallback(async (inboxToken: string): Promise<boolean> => {

@@ -1,6 +1,5 @@
 /**
- * Ephemeral Inbox Page - Public zero-friction temporary inbox
- * Refactored to use useEphemeralInbox hook for shared logic with homepage widget
+ * Ephemeral Inbox Page - Professional full-width email client layout
  */
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -15,52 +14,28 @@ export function EphemeralInbox() {
     const navigate = useNavigate();
 
     const {
-        inbox,
-        messages,
-        token,
-        isLoading,
-        isCreating,
-        isExtending,
-        error,
-        lastRefresh,
-        createInbox,
-        extendInbox,
+        inbox, messages, token, isLoading, isCreating, isExtending,
+        error, lastRefresh, createInbox, extendInbox,
     } = useEphemeralInbox({
         initialToken: urlToken,
         autoCreate: !urlToken,
         enablePolling: true,
-        onCreated: (newInbox) => {
-            navigate(`/e/${newInbox.token}`, { replace: true });
-        },
+        onCreated: (newInbox) => navigate(`/e/${newInbox.token}`, { replace: true }),
     });
 
-    // Sync URL only when NEW inbox is created (not from localStorage conflict)
     useEffect(() => {
-        // Only navigate if we created a new inbox and URL has no token
-        if (token && !urlToken) {
-            navigate(`/e/${token}`, { replace: true });
-        }
+        if (token && !urlToken) navigate(`/e/${token}`, { replace: true });
     }, [token, urlToken, navigate]);
 
-    // Handle extend with toast feedback
     const handleExtend = async () => {
         const success = await extendInbox();
-        if (success) {
-            toast.success('Đã gia hạn thêm 1 giờ!');
-        } else {
-            toast.error('Không thể gia hạn');
-        }
+        toast[success ? 'success' : 'error'](success ? 'Đã gia hạn thêm 1 giờ!' : 'Không thể gia hạn');
     };
 
-    // Loading state
     if (isLoading || isCreating) {
         return (
             <div className="min-h-screen neo-mesh-bg flex items-center justify-center">
-                <SEOHead
-                    title="Email Tạm Thời - Ephemera"
-                    description="Tạo email tạm thời miễn phí, không cần đăng ký. Nhận email ngay lập tức."
-                    path="/e"
-                />
+                <SEOHead title="Email Tạm Thời - Ephemera" description="Tạo email tạm thời miễn phí." path="/e" />
                 <div className="text-center">
                     <Loading />
                     <p className="mt-4 text-[var(--nebula-text-secondary)]">
@@ -71,25 +46,18 @@ export function EphemeralInbox() {
         );
     }
 
-    // Error state
     if (error && !inbox) {
         return (
             <div className="min-h-screen neo-mesh-bg flex items-center justify-center p-4">
-                <SEOHead
-                    title="Email Tạm Thời - Ephemera"
-                    description="Tạo email tạm thời miễn phí, không cần đăng ký."
-                    path="/e"
-                />
-                <div className="neo-glass rounded-xl p-8 max-w-md w-full text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-red-400 !text-[32px]">error</span>
+                <SEOHead title="Email Tạm Thời - Ephemera" description="Tạo email tạm thời miễn phí." path="/e" />
+                <div className="neo-glass rounded-2xl p-10 max-w-md w-full text-center">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-red-400 !text-[40px]">error</span>
                     </div>
-                    <h1 className="text-xl font-bold text-white mb-2">Không thể truy cập</h1>
-                    <p className="text-[var(--nebula-text-secondary)] mb-6">{error}</p>
-                    <button
-                        onClick={() => createInbox()}
-                        className="px-6 py-3 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg font-medium transition-all"
-                    >
+                    <h1 className="text-2xl font-bold text-white mb-3">Không thể truy cập</h1>
+                    <p className="text-[var(--nebula-text-secondary)] mb-8">{error}</p>
+                    <button onClick={() => createInbox()}
+                        className="px-8 py-3 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-xl font-medium transition-all">
                         Tạo inbox mới
                     </button>
                 </div>
@@ -97,64 +65,65 @@ export function EphemeralInbox() {
         );
     }
 
-    // Main view
     return (
-        <div className="min-h-screen neo-mesh-bg">
+        <div className="min-h-screen neo-mesh-bg flex flex-col">
             <SEOHead
                 title={inbox ? `${inbox.address} - Email Tạm Thời` : 'Email Tạm Thời - Ephemera'}
                 description="Email tạm thời miễn phí, tự hủy. Bảo vệ quyền riêng tư của bạn."
                 path={`/e/${token}`}
             />
 
-            <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
-                {/* Back to home */}
-                <button
-                    onClick={() => navigate('/')}
-                    className="flex items-center gap-2 text-[var(--nebula-text-secondary)] hover:text-white mb-6 transition-colors"
-                >
-                    <span className="material-symbols-outlined !text-[18px]">arrow_back</span>
-                    Về trang chủ
-                </button>
-
-                {/* Page title */}
-                <div className="mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 flex items-center gap-3">
-                        <span className="material-symbols-outlined !text-[32px] text-[var(--nebula-violet)]">mail</span>
-                        Email Tạm Thời
-                    </h1>
-                    <p className="text-[var(--nebula-text-secondary)]">
-                        Email này sẽ tự hủy sau thời gian hết hạn. Không cần đăng ký.
-                    </p>
+            {/* Top Navigation Bar */}
+            <header className="flex-shrink-0 border-b border-white/10 bg-[var(--nebula-surface)]/80 backdrop-blur-xl">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => navigate('/')}
+                                className="flex items-center gap-2 text-[var(--nebula-text-secondary)] hover:text-white transition-colors">
+                                <span className="material-symbols-outlined !text-[20px]">arrow_back</span>
+                                <span className="hidden sm:inline">Về trang chủ</span>
+                            </button>
+                            <div className="hidden sm:block h-6 w-px bg-white/10"></div>
+                            <h1 className="text-lg font-semibold text-white flex items-center gap-2">
+                                <span className="material-symbols-outlined !text-[24px] text-[var(--nebula-violet)]">mail</span>
+                                <span className="hidden md:inline">Email Tạm Thời</span>
+                            </h1>
+                        </div>
+                        <button onClick={() => createInbox()}
+                            className="flex items-center gap-2 px-4 py-2 bg-[var(--nebula-violet)]/20 hover:bg-[var(--nebula-violet)]/30 text-[var(--nebula-violet)] rounded-lg font-medium transition-all text-sm">
+                            <span className="material-symbols-outlined !text-[18px]">add</span>
+                            <span className="hidden sm:inline">Tạo mới</span>
+                        </button>
+                    </div>
                 </div>
+            </header>
 
-                {/* Inbox header with address and timer */}
+            {/* Main Content - Full Width */}
+            <main className="flex-1 flex flex-col overflow-hidden">
                 {inbox && (
-                    <EphemeralHeader
-                        inbox={inbox}
-                        onExtend={handleExtend}
-                        isExtending={isExtending}
-                    />
+                    <div className="flex-shrink-0 border-b border-white/10">
+                        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+                            <EphemeralHeader inbox={inbox} onExtend={handleExtend} isExtending={isExtending} />
+                        </div>
+                    </div>
                 )}
 
-                {/* Messages list */}
-                <EphemeralMessageList
-                    messages={messages}
-                    isLoading={isLoading}
-                    lastRefresh={lastRefresh}
-                />
+                <div className="flex-1 overflow-hidden">
+                    <div className="h-full w-full px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+                        <EphemeralMessageList messages={messages} isLoading={isLoading} lastRefresh={lastRefresh} />
+                    </div>
+                </div>
 
-                {/* Create new button (when expired) */}
                 {inbox && new Date(inbox.expiresAt) < new Date() && (
-                    <div className="mt-6 text-center">
-                        <button
-                            onClick={() => createInbox()}
-                            className="px-6 py-3 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg font-medium transition-all"
-                        >
+                    <div className="flex-shrink-0 border-t border-white/10 p-4 text-center bg-[var(--nebula-surface)]/50">
+                        <p className="text-[var(--nebula-text-secondary)] mb-3">Inbox đã hết hạn</p>
+                        <button onClick={() => createInbox()}
+                            className="px-6 py-3 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-xl font-medium transition-all">
                             Tạo inbox mới
                         </button>
                     </div>
                 )}
-            </div>
+            </main>
         </div>
     );
 }

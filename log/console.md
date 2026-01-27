@@ -1,32 +1,714 @@
 metadata.js:54 test
 injectScript.js:181 [debug-metadata] enter inject script test
-(chỉ mục):1 Access to fetch at 'https://api.manhquy.click/ephemeral/inbox/lXQA-ESAe-ynfTWWC1HNwwiceZ7eM2GH6ntAnRA2_bk/messages?limit=50&offset=0' from origin 'https://app.manhquy.click' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-api.manhquy.click/ephemeral/inbox/lXQA-ESAe-ynfTWWC1HNwwiceZ7eM2GH6ntAnRA2_bk/messages?limit=50&offset=0:1  Failed to load resource: net::ERR_FAILED
-index-DGerq7sq.js:4226 [2026-01-27T09:29:53.268Z] [ERROR] [EphemeralService] Failed to fetch Object
-error @ index-DGerq7sq.js:4226
-(chỉ mục):1 Access to fetch at 'https://api.manhquy.click/ephemeral/inbox' from origin 'https://app.manhquy.click' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-api.manhquy.click/ephemeral/inbox:1  Failed to load resource: net::ERR_FAILED
-index-DGerq7sq.js:4226 [2026-01-27T09:29:53.269Z] [ERROR] [EphemeralService] Failed to fetch Object
-error @ index-DGerq7sq.js:4226
-(chỉ mục):1 Access to fetch at 'https://api.manhquy.click/ephemeral/domains' from origin 'https://app.manhquy.click' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-api.manhquy.click/ephemeral/domains:1  Failed to load resource: net::ERR_FAILED
-index-DGerq7sq.js:4226 [2026-01-27T09:29:53.269Z] [ERROR] [EphemeralService] Failed to fetch Object
-error @ index-DGerq7sq.js:4226
-(chỉ mục):1 Access to fetch at 'https://api.manhquy.click/billing/tiers' from origin 'https://app.manhquy.click' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-api.manhquy.click/billing/tiers:1  Failed to load resource: net::ERR_FAILED
-index-DGerq7sq.js:4232 Failed to fetch tiers: TypeError: Failed to fetch
-    at s.fetch (requests.js:1:3777)
-    at traffic.js:1:1597
-    at new Promise (<anonymous>)
-    at fetch (traffic.js:1:1574)
-    at Is (index-DGerq7sq.js:188:4567)
-    at index-DGerq7sq.js:4232:22457
-    at index-DGerq7sq.js:4232:22556
-    at kr (index-DGerq7sq.js:9:93684)
-    at us (index-DGerq7sq.js:9:109966)
-    at us (index-DGerq7sq.js:9:110222)
-(ẩn danh) @ index-DGerq7sq.js:4232
-(chỉ mục):1 Access to fetch at 'https://api.manhquy.click/ephemeral/inbox/lXQA-ESAe-ynfTWWC1HNwwiceZ7eM2GH6ntAnRA2_bk' from origin 'https://app.manhquy.click' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-api.manhquy.click/ephemeral/inbox/lXQA-ESAe-ynfTWWC1HNwwiceZ7eM2GH6ntAnRA2_bk:1  Failed to load resource: net::ERR_FAILED
-index-DGerq7sq.js:4226 [2026-01-27T09:29:53.269Z] [ERROR] [EphemeralService] Failed to fetch Object
-error @ index-DGerq7sq.js:4226
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+y2vZaUlIJrueP2jHOccrhyW09IERER9MNYYsRDai5xM:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+y2vZaUlIJrueP2jHOccr…ERER9MNYYsRDai5xM:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+y2vZaUlIJrueP2jHOccrhyW09IERER9MNYYsRDai5xM:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+y2vZaUlIJrueP2jHOccrhyW09IERER9MNYYsRDai5xM:1 Access to XMLHttpRequest at 'https://k.clarity.ms/collect' from origin 'https://app.manhquy.click' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+requests.js:1  POST https://k.clarity.ms/collect net::ERR_FAILED 400 (Bad Request)
+s.XMLHttpRequest.send @ requests.js:1
+XMLHttpRequest.send @ traffic.js:1
+oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ii @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+ai @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Hn @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+oa @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+characterData
+Ni @ index-uOrDCv0m.js:9
+Yn @ index-uOrDCv0m.js:10
+$O @ index-uOrDCv0m.js:10
+Vi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Ii @ index-uOrDCv0m.js:9
+vo @ index-uOrDCv0m.js:9
+xn @ index-uOrDCv0m.js:9
+pn @ index-uOrDCv0m.js:9
+fl @ index-uOrDCv0m.js:9
+q @ index-uOrDCv0m.js:2
+y2vZaUlIJrueP2jHOccrhyW09IERER9MNYYsRDai5xM:1 Access to XMLHttpRequest at 'https://k.clarity.ms/collect' from origin 'https://app.manhquy.click' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+requests.js:1  POST https://k.clarity.ms/collect net::ERR_FAILED 400 (Bad Request)
+s.XMLHttpRequest.send @ requests.js:1
+XMLHttpRequest.send @ traffic.js:1
+oi @ clarity.js:2
+ui @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o.onreadystatechange @ clarity.js:2
+onreadystatechange @ traffic.js:1
+XMLHttpRequest.send
+s.XMLHttpRequest.send @ requests.js:1
+XMLHttpRequest.send @ traffic.js:1
+oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ii @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+ai @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Hn @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+oa @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+characterData
+Ni @ index-uOrDCv0m.js:9
+Yn @ index-uOrDCv0m.js:10
+$O @ index-uOrDCv0m.js:10
+Vi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Ii @ index-uOrDCv0m.js:9
+vo @ index-uOrDCv0m.js:9
+xn @ index-uOrDCv0m.js:9
+pn @ index-uOrDCv0m.js:9
+fl @ index-uOrDCv0m.js:9
+q @ index-uOrDCv0m.js:2
+clarity.js:2  POST https://k.clarity.ms/collect 400 (Bad Request)
+oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ii @ clarity.js:2
+ri @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+Ut @ clarity.js:2
+_u @ clarity.js:2
+Hi @ clarity.js:2
+ui @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o.onreadystatechange @ clarity.js:2
+onreadystatechange @ traffic.js:1
+XMLHttpRequest.send
+s.XMLHttpRequest.send @ requests.js:1
+XMLHttpRequest.send @ traffic.js:1
+oi @ clarity.js:2
+ui @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o.onreadystatechange @ clarity.js:2
+onreadystatechange @ traffic.js:1
+XMLHttpRequest.send
+s.XMLHttpRequest.send @ requests.js:1
+XMLHttpRequest.send @ traffic.js:1
+oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ii @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+ai @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Hn @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+setTimeout
+V @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+o @ clarity.js:2
+Promise.then
+c @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+ca @ clarity.js:2
+Ei @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+it @ clarity.js:2
+Oi @ clarity.js:2
+oa @ clarity.js:2
+(ẩn danh) @ clarity.js:2
+characterData
+Ni @ index-uOrDCv0m.js:9
+Yn @ index-uOrDCv0m.js:10
+$O @ index-uOrDCv0m.js:10
+Vi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Hi @ index-uOrDCv0m.js:9
+il @ index-uOrDCv0m.js:9
+Ii @ index-uOrDCv0m.js:9
+vo @ index-uOrDCv0m.js:9
+xn @ index-uOrDCv0m.js:9
+pn @ index-uOrDCv0m.js:9
+fl @ index-uOrDCv0m.js:9
+q @ index-uOrDCv0m.js:2

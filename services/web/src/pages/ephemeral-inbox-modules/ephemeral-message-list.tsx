@@ -96,7 +96,7 @@ function MessageRow({
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
                         <span className="font-medium text-white truncate text-sm">
-                            {message.from}
+                            {message.fromAddress}
                         </span>
                         <span className="text-xs text-[var(--nebula-text-secondary)] flex-shrink-0">
                             {timeAgo}
@@ -165,7 +165,7 @@ function MessageDetailModal({
                             {message.subject || '(Không có tiêu đề)'}
                         </h3>
                         <p className="text-sm text-[var(--nebula-text-secondary)] truncate">
-                            Từ: {message.from}
+                            Từ: {message.fromAddress}
                         </p>
                     </div>
                     <button

@@ -22,7 +22,7 @@ export interface EphemeralInbox {
 /** Ephemeral message entity */
 export interface EphemeralMessage {
     id: string;
-    from: string;
+    fromAddress: string;
     subject: string;
     snippet: string;
     html?: string;

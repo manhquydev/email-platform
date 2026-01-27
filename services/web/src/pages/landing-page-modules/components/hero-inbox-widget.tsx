@@ -187,7 +187,7 @@ export function HeroInboxWidget() {
                                             person
                                         </span>
                                         <span className="text-xs text-white truncate flex-1">
-                                            {msg.from || 'Unknown'}
+                                            {msg.fromAddress || 'Unknown'}
                                         </span>
                                         <span className="text-xs text-[var(--nebula-text-secondary)]">
                                             {new Date(msg.receivedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}

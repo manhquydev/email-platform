@@ -34,9 +34,10 @@ export function EphemeralInbox() {
         },
     });
 
-    // Sync URL token with hook token
+    // Sync URL only when NEW inbox is created (not from localStorage conflict)
     useEffect(() => {
-        if (token && token !== urlToken) {
+        // Only navigate if we created a new inbox and URL has no token
+        if (token && !urlToken) {
             navigate(`/e/${token}`, { replace: true });
         }
     }, [token, urlToken, navigate]);

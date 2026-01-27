@@ -124,6 +124,23 @@ ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-api-1 npx 
 ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd /root/email-platform. && docker compose run --rm api npx prisma migrate resolve --rolled-back <MIGRATION_NAME>"
 ```
 
+### Prisma P3015 Error (Orphaned Migration Folder)
+
+**Triệu chứng:** API container liên tục crash với error:
+```
+P3015: Could not find the migration directory at prisma/migrations/manual
+```
+
+**Nguyên nhân:** Folder `migrations/manual/` bị orphaned - tồn tại trong filesystem nhưng không có trong `_prisma_migrations` table hoặc đã bị xóa khỏi git.
+
+**Giải pháp nhanh:**
+```bash
+# Xóa orphaned folder và restart
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && rm -rf services/api/prisma/migrations/manual && docker compose -f docker-compose.prod.yml restart api"
+```
+
+**Phòng ngừa:** GitHub Actions workflow đã được cập nhật để tự động xóa orphaned migration folders trước mỗi deploy.
+
 ### 502 Bad Gateway
 
 API đang crash. Kiểm tra logs và restart:

@@ -43,6 +43,11 @@ jobs:
             git reset --hard
             git pull origin main
 
+            # CRITICAL: Remove orphaned migration folders that cause Prisma P3015 errors
+            echo "Cleaning orphaned migration folders..."
+            rm -rf services/api/prisma/migrations/manual 2>/dev/null || true
+            find services/api/prisma/migrations -type d -empty -delete 2>/dev/null || true
+
             # Rebuild and restart Docker containers (api, web, postfix, dovecot)
             echo "Rebuilding Docker containers..."
             docker compose -f docker-compose.prod.yml build api web postfix dovecot

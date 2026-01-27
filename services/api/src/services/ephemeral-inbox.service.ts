@@ -287,41 +287,55 @@ export const ephemeralInboxService = {
   },
 
   /**
-   * Cleanup expired ephemeral inboxes
+   * Cleanup expired ephemeral inboxes (processes in batches to avoid memory issues)
    */
   async cleanupExpired(): Promise<{ deletedInboxes: number; deletedMessages: number }> {
     const now = new Date();
+    let totalDeletedInboxes = 0;
+    let totalDeletedMessages = 0;
 
-    // Find expired ephemeral inboxes
-    const expiredInboxes = await prisma.inbox.findMany({
-      where: {
-        flags: { path: ['isEphemeral'], equals: true },
-        expiresAt: { lt: now },
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
+    // Process in batches until no more expired inboxes
+    while (true) {
+      // Find expired ephemeral inboxes (batch limited)
+      const expiredInboxes = await prisma.inbox.findMany({
+        where: {
+          flags: { path: ['isEphemeral'], equals: true },
+          expiresAt: { lt: now },
+          deletedAt: null,
+        },
+        select: { id: true },
+        take: CLEANUP_BATCH_SIZE,
+      });
 
-    if (expiredInboxes.length === 0) {
-      return { deletedInboxes: 0, deletedMessages: 0 };
+      if (expiredInboxes.length === 0) {
+        break; // No more expired inboxes
+      }
+
+      const inboxIds = expiredInboxes.map(i => i.id);
+
+      // Delete messages first (FK constraint)
+      const messagesDeleted = await prisma.message.deleteMany({
+        where: { inboxId: { in: inboxIds } },
+      });
+
+      // Soft delete inboxes
+      await prisma.inbox.updateMany({
+        where: { id: { in: inboxIds } },
+        data: { deletedAt: now },
+      });
+
+      totalDeletedInboxes += inboxIds.length;
+      totalDeletedMessages += messagesDeleted.count;
+
+      // If we got less than batch size, we're done
+      if (expiredInboxes.length < CLEANUP_BATCH_SIZE) {
+        break;
+      }
     }
 
-    const inboxIds = expiredInboxes.map(i => i.id);
-
-    // Delete messages first (FK constraint)
-    const messagesDeleted = await prisma.message.deleteMany({
-      where: { inboxId: { in: inboxIds } },
-    });
-
-    // Soft delete inboxes
-    await prisma.inbox.updateMany({
-      where: { id: { in: inboxIds } },
-      data: { deletedAt: now },
-    });
-
     return {
-      deletedInboxes: inboxIds.length,
-      deletedMessages: messagesDeleted.count,
+      deletedInboxes: totalDeletedInboxes,
+      deletedMessages: totalDeletedMessages,
     };
   },
 

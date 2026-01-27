@@ -8,14 +8,18 @@ import { ephemeralService, type EphemeralInbox, type EphemeralMessage, type Crea
 const POLL_INTERVAL = 10000; // 10 seconds
 const STORAGE_KEY = 'ephemeral_inbox_token';
 
+/**
+ * Validate token format - must be non-empty string with reasonable length
+ * Prevents API calls with 'undefined' or invalid tokens
+ */
+const isValidToken = (token: string | null | undefined): token is string => {
+    return typeof token === 'string' && token.length > 10 && token !== 'undefined' && token !== 'null';
+};
+
 export interface UseEphemeralInboxOptions {
-    /** Auto-create inbox on mount if no token provided */
     autoCreate?: boolean;
-    /** Initial token (from URL param or localStorage) */
     initialToken?: string;
-    /** Enable message polling */
     enablePolling?: boolean;
-    /** Callback when inbox is created */
     onCreated?: (inbox: EphemeralInbox) => void;
 }
 
@@ -35,16 +39,15 @@ export interface UseEphemeralInboxReturn {
 }
 
 /**
- * Hook for managing ephemeral inbox state and operations
- */
-/**
  * Get initial token synchronously to prevent race condition
  * Priority: initialToken (URL param) > localStorage > null
  */
 const getInitialToken = (initialToken?: string): string | null => {
-    if (initialToken) return initialToken;
+    if (isValidToken(initialToken)) return initialToken;
     if (typeof window !== 'undefined') {
-        return localStorage.getItem(STORAGE_KEY);
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (isValidToken(stored)) return stored;
+        if (stored) localStorage.removeItem(STORAGE_KEY);
     }
     return null;
 };
@@ -52,7 +55,6 @@ const getInitialToken = (initialToken?: string): string | null => {
 export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEphemeralInboxReturn {
     const { autoCreate = false, initialToken, enablePolling = true, onCreated } = options;
 
-    // Initialize token synchronously from localStorage to prevent creating duplicate inbox on reload
     const [token, setToken] = useState<string | null>(() => getInitialToken(initialToken));
     const [inbox, setInbox] = useState<EphemeralInbox | null>(null);
     const [messages, setMessages] = useState<EphemeralMessage[]>([]);
@@ -65,8 +67,8 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const initialLoadDoneRef = useRef(false);
 
-    // Fetch inbox data
     const fetchInbox = useCallback(async (inboxToken: string): Promise<boolean> => {
+        if (!isValidToken(inboxToken)) return false;
         try {
             const data = await ephemeralService.get(inboxToken);
             if (!data) {
@@ -85,24 +87,20 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
         }
     }, []);
 
-    // Fetch messages
     const fetchMessages = useCallback(async (inboxToken: string): Promise<void> => {
+        if (!isValidToken(inboxToken)) return;
         try {
             const response = await ephemeralService.getMessages(inboxToken);
             setMessages(response.data);
             setLastRefresh(new Date());
-        } catch {
-            // Silent fail for polling
-        }
+        } catch {}
     }, []);
 
-    // Create new inbox
-    const createInbox = useCallback(async (options: CreateEphemeralOptions = {}): Promise<EphemeralInbox | null> => {
+    const createInbox = useCallback(async (opts: CreateEphemeralOptions = {}): Promise<EphemeralInbox | null> => {
         setIsCreating(true);
         setError(null);
-
         try {
-            const newInbox = await ephemeralService.create(options);
+            const newInbox = await ephemeralService.create(opts);
             setInbox(newInbox);
             setToken(newInbox.token);
             setMessages([]);
@@ -123,100 +121,59 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
         }
     }, [onCreated]);
 
-    // Extend inbox expiry
     const extendInbox = useCallback(async (): Promise<boolean> => {
-        if (!token) return false;
-
+        if (!isValidToken(token)) return false;
         setIsExtending(true);
         try {
             const extended = await ephemeralService.extend(token);
-            if (extended) {
-                setInbox(extended);
-                return true;
-            }
+            if (extended) { setInbox(extended); return true; }
             return false;
-        } catch {
-            return false;
-        } finally {
-            setIsExtending(false);
-        }
+        } catch { return false; }
+        finally { setIsExtending(false); }
     }, [token]);
 
-    // Refresh messages manually
     const refreshMessages = useCallback(async (): Promise<void> => {
-        if (token) await fetchMessages(token);
+        if (isValidToken(token)) await fetchMessages(token);
     }, [token, fetchMessages]);
 
-    // Clear inbox (for generating new one)
     const clearInbox = useCallback(() => {
-        setInbox(null);
-        setToken(null);
-        setMessages([]);
-        setError(null);
+        setInbox(null); setToken(null); setMessages([]); setError(null);
         localStorage.removeItem(STORAGE_KEY);
     }, []);
 
-    // Initial load - fetch existing inbox or auto-create (runs once)
     useEffect(() => {
-        // Prevent re-running on dependency changes
         if (initialLoadDoneRef.current) return;
-
-        if (!token && autoCreate) {
+        if (!isValidToken(token) && autoCreate) {
             initialLoadDoneRef.current = true;
             createInbox();
             return;
         }
-
-        if (token) {
+        if (isValidToken(token)) {
             initialLoadDoneRef.current = true;
             setIsLoading(true);
-            Promise.all([fetchInbox(token), fetchMessages(token)]).finally(() => {
-                setIsLoading(false);
-            });
+            Promise.all([fetchInbox(token), fetchMessages(token)]).finally(() => setIsLoading(false));
         }
     }, [token, autoCreate, createInbox, fetchInbox, fetchMessages]);
 
-    // Polling for messages
     useEffect(() => {
-        if (!token || !inbox || !enablePolling) return;
-
-        pollIntervalRef.current = setInterval(() => {
-            fetchMessages(token);
-        }, POLL_INTERVAL);
-
-        // Pause polling when tab is hidden
+        if (!isValidToken(token) || !inbox || !enablePolling) return;
+        pollIntervalRef.current = setInterval(() => fetchMessages(token), POLL_INTERVAL);
         const handleVisibility = () => {
             if (document.hidden && pollIntervalRef.current) {
                 clearInterval(pollIntervalRef.current);
                 pollIntervalRef.current = null;
-            } else if (!document.hidden && !pollIntervalRef.current) {
-                pollIntervalRef.current = setInterval(() => {
-                    fetchMessages(token);
-                }, POLL_INTERVAL);
+            } else if (!document.hidden && !pollIntervalRef.current && isValidToken(token)) {
+                pollIntervalRef.current = setInterval(() => fetchMessages(token), POLL_INTERVAL);
             }
         };
         document.addEventListener('visibilitychange', handleVisibility);
-
         return () => {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             document.removeEventListener('visibilitychange', handleVisibility);
         };
     }, [token, inbox, enablePolling, fetchMessages]);
 
-    return {
-        inbox,
-        messages,
-        token,
-        isLoading,
-        isCreating,
-        isExtending,
-        error,
-        lastRefresh,
-        createInbox,
-        extendInbox,
-        refreshMessages,
-        clearInbox,
-    };
+    return { inbox, messages, token, isLoading, isCreating, isExtending, error, lastRefresh, createInbox, extendInbox, refreshMessages, clearInbox };
 }
 
 export default useEphemeralInbox;

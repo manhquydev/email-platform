@@ -110,7 +110,7 @@ export const ephemeralService = {
      * Create new ephemeral inbox (no auth)
      */
     create: async (options: CreateEphemeralOptions = {}): Promise<EphemeralInbox> => {
-        log.debug('Creating ephemeral inbox', options);
+        log.debug('Creating ephemeral inbox', { ...options });
 
         try {
             const response = await api<EphemeralInbox>('/ephemeral/inbox', {

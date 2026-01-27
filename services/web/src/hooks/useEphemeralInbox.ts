@@ -50,6 +50,7 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
     const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const initialLoadDoneRef = useRef(false);
 
     // Load token from localStorage on mount
     useEffect(() => {
@@ -150,14 +151,19 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
         localStorage.removeItem(STORAGE_KEY);
     }, []);
 
-    // Initial load - fetch existing inbox or auto-create
+    // Initial load - fetch existing inbox or auto-create (runs once)
     useEffect(() => {
+        // Prevent re-running on dependency changes
+        if (initialLoadDoneRef.current) return;
+
         if (!token && autoCreate) {
+            initialLoadDoneRef.current = true;
             createInbox();
             return;
         }
 
         if (token) {
+            initialLoadDoneRef.current = true;
             setIsLoading(true);
             Promise.all([fetchInbox(token), fetchMessages(token)]).finally(() => {
                 setIsLoading(false);

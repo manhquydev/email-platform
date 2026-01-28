@@ -1,0 +1,589 @@
+openapi: 3.0.3
+info:
+  title: Ephemera Hosting Provider API
+  version: 1.0.0
+  description: API for hosting providers to provision and manage email hosting
+  contact:
+    email: support@ephemera.email
+    url: https://docs.ephemera.email
+
+servers:
+  - url: https://api.ephemera.email
+    description: Production
+
+security:
+  - providerApiKey: []
+
+paths:
+  /v1/provider/me:
+    get:
+      summary: Get provider info
+      operationId: getProviderInfo
+      tags: [Provider]
+      responses:
+        '200':
+          description: Provider information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/provider/tenants:
+    post:
+      summary: Create tenant
+      operationId: createTenant
+      tags: [Tenants]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      summary: List tenants
+      operationId: listTenants
+      tags: [Tenants]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, SUSPENDED, TERMINATED]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Tenant list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantListResponse'
+
+  /v1/provider/tenants/{tenantId}:
+    get:
+      summary: Get tenant
+      operationId: getTenant
+      tags: [Tenants]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Tenant details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update tenant
+      operationId: updateTenant
+      tags: [Tenants]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantRequest'
+      responses:
+        '200':
+          description: Tenant updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantResponse'
+
+    delete:
+      summary: Terminate tenant
+      operationId: terminateTenant
+      tags: [Tenants]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Tenant terminated
+
+  /v1/provider/tenants/{tenantId}/suspend:
+    post:
+      summary: Suspend tenant
+      operationId: suspendTenant
+      tags: [Tenants]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Tenant suspended
+
+  /v1/provider/tenants/{tenantId}/unsuspend:
+    post:
+      summary: Unsuspend tenant
+      operationId: unsuspendTenant
+      tags: [Tenants]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Tenant unsuspended
+
+  /v1/provider/tenants/{tenantId}/domains:
+    post:
+      summary: Add domain
+      operationId: addDomain
+      tags: [Domains]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddDomainRequest'
+      responses:
+        '201':
+          description: Domain added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainResponse'
+
+    get:
+      summary: List domains
+      operationId: listDomains
+      tags: [Domains]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Domain list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainListResponse'
+
+  /v1/provider/tenants/{tenantId}/domains/{domain}/verify:
+    post:
+      summary: Verify domain
+      operationId: verifyDomain
+      tags: [Domains]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/Domain'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyDomainResponse'
+
+  /v1/provider/tenants/{tenantId}/mailboxes:
+    post:
+      summary: Create mailbox
+      operationId: createMailbox
+      tags: [Mailboxes]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailboxRequest'
+      responses:
+        '201':
+          description: Mailbox created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailboxResponse'
+
+    get:
+      summary: List mailboxes
+      operationId: listMailboxes
+      tags: [Mailboxes]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Mailbox list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailboxListResponse'
+
+  /v1/provider/tenants/{tenantId}/mailboxes/{email}/password:
+    patch:
+      summary: Change password
+      operationId: changeMailboxPassword
+      tags: [Mailboxes]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/Email'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed
+
+  /v1/provider/tenants/{tenantId}/usage:
+    get:
+      summary: Get usage
+      operationId: getTenantUsage
+      tags: [Usage]
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Usage metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageResponse'
+
+  /v1/provider/webhooks/test:
+    post:
+      summary: Test webhook
+      operationId: testWebhook
+      tags: [Webhooks]
+      responses:
+        '200':
+          description: Test sent
+
+  /v1/provider/webhooks/events:
+    get:
+      summary: List webhook events
+      operationId: listWebhookEvents
+      tags: [Webhooks]
+      responses:
+        '200':
+          description: Event list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEventListResponse'
+
+components:
+  securitySchemes:
+    providerApiKey:
+      type: apiKey
+      in: header
+      name: X-Provider-Key
+
+  parameters:
+    TenantId:
+      name: tenantId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Domain:
+      name: domain
+      in: path
+      required: true
+      schema:
+        type: string
+    Email:
+      name: email
+      in: path
+      required: true
+      schema:
+        type: string
+        format: email
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+    ProviderResponse:
+      type: object
+      properties:
+        provider:
+          $ref: '#/components/schemas/Provider'
+
+    Provider:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        contactEmail:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, ACTIVE, SUSPENDED]
+        tier:
+          type: string
+          enum: [STARTER, PROFESSIONAL, ENTERPRISE]
+
+    CreateTenantRequest:
+      type: object
+      required: [externalId, customerEmail, plan]
+      properties:
+        externalId:
+          type: string
+        customerEmail:
+          type: string
+          format: email
+        customerName:
+          type: string
+        plan:
+          type: string
+          enum: [LITE, PRO, BUSINESS]
+
+    UpdateTenantRequest:
+      type: object
+      properties:
+        plan:
+          type: string
+          enum: [LITE, PRO, BUSINESS]
+        customerName:
+          type: string
+
+    TenantResponse:
+      type: object
+      properties:
+        tenant:
+          $ref: '#/components/schemas/Tenant'
+
+    TenantListResponse:
+      type: object
+      properties:
+        tenants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tenant'
+
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, ACTIVE, SUSPENDED, TERMINATED]
+        plan:
+          type: string
+        maxMailboxes:
+          type: integer
+        maxStorageGb:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    AddDomainRequest:
+      type: object
+      required: [domain]
+      properties:
+        domain:
+          type: string
+
+    DomainResponse:
+      type: object
+      properties:
+        domain:
+          type: string
+        status:
+          type: string
+        dnsRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsRecord'
+
+    DomainListResponse:
+      type: object
+      properties:
+        domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainResponse'
+
+    DnsRecord:
+      type: object
+      properties:
+        type:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+        priority:
+          type: integer
+
+    VerifyDomainResponse:
+      type: object
+      properties:
+        domain:
+          type: string
+        verified:
+          type: boolean
+        checks:
+          type: object
+          properties:
+            mx:
+              type: boolean
+            spf:
+              type: boolean
+            dkim:
+              type: boolean
+            dmarc:
+              type: boolean
+
+    CreateMailboxRequest:
+      type: object
+      required: [localPart, domain, password]
+      properties:
+        localPart:
+          type: string
+        domain:
+          type: string
+        password:
+          type: string
+          minLength: 8
+        displayName:
+          type: string
+        quotaMb:
+          type: integer
+
+    MailboxResponse:
+      type: object
+      properties:
+        mailbox:
+          $ref: '#/components/schemas/Mailbox'
+
+    MailboxListResponse:
+      type: object
+      properties:
+        mailboxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Mailbox'
+
+    Mailbox:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        displayName:
+          type: string
+        quotaMb:
+          type: integer
+        usedMb:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    ChangePasswordRequest:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          minLength: 8
+
+    UsageResponse:
+      type: object
+      properties:
+        usage:
+          type: object
+          properties:
+            tenantId:
+              type: string
+            period:
+              type: string
+            summary:
+              type: object
+              properties:
+                mailboxCount:
+                  type: integer
+                storageBytes:
+                  type: integer
+                messageCount:
+                  type: integer
+
+    WebhookEventListResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookEvent'
+
+    WebhookEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, DELIVERED, FAILED]
+        attempts:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time

@@ -13,6 +13,7 @@ model User {
   name                       String?
   passwordHash               String
   role                       UserRole               @default(USER)
+  adminRole                  AdminRole?
   createdAt                  DateTime               @default(now())
   emailVerified              DateTime?
   verificationToken          String?
@@ -61,6 +62,57 @@ model User {
   supportTickets             SupportTicket[]
   ticketMessages             TicketMessage[]
   refreshTokens              RefreshToken[]     @relation("UserRefreshTokens")
+
+  // Enterprise Multi-tenancy
+  organizationId             String?
+  organization               Organization?      @relation(fields: [organizationId], references: [id])
+  organizationMemberships    OrganizationMember[]
+  externalIdentities         ExternalIdentity[]
+
+  // CalDAV & CardDAV
+  calendars                  Calendar[]
+  calendarShares             CalendarShare[]
+  contacts                   Contact[]
+}
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique // For URL/subdomain resolution
+  settings    Json?    // Branding, quotas, retention
+  storageQuota BigInt   @default(0) // Bytes, 0 = unlimited
+  storageUsed  BigInt   @default(0) // Bytes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     OrganizationMember[]
+  domains     Domain[]
+  users       User[]
+  inboxes     Inbox[]
+  contacts    Contact[] // Global Address List
+  identityProviders IdentityProvider[]
+
+  @@index([slug])
+}
+
+model OrganizationMember {
+  id             String           @id @default(uuid())
+  organizationId String
+  userId         String
+  role           OrganizationRole @default(MEMBER)
+  joinedAt       DateTime         @default(now())
+
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
 
 model ApiKey {
@@ -154,6 +206,8 @@ model Domain {
   sharedAt           DateTime?
   shareNote          String?
   owner              User?              @relation(fields: [ownerId], references: [id])
+  organizationId     String?
+  organization       Organization?      @relation(fields: [organizationId], references: [id])
   inboxes            Inbox[]
   dkim               DomainDkim?
   outboundMsgs       OutboundMessage[]
@@ -177,14 +231,52 @@ model Inbox {
   emailFilters     EmailFilter[]
   visibilityRules  VisibilityRule[]
   forwardingRules ForwardingRule[]
+  folders         Folder[]
   domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
   owner           User?            @relation(fields: [ownerId], references: [id])
+  organizationId  String?
+  organization    Organization?    @relation(fields: [organizationId], references: [id])
   labels          Label[]
   messages        Message[]
   teamInboxes     TeamInbox[]
 
   @@unique([domainId, localPart])
   @@index([ownerId])
+}
+
+model Folder {
+  id          String   @id @default(uuid())
+  inboxId     String
+  parentId    String?
+  name        String
+  specialUse  String?  // e.g. \Inbox, \Sent, \Drafts, \Trash, \Junk, \Archive
+  uidValidity Int      @default(1)
+  uidNext     Int      @default(1)
+  subscribed  Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inbox       Inbox    @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+  parent      Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children    Folder[] @relation("FolderHierarchy")
+  messages    Message[]
+
+  @@index([inboxId])
+  @@index([parentId])
+  @@unique([inboxId, parentId, name]) // Note: Prisma/Postgres unique with null might require handling
+}
+
+model MessageFlag {
+  id        String   @id @default(uuid())
+  messageId String
+  flag      String   // \Seen, \Answered, \Flagged, \Deleted, \Draft, $Forwarded
+  createdAt DateTime @default(now())
+
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, flag])
+  @@index([messageId])
 }
 
 model Message {
@@ -209,6 +301,14 @@ model Message {
   isPinned     Boolean        @default(false)
   snoozedUntil DateTime?
 
+  // Folder & Threading Support
+  folderId     String?
+  uid          Int?      // IMAP UID
+  threadId     String?   // Calculated thread ID
+
+  folder       Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  flags        MessageFlag[]
+
   // OTP extraction data
   extractedOtp   String?
   otpConfidence  String?   // high, medium, low
@@ -224,6 +324,9 @@ model Message {
   labels       MessageLabel[]
 
   @@index([inboxId, receivedAt])
+  @@index([folderId])
+  @@index([threadId])
+  @@index([uid])
   @@index([sourceIp, receivedAt])
   @@index([deletedAt])
   @@index([isPinned])
@@ -1107,4 +1210,119 @@ model TicketMessage {
   user   User          @relation(fields: [userId], references: [id])
 
   @@index([ticketId])
+}
+
+// Phase 06: CalDAV & CardDAV Models
+
+model Calendar {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  color       String?  // Hex color
+  timezone    String   @default("UTC")
+  description String?
+  ctag        Int      @default(1) // Collection tag for sync
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events Event[]
+  shares CalendarShare[]
+
+  @@index([userId])
+}
+
+model CalendarShare {
+  id           String   @id @default(uuid())
+  calendarId   String
+  sharedWithId String?  // Null if public
+  permission   String   // READ, WRITE, ADMIN
+  token        String?  // For public sharing
+  createdAt    DateTime @default(now())
+
+  calendar   Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  sharedWith User?    @relation(fields: [sharedWithId], references: [id])
+
+  @@index([calendarId])
+  @@index([sharedWithId])
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  calendarId  String
+  uid         String   // iCal UID
+  summary     String?
+  description String?
+  location    String?
+  startAt     DateTime
+  endAt       DateTime
+  allDay      Boolean  @default(false)
+  rrule       String?  // Recurrence rule
+  icalData    String   @db.Text // Full iCal data
+  etag        String   // Entity tag for sync
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  calendar Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  @@unique([calendarId, uid])
+  @@index([calendarId, startAt, endAt])
+}
+
+model Contact {
+  id             String   @id @default(uuid())
+  userId         String
+  organizationId String?
+  uid            String   // vCard UID
+  fullName       String?
+  email          String?
+  phone          String?
+  vcardData      String   @db.Text // Full vCard data
+  etag           String   // Entity tag for sync
+  isGal          Boolean  @default(false) // Global Address List entry
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, uid])
+  @@index([userId, email])
+  @@index([organizationId, isGal])
+}
+
+model IdentityProvider {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type           String   // ldap, saml, oidc
+  name           String
+  config         Json     // Provider-specific config
+  enabled        Boolean  @default(true)
+  syncEnabled    Boolean  @default(false)
+  lastSyncAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  externalIdentities ExternalIdentity[]
+
+  @@index([organizationId])
+}
+
+model ExternalIdentity {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerId     String
+  provider       IdentityProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  externalId     String   // IDP's user ID
+  email          String
+  attributes     Json?    // Additional SAML/OIDC claims
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([providerId, externalId])
+  @@index([userId])
+  @@index([email])
 }

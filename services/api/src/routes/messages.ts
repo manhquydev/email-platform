@@ -499,9 +499,12 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
     try {
       const stream = await storageService.getReadStream(attachmentMeta.storageKey);
-      reply.header("Content-Disposition", `attachment; filename="${attachmentMeta.filename}"`);
+      // Sanitize filename to prevent header injection
+      const safeFilename = attachmentMeta.filename.replace(/["\\]/g, "_");
+      reply.header("Content-Disposition", `attachment; filename="${safeFilename}"`);
       reply.header("Content-Type", attachmentMeta.mimeType || "application/octet-stream");
       return reply.send(stream);
+    } catch (e) {
     } catch (e) {
       request.log.error(e);
       return reply.status(404).send({ error: "File not found" });
@@ -575,7 +578,9 @@ export const messageRoutes = async (app: FastifyInstance) => {
         const attPart = mail.appendChild();
         attPart.setHeader("Content-Type", attachment.mimeType || "application/octet-stream");
         attPart.setHeader("Content-Transfer-Encoding", "base64");
-        attPart.setHeader("Content-Disposition", `attachment; filename="${attachment.filename}"`);
+        // Sanitize filename to prevent header injection
+        const safeAttFilename = attachment.filename.replace(/["\\]/g, "_");
+        attPart.setHeader("Content-Disposition", `attachment; filename="${safeAttFilename}"`);
         attPart.setContent(content);
       } catch (err) {
         request.log.warn({ attachmentId: attachment.id, err }, "Failed to include attachment in export");
@@ -1068,5 +1073,168 @@ To: ${originalMessage.toAddress || "unknown"}
 
     const result = EmailCategorizerService.categorize(message);
     return reply.send(result);
+  });
+
+  // --- Message Move/Copy/Archive/Trash ---
+
+  app.post("/messages/:id/move", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({ folderId: z.string().uuid() }).safeParse(request.body);
+
+    if (!params.success || !body.success) return reply.status(400).send({ error: "Invalid request" });
+
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true }
+    });
+    if (!message) return reply.status(404).send({ error: "Message not found" });
+
+    const userId = (request.user as any).userId;
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    // Verify folder belongs to same inbox
+    const folder = await prisma.folder.findUnique({ where: { id: body.data.folderId } });
+    if (!folder || folder.inboxId !== message.inboxId) {
+      return reply.status(400).send({ error: "Invalid folder" });
+    }
+
+    // Update message
+    const updated = await prisma.message.update({
+      where: { id: message.id },
+      data: { folderId: folder.id }
+    });
+
+    return { message: updated };
+  });
+
+  app.post("/messages/:id/archive", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: "Invalid request" });
+
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true }
+    });
+    if (!message) return reply.status(404).send({ error: "Message not found" });
+
+    const userId = (request.user as any).userId;
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    // Find Archive folder
+    let archiveFolder = await prisma.folder.findFirst({
+      where: { inboxId: message.inboxId, specialUse: "\\Archive" }
+    });
+    if (!archiveFolder) {
+      archiveFolder = await prisma.folder.create({
+        data: {
+          inboxId: message.inboxId,
+          name: "Archive",
+          specialUse: "\\Archive",
+          sortOrder: 5
+        }
+      });
+    }
+
+    const updated = await prisma.message.update({
+      where: { id: message.id },
+      data: { folderId: archiveFolder.id }
+    });
+
+    return { message: updated };
+  });
+
+  app.post("/messages/:id/trash", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: "Invalid request" });
+
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null },
+      include: { inbox: true }
+    });
+    if (!message) return reply.status(404).send({ error: "Message not found" });
+
+    const userId = (request.user as any).userId;
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    // Find Trash folder
+    let trashFolder = await prisma.folder.findFirst({
+      where: { inboxId: message.inboxId, specialUse: "\\Trash" }
+    });
+    if (!trashFolder) {
+      trashFolder = await prisma.folder.create({
+        data: {
+          inboxId: message.inboxId,
+          name: "Trash",
+          specialUse: "\\Trash",
+          sortOrder: 4
+        }
+      });
+    }
+
+    const updated = await prisma.message.update({
+      where: { id: message.id },
+      data: { folderId: trashFolder.id }
+    });
+
+    return { message: updated };
+  });
+
+  // Flag operations
+  app.post("/messages/:id/flags", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const body = z.object({ flag: z.string() }).safeParse(request.body);
+
+    if (!params.success || !body.success) return reply.status(400).send({ error: "Invalid request" });
+
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null }
+    });
+    if (!message) return reply.status(404).send({ error: "Message not found" });
+
+    const userId = (request.user as any).userId;
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    await prisma.messageFlag.upsert({
+      where: { messageId_flag: { messageId: message.id, flag: body.data.flag } },
+      update: {},
+      create: { messageId: message.id, flag: body.data.flag }
+    });
+
+    return { ok: true };
+  });
+
+  app.delete("/messages/:id/flags/:flag", { preHandler: app.authenticate }, async (request, reply) => {
+    const params = z.object({ id: z.string().uuid(), flag: z.string() }).safeParse(request.params);
+
+    if (!params.success) return reply.status(400).send({ error: "Invalid request" });
+
+    const message = await prisma.message.findUnique({
+      where: { id: params.data.id, deletedAt: null }
+    });
+    if (!message) return reply.status(404).send({ error: "Message not found" });
+
+    const userId = (request.user as any).userId;
+    const hasAccess = await TeamService.canAccessInbox(userId, message.inboxId);
+    if (!hasAccess && (request.user as any).role !== "ADMIN") {
+      return reply.status(403).send({ error: "Unauthorized" });
+    }
+
+    await prisma.messageFlag.deleteMany({
+      where: { messageId: message.id, flag: params.data.flag }
+    });
+
+    return { ok: true };
   });
 }

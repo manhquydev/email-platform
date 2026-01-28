@@ -41,7 +41,12 @@ import { uploadRoutes } from "./routes/upload";
 import { apiKeysRoutes } from "./routes/api-keys";
 import { teamRoutes } from "./routes/teams";
 import { apiUsageRoutes } from "./routes/api-usage";
+import { organizationRoutes } from "./routes/organizations";
 import { visibilityRulesRoutes } from "./routes/visibility-rules";
+import { folderRoutes } from "./routes/folders";
+import { webdavRoutes } from "./webdav/server";
+import { calendarRoutes } from "./routes/calendars";
+import { addressBookRoutes } from "./routes/contacts";
 import { setupSwagger } from "./plugins/swagger";
 import crypto from "crypto";
 import { prisma } from "./lib/prisma";
@@ -71,6 +76,9 @@ declare module "fastify" {
     requireAdmin: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
+
+import { ssoRoutes } from "./routes/sso";
+import { scimRoutes } from "./routes/scim";
 
 export const buildServer = () => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -408,14 +416,23 @@ export const buildServer = () => {
   app.register(uploadRoutes, { prefix: "/uploads" });
   app.register(webhookRoutes);
   app.register(teamRoutes);
+  app.register(organizationRoutes, { prefix: "/organizations" });
   app.register(apiUsageRoutes);
   app.register(visibilityRulesRoutes);
+  app.register(folderRoutes);
+
+  // Phase 06: CalDAV/CardDAV & Productivity
+  app.register(webdavRoutes);
+  app.register(calendarRoutes, { prefix: "/calendars" });
+  app.register(addressBookRoutes, { prefix: "/addressbook" }); // Renamed to avoid conflict with contact.ts (Contact Us form)
 
   // API v1 - Developer API
   app.register(v1Routes);
 
   // Phase 4: Identity Suite Bundles
   app.register(identityBundleRoutes);
+  app.register(ssoRoutes);
+  app.register(scimRoutes);
 
   // Phase 5: Public Ephemeral Inbox
   app.register(ephemeralInboxRoutes);

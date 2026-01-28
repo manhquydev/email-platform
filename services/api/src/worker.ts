@@ -25,6 +25,8 @@ import { evaluateMessage as evaluateVisibility, type EmailData } from './service
 import { realtimeEvents } from './services/realtime-events';
 import { pushNotification } from './services/push-notification';
 import { buildAuthHeaders, generateAuthResultsHeader } from './utils/auth-headers';
+import { FolderService } from './services/folder-service';
+import { ThreadingService } from './services/threading-service';
 
 type Logger = {
     info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -272,9 +274,22 @@ export const setupEmailWorker = (logger: Logger) => {
                     logger.info({ otp: otpResult.code, confidence: otpResult.confidence }, 'OTP extracted from email');
                 }
 
+                // Get Thread ID and Folder ID
+                const inboxFolder = await FolderService.getInboxFolder(inbox.id);
+                const uid = await FolderService.getNextUid(inboxFolder.id);
+                const threadId = await ThreadingService.computeThreadId(
+                    mail.messageId ?? null,
+                    mail.references ? (Array.isArray(mail.references) ? mail.references.join(' ') : mail.references) : null,
+                    mail.inReplyTo ? (Array.isArray(mail.inReplyTo) ? mail.inReplyTo.join(' ') : mail.inReplyTo) : null,
+                    inbox.id
+                );
+
                 const message = await prisma.message.create({
                     data: {
                         inboxId: inbox.id,
+                        folderId: inboxFolder.id,
+                        uid,
+                        threadId,
                         messageId: mail.messageId ?? generateToken(),
                         fromAddress,
                         toAddress,

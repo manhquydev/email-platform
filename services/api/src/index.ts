@@ -1,8 +1,10 @@
 import { promises as fs } from "fs";
 import { startHttpServer } from "./server";
 import { startSmtpServer } from "./smtp";
+import { startSubmissionServer } from "./smtp/submission-server";
 import { setupEmailWorker } from "./worker";
 import { setupWebhookWorker } from "./webhookWorker";
+import { setupOutboundWorker } from "./services/outbound-delivery";
 import { prisma } from "./lib/prisma";
 import { appConfig } from "./config";
 import { hashPassword } from "./utils/password";
@@ -68,8 +70,11 @@ const main = async () => {
   const app = await startHttpServer();
   await ensureAdminUser(app.log);
   const smtp = startSmtpServer(app.log);
+  const submissionSmtp = startSubmissionServer(app.log, appConfig.smtpPort + 335); // Port 587 usually, defaulting to 2525+335=2860 if not set
+
   const worker = setupEmailWorker(app.log);
   const webhookWorker = setupWebhookWorker(app.log);
+  const outboundWorker = setupOutboundWorker(app.log); // Initialize outbound worker for graceful shutdown
 
   // Verify outbound email connection on startup
   const { outboundService } = await import("./services/outbound");
@@ -123,12 +128,14 @@ const main = async () => {
     // 3. Stop SMTP server
     app.log.info("Stopping SMTP server...");
     smtp.close();
+    submissionSmtp.close();
 
     // 4. Wait for workers to finish active jobs
     app.log.info("Waiting for workers to complete...");
     await Promise.all([
       worker.close(),
       webhookWorker.close(),
+      outboundWorker.close(),
     ]);
 
     // 5. Disconnect database

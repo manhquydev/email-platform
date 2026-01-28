@@ -185,19 +185,19 @@ function StatusBadge({ status, isPublic }: { status: string; isPublic?: boolean 
                 {isVerified ? (
                     <>
                         <IconCheckCircle className="w-3 h-3" />
-                        Verified
+                        Đã xác minh
                     </>
                 ) : (
                     <>
                         <IconClock className="w-3 h-3" />
-                        Pending
+                        Chờ xác minh
                     </>
                 )}
             </span>
             {isPublic && isVerified && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full tracking-wide uppercase bg-cyan-500/10 text-cyan-400 ring-1 ring-cyan-500/20">
                     <IconGlobe className="w-3 h-3" />
-                    Public
+                    Công khai
                 </span>
             )}
         </div>
@@ -254,7 +254,7 @@ export function AddDomainModal({
                             </div>
                         )}
                         <h2 className="text-base font-semibold text-zinc-100">
-                            {addedDomain ? "Domain Added" : "Add Domain"}
+                            {addedDomain ? "Đã thêm tên miền" : "Thêm tên miền"}
                         </h2>
                     </div>
                     <button
@@ -271,7 +271,7 @@ export function AddDomainModal({
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wide">
-                                    Domain Name
+                                    Tên miền
                                 </label>
                                 <input
                                     type="text"
@@ -288,7 +288,7 @@ export function AddDomainModal({
                                     onClick={onClose}
                                     className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-colors"
                                 >
-                                    Cancel
+                                    Hủy
                                 </button>
                                 <button
                                     onClick={onAdd}
@@ -298,12 +298,12 @@ export function AddDomainModal({
                                     {busy ? (
                                         <>
                                             <IconLoader className="w-3.5 h-3.5" />
-                                            Adding...
+                                            Đang thêm...
                                         </>
                                     ) : (
                                         <>
                                             <IconPlus className="w-3.5 h-3.5" />
-                                            Add Domain
+                                            Thêm tên miền
                                         </>
                                     )}
                                 </button>
@@ -312,7 +312,7 @@ export function AddDomainModal({
                     ) : (
                         <div className="space-y-4">
                             <p className="text-sm text-zinc-400">
-                                Configure DNS records for <span className="text-zinc-200 font-medium">{addedDomain.name}</span>:
+                                Cấu hình bản ghi DNS cho <span className="text-zinc-200 font-medium">{addedDomain.name}</span>:
                             </p>
 
                             {/* DNS Records Table */}
@@ -320,8 +320,8 @@ export function AddDomainModal({
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="bg-zinc-800/50">
-                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-16">Type</th>
-                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Value</th>
+                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-16">Loại</th>
+                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Giá trị</th>
                                             <th className="px-3 py-2 w-10"></th>
                                         </tr>
                                     </thead>
@@ -365,7 +365,7 @@ export function AddDomainModal({
                                 onClick={onClose}
                                 className="w-full py-2.5 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 rounded-lg transition-colors"
                             >
-                                Got it, close
+                                Đã hiểu, đóng
                             </button>
                         </div>
                     )}
@@ -387,22 +387,22 @@ export function DNSConfigCard() {
                 <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center">
                     <IconServer className="w-3.5 h-3.5 text-cyan-400" />
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-200">DNS Configuration Guide</h3>
+                <h3 className="text-sm font-semibold text-zinc-200">Hướng dẫn cấu hình DNS</h3>
             </div>
 
             {/* Content */}
             <div className="p-4">
                 <p className="text-xs text-zinc-500 mb-3">
-                    Add these DNS records to receive emails on your domain:
+                    Thêm các bản ghi DNS sau để nhận email trên tên miền của bạn:
                 </p>
 
                 <div className="rounded-lg border border-zinc-800 overflow-hidden">
                     <table className="w-full text-xs">
                         <thead>
                             <tr className="bg-zinc-800/50">
-                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-14">Type</th>
-                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-16">Name</th>
-                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Value</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-14">Loại</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-16">Tên</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Giá trị</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-800/50">
@@ -427,7 +427,7 @@ export function DNSConfigCard() {
                                     <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/10 text-emerald-400 rounded">TXT</span>
                                 </td>
                                 <td className="px-3 py-2 font-mono text-zinc-400">@</td>
-                                <td className="px-3 py-2 font-mono text-zinc-500 italic">[verification token]</td>
+                                <td className="px-3 py-2 font-mono text-zinc-500 italic">[mã xác minh]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -516,7 +516,7 @@ export function DomainCard({
                                 ) : (
                                     <IconShieldCheck className="w-3 h-3" />
                                 )}
-                                Verify
+                                Xác minh
                             </button>
                         )}
 
@@ -525,7 +525,7 @@ export function DomainCard({
                                 onClick={() => onTogglePublic(domain.id, domain.isPublic)}
                                 disabled={isToggling}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 disabled:opacity-50 rounded-lg transition-colors"
-                                title={domain.isPublic ? "Make private" : "Make public"}
+                                title={domain.isPublic ? "Chuyển sang riêng tư" : "Chuyển sang công khai"}
                             >
                                 {isToggling ? (
                                     <IconLoader className="w-3 h-3" />
@@ -534,7 +534,7 @@ export function DomainCard({
                                 ) : (
                                     <IconUnlock className="w-3 h-3" />
                                 )}
-                                {domain.isPublic ? "Private" : "Public"}
+                                {domain.isPublic ? "Riêng tư" : "Công khai"}
                             </button>
                         )}
 
@@ -542,7 +542,7 @@ export function DomainCard({
                             onClick={() => onDelete(domain)}
                             disabled={isDeleting}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 disabled:opacity-50 rounded-lg transition-colors"
-                            title="Delete domain"
+                            title="Xóa tên miền"
                         >
                             {isDeleting ? (
                                 <IconLoader className="w-3 h-3" />
@@ -562,7 +562,7 @@ export function DomainCard({
                             <IconInfo className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs text-amber-300/80 mb-2">
-                                    Add this TXT record to verify ownership:
+                                    Thêm bản ghi TXT sau để xác minh quyền sở hữu:
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <code className="flex-1 px-2.5 py-1.5 bg-zinc-900/80 rounded text-[11px] font-mono text-zinc-300 break-all">
@@ -572,7 +572,7 @@ export function DomainCard({
                                         onClick={() => copyToClipboard(domain.verificationToken)}
                                         className="flex-shrink-0 px-2.5 py-1.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
                                     >
-                                        Copy
+                                        Sao chép
                                     </button>
                                 </div>
                             </div>
@@ -588,7 +588,7 @@ export function DomainCard({
                         <div className="flex items-center gap-2">
                             <IconGlobe className="w-4 h-4 text-cyan-400" />
                             <p className="text-xs text-cyan-300/80">
-                                <span className="font-medium">Public domain.</span> Other users can create emails on this domain.
+                                <span className="font-medium">Tên miền công khai.</span> Người dùng khác có thể tạo email trên tên miền này.
                             </p>
                         </div>
                     </div>
@@ -611,9 +611,9 @@ export function DomainsEmptyState({ onAdd }: { onAdd: () => void }) {
             </div>
 
             {/* Text */}
-            <h3 className="text-lg font-semibold text-zinc-200 mb-1.5">No domains yet</h3>
+            <h3 className="text-lg font-semibold text-zinc-200 mb-1.5">Chưa có tên miền</h3>
             <p className="text-sm text-zinc-500 text-center max-w-sm mb-6">
-                Add your first domain to start receiving emails.
+                Thêm tên miền đầu tiên để bắt đầu nhận email.
             </p>
 
             {/* Action */}
@@ -622,7 +622,7 @@ export function DomainsEmptyState({ onAdd }: { onAdd: () => void }) {
                 className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 rounded-lg transition-colors"
             >
                 <IconPlus className="w-4 h-4" />
-                Add your first domain
+                Thêm tên miền đầu tiên
             </button>
         </div>
     );

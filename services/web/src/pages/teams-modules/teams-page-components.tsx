@@ -1,74 +1,154 @@
 /**
  * UI components for Teams page
- * TeamListItem, CreateTeamForm, EmptyTeamsState, PageHeader
+ * Dark theme with monochrome outline icons (Lucide-style)
+ * Glassmorphism cards with compact professional layout
  */
 import type { Team } from "../../types";
 
-// --- Page Header ---
+// ============================================
+// ICON COMPONENTS - Monochrome Outline Style
+// ============================================
+
+/** Plus icon - add action */
+function IconPlus({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Users icon - team/group */
+function IconUsers({ className = "w-5 h-5" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Close icon - X mark */
+function IconClose({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Loader icon - spinning */
+function IconLoader({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={`${className} animate-spin`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+// ============================================
+// PAGE HEADER
+// ============================================
+
 export interface TeamsPageHeaderProps {
     onCreateClick: () => void;
 }
 
 export function TeamsPageHeader({ onCreateClick }: TeamsPageHeaderProps) {
     return (
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
             <div>
-                <h1 className="text-2xl font-bold text-nebula-text">Quản lý nhóm</h1>
-                <p className="text-nebula-text-muted mt-1">Hợp tác và chia sẻ hộp thư với đồng nghiệp</p>
+                <h1 className="text-xl font-bold text-zinc-100">Quản lý nhóm</h1>
+                <p className="text-sm text-zinc-500 mt-0.5">Hợp tác và chia sẻ hộp thư với đồng nghiệp</p>
             </div>
             <button
                 onClick={onCreateClick}
-                className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 rounded-lg transition-colors"
             >
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
+                <IconPlus className="w-4 h-4" />
                 Tạo nhóm mới
             </button>
         </div>
     );
 }
 
-// --- Create Team Form ---
+// ============================================
+// CREATE TEAM FORM
+// ============================================
+
 export interface CreateTeamFormProps {
     newTeamName: string;
     setNewTeamName: (name: string) => void;
     onSubmit: (e: React.FormEvent) => Promise<void>;
     onCancel: () => void;
+    isSubmitting?: boolean;
 }
 
-export function CreateTeamForm({ newTeamName, setNewTeamName, onSubmit, onCancel }: CreateTeamFormProps) {
+export function CreateTeamForm({ newTeamName, setNewTeamName, onSubmit, onCancel, isSubmitting }: CreateTeamFormProps) {
     return (
-        <div className="mb-8 p-6 bg-nebula-surface border border-nebula-border rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Tạo nhóm mới</h2>
-            <form onSubmit={onSubmit} className="flex gap-3">
-                <input
-                    autoFocus
-                    type="text"
-                    placeholder="Tên nhóm (v.d. Marketing, Dev Team...)"
-                    className="flex-1 px-4 py-2 bg-nebula-elevated border border-nebula-border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                />
+        <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-800/30">
+                <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                        <IconUsers className="w-3.5 h-3.5 text-cyan-400" />
+                    </div>
+                    <h2 className="text-sm font-semibold text-zinc-200">Tạo nhóm mới</h2>
+                </div>
                 <button
-                    type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 text-nebula-text-secondary hover:bg-nebula-elevated rounded-lg transition-colors"
+                    className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
                 >
-                    Hủy
+                    <IconClose className="w-4 h-4" />
                 </button>
-                <button
-                    type="submit"
-                    className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                >
-                    Tạo nhóm
-                </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={onSubmit} className="p-4">
+                <div className="flex gap-3">
+                    <input
+                        autoFocus
+                        type="text"
+                        placeholder="Tên nhóm (v.d. Marketing, Dev Team...)"
+                        className="flex-1 px-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
+                        value={newTeamName}
+                        onChange={(e) => setNewTeamName(e.target.value)}
+                    />
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-colors"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting || !newTeamName.trim()}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <IconLoader className="w-3.5 h-3.5" />
+                                Đang tạo...
+                            </>
+                        ) : (
+                            <>
+                                <IconPlus className="w-3.5 h-3.5" />
+                                Tạo nhóm
+                            </>
+                        )}
+                    </button>
+                </div>
             </form>
         </div>
     );
 }
 
-// --- Team List Item ---
+// ============================================
+// TEAM LIST ITEM
+// ============================================
+
 export interface TeamListItemProps {
     team: Team;
     isSelected: boolean;
@@ -76,56 +156,77 @@ export interface TeamListItemProps {
 }
 
 export function TeamListItem({ team, isSelected, onSelect }: TeamListItemProps) {
+    const memberCount = team._count?.members || 0;
+
     return (
         <button
             onClick={onSelect}
-            className={`w-full text-left px-4 py-3 rounded-xl transition-all border ${
+            className={`group w-full text-left px-3 py-2.5 rounded-xl transition-all duration-200 border ${
                 isSelected
-                    ? "bg-primary/10 border-primary/20 text-primary font-medium"
-                    : "bg-nebula-surface border-transparent text-nebula-text-secondary hover:border-nebula-border"
+                    ? "bg-cyan-500/10 border-cyan-500/20 ring-1 ring-cyan-500/20"
+                    : "bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900/70 hover:border-zinc-700"
             }`}
         >
             <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
-                    isSelected ? "bg-primary text-white" : "bg-nebula-elevated text-nebula-text-muted"
+                <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm ${
+                    isSelected
+                        ? "bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-500/30"
+                        : "bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700"
                 }`}>
                     {team.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="truncate">
-                    <div className="truncate">{team.name}</div>
-                    <div className="text-[10px] opacity-60 uppercase">{team._count?.members || 0} thành viên</div>
+                <div className="min-w-0 flex-1">
+                    <div className={`text-sm font-medium truncate ${
+                        isSelected ? "text-cyan-300" : "text-zinc-200"
+                    }`}>
+                        {team.name}
+                    </div>
+                    <div className="text-[11px] text-zinc-500">
+                        {memberCount} thành viên
+                    </div>
                 </div>
             </div>
         </button>
     );
 }
 
-// --- Empty Teams State ---
+// ============================================
+// EMPTY STATES
+// ============================================
+
 export function EmptyTeamsState() {
     return (
-        <div className="p-8 text-center bg-nebula-surface border border-dashed border-nebula-border rounded-xl">
-            <p className="text-sm text-nebula-text-muted italic">Bạn chưa tham gia nhóm nào</p>
+        <div className="flex flex-col items-center justify-center py-12 px-6 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30">
+            <div className="w-12 h-12 rounded-xl bg-zinc-800/50 border border-zinc-700 flex items-center justify-center mb-4">
+                <IconUsers className="w-6 h-6 text-zinc-600" />
+            </div>
+            <p className="text-sm text-zinc-500 text-center">Bạn chưa tham gia nhóm nào</p>
         </div>
     );
 }
 
-// --- No Team Selected State ---
 export function NoTeamSelectedState() {
     return (
-        <div className="h-64 flex flex-col items-center justify-center bg-nebula-surface border border-nebula-border rounded-2xl text-nebula-text-muted">
-            <svg width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24" className="mb-4 opacity-20">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <p>Chọn một nhóm để xem chi tiết</p>
+        <div className="flex flex-col items-center justify-center h-64 rounded-xl border border-zinc-800 bg-zinc-900/50">
+            <div className="w-14 h-14 rounded-xl bg-zinc-800/50 border border-zinc-700 flex items-center justify-center mb-4">
+                <IconUsers className="w-7 h-7 text-zinc-600" />
+            </div>
+            <p className="text-sm text-zinc-500">Chọn một nhóm để xem chi tiết</p>
         </div>
     );
 }
 
-// --- Loading State ---
+// ============================================
+// LOADING STATE
+// ============================================
+
 export function TeamsLoadingState() {
     return (
         <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="flex flex-col items-center gap-3">
+                <IconLoader className="w-6 h-6 text-cyan-400" />
+                <span className="text-sm text-zinc-500">Đang tải...</span>
+            </div>
         </div>
     );
 }

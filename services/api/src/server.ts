@@ -61,6 +61,7 @@ import { v1Routes } from "./routes/v1";
 import { identityBundleRoutes } from "./routes/identity-bundles";
 import { ephemeralInboxRoutes } from "./routes/ephemeral-inbox";
 import { referralRoutes } from "./routes/referral";
+import { providerRoutes } from "./routes/provider";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -422,12 +423,15 @@ export const buildServer = () => {
   app.register(folderRoutes);
 
   // Phase 06: CalDAV/CardDAV & Productivity
-  app.register(webdavRoutes);
-  app.register(calendarRoutes, { prefix: "/calendars" });
-  app.register(addressBookRoutes, { prefix: "/addressbook" }); // Renamed to avoid conflict with contact.ts (Contact Us form)
+  // app.register(webdavRoutes);
+  // app.register(calendarRoutes, { prefix: "/calendars" });
+  // app.register(addressBookRoutes, { prefix: "/addressbook" }); // Renamed to avoid conflict with contact.ts (Contact Us form)
 
   // API v1 - Developer API
   app.register(v1Routes);
+
+  // Hosting Provider API (cPanel/WHMCS Integration)
+  app.register(providerRoutes);
 
   // Phase 4: Identity Suite Bundles
   app.register(identityBundleRoutes);

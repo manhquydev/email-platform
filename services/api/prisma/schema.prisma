@@ -91,6 +91,7 @@ model Organization {
   inboxes     Inbox[]
   contacts    Contact[] // Global Address List
   identityProviders IdentityProvider[]
+  providerTenant ProviderTenant? // Hosting Provider tenant link
 
   @@index([slug])
 }
@@ -211,6 +212,7 @@ model Domain {
   inboxes            Inbox[]
   dkim               DomainDkim?
   outboundMsgs       OutboundMessage[]
+  providerTenantDomain ProviderTenantDomain? // Hosting Provider domain link
 
   @@index([ownerId])
   @@index([status])
@@ -556,6 +558,12 @@ enum ContributionStatus {
 enum UserRole {
   ADMIN
   USER
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
 }
 
 enum RuleType {
@@ -1325,4 +1333,163 @@ model ExternalIdentity {
   @@unique([providerId, externalId])
   @@index([userId])
   @@index([email])
+}
+
+// ============================================
+// Phase: Hosting Provider API (cPanel/WHMCS Integration)
+// ============================================
+
+model HostingProvider {
+  id            String         @id @default(uuid())
+  name          String
+  contactEmail  String
+  apiKeyHash    String         @unique
+  apiKeyPrefix  String         // First 20 chars for identification
+  tier          ProviderTier   @default(STARTER)
+
+  // Limits
+  maxTenants    Int            @default(100)
+  maxMailboxes  Int            @default(1000)
+  maxStorageGb  Int            @default(100)
+
+  // Billing
+  billingEmail  String?
+  webhookUrl    String?
+  webhookSecret String?
+
+  // Status
+  status        ProviderStatus @default(ACTIVE)
+
+  // Relations
+  tenants       ProviderTenant[]
+  usageLogs     ProviderUsageLog[]
+  webhookEvents ProviderWebhookEvent[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([apiKeyPrefix])
+}
+
+enum ProviderTier {
+  STARTER    // 100 tenants, $1/domain
+  GROWTH     // 500 tenants, $0.80/domain
+  ENTERPRISE // Unlimited, custom pricing
+}
+
+enum ProviderStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+model ProviderTenant {
+  id              String        @id @default(uuid())
+  providerId      String
+  provider        HostingProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  // External reference (WHMCS service ID)
+  externalId      String
+
+  // Customer info
+  customerEmail   String
+  customerName    String?
+
+  // Plan
+  plan            TenantPlan    @default(LITE)
+
+  // Limits based on plan
+  maxMailboxes    Int           @default(5)
+  maxStorageGb    Int           @default(5)
+
+  // Link to Organization
+  organizationId  String?       @unique
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  // Status
+  status          TenantStatus  @default(PENDING)
+
+  // Domains
+  domains         ProviderTenantDomain[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  suspendedAt     DateTime?
+  terminatedAt    DateTime?
+
+  @@unique([providerId, externalId])
+  @@index([providerId])
+  @@index([customerEmail])
+}
+
+enum TenantPlan {
+  LITE      // 5 mailboxes, 1GB each
+  PRO       // Unlimited, 10GB each
+  BUSINESS  // Unlimited, 50GB each, LDAP
+}
+
+enum TenantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+model ProviderTenantDomain {
+  id          String         @id @default(uuid())
+  tenantId    String
+  tenant      ProviderTenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  domainName  String
+  verified    Boolean        @default(false)
+
+  // Link to Domain model
+  domainId    String?        @unique
+  domain      Domain?        @relation(fields: [domainId], references: [id])
+
+  createdAt   DateTime       @default(now())
+  verifiedAt  DateTime?
+
+  @@unique([tenantId, domainName])
+  @@index([domainName])
+}
+
+model ProviderUsageLog {
+  id               String          @id @default(uuid())
+  providerId       String
+  provider         HostingProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  tenantId         String?
+
+  // Metrics
+  period           DateTime        // Monthly period start
+  mailboxes        Int             @default(0)
+  storageBytes     BigInt          @default(0)
+  messagesSent     Int             @default(0)
+  messagesReceived Int             @default(0)
+
+  createdAt        DateTime        @default(now())
+
+  @@unique([providerId, tenantId, period])
+  @@index([providerId, period])
+}
+
+model ProviderWebhookEvent {
+  id          String          @id @default(uuid())
+  providerId  String
+  provider    HostingProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  eventType   String          // tenant.created, mailbox.created, etc.
+  payload     Json
+
+  // Delivery status
+  deliveredAt DateTime?
+  attempts    Int             @default(0)
+  lastError   String?
+
+  createdAt   DateTime        @default(now())
+
+  @@index([providerId, createdAt])
+  @@index([deliveredAt])
 }

@@ -35,7 +35,15 @@ email-platform/
 │   ├── api/
 │   │   ├── plugins/
 │   │   ├── services/
+│   │   │   ├── hosting-provider.service.ts
+│   │   │   ├── provider-webhook.service.ts
+│   │   │   └── ...
 │   │   ├── routes/
+│   │   │   ├── provider.ts
+│   │   │   └── ...
+│   │   ├── middleware/
+│   │   │   ├── provider-auth.ts
+│   │   │   └── ...
 │   │   ├── schemas/
 │   │   ├── smtp/
 │   │   ├── workers/

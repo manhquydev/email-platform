@@ -207,6 +207,27 @@ API Server
          (Google OAuth2)
 ```
 
+### 5.4 Hosting Provider Integration (cPanel/WHMCS)
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   Hosting   │────►│  API Server  │────►│ Webhook     │
+│   Platform  │◄────│              │◄────│ Endpoint    │
+└─────────────┘     └──────────────┘     └─────────────┘
+```
+
+**Authentication:** `X-Provider-Key` header (SHA-256 hashed API Key)
+
+**Capabilities:**
+- **Tenant Management:** Create/suspend isolated tenants
+- **Domain Provisioning:** Programmatic domain verification
+- **Mailbox Control:** Create/delete mailboxes for tenants
+- **Event Webhooks:** Real-time updates (tenant.created, mailbox.deleted)
+
+**Key Endpoints:**
+- `POST /v1/provider/tenants`
+- `POST /v1/provider/tenants/:id/domains`
+- `POST /v1/provider/tenants/:id/mailboxes`
+
 ## 6. Docker Services
 
 | Service    | Port  | Purpose                        |

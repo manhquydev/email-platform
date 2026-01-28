@@ -4,7 +4,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import type { TelegramUser } from "../../components/TelegramLoginButton";
 import toast from "react-hot-toast";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export interface LoginState {
     email: string;
@@ -68,6 +71,47 @@ export function useLoginForm() {
 
     const handleBack = () => setRequires2FA(false);
 
+    // Telegram login handler - only for existing linked accounts
+    const [telegramBusy, setTelegramBusy] = useState(false);
+
+    const handleTelegramAuth = async (telegramUser: TelegramUser) => {
+        setTelegramBusy(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_BASE}/auth/telegram`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(telegramUser),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Đăng nhập Telegram thất bại");
+            }
+
+            // If requiresEmail = true, account not linked yet
+            if (data.requiresEmail) {
+                setError("Tài khoản Telegram chưa được liên kết. Vui lòng đăng nhập bằng email/mật khẩu, sau đó liên kết Telegram trong Cài đặt.");
+                return;
+            }
+
+            // Successful login
+            if (data.token && data.user) {
+                toast.success("Đăng nhập Telegram thành công!");
+                handleLoginSuccess(data.token, data.user);
+            }
+        } catch (err) {
+            const msg = (err as Error).message;
+            if (msg.includes("disabled") || msg.includes("Account is disabled")) {
+                setError("Tài khoản đã bị vô hiệu hóa. Liên hệ quản trị viên.");
+            } else {
+                setError(msg || "Đăng nhập Telegram thất bại");
+            }
+        } finally {
+            setTelegramBusy(false);
+        }
+    };
+
     return {
         email,
         setEmail,
@@ -78,9 +122,11 @@ export function useLoginForm() {
         setTwoFactorCode,
         error,
         busy,
+        telegramBusy,
         handleSubmit,
         handleVerify2FA,
         handleLoginSuccess,
+        handleTelegramAuth,
         handleBack
     };
 }

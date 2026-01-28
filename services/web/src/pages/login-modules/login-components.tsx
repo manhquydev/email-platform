@@ -6,6 +6,8 @@ import { GlassCard } from "../../components/ui/GlassCard";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { PasskeyLogin } from "../../components/Auth/PasskeyLogin";
+import { TelegramLoginButton } from "../../components/TelegramLoginButton";
+import type { TelegramUser } from "../../components/TelegramLoginButton";
 
 /** Brand logo component */
 export const BrandLogo = () => (
@@ -44,11 +46,13 @@ interface LoginFormProps {
     password: string;
     error: string | null;
     busy: boolean;
+    telegramBusy?: boolean;
     onEmailChange: (value: string) => void;
     onPasswordChange: (value: string) => void;
     onSubmit: (e: React.FormEvent) => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onLoginSuccess: (token: string, user: any) => void;
+    onTelegramAuth?: (user: TelegramUser) => void;
 }
 
 export function LoginForm({
@@ -56,11 +60,15 @@ export function LoginForm({
     password,
     error,
     busy,
+    telegramBusy,
     onEmailChange,
     onPasswordChange,
     onSubmit,
-    onLoginSuccess
+    onLoginSuccess,
+    onTelegramAuth
 }: LoginFormProps) {
+    const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME;
+
     return (
         <>
             <div className="mb-6">
@@ -125,6 +133,30 @@ export function LoginForm({
 
                 <div className="mt-4 space-y-3">
                     <PasskeyLogin onSuccess={onLoginSuccess} />
+
+                    {/* Telegram Login - only for accounts already linked */}
+                    {botUsername && onTelegramAuth && (
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="relative w-full flex items-center justify-center min-h-[40px]">
+                                {telegramBusy && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-surface/50 backdrop-blur-sm rounded-lg z-10">
+                                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                    </div>
+                                )}
+                                <TelegramLoginButton
+                                    botName={botUsername}
+                                    onAuth={onTelegramAuth}
+                                    buttonSize="large"
+                                    cornerRadius={12}
+                                    showUserPhoto={false}
+                                    className="flex justify-center"
+                                />
+                            </div>
+                            <p className="text-xs text-text-secondary text-center">
+                                Chỉ dành cho tài khoản đã liên kết Telegram
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </>

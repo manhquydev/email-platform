@@ -28,9 +28,11 @@ export function Login() {
         setTwoFactorCode,
         error,
         busy,
+        telegramBusy,
         handleSubmit,
         handleVerify2FA,
         handleLoginSuccess,
+        handleTelegramAuth,
         handleBack
     } = useLoginForm();
 
@@ -60,10 +62,12 @@ export function Login() {
                             password={password}
                             error={error}
                             busy={busy}
+                            telegramBusy={telegramBusy}
                             onEmailChange={setEmail}
                             onPasswordChange={setPassword}
                             onSubmit={handleSubmit}
                             onLoginSuccess={handleLoginSuccess}
+                            onTelegramAuth={handleTelegramAuth}
                         />
                     ) : (
                         <TwoFactorForm

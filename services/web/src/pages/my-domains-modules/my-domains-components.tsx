@@ -1,6 +1,7 @@
 /**
  * UI Components for MyDomains page
- * AddDomainModal, DNSConfigCard, DomainCard, EmptyState
+ * Dark theme with monochrome outline icons (Lucide-style)
+ * Glassmorphism cards with compact professional layout
  */
 import type { Domain } from "../../types";
 
@@ -8,16 +9,205 @@ import type { Domain } from "../../types";
 const MAIL_HOSTNAME = import.meta.env.VITE_MAIL_HOSTNAME || "mail.manhquy.click";
 const MAIL_SERVER_IP = import.meta.env.VITE_MAIL_SERVER_IP || "165.22.48.193";
 
-// --- Copy Icon Component ---
-function CopyIcon() {
+// ============================================
+// ICON COMPONENTS - Monochrome Outline Style
+// ============================================
+
+/** Copy icon - clipboard outline */
+function IconCopy({ className = "w-4 h-4" }: { className?: string }) {
     return (
-        <svg className="w-4 h-4 text-[var(--nebula-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
         </svg>
     );
 }
 
-// --- Add Domain Modal ---
+/** Check circle icon - verification success */
+function IconCheckCircle({ className = "w-5 h-5" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Clock icon - pending status */
+function IconClock({ className = "w-5 h-5" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Close icon - X mark */
+function IconClose({ className = "w-5 h-5" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Plus icon - add action */
+function IconPlus({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Globe icon - domain/public */
+function IconGlobe({ className = "w-5 h-5" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20" strokeLinecap="round" />
+            <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+        </svg>
+    );
+}
+
+/** Lock icon - private */
+function IconLock({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
+        </svg>
+    );
+}
+
+/** Unlock icon - public */
+function IconUnlock({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 019.9-1" />
+        </svg>
+    );
+}
+
+/** Trash icon - delete action */
+function IconTrash({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Shield check icon - verify action */
+function IconShieldCheck({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Info icon - information */
+function IconInfo({ className = "w-5 h-5" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Server icon - DNS/mail server */
+function IconServer({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <rect x="2" y="2" width="20" height="8" rx="2" />
+            <rect x="2" y="14" width="20" height="8" rx="2" />
+            <path d="M6 6h.01M6 18h.01" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+/** External link icon */
+function IconExternalLink({ className = "w-3 h-3" }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M15 3h6v6M10 14L21 3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Loader icon - spinning */
+function IconLoader({ className = "w-4 h-4" }: { className?: string }) {
+    return (
+        <svg className={`${className} animate-spin`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+// ============================================
+// SHARED COMPONENTS
+// ============================================
+
+/** Copy button with icon */
+function CopyButton({ text, onCopy }: { text: string; onCopy: (text: string) => void }) {
+    return (
+        <button
+            onClick={() => onCopy(text)}
+            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all duration-150"
+            title="Sao chép"
+        >
+            <IconCopy className="w-3.5 h-3.5" />
+        </button>
+    );
+}
+
+/** Status badge component */
+function StatusBadge({ status, isPublic }: { status: string; isPublic?: boolean }) {
+    const isVerified = status === "VERIFIED";
+
+    return (
+        <div className="flex items-center gap-1.5">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full tracking-wide uppercase
+                ${isVerified
+                    ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
+                    : "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20"
+                }`}
+            >
+                {isVerified ? (
+                    <>
+                        <IconCheckCircle className="w-3 h-3" />
+                        Verified
+                    </>
+                ) : (
+                    <>
+                        <IconClock className="w-3 h-3" />
+                        Pending
+                    </>
+                )}
+            </span>
+            {isPublic && isVerified && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full tracking-wide uppercase bg-cyan-500/10 text-cyan-400 ring-1 ring-cyan-500/20">
+                    <IconGlobe className="w-3 h-3" />
+                    Public
+                </span>
+            )}
+        </div>
+    );
+}
+
+// ============================================
+// ADD DOMAIN MODAL
+// ============================================
+
 export interface AddDomainModalProps {
     showAddForm: boolean;
     newDomainName: string;
@@ -42,107 +232,141 @@ export function AddDomainModal({
     if (!showAddForm) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-nebula-fade-in">
-            <div className="glass-card-elevated w-full max-w-md animate-nebula-scale-in">
-                <div className="glass-card-header">
-                    <h2 className="text-lg font-semibold" style={{ color: 'var(--nebula-text)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                onClick={onClose}
+            />
+
+            {/* Modal */}
+            <div className="relative w-full max-w-lg bg-zinc-900/95 border border-zinc-800 rounded-xl shadow-2xl shadow-black/50 animate-in fade-in zoom-in-95 duration-200">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+                    <div className="flex items-center gap-3">
                         {addedDomain ? (
-                            <span className="flex items-center gap-2 text-[var(--nebula-success)]">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Đã thêm tên miền!
-                            </span>
+                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                <IconCheckCircle className="w-4 h-4 text-emerald-400" />
+                            </div>
                         ) : (
-                            "Thêm tên miền mới"
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                                <IconGlobe className="w-4 h-4 text-cyan-400" />
+                            </div>
                         )}
-                    </h2>
-                    <button onClick={onClose} className="btn-nebula btn-nebula-ghost btn-nebula-icon">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <h2 className="text-base font-semibold text-zinc-100">
+                            {addedDomain ? "Domain Added" : "Add Domain"}
+                        </h2>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+                    >
+                        <IconClose className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="glass-card-body space-y-4">
+
+                {/* Body */}
+                <div className="px-5 py-4">
                     {!addedDomain ? (
-                        <>
+                        <div className="space-y-4">
                             <div>
-                                <label className="label-nebula">Tên miền</label>
+                                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wide">
+                                    Domain Name
+                                </label>
                                 <input
                                     type="text"
                                     value={newDomainName}
                                     onChange={(e) => setNewDomainName(e.target.value)}
                                     placeholder="example.com"
-                                    className="input-nebula"
+                                    className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
                                     onKeyDown={(e) => e.key === "Enter" && onAdd()}
                                     autoFocus
                                 />
                             </div>
-                            <div className="flex justify-end gap-3">
-                                <button onClick={onClose} className="btn-nebula btn-nebula-secondary">Hủy</button>
-                                <button onClick={onAdd} disabled={busy} className="btn-nebula btn-nebula-primary">
-                                    {busy ? "Đang thêm..." : "Thêm tên miền"}
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    onClick={onClose}
+                                    className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={onAdd}
+                                    disabled={busy}
+                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                                >
+                                    {busy ? (
+                                        <>
+                                            <IconLoader className="w-3.5 h-3.5" />
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <IconPlus className="w-3.5 h-3.5" />
+                                            Add Domain
+                                        </>
+                                    )}
                                 </button>
                             </div>
-                        </>
+                        </div>
                     ) : (
-                        <div className="animate-nebula-fade-in">
-                            <p className="text-sm mb-4" style={{ color: 'var(--nebula-text-muted)' }}>
-                                Để hoàn tất, hãy cấu hình DNS cho <strong>{addedDomain.name}</strong>:
+                        <div className="space-y-4">
+                            <p className="text-sm text-zinc-400">
+                                Configure DNS records for <span className="text-zinc-200 font-medium">{addedDomain.name}</span>:
                             </p>
 
-                            <div className="rounded-lg overflow-hidden mb-6" style={{ border: '1px solid var(--nebula-border)' }}>
+                            {/* DNS Records Table */}
+                            <div className="rounded-lg border border-zinc-800 overflow-hidden">
                                 <table className="w-full text-sm">
-                                    <thead style={{ background: 'var(--nebula-elevated)' }}>
-                                        <tr>
-                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Loại</th>
-                                            <th className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Giá trị</th>
+                                    <thead>
+                                        <tr className="bg-zinc-800/50">
+                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-16">Type</th>
+                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Value</th>
                                             <th className="px-3 py-2 w-10"></th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
-                                            <td className="px-3 py-2 font-mono font-bold" style={{ color: 'var(--nebula-error)' }}>MX</td>
-                                            <td className="px-3 py-2 font-mono text-xs break-all" style={{ color: 'var(--nebula-text-secondary)' }}>
-                                                {MAIL_HOSTNAME}
+                                    <tbody className="divide-y divide-zinc-800">
+                                        <tr className="hover:bg-zinc-800/30 transition-colors">
+                                            <td className="px-3 py-2.5">
+                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-500/10 text-rose-400 rounded">MX</span>
                                             </td>
-                                            <td className="px-3 py-2 text-right">
-                                                <button onClick={() => copyToClipboard(MAIL_HOSTNAME)} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
-                                                    <CopyIcon />
-                                                </button>
+                                            <td className="px-3 py-2.5 font-mono text-xs text-zinc-300">{MAIL_HOSTNAME}</td>
+                                            <td className="px-3 py-2.5">
+                                                <CopyButton text={MAIL_HOSTNAME} onCopy={copyToClipboard} />
                                             </td>
                                         </tr>
-                                        <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
-                                            <td className="px-3 py-2 font-mono font-bold" style={{ color: 'var(--nebula-warning)' }}>A</td>
-                                            <td className="px-3 py-2 font-mono text-xs break-all" style={{ color: 'var(--nebula-text-secondary)' }}>
-                                                mail → {MAIL_SERVER_IP}
+                                        <tr className="hover:bg-zinc-800/30 transition-colors">
+                                            <td className="px-3 py-2.5">
+                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/10 text-amber-400 rounded">A</span>
                                             </td>
-                                            <td className="px-3 py-2 text-right">
-                                                <button onClick={() => copyToClipboard(MAIL_SERVER_IP)} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
-                                                    <CopyIcon />
-                                                </button>
+                                            <td className="px-3 py-2.5 font-mono text-xs text-zinc-300">
+                                                <span className="text-zinc-500">mail →</span> {MAIL_SERVER_IP}
+                                            </td>
+                                            <td className="px-3 py-2.5">
+                                                <CopyButton text={MAIL_SERVER_IP} onCopy={copyToClipboard} />
                                             </td>
                                         </tr>
-                                        <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
-                                            <td className="px-3 py-2 font-mono font-bold" style={{ color: 'var(--nebula-success)' }}>TXT</td>
-                                            <td className="px-3 py-2 font-mono text-xs break-all" style={{ color: 'var(--nebula-text-secondary)' }}>
+                                        <tr className="hover:bg-zinc-800/30 transition-colors">
+                                            <td className="px-3 py-2.5">
+                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 rounded">TXT</span>
+                                            </td>
+                                            <td className="px-3 py-2.5 font-mono text-xs text-zinc-300 break-all max-w-[280px]">
                                                 {addedDomain.verificationToken}
                                             </td>
-                                            <td className="px-3 py-2 text-right">
-                                                <button onClick={() => copyToClipboard(addedDomain.verificationToken)} className="p-1 hover:bg-[var(--nebula-elevated)] rounded">
-                                                    <CopyIcon />
-                                                </button>
+                                            <td className="px-3 py-2.5">
+                                                <CopyButton text={addedDomain.verificationToken} onCopy={copyToClipboard} />
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div className="flex justify-end">
-                                <button onClick={onClose} className="btn-nebula btn-nebula-primary w-full justify-center">
-                                    Đã hiểu, đóng lại
-                                </button>
-                            </div>
+                            <button
+                                onClick={onClose}
+                                className="w-full py-2.5 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 rounded-lg transition-colors"
+                            >
+                                Got it, close
+                            </button>
                         </div>
                     )}
                 </div>
@@ -151,46 +375,59 @@ export function AddDomainModal({
     );
 }
 
-// --- DNS Config Card ---
+// ============================================
+// DNS CONFIG CARD
+// ============================================
+
 export function DNSConfigCard() {
     return (
-        <div className="glass-card mb-6">
-            <div className="glass-card-header">
-                <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--nebula-text)' }}>
-                    <svg className="w-5 h-5" style={{ color: 'var(--nebula-cyan)' }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Hướng dẫn cấu hình DNS
-                </h3>
+        <div className="mb-5 rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800 bg-zinc-800/30">
+                <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                    <IconServer className="w-3.5 h-3.5 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-semibold text-zinc-200">DNS Configuration Guide</h3>
             </div>
-            <div className="glass-card-body">
-                <p className="text-sm mb-4" style={{ color: 'var(--nebula-text-muted)' }}>
-                    Để nhận được email, thêm các bản ghi DNS sau vào domain của bạn:
+
+            {/* Content */}
+            <div className="p-4">
+                <p className="text-xs text-zinc-500 mb-3">
+                    Add these DNS records to receive emails on your domain:
                 </p>
-                <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--nebula-border)' }}>
-                    <table className="w-full text-sm">
-                        <thead style={{ background: 'var(--nebula-elevated)' }}>
-                            <tr>
-                                <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Loại</th>
-                                <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Tên</th>
-                                <th className="px-4 py-3 text-left font-semibold" style={{ color: 'var(--nebula-text)' }}>Giá trị</th>
+
+                <div className="rounded-lg border border-zinc-800 overflow-hidden">
+                    <table className="w-full text-xs">
+                        <thead>
+                            <tr className="bg-zinc-800/50">
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-14">Type</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-16">Name</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Value</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
-                                <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-error)' }}>MX</td>
-                                <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>@</td>
-                                <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>{MAIL_HOSTNAME} (độ ưu tiên 10)</td>
+                        <tbody className="divide-y divide-zinc-800/50">
+                            <tr>
+                                <td className="px-3 py-2">
+                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-rose-500/10 text-rose-400 rounded">MX</span>
+                                </td>
+                                <td className="px-3 py-2 font-mono text-zinc-400">@</td>
+                                <td className="px-3 py-2 font-mono text-zinc-300">
+                                    {MAIL_HOSTNAME} <span className="text-zinc-600">(priority 10)</span>
+                                </td>
                             </tr>
-                            <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
-                                <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-warning)' }}>A</td>
-                                <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>mail</td>
-                                <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>{MAIL_SERVER_IP}</td>
+                            <tr>
+                                <td className="px-3 py-2">
+                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-500/10 text-amber-400 rounded">A</span>
+                                </td>
+                                <td className="px-3 py-2 font-mono text-zinc-400">mail</td>
+                                <td className="px-3 py-2 font-mono text-zinc-300">{MAIL_SERVER_IP}</td>
                             </tr>
-                            <tr style={{ borderTop: '1px solid var(--nebula-border)' }}>
-                                <td className="px-4 py-3 font-mono font-bold" style={{ color: 'var(--nebula-success)' }}>TXT</td>
-                                <td className="px-4 py-3 font-mono" style={{ color: 'var(--nebula-text-secondary)' }}>@</td>
-                                <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--nebula-text-secondary)' }}>[mã xác thực từ hệ thống]</td>
+                            <tr>
+                                <td className="px-3 py-2">
+                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/10 text-emerald-400 rounded">TXT</span>
+                                </td>
+                                <td className="px-3 py-2 font-mono text-zinc-400">@</td>
+                                <td className="px-3 py-2 font-mono text-zinc-500 italic">[verification token]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -200,7 +437,10 @@ export function DNSConfigCard() {
     );
 }
 
-// --- Domain Card ---
+// ============================================
+// DOMAIN CARD
+// ============================================
+
 export interface DomainCardProps {
     domain: Domain;
     verifyingId: string | null;
@@ -222,129 +462,167 @@ export function DomainCard({
     onDelete,
     copyToClipboard,
 }: DomainCardProps) {
+    const isVerified = domain.status === "VERIFIED";
+    const isVerifying = verifyingId === domain.id;
+    const isToggling = togglingId === domain.id;
+    const isDeleting = deletingId === domain.id;
+
     return (
-        <div className="glass-card animate-nebula-fade-in">
-            <div className="glass-card-body">
-                <div className="flex items-start justify-between gap-4">
-                    {/* Domain Info */}
-                    <div className="flex items-start gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${domain.status === 'VERIFIED' ? 'bg-[var(--nebula-glow-cyan)]' : 'bg-[var(--nebula-glow-pink)]'}`}>
-                            {domain.status === 'VERIFIED' ? (
-                                <svg className="w-6 h-6" style={{ color: 'var(--nebula-cyan)' }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+        <div className="group rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/70 hover:border-zinc-700 transition-all duration-200">
+            {/* Main Content */}
+            <div className="px-4 py-3.5">
+                <div className="flex items-center justify-between gap-4">
+                    {/* Left: Domain Info */}
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${
+                            isVerified
+                                ? "bg-emerald-500/10 ring-1 ring-emerald-500/20"
+                                : "bg-amber-500/10 ring-1 ring-amber-500/20"
+                        }`}>
+                            {isVerified ? (
+                                <IconCheckCircle className="w-4 h-4 text-emerald-400" />
                             ) : (
-                                <svg className="w-6 h-6" style={{ color: 'var(--nebula-pink)' }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <IconClock className="w-4 h-4 text-amber-400" />
                             )}
                         </div>
-                        <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold text-lg" style={{ color: 'var(--nebula-text)' }}>{domain.name}</h3>
-                                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${domain.status === "VERIFIED"
-                                    ? "bg-[rgba(16,185,129,0.1)] text-[var(--nebula-success)]"
-                                    : "bg-[rgba(245,158,11,0.1)] text-[var(--nebula-warning)]"
-                                }`}>
-                                    {domain.status === "VERIFIED" ? "✓ Đã xác thực" : "⏳ Đang chờ"}
-                                </span>
-                                {domain.isPublic && (
-                                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-[var(--nebula-glow-violet)] text-[var(--nebula-violet)]">
-                                        🌐 Công khai
-                                    </span>
-                                )}
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <h3 className="text-sm font-semibold text-zinc-100 truncate">{domain.name}</h3>
+                                <IconExternalLink className="w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                            <p className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>
-                                Thêm ngày: {new Date(domain.createdAt).toLocaleDateString("vi-VN")}
-                            </p>
+                            <div className="flex items-center gap-2">
+                                <StatusBadge status={domain.status} isPublic={domain.isPublic} />
+                                <span className="text-[11px] text-zinc-600">
+                                    {new Date(domain.createdAt).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric"
+                                    })}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                        {domain.status !== "VERIFIED" && (
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-1.5">
+                        {!isVerified && (
                             <button
                                 onClick={() => onVerify(domain.id, domain.verificationToken)}
-                                disabled={verifyingId === domain.id}
-                                className="btn-nebula btn-nebula-primary text-sm"
+                                disabled={isVerifying}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 disabled:opacity-50 rounded-lg transition-colors"
                             >
-                                {verifyingId === domain.id ? "..." : "Xác thực"}
+                                {isVerifying ? (
+                                    <IconLoader className="w-3 h-3" />
+                                ) : (
+                                    <IconShieldCheck className="w-3 h-3" />
+                                )}
+                                Verify
                             </button>
                         )}
 
-                        {domain.status === "VERIFIED" && (
+                        {isVerified && (
                             <button
                                 onClick={() => onTogglePublic(domain.id, domain.isPublic)}
-                                disabled={togglingId === domain.id}
-                                className="btn-nebula btn-nebula-secondary text-sm"
+                                disabled={isToggling}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 disabled:opacity-50 rounded-lg transition-colors"
+                                title={domain.isPublic ? "Make private" : "Make public"}
                             >
-                                {togglingId === domain.id ? "..." : domain.isPublic ? "Riêng tư" : "Công khai"}
+                                {isToggling ? (
+                                    <IconLoader className="w-3 h-3" />
+                                ) : domain.isPublic ? (
+                                    <IconLock className="w-3 h-3" />
+                                ) : (
+                                    <IconUnlock className="w-3 h-3" />
+                                )}
+                                {domain.isPublic ? "Private" : "Public"}
                             </button>
                         )}
 
                         <button
                             onClick={() => onDelete(domain)}
-                            disabled={deletingId === domain.id}
-                            className="btn-nebula btn-nebula-ghost text-sm"
-                            style={{ color: 'var(--nebula-error)' }}
+                            disabled={isDeleting}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 disabled:opacity-50 rounded-lg transition-colors"
+                            title="Delete domain"
                         >
-                            {deletingId === domain.id ? "..." : "Xóa"}
+                            {isDeleting ? (
+                                <IconLoader className="w-3 h-3" />
+                            ) : (
+                                <IconTrash className="w-3 h-3" />
+                            )}
                         </button>
                     </div>
                 </div>
+            </div>
 
-                {/* Verification Instructions */}
-                {domain.status !== "VERIFIED" && (
-                    <div className="mt-4 p-4 rounded-xl" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                        <p className="text-sm font-medium mb-2" style={{ color: 'var(--nebula-warning)' }}>
-                            Thêm TXT record sau vào DNS để xác thực:
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <code className="flex-1 px-3 py-2 rounded-lg text-xs font-mono break-all" style={{ background: 'var(--nebula-surface)', color: 'var(--nebula-text)' }}>
-                                {domain.verificationToken}
-                            </code>
-                            <button
-                                onClick={() => copyToClipboard(domain.verificationToken)}
-                                className="btn-nebula btn-nebula-secondary text-xs flex-shrink-0"
-                            >
-                                Sao chép
-                            </button>
+            {/* Verification Instructions - Show when pending */}
+            {!isVerified && (
+                <div className="px-4 pb-3.5">
+                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                        <div className="flex items-start gap-2">
+                            <IconInfo className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs text-amber-300/80 mb-2">
+                                    Add this TXT record to verify ownership:
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <code className="flex-1 px-2.5 py-1.5 bg-zinc-900/80 rounded text-[11px] font-mono text-zinc-300 break-all">
+                                        {domain.verificationToken}
+                                    </code>
+                                    <button
+                                        onClick={() => copyToClipboard(domain.verificationToken)}
+                                        className="flex-shrink-0 px-2.5 py-1.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+                                    >
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
 
-                {/* Public sharing info */}
-                {domain.isPublic && domain.status === "VERIFIED" && (
-                    <div className="mt-4 p-4 rounded-xl" style={{ background: 'var(--nebula-glow-violet)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
-                        <p className="text-sm" style={{ color: 'var(--nebula-violet)' }}>
-                            <strong>Tên miền công khai.</strong> Người dùng khác có thể tạo email trên domain này.
-                        </p>
+            {/* Public Domain Notice */}
+            {domain.isPublic && isVerified && (
+                <div className="px-4 pb-3.5">
+                    <div className="p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+                        <div className="flex items-center gap-2">
+                            <IconGlobe className="w-4 h-4 text-cyan-400" />
+                            <p className="text-xs text-cyan-300/80">
+                                <span className="font-medium">Public domain.</span> Other users can create emails on this domain.
+                            </p>
+                        </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }
 
-// --- Empty State ---
+// ============================================
+// EMPTY STATE
+// ============================================
+
 export function DomainsEmptyState({ onAdd }: { onAdd: () => void }) {
     return (
-        <div className="empty-state-nebula">
-            <div className="empty-state-nebula-icon">
-                <svg fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
+        <div className="flex flex-col items-center justify-center py-16 px-6">
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700 flex items-center justify-center mb-5">
+                <IconGlobe className="w-8 h-8 text-zinc-600" />
             </div>
-            <h3 className="empty-state-nebula-title">Chưa có tên miền nào</h3>
-            <p className="empty-state-nebula-description">
-                Thêm tên miền đầu tiên để bắt đầu nhận email.
+
+            {/* Text */}
+            <h3 className="text-lg font-semibold text-zinc-200 mb-1.5">No domains yet</h3>
+            <p className="text-sm text-zinc-500 text-center max-w-sm mb-6">
+                Add your first domain to start receiving emails.
             </p>
-            <button onClick={onAdd} className="btn-nebula btn-nebula-primary">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Thêm tên miền đầu tiên
+
+            {/* Action */}
+            <button
+                onClick={onAdd}
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 rounded-lg transition-colors"
+            >
+                <IconPlus className="w-4 h-4" />
+                Add your first domain
             </button>
         </div>
     );

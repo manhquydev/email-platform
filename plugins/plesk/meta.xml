@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <id>ephemera</id>
+    <name>Ephemera Email Hosting</name>
+    <description>Enterprise email hosting integration for Plesk</description>
+    <version>1.0.0</version>
+    <release>1</release>
+    <vendor>Ephemera</vendor>
+    <url>https://ephemera.email</url>
+
+    <plesk_min_version>18.0.0</plesk_min_version>
+    <php_min_version>7.4</php_min_version>
+
+    <view>
+        <tab>
+            <id>ephemera</id>
+            <title>Email Hosting</title>
+        </tab>
+    </view>
+
+    <permissions>
+        <permission>
+            <id>ephemera_manage</id>
+            <name>Manage Ephemera Email</name>
+        </permission>
+    </permissions>
+</module>

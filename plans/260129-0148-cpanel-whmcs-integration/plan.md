@@ -22,7 +22,7 @@ Tích hợp Ephemera Email Platform với hệ sinh thái cPanel/WHM và WHMCS �
 | 01 | [phase-01-hosting-provider-api.md](phase-01-hosting-provider-api.md) | API Foundation cho hosting providers | 2 weeks | P1 | Completed (2026-01-29) |
 | 02 | [phase-02-cpanel-whm-plugin.md](phase-02-cpanel-whm-plugin.md) | cPanel/WHM Plugin Development | 2 weeks | P1 | Completed (2026-01-29) |
 | 03 | [phase-03-whmcs-module.md](phase-03-whmcs-module.md) | WHMCS Provisioning Module | 1.5 weeks | P1 | Completed (2026-01-29) |
-| 04 | [phase-04-directadmin-plesk.md](phase-04-directadmin-plesk.md) | DirectAdmin & Plesk Extensions | 1.5 weeks | P2 | Pending |
+| 04 | [phase-04-directadmin-plesk.md](phase-04-directadmin-plesk.md) | DirectAdmin & Plesk Extensions | 1.5 weeks | P2 | Completed (2026-01-29) |
 | 05 | [phase-05-testing-documentation.md](phase-05-testing-documentation.md) | Testing & Documentation | 1 week | P1 | Pending |
 | 06 | [phase-06-go-to-market.md](phase-06-go-to-market.md) | Launch & Partner Acquisition | Ongoing | P1 | Pending |
 

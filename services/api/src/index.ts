@@ -74,7 +74,7 @@ const main = async () => {
 
   const worker = setupEmailWorker(app.log);
   const webhookWorker = setupWebhookWorker(app.log);
-  const outboundWorker = setupOutboundWorker(app.log); // Initialize outbound worker for graceful shutdown
+  const outboundWorker = setupOutboundWorker(); // Initialize outbound worker for graceful shutdown
 
   // Verify outbound email connection on startup
   const { outboundService } = await import("./services/outbound");

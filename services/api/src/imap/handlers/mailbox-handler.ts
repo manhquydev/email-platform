@@ -22,7 +22,7 @@ export class MailboxHandler implements ImapHandler {
           return;
         }
 
-        const stats = await MessageAdapter.getMailboxStats(folder.id);
+        const stats = await MessageAdapter.getMailboxStatus(folder.id);
 
         connection.selectedMailbox = {
           id: folder.id,

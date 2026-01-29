@@ -16,13 +16,13 @@ export class MessageAdapter {
   }
 
   /**
-   * Get mailbox by name for a user
+   * Get mailbox by name for a user (with IMAP fields)
    */
-  static async getMailbox(inboxId: string, folderName: string): Promise<{ id: string; name: string } | null> {
+  static async getMailbox(inboxId: string, folderName: string): Promise<{ id: string; name: string; uidValidity: number; uidNext: number } | null> {
     try {
       const folder = await prisma.folder.findFirst({
         where: { inboxId, name: folderName },
-        select: { id: true, name: true }
+        select: { id: true, name: true, uidValidity: true, uidNext: true }
       });
       return folder;
     } catch {
@@ -62,7 +62,7 @@ export class MessageAdapter {
     try {
       return await prisma.folder.findMany({
         where: { inboxId },
-        select: { id: true, name: true, type: true }
+        select: { id: true, name: true, specialUse: true }
       });
     } catch {
       return [];
@@ -70,28 +70,33 @@ export class MessageAdapter {
   }
 
   /**
-   * Get mailbox status
+   * Get mailbox status (replaces getMailboxStats)
    */
-  static async getMailboxStatus(folderId: string): Promise<{ exists: number; recent: number; unseen: number }> {
+  static async getMailboxStatus(folderId: string): Promise<{ count: number; exists: number; recent: number; unseen: number }> {
     try {
       const [total, unseen] = await Promise.all([
         prisma.message.count({ where: { folderId } }),
         prisma.message.count({ where: { folderId, isRead: false } })
       ]);
-      return { exists: total, recent: 0, unseen };
+      return { count: total, exists: total, recent: 0, unseen };
     } catch {
-      return { exists: 0, recent: 0, unseen: 0 };
+      return { count: 0, exists: 0, recent: 0, unseen: 0 };
     }
   }
 
   /**
-   * Update message flags
+   * Update message flags (simplified - ignores operation for now)
    */
-  static async updateFlags(messageId: string, flags: { seen?: boolean; flagged?: boolean }): Promise<boolean> {
+  static async updateFlags(messageId: string, flags: { seen?: boolean; flagged?: boolean } | string[], _operation?: string): Promise<boolean> {
     try {
+      // Handle both object and array flags format
+      const flagsObj = Array.isArray(flags)
+        ? { seen: flags.includes('\\Seen'), flagged: flags.includes('\\Flagged') }
+        : flags;
+
       await prisma.message.update({
         where: { id: messageId },
-        data: { isRead: flags.seen, isStarred: flags.flagged }
+        data: { isRead: flagsObj.seen }
       });
       return true;
     } catch {

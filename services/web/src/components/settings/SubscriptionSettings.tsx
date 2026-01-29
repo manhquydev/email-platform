@@ -39,15 +39,12 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
     // Use modular hooks
     const {
         payments,
-        paymentMethod,
         packages,
         loadingPayments,
-        loadingPaymentMethod,
         loadingPackages
     } = useSubscriptionData();
 
     const {
-        handlePortal,
         handleCheckout,
         handleRedeem,
         handleExportReport,

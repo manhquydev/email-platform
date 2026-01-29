@@ -80,8 +80,9 @@ declare module "fastify" {
   }
 }
 
-import { ssoRoutes } from "./routes/sso";
-import { scimRoutes } from "./routes/scim";
+// TODO: Enterprise SSO/SCIM - dependencies not yet implemented
+// import { ssoRoutes } from "./routes/sso";
+// import { scimRoutes } from "./routes/scim";
 
 export const buildServer = () => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -438,8 +439,9 @@ export const buildServer = () => {
 
   // Phase 4: Identity Suite Bundles
   app.register(identityBundleRoutes);
-  app.register(ssoRoutes);
-  app.register(scimRoutes);
+  // TODO: Enterprise SSO/SCIM - dependencies not yet implemented
+  // app.register(ssoRoutes);
+  // app.register(scimRoutes);
 
   // Phase 5: Public Ephemeral Inbox
   app.register(ephemeralInboxRoutes);

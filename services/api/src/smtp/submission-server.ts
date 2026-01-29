@@ -18,8 +18,8 @@ type Logger = {
   error: (obj: Record<string, unknown> | string, msg?: string) => void;
 };
 
-// Extend session to include authenticated user
-interface SecureSession extends SMTPServerSession {
+// Extend session to include authenticated user info
+interface SecureSession extends Omit<SMTPServerSession, 'user'> {
   user?: {
     id: string;
     email: string;

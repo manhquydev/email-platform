@@ -2,7 +2,8 @@
  * ProvidersTable - Data table for hosting providers
  * Displays providers with actions for view, regenerate key, suspend/activate
  */
-import { Provider, STATUS_COLORS, TIER_COLORS } from "./types";
+import type { Provider } from "./types";
+import { STATUS_COLORS, TIER_COLORS } from "./types";
 
 interface ProvidersTableProps {
   providers: Provider[];

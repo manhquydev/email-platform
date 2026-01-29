@@ -8,6 +8,7 @@ export interface InboxSidebarItemProps {
     isActive: boolean;
     onSelect: () => void;
     onCopy?: () => void;
+    onCopyPublicLink?: () => void;
     onDelete?: () => void;
     onTransfer?: () => void;
     onExtend?: () => void;
@@ -23,6 +24,7 @@ export interface InboxSidebarProps {
     activeInboxId: string | null;
     onSelectInbox: (inboxId: string) => void;
     onCopyEmail?: (email: string) => void;
+    onCopyPublicLink?: (email: string) => void;
     onDeleteInbox?: (inbox: Inbox) => void;
     onTransferInbox?: (inbox: Inbox) => void;
     onExtendInbox?: (inbox: Inbox) => void;

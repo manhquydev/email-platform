@@ -34,6 +34,7 @@ export interface DesktopInboxLayoutProps {
     onTogglePermanent: (inbox: Inbox) => void;
     onShareModeChange: (inboxId: string, mode: ShareMode) => void;
     onVisibilityRules: (inbox: Inbox) => void;
+    onCopyPublicLink: (email: string) => void;
     onSelectMessage: (msg: Message) => void;
     onSearch: (query: string) => void;
     onClearSearch: () => void;
@@ -65,6 +66,7 @@ export function DesktopInboxLayout({
     onTogglePermanent,
     onShareModeChange,
     onVisibilityRules,
+    onCopyPublicLink,
     onSelectMessage,
     onSearch,
     onClearSearch,
@@ -96,6 +98,7 @@ export function DesktopInboxLayout({
                         onTogglePermanent={onTogglePermanent}
                         onShareModeChange={onShareModeChange}
                         onVisibilityRules={onVisibilityRules}
+                        onCopyPublicLink={onCopyPublicLink}
                         onCreateInbox={onCreateInbox}
                         onFilterChange={onFilterChange}
                         onSortChange={onSortChange}

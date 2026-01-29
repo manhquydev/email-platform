@@ -105,6 +105,13 @@ export function InboxManager() {
         }
     };
 
+    // Copy public link handler
+    const handleCopyPublicLink = (email: string) => {
+        const url = `${window.location.origin}/inbox-viewer/${encodeURIComponent(email)}`;
+        navigator.clipboard.writeText(url);
+        // Toast notification will be shown by the component if needed
+    };
+
     const unreadCount = messages.filter(m => !m.isRead).length;
 
     return (
@@ -144,6 +151,7 @@ export function InboxManager() {
                     onTogglePermanent={handleTogglePermanent}
                     onShareModeChange={handleShareModeChange}
                     onVisibilityRules={(inbox) => setInboxForVisibilityRules(inbox)}
+                    onCopyPublicLink={handleCopyPublicLink}
                     onSelectMessage={handleSelectMessage}
                     onSearch={handleSearch}
                     onClearSearch={clearSearch}

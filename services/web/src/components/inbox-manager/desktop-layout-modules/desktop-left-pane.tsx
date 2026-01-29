@@ -20,6 +20,7 @@ export interface LeftPaneProps {
     onTogglePermanent: (inbox: Inbox) => void;
     onShareModeChange: (inboxId: string, mode: ShareMode) => void;
     onVisibilityRules: (inbox: Inbox) => void;
+    onCopyPublicLink: (email: string) => void;
     onCreateInbox: () => void;
     onFilterChange: (filter: FilterOption) => void;
     onSortChange: (sort: SortOption) => void;
@@ -30,7 +31,7 @@ export interface LeftPaneProps {
 export function LeftPane({
     filteredInboxes, inboxes, activeInbox, busy, filterBy, sortBy,
     onSelectInbox, onDeleteInbox, onTransferInbox, onExtendInbox,
-    onTogglePermanent, onShareModeChange, onVisibilityRules,
+    onTogglePermanent, onShareModeChange, onVisibilityRules, onCopyPublicLink,
     onCreateInbox, onFilterChange, onSortChange, loadMessages, navigate
 }: LeftPaneProps) {
     return (
@@ -111,6 +112,7 @@ export function LeftPane({
                             loadMessages(inbox.id);
                         }
                     }}
+                    onCopyPublicLink={onCopyPublicLink}
                     onDeleteInbox={onDeleteInbox}
                     onTransferInbox={onTransferInbox}
                     onExtendInbox={onExtendInbox}

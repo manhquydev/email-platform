@@ -16,6 +16,7 @@ export function InboxSidebar({
     activeInboxId,
     onSelectInbox,
     onCopyEmail,
+    onCopyPublicLink,
     onDeleteInbox,
     onTransferInbox,
     onExtendInbox,
@@ -71,6 +72,10 @@ export function InboxSidebar({
                     onCopy={() => {
                         const email = `${inbox.localPart}@${inbox.domain?.name || 'domain'}`;
                         onCopyEmail?.(email);
+                    }}
+                    onCopyPublicLink={() => {
+                        const email = `${inbox.localPart}@${inbox.domain?.name || 'domain'}`;
+                        onCopyPublicLink?.(email);
                     }}
                     onDelete={() => onDeleteInbox?.(inbox)}
                     onTransfer={() => onTransferInbox?.(inbox)}

@@ -9,6 +9,7 @@ interface ContextMenuProps {
     menuRef: React.RefObject<HTMLDivElement | null>;
     onClose: () => void;
     onShareModeChange?: (mode: ShareMode) => void;
+    onCopyPublicLink?: () => void;
     onVisibilityRules?: () => void;
     onTransfer?: () => void;
     onTogglePermanent?: () => void;
@@ -22,6 +23,7 @@ export function InboxContextMenu({
     menuRef,
     onClose,
     onShareModeChange,
+    onCopyPublicLink,
     onVisibilityRules,
     onTransfer,
     onTogglePermanent,
@@ -60,6 +62,19 @@ export function InboxContextMenu({
                             <span>Chuyển sang Công khai</span>
                         </>
                     )}
+                </button>
+            )}
+
+            {/* Copy Public Link - Only show for PUBLIC inboxes */}
+            {onCopyPublicLink && inbox.shareMode === 'PUBLIC' && (
+                <button
+                    className="w-full px-3 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+                    onClick={() => handleMenuAction(onCopyPublicLink)}
+                >
+                    <svg className="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    <span>Sao chép link công khai</span>
                 </button>
             )}
 

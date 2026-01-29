@@ -13,6 +13,7 @@ export function InboxSidebarItem({
     isActive,
     onSelect,
     onCopy,
+    onCopyPublicLink,
     onDelete,
     onTransfer,
     onExtend,
@@ -160,6 +161,7 @@ export function InboxSidebarItem({
                     menuRef={menuRef}
                     onClose={() => setShowMenu(false)}
                     onShareModeChange={onShareModeChange}
+                    onCopyPublicLink={onCopyPublicLink}
                     onVisibilityRules={onVisibilityRules}
                     onTransfer={onTransfer}
                     onTogglePermanent={onTogglePermanent}

@@ -24,6 +24,18 @@ const TIER_LIMITS = {
   ENTERPRISE: { maxTenants: 999999, maxMailboxes: 999999, maxStorageGb: 999999 },
 } as const;
 
+/**
+ * Helper to serialize organization with BigInt fields converted to string
+ */
+function serializeOrganization(org: { storageQuota: bigint; storageUsed: bigint; [key: string]: unknown } | null) {
+  if (!org) return null;
+  return {
+    ...org,
+    storageQuota: org.storageQuota.toString(),
+    storageUsed: org.storageUsed.toString(),
+  };
+}
+
 export class HostingProviderService {
   /**
    * Register a new hosting provider
@@ -165,20 +177,26 @@ export class HostingProviderService {
       },
     });
 
-    return tenant;
+    // Convert BigInt fields to string for JSON serialization
+    return {
+      ...tenant,
+      organization: serializeOrganization(tenant.organization),
+    };
   }
 
   /**
    * Get tenant by ID
    */
   static async getTenant(providerId: string, tenantId: string) {
-    return prisma.providerTenant.findFirst({
+    const tenant = await prisma.providerTenant.findFirst({
       where: { id: tenantId, providerId },
       include: {
         domains: { include: { domain: true } },
         organization: true,
       },
     });
+    if (!tenant) return null;
+    return { ...tenant, organization: serializeOrganization(tenant.organization) };
   }
 
   /**
@@ -239,11 +257,12 @@ export class HostingProviderService {
       updateData.maxStorageGb = limits.storageGb;
     }
 
-    return prisma.providerTenant.update({
+    const tenant = await prisma.providerTenant.update({
       where: { id: tenantId, providerId },
       data: updateData,
       include: { domains: true, organization: true },
     });
+    return { ...tenant, organization: serializeOrganization(tenant.organization) };
   }
 
   /**

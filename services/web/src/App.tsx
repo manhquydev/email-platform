@@ -118,7 +118,7 @@ function App() {
                   <Route path="/e/:token?" element={<EphemeralInbox />} />
 
                   {/* Public Inbox Viewer */}
-                  <Route path="/inbox-viewer" element={<InboxViewer />} />
+                  <Route path="/inbox-viewer/:email?" element={<InboxViewer />} />
 
                   {/* Protected app routes */}
                   <Route element={<MainLayout />}>

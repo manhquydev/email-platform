@@ -107,7 +107,7 @@ export function InboxManager() {
 
     // Copy public link handler
     const handleCopyPublicLink = (email: string) => {
-        const url = `${window.location.origin}/inbox-viewer/${encodeURIComponent(email)}`;
+        const url = `${window.location.origin}/inbox-viewer?email=${encodeURIComponent(email)}`;
         navigator.clipboard.writeText(url);
         // Toast notification will be shown by the component if needed
     };

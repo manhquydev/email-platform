@@ -7,7 +7,7 @@ import { api } from "../../../utils/api";
 import { getFriendlyErrorMessage } from "../../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
-import type { Provider, ProviderUsage, CreateProviderData } from "./types";
+import type { Provider, ProviderUsage, ProviderUsageLog, CreateProviderData } from "./types";
 import { PAGE_SIZE } from "./types";
 
 export interface UseProvidersPageDataReturn {
@@ -23,6 +23,7 @@ export interface UseProvidersPageDataReturn {
   selectedProvider: Provider | null;
   newApiKey: string | null;
   providerUsage: ProviderUsage | null;
+  providerUsageHistory: ProviderUsageLog[];
   loadingUsage: boolean;
   // Setters
   setSearch: (v: string) => void;
@@ -54,6 +55,7 @@ export function useProvidersPageData(): UseProvidersPageDataReturn {
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
   const [providerUsage, setProviderUsage] = useState<ProviderUsage | null>(null);
+  const [providerUsageHistory, setProviderUsageHistory] = useState<ProviderUsageLog[]>([]);
   const [loadingUsage, setLoadingUsage] = useState(false);
 
   // Load providers with search and pagination
@@ -137,11 +139,13 @@ export function useProvidersPageData(): UseProvidersPageDataReturn {
   const loadProviderUsage = async (id: string) => {
     setLoadingUsage(true);
     try {
-      const res = await api<{ usage: ProviderUsage }>(
-        `/v1/admin/providers/${id}/usage`,
-        { token }
-      );
-      setProviderUsage(res.usage);
+      const [usageRes, historyRes] = await Promise.all([
+        api<{ usage: ProviderUsage }>(`/v1/admin/providers/${id}/usage`, { token }),
+        api<{ data: ProviderUsageLog[] }>(`/v1/admin/providers/${id}/usage/history`, { token })
+      ]);
+
+      setProviderUsage(usageRes.usage);
+      setProviderUsageHistory(historyRes.data);
     } catch (err) {
       toast.error(getFriendlyErrorMessage((err as Error).message));
     } finally {
@@ -162,6 +166,7 @@ export function useProvidersPageData(): UseProvidersPageDataReturn {
     selectedProvider,
     newApiKey,
     providerUsage,
+    providerUsageHistory,
     loadingUsage,
     setSearch,
     setPage,

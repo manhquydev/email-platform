@@ -4,7 +4,7 @@ import { z } from "zod";
 import { GalService } from "../services/gal-service";
 import crypto from "crypto";
 
-export async function contactRoutes(app: FastifyInstance) {
+export async function addressBookRoutes(app: FastifyInstance) {
   app.addHook("onRequest", app.authenticate);
 
   // GET /contacts

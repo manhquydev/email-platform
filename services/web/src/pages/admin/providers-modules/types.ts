@@ -32,6 +32,19 @@ export interface ProviderUsage {
   }>;
 }
 
+export interface ProviderUsageLog {
+  id: string;
+  providerId: string;
+  tenantId?: string;
+  period: string;
+  tenantCount: number;
+  mailboxes: number;
+  storageBytes: number;
+  messagesSent: number;
+  messagesReceived: number;
+  createdAt: string;
+}
+
 export interface CreateProviderData {
   name: string;
   contactEmail: string;

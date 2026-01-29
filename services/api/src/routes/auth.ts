@@ -13,6 +13,7 @@ import { recordAuditFromRequest, AuditAction } from "../utils/audit";
 import { TIER_LIMITS } from "./billing";
 import { tokenRevocationService } from "../services/token-revocation.service";
 import { RefreshTokenService } from "../services/refresh-token.service";
+import { ProviderSsoService } from "../services/provider-sso.service";
 import { twoFactorBackoff } from "../middleware/rate-limit-config";
 
 // Password validation with complexity requirements
@@ -835,5 +836,48 @@ export async function authRoutes(app: FastifyInstance) {
     await recordAuditFromRequest(request, AuditAction.PASSWORD_RESET_COMPLETE, { userId: user.id });
 
     return { ok: true, message: "Password has been reset successfully" };
+  });
+
+  // SSO Exchange/Redirect
+  app.get('/auth/sso', async (request, reply) => {
+    const { token } = request.query as { token: string };
+
+    if (!token) {
+      return reply.status(400).send({ error: 'Missing token' });
+    }
+
+    try {
+      // Validate token and IP
+      const ssoData = await ProviderSsoService.validateToken(token, request.ip);
+
+      // Find user
+      const user = await prisma.user.findUnique({
+        where: { email: ssoData.email }
+      });
+
+      if (!user) {
+        return reply.status(404).send({ error: 'User not found' });
+      }
+
+      if (user.isDisabled) {
+        return reply.status(403).send({ error: 'Account disabled' });
+      }
+
+      // Generate tokens
+      const accessJti = crypto.randomUUID();
+      const refreshJti = crypto.randomUUID();
+      const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+      const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+
+      await recordAuditFromRequest(request, "auth.sso_login", { email: user.email, providerId: ssoData.providerId });
+
+      // Redirect to Web App with tokens
+      const redirectUrl = `${appConfig.webUrl}/auth/sso?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+      return reply.redirect(redirectUrl);
+
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(401).send({ error: 'Invalid or expired SSO session' });
+    }
   });
 }

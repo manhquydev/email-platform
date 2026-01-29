@@ -6,6 +6,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { HostingProviderService } from '../services/hosting-provider.service';
+import { UsageSnapshotJob } from '../jobs/usage-snapshot.job';
 import { prisma } from '../lib/prisma';
 import { ProviderTier, ProviderStatus } from '@prisma/client';
 
@@ -144,6 +145,40 @@ export const adminProvidersRoutes = async (app: FastifyInstance) => {
 
     const usage = await HostingProviderService.getUsage(id);
     return { usage };
+  });
+
+  /**
+   * GET /v1/admin/providers/:id/usage/history - Get usage history
+   */
+  app.get('/v1/admin/providers/:id/usage/history', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const query = z.object({
+      days: z.coerce.number().min(7).max(365).default(30)
+    }).parse(request.query);
+
+    const provider = await prisma.hostingProvider.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!provider) {
+      return reply.status(404).send({ error: 'Provider not found' });
+    }
+
+    const history = await UsageSnapshotJob.getHistory(id, { days: query.days });
+    return { data: history };
+  });
+
+  /**
+   * POST /v1/admin/jobs/usage-snapshot - Trigger usage snapshot manually
+   */
+  app.post('/v1/admin/jobs/usage-snapshot', async (request: FastifyRequest, reply: FastifyReply) => {
+    // Run asynchronously
+    UsageSnapshotJob.run().catch(err => {
+      request.log.error(err, 'Manual usage snapshot failed');
+    });
+
+    return { message: 'Usage snapshot job started' };
   });
 
   /**

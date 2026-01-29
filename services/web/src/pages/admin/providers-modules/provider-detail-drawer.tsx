@@ -1,13 +1,15 @@
 /**
  * ProviderDetailDrawer - Slide-out drawer for provider details and usage stats
  */
-import { useEffect } from "react";
-import type { Provider, ProviderUsage } from "./types";
+import { useEffect, useState } from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import type { Provider, ProviderUsage, ProviderUsageLog } from "./types";
 import { STATUS_COLORS, TIER_COLORS } from "./types";
 
 interface ProviderDetailDrawerProps {
   provider: Provider | null;
   usage: ProviderUsage | null;
+  usageHistory: ProviderUsageLog[];
   loadingUsage: boolean;
   onClose: () => void;
   onLoadUsage: (id: string) => void;
@@ -18,12 +20,16 @@ interface ProviderDetailDrawerProps {
 export function ProviderDetailDrawer({
   provider,
   usage,
+  usageHistory,
   loadingUsage,
   onClose,
   onLoadUsage,
   onRegenerateKey,
   onUpdateStatus,
 }: ProviderDetailDrawerProps) {
+  // State for chart tab
+  const [chartMetric, setChartMetric] = useState<'tenants' | 'mailboxes'>('tenants');
+
   // Load usage when provider changes
   useEffect(() => {
     if (provider) {
@@ -32,6 +38,14 @@ export function ProviderDetailDrawer({
   }, [provider?.id]);
 
   if (!provider) return null;
+
+  // Format data for chart
+  const chartData = usageHistory.map(log => ({
+    date: new Date(log.period).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+    tenants: log.tenantCount,
+    mailboxes: log.mailboxes,
+    storage: Number(BigInt(log.storageBytes) / BigInt(1024 * 1024 * 1024)), // GB
+  }));
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -130,28 +144,101 @@ export function ProviderDetailDrawer({
             </div>
           </section>
 
-          {/* Usage Stats */}
+          {/* Usage Stats & History */}
           <section>
-            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider mb-3">Thống kê sử dụng</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Thống kê sử dụng</h3>
+              {usageHistory.length > 0 && (
+                <div className="flex bg-white/5 rounded-lg p-0.5">
+                  <button
+                    onClick={() => setChartMetric('tenants')}
+                    className={`px-2 py-1 text-xs rounded-md transition-all ${
+                      chartMetric === 'tenants' ? 'bg-indigo-500 text-white shadow' : 'text-white/60 hover:text-white'
+                    }`}
+                  >
+                    Tenants
+                  </button>
+                  <button
+                    onClick={() => setChartMetric('mailboxes')}
+                    className={`px-2 py-1 text-xs rounded-md transition-all ${
+                      chartMetric === 'mailboxes' ? 'bg-indigo-500 text-white shadow' : 'text-white/60 hover:text-white'
+                    }`}
+                  >
+                    Mailboxes
+                  </button>
+                </div>
+              )}
+            </div>
+
             {loadingUsage ? (
               <div className="flex items-center justify-center py-8">
                 <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : usage ? (
-              <div className="space-y-3">
-                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/70">Tổng messages</span>
-                    <span className="text-white font-medium">{usage.summary.messages.toLocaleString()}</span>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                    <div className="text-xs text-white/50 mb-1">Hiện tại</div>
+                    <div className="text-xl font-bold text-white">{usage.summary.tenants} <span className="text-sm font-normal text-white/50">tenants</span></div>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                    <div className="text-xs text-white/50 mb-1">Hiện tại</div>
+                    <div className="text-xl font-bold text-white">{usage.summary.mailboxes} <span className="text-sm font-normal text-white/50">mailboxes</span></div>
                   </div>
                 </div>
-                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/70">Kỳ thanh toán</span>
-                    <span className="text-white font-medium">
-                      {new Date(usage.period).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
-                    </span>
+
+                {/* History Chart */}
+                {chartData.length > 0 ? (
+                  <div className="p-3 bg-white/5 rounded-xl border border-white/10 h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData}>
+                        <defs>
+                          <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          stroke="rgba(255,255,255,0.3)"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          minTickGap={15}
+                        />
+                        <YAxis
+                          stroke="rgba(255,255,255,0.3)"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          width={30}
+                        />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#1e293b', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px' }}
+                          itemStyle={{ color: '#e2e8f0' }}
+                          labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey={chartMetric}
+                          stroke="#8b5cf6"
+                          fillOpacity={1}
+                          fill="url(#colorMetric)"
+                          strokeWidth={2}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
+                ) : (
+                  <div className="text-center text-white/30 text-xs py-4 border border-dashed border-white/10 rounded-xl">
+                    Chưa có dữ liệu lịch sử
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-xs text-white/40 px-1">
+                  <span>Kỳ thanh toán: {new Date(usage.period).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}</span>
+                  <span>Tổng messages: {usage.summary.messages.toLocaleString()}</span>
                 </div>
               </div>
             ) : (

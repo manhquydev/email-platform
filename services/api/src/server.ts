@@ -63,6 +63,7 @@ import { ephemeralInboxRoutes } from "./routes/ephemeral-inbox";
 import { referralRoutes } from "./routes/referral";
 import { providerRoutes } from "./routes/provider";
 import { adminProvidersRoutes } from "./routes/admin-providers";
+import { initializeJobs } from "./jobs";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -470,6 +471,9 @@ export const startHttpServer = async (): Promise<FastifyInstance> => {
   // Initialize realtime events service
   await realtimeEvents.init();
   app.log.info('Realtime events service initialized');
+
+  // Initialize background jobs
+  initializeJobs();
 
   // Setup Telegram bot commands menu
   setupBotCommands().catch(err => {

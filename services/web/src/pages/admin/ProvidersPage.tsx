@@ -30,6 +30,7 @@ export function ProvidersPage() {
     selectedProvider,
     newApiKey,
     providerUsage,
+    providerUsageHistory,
     loadingUsage,
     setSearch,
     setPage,
@@ -120,6 +121,7 @@ export function ProvidersPage() {
       <ProviderDetailDrawer
         provider={selectedProvider}
         usage={providerUsage}
+        usageHistory={providerUsageHistory}
         loadingUsage={loadingUsage}
         onClose={() => setSelectedProvider(null)}
         onLoadUsage={loadProviderUsage}

@@ -17,6 +17,10 @@
     "node_modules",
     "dist",
     "src/test",
-    "src/__tests__"
+    "src/__tests__",
+    "src/_wip",
+    "src/routes/scim.ts",
+    "src/routes/sso.ts",
+    "src/routes/admin/compliance.ts"
   ]
 }

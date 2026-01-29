@@ -505,7 +505,6 @@ export const messageRoutes = async (app: FastifyInstance) => {
       reply.header("Content-Type", attachmentMeta.mimeType || "application/octet-stream");
       return reply.send(stream);
     } catch (e) {
-    } catch (e) {
       request.log.error(e);
       return reply.status(404).send({ error: "File not found" });
     }

@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { providerAuthMiddleware } from '../middleware/provider-auth';
 import { HostingProviderService } from '../services/hosting-provider.service';
 import { ProviderWebhookService } from '../services/provider-webhook.service';
+import { ProviderSsoService } from '../services/provider-sso.service';
 import { TenantPlan, TenantStatus } from '@prisma/client';
 
 // Zod schemas for validation
@@ -35,6 +36,10 @@ const createMailboxSchema = z.object({
   password: z.string().min(8).max(128),
   displayName: z.string().max(100).optional(),
   quotaMb: z.number().min(100).max(102400).optional(),
+});
+
+const ssoSchema = z.object({
+  clientIp: z.string().min(7).max(45), // IPv4 or IPv6 address
 });
 
 const listQuerySchema = z.object({
@@ -370,6 +375,35 @@ export const providerRoutes = async (app: FastifyInstance) => {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       return reply.status(404).send({ error: message });
+    }
+  });
+
+  // Generate SSO token
+  app.post('/v1/provider/tenants/:id/mailboxes/:email/sso', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id, email } = request.params as { id: string; email: string };
+    const parsed = ssoSchema.safeParse(request.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({ error: 'Invalid request', details: parsed.error.flatten() });
+    }
+
+    try {
+      const tenant = await HostingProviderService.getTenant(request.provider!.providerId, id);
+      if (!tenant) {
+        return reply.status(404).send({ error: 'Tenant not found' });
+      }
+
+      const ssoUrl = await ProviderSsoService.generateToken(
+        request.provider!.providerId,
+        id,
+        decodeURIComponent(email),
+        parsed.data.clientIp
+      );
+
+      return { ssoUrl };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.status(400).send({ error: message });
     }
   });
 

@@ -1493,3 +1493,18 @@ model ProviderWebhookEvent {
   @@index([providerId, createdAt])
   @@index([deliveredAt])
 }
+
+model ProviderSsoToken {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  email       String
+  providerId  String
+  tenantId    String
+  clientIp    String   // REQUIRED - IP binding mandatory
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([token])
+  @@index([expiresAt])
+}

@@ -1,0 +1,495 @@
+openapi: 3.0.0
+info:
+  title: Ephemera Provider API
+  version: 1.0.0
+  description: API for hosting providers to manage tenants, domains, and mailboxes.
+servers:
+  - url: https://api.ephemera.email/v1/provider
+    description: Production Server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Provider-Key
+
+  schemas:
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+        externalId:
+          type: string
+        customerEmail:
+          type: string
+        customerName:
+          type: string
+        plan:
+          type: string
+          enum: [LITE, PRO, BUSINESS]
+        status:
+          type: string
+          enum: [ACTIVE, SUSPENDED, TERMINATED]
+        maxMailboxes:
+          type: integer
+        maxStorageGb:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    Domain:
+      type: object
+      properties:
+        id:
+          type: string
+        domainName:
+          type: string
+        verified:
+          type: boolean
+        verifiedAt:
+          type: string
+          format: date-time
+
+    Mailbox:
+      type: object
+      properties:
+        email:
+          type: string
+        displayName:
+          type: string
+        quotaMb:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    DnsRecord:
+      type: object
+      properties:
+        type:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+        priority:
+          type: integer
+        purpose:
+          type: string
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /me:
+    get:
+      summary: Get provider info
+      responses:
+        '200':
+          description: Provider details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      tier: { type: string }
+
+  /api-key:
+    post:
+      summary: Regenerate API key
+      responses:
+        '200':
+          description: New API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiKey: { type: string }
+                  message: { type: string }
+
+  /tenants:
+    get:
+      summary: List tenants
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: status
+          in: query
+          schema: { type: string, enum: [ACTIVE, SUSPENDED, TERMINATED] }
+      responses:
+        '200':
+          description: List of tenants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenants:
+                    type: array
+                    items: { $ref: '#/components/schemas/Tenant' }
+                  total: { type: integer }
+
+    post:
+      summary: Create tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [externalId, customerEmail, plan]
+              properties:
+                externalId: { type: string }
+                customerEmail: { type: string }
+                customerName: { type: string }
+                plan: { type: string, enum: [LITE, PRO, BUSINESS] }
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenant: { $ref: '#/components/schemas/Tenant' }
+
+  /tenants/{id}:
+    get:
+      summary: Get tenant details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Tenant details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenant: { $ref: '#/components/schemas/Tenant' }
+
+    patch:
+      summary: Update tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerEmail: { type: string }
+                customerName: { type: string }
+                plan: { type: string, enum: [LITE, PRO, BUSINESS] }
+      responses:
+        '200':
+          description: Updated tenant
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenant: { $ref: '#/components/schemas/Tenant' }
+
+    delete:
+      summary: Terminate tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Tenant terminated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  status: { type: string }
+
+  /tenants/{id}/suspend:
+    post:
+      summary: Suspend tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Tenant suspended
+
+  /tenants/{id}/unsuspend:
+    post:
+      summary: Unsuspend tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Tenant unsuspended
+
+  /tenants/{id}/domains:
+    get:
+      summary: List domains
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of domains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domains:
+                    type: array
+                    items: { $ref: '#/components/schemas/Domain' }
+
+    post:
+      summary: Add domain
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain]
+              properties:
+                domain: { type: string }
+      responses:
+        '201':
+          description: Domain added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domain: { $ref: '#/components/schemas/Domain' }
+                  dnsRecords:
+                    type: array
+                    items: { $ref: '#/components/schemas/DnsRecord' }
+
+  /tenants/{id}/domains/{domain}/dns:
+    get:
+      summary: Get DNS records
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: domain
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: DNS records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domain: { $ref: '#/components/schemas/Domain' }
+                  dnsRecords:
+                    type: array
+                    items: { $ref: '#/components/schemas/DnsRecord' }
+
+  /tenants/{id}/domains/{domain}/verify:
+    post:
+      summary: Verify domain
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: domain
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verified: { type: boolean }
+                  domainName: { type: string }
+
+  /tenants/{id}/domains/{domain}:
+    delete:
+      summary: Remove domain
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: domain
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Domain removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  removed: { type: boolean }
+
+  /tenants/{id}/mailboxes:
+    get:
+      summary: List mailboxes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of mailboxes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mailboxes:
+                    type: array
+                    items: { $ref: '#/components/schemas/Mailbox' }
+
+    post:
+      summary: Create mailbox
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [localPart, domain, password]
+              properties:
+                localPart: { type: string }
+                domain: { type: string }
+                password: { type: string }
+                displayName: { type: string }
+                quotaMb: { type: integer }
+      responses:
+        '201':
+          description: Mailbox created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mailbox: { $ref: '#/components/schemas/Mailbox' }
+
+  /tenants/{id}/mailboxes/{email}:
+    delete:
+      summary: Delete mailbox
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: email
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Mailbox deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted: { type: boolean }
+
+  /tenants/{id}/mailboxes/{email}/sso:
+    post:
+      summary: Generate SSO URL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: email
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                remoteIp: { type: string }
+      responses:
+        '200':
+          description: SSO URL generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string }
+                  expiresAt: { type: string, format: date-time }
+
+  /webhooks/test:
+    post:
+      summary: Test webhook delivery
+      responses:
+        '200':
+          description: Test successful
+
+  /webhooks/events:
+    get:
+      summary: List webhook events
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer }
+        - name: offset
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List of events

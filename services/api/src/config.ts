@@ -108,6 +108,7 @@ export const appConfig = {
   requireCaptchaForPublicInbox: (process.env.REQUIRE_CAPTCHA_FOR_PUBLIC_INBOX ?? "false").toLowerCase() === "true",
   captchaSecret: process.env.CAPTCHA_SECRET,
   webUrl: process.env.WEB_URL ?? "http://localhost:5173",
+  apiUrl: process.env.API_URL ?? "http://localhost:3001",
   trustProxy: (process.env.TRUST_PROXY ?? "true").toLowerCase() === "true",
   // Google API Fallback
   googleClientId: process.env.GOOGLE_CLIENT_ID,

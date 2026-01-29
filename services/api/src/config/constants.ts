@@ -41,13 +41,8 @@ export const PAGINATION = {
     ADMIN_PAGE_SIZE: 50,
 } as const;
 
-// Subscription tier limits (matches billing.ts)
-export const TIER_LIMITS = {
-    FREE: { domains: 1, inboxes: 3, storageGB: 0.1, dailyEmails: 50 },
-    STARTER: { domains: 3, inboxes: 20, storageGB: 1, dailyEmails: 200 },
-    PROFESSIONAL: { domains: 10, inboxes: 100, storageGB: 5, dailyEmails: 1000 },
-    ENTERPRISE: { domains: -1, inboxes: -1, storageGB: 50, dailyEmails: -1 }, // -1 = unlimited
-} as const;
+// Tier limits - Use unified-tier-limits.ts as single source of truth
+// Import: import { DEFAULT_TIER_LIMITS } from './unified-tier-limits';
 
 // File size limits (in bytes)
 export const SIZE_LIMITS = {

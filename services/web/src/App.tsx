@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "./context/AuthContext";
@@ -44,7 +44,6 @@ const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.S
 const MyDomains = lazy(() => import("./pages/MyDomains").then(m => ({ default: m.MyDomains })));
 const Forwarding = lazy(() => import("./pages/Forwarding").then(m => ({ default: m.Forwarding })));
 const Plans = lazy(() => import("./pages/Plans").then(m => ({ default: m.Plans })));
-const Teams = lazy(() => import("./pages/Teams").then(m => ({ default: m.Teams })));
 const InboxViewer = lazy(() => import("./pages/InboxViewer").then(m => ({ default: m.InboxViewer })));
 const EphemeralInbox = lazy(() => import("./pages/EphemeralInbox").then(m => ({ default: m.EphemeralInbox })));
 const IdentitySuite = lazy(() => import("./pages/IdentitySuite").then(m => ({ default: m.IdentitySuite })));
@@ -127,7 +126,8 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/my-domains" element={<MyDomains />} />
                     <Route path="/forwarding" element={<Forwarding />} />
-                    <Route path="/teams" element={<Teams />} />
+                    {/* Redirect /teams to /settings?tab=teams for consolidated navigation */}
+                    <Route path="/teams" element={<Navigate to="/settings?tab=teams" replace />} />
                     <Route path="/plans" element={<Plans />} />
                     <Route path="/app/identity" element={<IdentitySuite />} />
                     <Route path="/app/developer" element={<DeveloperPortal />} />

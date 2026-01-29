@@ -5,7 +5,13 @@ The Ephemera Provider API allows hosting providers, registrars, and agencies to 
 ## Base URL
 All API requests should be made to:
 ```
-https://api.ephemera.email/v1/provider
+https://api.manhquy.click/v1/provider
+```
+
+## Test Credentials (Development)
+```bash
+API_KEY="eph_provider_3408c01b228155367cee5b46e13aaae55a9fb2144ef0b04fdd68acc169a0f313"
+TENANT_ID="ece152f6-edce-4a26-ad45-c51a129cee2e"
 ```
 
 ## Authentication

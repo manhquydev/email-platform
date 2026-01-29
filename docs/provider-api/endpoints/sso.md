@@ -5,39 +5,63 @@ Generate magic links to allow users to log in to their webmail without entering 
 ## Generate SSO Link
 Create a temporary, single-use login URL for a specific mailbox.
 
-**Endpoint:** `POST /tenants/:id/mailboxes/:email/sso`
+**Endpoint:** `POST /v1/provider/tenants/:id/mailboxes/:email/sso`
 
 **Parameters:**
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `remoteIp` | string | No | The IP address of the user (for security binding) |
+| `clientIp` | string | **Yes** | The IP address of the user (for security binding) |
+| `returnUrl` | string | No | URL to redirect after login (default: inbox) |
 
 **Example Request:**
-```json
-{
-  "remoteIp": "203.0.113.1"
-}
+```bash
+curl -X POST "https://api.manhquy.click/v1/provider/tenants/{tenant_id}/mailboxes/{email}/sso" \
+  -H "X-Provider-Key: eph_provider_xxx..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clientIp": "203.0.113.1",
+    "returnUrl": "https://app.manhquy.click/inbox"
+  }'
 ```
 
 **Example Response:**
 ```json
 {
-  "url": "https://webmail.ephemera.email/auth/magic-login?token=eyJhbGciOi...",
-  "expiresAt": "2024-03-20T10:05:00Z"
+  "ssoUrl": "https://app.manhquy.click/auth/sso?token=8f44d6ff4eac7c81..."
 }
 ```
 
 ## Security Details
-- **Time To Live (TTL):** Links are valid for 5 minutes.
+- **Time To Live (TTL):** Links are valid for **5 minutes**.
 - **Single Use:** Once used, the token is invalidated.
-- **IP Binding:** If `remoteIp` is provided, the link can only be used from that IP address.
+- **IP Binding:** The link can **only** be used from the specified `clientIp`.
+
+## Test SSO Flow
+```bash
+# 1. Generate SSO URL (replace YOUR_IP with your actual IP)
+API_KEY="eph_provider_3408c01b228155367cee5b46e13aaae55a9fb2144ef0b04fdd68acc169a0f313"
+TENANT_ID="ece152f6-edce-4a26-ad45-c51a129cee2e"
+EMAIL="admin@test-cpanel.manhquy.click"
+
+curl -s -X POST "https://api.manhquy.click/v1/provider/tenants/$TENANT_ID/mailboxes/$EMAIL/sso" \
+  -H "X-Provider-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"clientIp":"YOUR_IP","returnUrl":"https://app.manhquy.click/inbox"}'
+
+# 2. Copy the ssoUrl from response and open in browser
+# 3. You will be auto-logged in to the mailbox!
+```
 
 ## Implementation Example (PHP/WHMCS)
 ```php
-$response = $client->post("tenants/{$tenantId}/mailboxes/{$email}/sso", [
-    'json' => ['remoteIp' => $_SERVER['REMOTE_ADDR']]
+$response = $client->post("v1/provider/tenants/{$tenantId}/mailboxes/{$email}/sso", [
+    'headers' => ['X-Provider-Key' => $apiKey],
+    'json' => [
+        'clientIp' => $_SERVER['REMOTE_ADDR'],
+        'returnUrl' => 'https://app.manhquy.click/inbox'
+    ]
 ]);
 $data = json_decode($response->getBody(), true);
-header("Location: " . $data['url']);
+header("Location: " . $data['ssoUrl']);
 exit;
 ```

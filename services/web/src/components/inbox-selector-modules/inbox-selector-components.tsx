@@ -197,7 +197,7 @@ export function DropdownFooter() {
         <div className="p-2 border-t border-white/5 bg-surface-elevated/50 flex justify-between items-center">
             <ThemeToggle />
             <div className="flex gap-1">
-                <a href="/teams" className="p-2 rounded-lg hover:bg-nebula-elevated text-xs text-text-tertiary hover:text-nebula-text flex items-center gap-1 transition-colors">
+                <a href="/settings?tab=teams" className="p-2 rounded-lg hover:bg-nebula-elevated text-xs text-text-tertiary hover:text-nebula-text flex items-center gap-1 transition-colors">
                     <span className="material-symbols-outlined text-[16px]">groups</span>
                     Nhóm
                 </a>

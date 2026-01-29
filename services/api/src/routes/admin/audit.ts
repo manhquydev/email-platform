@@ -30,13 +30,13 @@ export async function adminAuditRoutes(app: FastifyInstance) {
         }
 
         if (query.data.userId) {
-            where.actorId = query.data.userId;
+            where.userId = query.data.userId;
         }
 
         const [logs, total] = await Promise.all([
             prisma.auditLog.findMany({
                 where,
-                orderBy: { timestamp: "desc" },
+                orderBy: { createdAt: "desc" },
                 take: query.data.limit ?? 50,
                 skip: query.data.offset ?? 0,
                 include: {
@@ -70,18 +70,18 @@ export async function adminAuditRoutes(app: FastifyInstance) {
         }
 
         if (query.data.startDate) {
-            where.timestamp = { ...where.timestamp, gte: new Date(query.data.startDate) };
+            where.createdAt = { ...where.createdAt, gte: new Date(query.data.startDate) };
         }
 
         if (query.data.endDate) {
             const endDate = new Date(query.data.endDate);
             endDate.setHours(23, 59, 59, 999);
-            where.timestamp = { ...where.timestamp, lte: endDate };
+            where.createdAt = { ...where.createdAt, lte: endDate };
         }
 
         const logs = await prisma.auditLog.findMany({
             where,
-            orderBy: { timestamp: "desc" },
+            orderBy: { createdAt: "desc" },
             take: 1000, // Limit export to 1000 records
             include: {
                 user: { select: { email: true } }
@@ -102,10 +102,10 @@ export async function adminAuditRoutes(app: FastifyInstance) {
         const rows = logs.map(log => [
             escapeCSV(log.id),
             escapeCSV(log.action),
-            escapeCSV(log.user?.email || log.actorEmail),
-            escapeCSV(log.timestamp.toISOString()),
-            escapeCSV(log.metadata ? JSON.stringify(log.metadata) : ""),
-            escapeCSV(log.ipAddress)
+            escapeCSV(log.user?.email || ""),
+            escapeCSV(log.createdAt.toISOString()),
+            escapeCSV(log.meta ? JSON.stringify(log.meta) : ""),
+            escapeCSV(log.ip)
         ].join(","));
 
         const csv = [headers.join(","), ...rows].join("\n");

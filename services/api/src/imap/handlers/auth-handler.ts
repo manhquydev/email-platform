@@ -15,8 +15,7 @@ export class AuthHandler implements ImapHandler {
       try {
         const result = await MessageAdapter.authenticate(username, password);
         if (result) {
-          connection.user = result.user;
-          connection.user.inboxId = result.inboxId;
+          connection.user = { ...result.user, inboxId: result.inboxId };
           connection.state = "AUTHENTICATED";
           connection.socket.write(`${command.tag} OK LOGIN completed\r\n`);
         } else {

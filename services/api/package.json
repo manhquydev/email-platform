@@ -43,6 +43,7 @@
     "fastify-raw-body": "^5.0.0",
     "google-auth-library": "^10.5.0",
     "googleapis": "^169.0.0",
+    "imap-handler": "^0.1.12",
     "ioredis": "^5.9.1",
     "ldapjs": "^3.0.7",
     "mailbuild": "^0.3.7",

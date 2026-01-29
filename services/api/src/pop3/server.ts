@@ -83,7 +83,7 @@ export class Pop3Server {
                 if (inbox) {
                     const msgs = await MessageAdapter.getMessages(inbox.id, { min: 1, max: 2147483647 });
                     conn.messages = msgs; // Cache for session
-                    const size = msgs.reduce((acc, m) => acc + (m.size || 0), 0);
+                    const size = msgs.reduce((acc: number, m: { size?: number }) => acc + (m.size || 0), 0);
                     conn.socket.write(`+OK ${msgs.length} ${size}\r\n`);
                 } else {
                     conn.socket.write(`+OK 0 0\r\n`);

@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { AdminRole, requireAdminRole } from '../../middleware/rbac';
 import { QuotaService } from '../../services/quota-service';
 
@@ -13,10 +13,10 @@ export default async function adminTenantsRoutes(fastify: FastifyInstance) {
     const { page = 1, limit = 20, search } = req.query as any;
     const skip = (page - 1) * limit;
 
-    const where = search ? {
+    const where: Prisma.OrganizationWhereInput = search ? {
       OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { slug: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+        { slug: { contains: search, mode: 'insensitive' as Prisma.QueryMode } }
       ]
     } : {};
 

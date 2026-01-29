@@ -46,7 +46,7 @@ export const startSubmissionServer = (logger: Logger, port = 587) => {
         return callback(new Error('Invalid authentication method'));
       }
 
-      SmtpAuthHandler.validateCredentials(auth.username, auth.password)
+      SmtpAuthHandler.validateCredentials(auth.username || '', auth.password || '')
         .then((result) => {
           if (result.success && result.user) {
             (session as SecureSession).user = { id: result.user.id, email: result.user.email };

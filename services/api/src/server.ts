@@ -62,6 +62,7 @@ import { identityBundleRoutes } from "./routes/identity-bundles";
 import { ephemeralInboxRoutes } from "./routes/ephemeral-inbox";
 import { referralRoutes } from "./routes/referral";
 import { providerRoutes } from "./routes/provider";
+import { adminProvidersRoutes } from "./routes/admin-providers";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -432,6 +433,7 @@ export const buildServer = () => {
 
   // Hosting Provider API (cPanel/WHMCS Integration)
   app.register(providerRoutes);
+  app.register(adminProvidersRoutes);
 
   // Phase 4: Identity Suite Bundles
   app.register(identityBundleRoutes);

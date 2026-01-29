@@ -12,9 +12,10 @@ interface SecurityStatusProps {
     profile: UserProfile | null;
     onSetup2FA: () => void;
     onManage2FA: () => void;
+    onUpdatePassword: () => void;
 }
 
-export function SecurityStatusCard({ profile, onSetup2FA, onManage2FA }: SecurityStatusProps) {
+export function SecurityStatusCard({ profile, onSetup2FA, onManage2FA, onUpdatePassword }: SecurityStatusProps) {
     return (
         <section className="glass-panel rounded-xl p-6 bg-gradient-to-br from-nebula-violet/10 to-transparent border-t-2 border-t-nebula-violet/50 relative overflow-hidden bg-nebula-surface/80 border border-nebula-border shadow-sm">
             <div className="absolute -right-6 -top-6 w-32 h-32 bg-nebula-violet/20 rounded-full blur-2xl"></div>
@@ -30,7 +31,10 @@ export function SecurityStatusCard({ profile, onSetup2FA, onManage2FA }: Securit
                             <span className="text-xs text-nebula-text-muted">An toàn</span>
                         </div>
                     </div>
-                    <button className="text-xs bg-nebula-elevated hover:bg-nebula-surface px-3 py-1 rounded text-nebula-text border border-nebula-border transition-colors">Cập nhật</button>
+                    <button
+                        onClick={onUpdatePassword}
+                        className="text-xs bg-nebula-elevated hover:bg-nebula-surface px-3 py-1 rounded text-nebula-text border border-nebula-border transition-colors"
+                    >Cập nhật</button>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-nebula-elevated border border-nebula-border">
                     <div className="flex items-center gap-3">

@@ -109,11 +109,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
             {/* Dashboard Grid: Stats + Payment Method */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <SubscriptionStatsCards profile={profile} />
-                <PaymentMethodCard
-                    paymentMethod={paymentMethod}
-                    loading={loadingPaymentMethod}
-                    onManage={handlePortal}
-                />
+                <PaymentMethodCard />
             </div>
 
             {/* Pricing Section */}

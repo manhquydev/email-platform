@@ -143,16 +143,24 @@ export function useEphemeralInbox(options: UseEphemeralInboxOptions = {}): UseEp
 
     useEffect(() => {
         if (initialLoadDoneRef.current) return;
-        if (!isValidToken(token) && autoCreate) {
-            initialLoadDoneRef.current = true;
-            createInbox();
+        initialLoadDoneRef.current = true;
+
+        // No token → auto-create if enabled
+        if (!isValidToken(token)) {
+            if (autoCreate) createInbox();
             return;
         }
-        if (isValidToken(token)) {
-            initialLoadDoneRef.current = true;
-            setIsLoading(true);
-            Promise.all([fetchInbox(token), fetchMessages(token)]).finally(() => setIsLoading(false));
-        }
+
+        // Has token → try fetch, auto-create new if expired/not found
+        setIsLoading(true);
+        fetchInbox(token).then(async (success) => {
+            if (success) {
+                await fetchMessages(token);
+            } else if (autoCreate) {
+                // Inbox expired/not found → auto-create new one
+                await createInbox();
+            }
+        }).finally(() => setIsLoading(false));
     }, [token, autoCreate, createInbox, fetchInbox, fetchMessages]);
 
     useEffect(() => {

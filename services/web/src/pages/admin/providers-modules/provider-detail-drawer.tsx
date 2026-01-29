@@ -144,6 +144,48 @@ export function ProviderDetailDrawer({
             </div>
           </section>
 
+          {/* Tenant List */}
+          <section>
+            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider mb-3">
+              Danh sách Tenants ({usage?.summary?.tenants || 0})
+            </h3>
+            {loadingUsage ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : usage?.byTenant && usage.byTenant.length > 0 ? (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {usage.byTenant.map((tenant) => (
+                  <div
+                    key={tenant.tenantId}
+                    className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-white font-medium text-sm">{tenant.externalId}</div>
+                        <div className="text-xs text-white/40 font-mono mt-0.5">{tenant.tenantId.slice(0, 8)}...</div>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <div className="text-center">
+                          <div className="text-white font-semibold">{tenant.mailboxes}</div>
+                          <div className="text-white/40">mailboxes</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-white font-semibold">{tenant.messages}</div>
+                          <div className="text-white/40">messages</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-white/30 text-xs py-4 border border-dashed border-white/10 rounded-xl">
+                Chưa có tenant nào
+              </div>
+            )}
+          </section>
+
           {/* Usage Stats & History */}
           <section>
             <div className="flex items-center justify-between mb-3">

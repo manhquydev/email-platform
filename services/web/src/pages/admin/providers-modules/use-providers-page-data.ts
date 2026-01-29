@@ -7,7 +7,7 @@ import { api } from "../../../utils/api";
 import { getFriendlyErrorMessage } from "../../../utils/errorMapping";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
-import type { Provider, ProviderUsage, ProviderUsageLog, CreateProviderData } from "./types";
+import type { Provider, ProviderUsage, ProviderUsageLog, CreateProviderData, UpdateProviderData } from "./types";
 import { PAGE_SIZE } from "./types";
 
 export interface UseProvidersPageDataReturn {
@@ -20,6 +20,7 @@ export interface UseProvidersPageDataReturn {
   updating: string | null;
   // Modals
   showCreateModal: boolean;
+  editProvider: Provider | null;
   selectedProvider: Provider | null;
   newApiKey: string | null;
   providerUsage: ProviderUsage | null;
@@ -29,10 +30,12 @@ export interface UseProvidersPageDataReturn {
   setSearch: (v: string) => void;
   setPage: (v: number) => void;
   setShowCreateModal: (v: boolean) => void;
+  setEditProvider: (v: Provider | null) => void;
   setSelectedProvider: (v: Provider | null) => void;
   setNewApiKey: (v: string | null) => void;
   // Actions
   createProvider: (data: CreateProviderData) => Promise<boolean>;
+  updateProvider: (id: string, data: UpdateProviderData) => Promise<boolean>;
   regenerateApiKey: (id: string) => Promise<void>;
   updateStatus: (id: string, status: 'ACTIVE' | 'SUSPENDED') => Promise<void>;
   loadProviderUsage: (id: string) => Promise<void>;
@@ -52,6 +55,7 @@ export function useProvidersPageData(): UseProvidersPageDataReturn {
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editProvider, setEditProvider] = useState<Provider | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
   const [providerUsage, setProviderUsage] = useState<ProviderUsage | null>(null);
@@ -93,6 +97,23 @@ export function useProvidersPageData(): UseProvidersPageDataReturn {
       toast.success("Provider đã được tạo thành công");
       setNewApiKey(res.apiKey);
       setShowCreateModal(false);
+      await loadProviders();
+      return true;
+    } catch (err) {
+      toast.error(getFriendlyErrorMessage((err as Error).message));
+      return false;
+    }
+  };
+
+  // Update provider
+  const updateProvider = async (id: string, data: UpdateProviderData): Promise<boolean> => {
+    try {
+      await api<{ provider: Provider }>(
+        `/v1/admin/providers/${id}`,
+        { method: "PATCH", token, body: data }
+      );
+      toast.success("Provider đã được cập nhật");
+      setEditProvider(null);
       await loadProviders();
       return true;
     } catch (err) {
@@ -163,6 +184,7 @@ export function useProvidersPageData(): UseProvidersPageDataReturn {
     search,
     updating,
     showCreateModal,
+    editProvider,
     selectedProvider,
     newApiKey,
     providerUsage,
@@ -171,9 +193,11 @@ export function useProvidersPageData(): UseProvidersPageDataReturn {
     setSearch,
     setPage,
     setShowCreateModal,
+    setEditProvider,
     setSelectedProvider,
     setNewApiKey,
     createProvider,
+    updateProvider,
     regenerateApiKey,
     updateStatus,
     loadProviderUsage,

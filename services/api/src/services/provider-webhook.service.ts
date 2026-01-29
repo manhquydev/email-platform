@@ -18,6 +18,7 @@ export type WebhookEventType =
   | 'domain.verified'
   | 'domain.removed'
   | 'mailbox.created'
+  | 'mailbox.updated'
   | 'mailbox.deleted'
   | 'usage.threshold';
 

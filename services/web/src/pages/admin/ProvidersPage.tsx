@@ -27,6 +27,7 @@ export function ProvidersPage() {
     search,
     updating,
     showCreateModal,
+    editProvider,
     selectedProvider,
     newApiKey,
     providerUsage,
@@ -35,9 +36,11 @@ export function ProvidersPage() {
     setSearch,
     setPage,
     setShowCreateModal,
+    setEditProvider,
     setSelectedProvider,
     setNewApiKey,
     createProvider,
+    updateProvider,
     regenerateApiKey,
     updateStatus,
     loadProviderUsage,
@@ -84,6 +87,7 @@ export function ProvidersPage() {
               providers={providers}
               updating={updating}
               onView={setSelectedProvider}
+              onEdit={setEditProvider}
               onRegenerateKey={regenerateApiKey}
               onUpdateStatus={updateStatus}
             />
@@ -109,6 +113,15 @@ export function ProvidersPage() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSubmit={createProvider}
+      />
+
+      {/* Edit Provider Modal */}
+      <ProviderFormModal
+        isOpen={!!editProvider}
+        onClose={() => setEditProvider(null)}
+        onSubmit={createProvider}
+        onUpdate={updateProvider}
+        editProvider={editProvider}
       />
 
       {/* API Key Display Modal */}

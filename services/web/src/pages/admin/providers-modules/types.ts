@@ -53,6 +53,14 @@ export interface CreateProviderData {
   tier?: 'STARTER' | 'GROWTH' | 'ENTERPRISE';
 }
 
+export interface UpdateProviderData {
+  name?: string;
+  contactEmail?: string;
+  billingEmail?: string;
+  webhookUrl?: string;
+  tier?: 'STARTER' | 'GROWTH' | 'ENTERPRISE';
+}
+
 export const PAGE_SIZE = 20;
 
 export const TIER_OPTIONS = [

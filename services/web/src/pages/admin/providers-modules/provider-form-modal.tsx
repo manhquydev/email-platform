@@ -1,18 +1,20 @@
 /**
- * ProviderFormModal - Modal for creating new hosting providers
+ * ProviderFormModal - Modal for creating/editing hosting providers
  * Shows API key after successful creation (one-time display)
  */
-import { useState } from "react";
-import type { CreateProviderData } from "./types";
+import { useState, useEffect } from "react";
+import type { CreateProviderData, Provider, UpdateProviderData } from "./types";
 import { TIER_OPTIONS } from "./types";
 
 interface ProviderFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateProviderData) => Promise<boolean>;
+  onUpdate?: (id: string, data: UpdateProviderData) => Promise<boolean>;
+  editProvider?: Provider | null;
 }
 
-export function ProviderFormModal({ isOpen, onClose, onSubmit }: ProviderFormModalProps) {
+export function ProviderFormModal({ isOpen, onClose, onSubmit, onUpdate, editProvider }: ProviderFormModalProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateProviderData>({
     name: "",
@@ -22,20 +24,44 @@ export function ProviderFormModal({ isOpen, onClose, onSubmit }: ProviderFormMod
     tier: "STARTER",
   });
 
+  const isEdit = !!editProvider;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editProvider) {
+      setFormData({
+        name: editProvider.name,
+        contactEmail: editProvider.contactEmail,
+        billingEmail: editProvider.billingEmail || "",
+        webhookUrl: "", // webhookUrl not in Provider type, user can set new one
+        tier: editProvider.tier,
+      });
+    } else {
+      setFormData({ name: "", contactEmail: "", billingEmail: "", webhookUrl: "", tier: "STARTER" });
+    }
+  }, [editProvider]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const success = await onSubmit({
+    const submitData = {
       ...formData,
       billingEmail: formData.billingEmail || undefined,
       webhookUrl: formData.webhookUrl || undefined,
-    });
+    };
+
+    let success: boolean;
+    if (isEdit && onUpdate) {
+      success = await onUpdate(editProvider.id, submitData);
+    } else {
+      success = await onSubmit(submitData);
+    }
 
     setLoading(false);
-    if (success) {
+    if (success && !isEdit) {
       setFormData({ name: "", contactEmail: "", billingEmail: "", webhookUrl: "", tier: "STARTER" });
     }
   };
@@ -49,7 +75,9 @@ export function ProviderFormModal({ isOpen, onClose, onSubmit }: ProviderFormMod
       <div className="relative w-full max-w-lg mx-4 bg-slate-900/95 border border-white/10 rounded-2xl shadow-2xl">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-white">Tạo Hosting Provider</h2>
+            <h2 className="text-xl font-semibold text-white">
+              {isEdit ? "Chỉnh sửa Provider" : "Tạo Hosting Provider"}
+            </h2>
             <button onClick={onClose} className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -144,7 +172,7 @@ export function ProviderFormModal({ isOpen, onClose, onSubmit }: ProviderFormMod
                 disabled={loading}
                 className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 rounded-xl text-white font-medium transition-all disabled:opacity-50"
               >
-                {loading ? "Đang tạo..." : "Tạo Provider"}
+                {loading ? (isEdit ? "Đang lưu..." : "Đang tạo...") : (isEdit ? "Lưu thay đổi" : "Tạo Provider")}
               </button>
             </div>
           </form>

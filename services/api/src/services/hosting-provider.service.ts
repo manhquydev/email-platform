@@ -585,6 +585,76 @@ export class HostingProviderService {
   }
 
   /**
+   * Update mailbox (password, quota, displayName)
+   */
+  static async updateMailbox(
+    providerId: string,
+    tenantId: string,
+    email: string,
+    data: {
+      password?: string;
+      quotaMb?: number;
+      displayName?: string;
+    }
+  ) {
+    const [localPart, domain] = email.toLowerCase().split('@');
+
+    const tenant = await prisma.providerTenant.findFirst({
+      where: { id: tenantId, providerId },
+      include: { domains: true },
+    });
+
+    if (!tenant) {
+      throw new Error('Tenant not found');
+    }
+
+    const tenantDomain = tenant.domains.find((d) => d.domainName === domain);
+    if (!tenantDomain || !tenantDomain.domainId) {
+      throw new Error('Domain not found');
+    }
+
+    const inbox = await prisma.inbox.findFirst({
+      where: {
+        localPart,
+        domainId: tenantDomain.domainId,
+        deletedAt: null,
+      },
+      include: { domain: true },
+    });
+
+    if (!inbox) {
+      throw new Error('Mailbox not found');
+    }
+
+    // Build update data
+    const currentFlags = (inbox.flags as Record<string, unknown>) || {};
+    const newFlags = { ...currentFlags };
+
+    if (data.displayName !== undefined) {
+      newFlags.displayName = data.displayName;
+    }
+    if (data.quotaMb !== undefined) {
+      newFlags.quotaMb = data.quotaMb;
+    }
+    if (data.password) {
+      newFlags.passwordHash = await bcrypt.hash(data.password, 12);
+    }
+
+    // Update inbox - cast to Prisma.InputJsonValue
+    await prisma.inbox.update({
+      where: { id: inbox.id },
+      data: { flags: newFlags as unknown as import('@prisma/client').Prisma.InputJsonValue },
+    });
+
+    return {
+      email: `${inbox.localPart}@${inbox.domain.name}`,
+      displayName: newFlags.displayName || null,
+      quotaMb: newFlags.quotaMb || null,
+      updatedAt: new Date(),
+    };
+  }
+
+  /**
    * Delete mailbox
    */
   static async deleteMailbox(

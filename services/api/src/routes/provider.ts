@@ -7,6 +7,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { providerAuthMiddleware } from '../middleware/provider-auth';
+import { providerRateLimitMiddleware } from '../middleware/provider-rate-limit';
 import { HostingProviderService } from '../services/hosting-provider.service';
 import { ProviderWebhookService } from '../services/provider-webhook.service';
 import { ProviderSsoService } from '../services/provider-sso.service';
@@ -51,6 +52,8 @@ const listQuerySchema = z.object({
 export const providerRoutes = async (app: FastifyInstance) => {
   // Apply provider auth middleware to all routes
   app.addHook('preHandler', providerAuthMiddleware);
+  // Apply rate limiting after auth (requires providerId from auth)
+  app.addHook('preHandler', providerRateLimitMiddleware);
 
   // === Provider Info ===
 
@@ -369,6 +372,37 @@ export const providerRoutes = async (app: FastifyInstance) => {
       await ProviderWebhookService.emit(request.provider!.providerId, 'mailbox.deleted', {
         tenantId: id,
         email: decodeURIComponent(email),
+      });
+
+      return result;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.status(404).send({ error: message });
+    }
+  });
+
+  // Update mailbox (password, quota, displayName)
+  app.patch('/v1/provider/tenants/:id/mailboxes/:email', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id, email } = request.params as { id: string; email: string };
+    const body = request.body as { password?: string; quotaMb?: number; displayName?: string };
+
+    // Validate at least one field
+    if (!body.password && body.quotaMb === undefined && body.displayName === undefined) {
+      return reply.status(400).send({ error: 'At least one field required: password, quotaMb, or displayName' });
+    }
+
+    try {
+      const result = await HostingProviderService.updateMailbox(
+        request.provider!.providerId,
+        id,
+        decodeURIComponent(email),
+        body
+      );
+
+      await ProviderWebhookService.emit(request.provider!.providerId, 'mailbox.updated', {
+        tenantId: id,
+        email: decodeURIComponent(email),
+        updated: Object.keys(body),
       });
 
       return result;

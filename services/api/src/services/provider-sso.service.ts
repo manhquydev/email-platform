@@ -30,7 +30,7 @@ export class ProviderSsoService {
 
     // Construct SSO URL
     // Pointing to the API endpoint that handles the exchange/redirect
-    return `${appConfig.webUrl}/auth/sso?token=${token}`;
+    return `${appConfig.apiUrl}/auth/sso?token=${token}`;
   }
 
   /**

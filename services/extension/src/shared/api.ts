@@ -229,6 +229,28 @@ class ApiClient {
       })
     });
   }
+
+  // Feature: Global Search
+  async searchMessages(query: string, limit = 20) {
+    return this.request<{ data: Message[]; total: number }>(
+      `/messages/search?q=${encodeURIComponent(query)}&limit=${limit}`
+    );
+  }
+
+  // Feature: Reply/Forward
+  async sendReply(messageId: string, body: { content: string }) {
+    return this.request('/outbound/reply', {
+      method: 'POST',
+      body: JSON.stringify({ originalMessageId: messageId, ...body })
+    });
+  }
+
+  async forwardMessage(messageId: string, body: { to: string; content?: string }) {
+    return this.request('/outbound/forward', {
+      method: 'POST',
+      body: JSON.stringify({ originalMessageId: messageId, ...body })
+    });
+  }
 }
 
 export const api = new ApiClient();

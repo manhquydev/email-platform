@@ -29,6 +29,21 @@ export async function handlePushMessage(data: PushPayload) {
      // @ts-ignore
      await self.registration.showNotification(title, options);
 
+     // Extract OTP
+     const otpRegex = /\b\d{4,8}\b/;
+     const content = `${data.subject} ${data.preview || ''}`;
+     const match = content.match(otpRegex);
+
+     if (match) {
+       await browser.storage.session.set({
+         latest_otp: {
+           code: match[0],
+           service: data.from,
+           timestamp: Date.now()
+         }
+       });
+     }
+
      // Update badge
      updateBadge('NEW');
    } catch (e) {

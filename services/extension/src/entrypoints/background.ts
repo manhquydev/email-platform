@@ -31,6 +31,62 @@ export default defineBackground(() => {
     }
   });
 
+  // Listen for keyboard shortcuts
+  browser.commands.onCommand.addListener(async (command) => {
+    if (command === 'create-inbox') {
+      try {
+        const response = await api.createQuickInbox();
+        if (response.success && response.inbox) {
+          const dashboard = await api.getDashboard();
+          await storage.setInboxes(dashboard.inboxes);
+
+          browser.notifications.create({
+            type: 'basic',
+            iconUrl: '/icons/icon128.png',
+            title: 'Inbox Created',
+            message: `Created ${response.inbox.localPart}@${response.inbox.domain}`
+          });
+        }
+      } catch (error) {
+        console.error('Failed to create inbox via shortcut:', error);
+      }
+    } else if (command === 'copy-current') {
+      const result = await browser.storage.local.get('inboxes');
+      const inboxes = (result.inboxes as any[]) || [];
+      if (inboxes.length > 0) {
+        const latest = inboxes[0];
+        const email = latest.address || `${latest.localPart}@${typeof latest.domain === 'string' ? latest.domain : latest.domain.name}`;
+
+        // Note: Clipboard access from background requires 'clipboardWrite' permission and activeTab or user interaction
+        // Since shortcuts count as user interaction, this should work in most browsers,
+        // but we might need to inject a script if background clipboard access is restricted.
+
+        // Try background clipboard write first (Firefox/Chrome with permission)
+        try {
+           // @ts-ignore
+           await navigator.clipboard.writeText(email);
+           updateBadge('COPIED');
+           setTimeout(() => updateBadge(undefined), 1500);
+        } catch (e) {
+           // Fallback: notify user
+           browser.notifications.create({
+            type: 'basic',
+            iconUrl: '/icons/icon128.png',
+            title: 'Latest Inbox',
+            message: email
+          });
+        }
+      }
+    }
+  });
+
+  // Watch for storage changes to update context menus
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.inboxes) {
+      setupContextMenus();
+    }
+  });
+
   async function setupContextMenus() {
     await browser.contextMenus.removeAll();
 

@@ -11,6 +11,7 @@ import { TIER_LIMITS, COUNTDOWN_INTERVAL_MS } from '../../shared/constants';
 import CreateInboxModal from '../shared/CreateInboxModal';
 import QRCodeModal from '../shared/QRCodeModal';
 import { InboxSkeleton } from '../shared/Skeleton';
+import CountdownRing from '../shared/CountdownRing';
 
 interface InboxListProps {
   onSelectInbox: (id: string, email: string) => void;
@@ -340,15 +341,17 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                       {inbox._count?.messages || 0}
                     </span>
                     {inbox.expiresAt && (
-                      <span className={cn(
-                        "flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-tight",
-                        (new Date(inbox.expiresAt).getTime() - now) < 300000
-                          ? "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 animate-pulse"
-                          : "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
-                      )}>
-                        <Clock className="w-2.5 h-2.5" />
-                        {formatTimeLeft(inbox.expiresAt)}
-                      </span>
+                      <div className="flex items-center gap-1.5" title={`Expires in ${formatTimeLeft(inbox.expiresAt)}`}>
+                        <CountdownRing expiresAt={inbox.expiresAt} size={20} strokeWidth={2.5} />
+                        <span className={cn(
+                          "text-[9px] font-bold tabular-nums tracking-tight",
+                           (new Date(inbox.expiresAt).getTime() - now) < 300000
+                            ? "text-red-500 animate-pulse"
+                            : "text-slate-400 dark:text-slate-500"
+                        )}>
+                          {formatTimeLeft(inbox.expiresAt)}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>

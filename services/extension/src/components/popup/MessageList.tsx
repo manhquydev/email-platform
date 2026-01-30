@@ -2,11 +2,14 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { api } from '../../shared/api';
 import { analytics } from '../../shared/analytics';
 import { Message } from '../../shared/types';
-import { ArrowLeft, Loader2, Calendar, User, FileText, RefreshCw, ChevronRight, Mail, Inbox } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, User, FileText, RefreshCw, ChevronRight, Mail, Inbox, Reply, Forward } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { cn } from '../../utils/cn';
 import SearchInput from '../shared/SearchInput';
 import { MessageSkeleton } from '../shared/Skeleton';
+import { useCompose } from '../../hooks/useCompose';
+import ComposeModal from '../shared/ComposeModal';
+import { t } from '../../shared/i18n';
 
 interface MessageListProps {
   inboxId: string;
@@ -20,6 +23,8 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
   const [error, setError] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const compose = useCompose();
 
   // Filter messages based on search query
   const filteredMessages = useMemo(() => {
@@ -114,8 +119,35 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
                 </pre>
               )}
             </div>
+
+            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => compose.openReply(selectedMessage)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg transition-all"
+              >
+                <Reply className="w-3.5 h-3.5" />
+                {t('reply')}
+              </button>
+              <button
+                onClick={() => compose.openForward(selectedMessage)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
+              >
+                <Forward className="w-3.5 h-3.5" />
+                {t('forward')}
+              </button>
+            </div>
           </div>
         </div>
+
+        <ComposeModal
+          isOpen={compose.isOpen}
+          onClose={compose.close}
+          mode={compose.mode}
+          originalMessage={compose.originalMessage}
+          onSend={compose.send}
+          sending={compose.sending}
+          error={compose.error}
+        />
       </div>
     );
   }

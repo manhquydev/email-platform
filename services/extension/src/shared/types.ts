@@ -57,4 +57,18 @@ export interface StorageData {
     autoCopy: boolean;
     notificationsEnabled?: boolean;
   };
+  pinnedInboxIds?: string[];
+}
+
+export interface ComposeData {
+  to?: string;
+  subject?: string;
+  content: string;
+}
+
+export interface OtpData {
+  code: string;
+  from: string;
+  subject: string;
+  expiresAt: number;
 }

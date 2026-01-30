@@ -63,5 +63,22 @@ export const storage = {
       await storage.set('deviceId', deviceId);
     }
     return deviceId;
+  },
+
+  // Pinned Inboxes helpers
+  getPinnedInboxIds: async () => {
+    const ids = await storage.get('pinnedInboxIds');
+    return ids || [];
+  },
+
+  togglePinned: async (inboxId: string) => {
+    const current = await storage.getPinnedInboxIds();
+    const isPinned = current.includes(inboxId);
+
+    if (isPinned) {
+      await storage.set('pinnedInboxIds', current.filter(id => id !== inboxId));
+    } else if (current.length < 5) {
+      await storage.set('pinnedInboxIds', [...current, inboxId]);
+    }
   }
 };

@@ -7,6 +7,7 @@ import Login from '../../components/popup/Login';
 import InboxList from '../../components/popup/InboxList';
 import MessageList from '../../components/popup/MessageList';
 import Settings from '../../components/popup/Settings';
+import OtpBanner from '../../components/shared/OtpBanner';
 import { Loader2, Settings as SettingsIcon, Zap, Globe, ChevronRight } from 'lucide-react';
 import browser from 'webextension-polyfill';
 
@@ -146,6 +147,7 @@ function App() {
       case 'home':
         return (
           <div className="flex flex-col h-full animate-in fade-in duration-500">
+            <OtpBanner />
             {/* Quick Actions Section */}
             {activeTab && (
               <div className="px-3 pt-3">

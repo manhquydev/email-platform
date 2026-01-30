@@ -26,6 +26,22 @@ export default defineConfig({
     action: {
       default_title: 'Ephemera',
     },
+    commands: {
+      "create-inbox": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+E",
+          "mac": "Command+Shift+E"
+        },
+        "description": "Create a new random inbox"
+      },
+      "copy-current": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+C",
+          "mac": "Command+Shift+C"
+        },
+        "description": "Copy the most recent inbox address"
+      }
+    },
     browser_specific_settings: {
       gecko: {
         id: 'extension@ephemera.io',

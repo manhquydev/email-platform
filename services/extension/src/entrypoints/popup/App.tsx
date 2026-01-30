@@ -8,6 +8,10 @@ import InboxList from '../../components/popup/InboxList';
 import OnboardingTour from '../../components/shared/OnboardingTour';
 import { Loader2, Settings as SettingsIcon, PanelLeftOpen } from 'lucide-react';
 import browser from 'webextension-polyfill';
+import { useGlobalSearch } from '../../hooks/useGlobalSearch';
+import GlobalSearchResults from '../../components/shared/GlobalSearchResults';
+import SearchInput from '../../components/shared/SearchInput';
+import { t } from '../../shared/i18n';
 
 // Lazy load heavy components for code splitting
 const MessageList = lazy(() => import('../../components/popup/MessageList'));
@@ -32,6 +36,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<View>({ type: 'home' });
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const globalSearch = useGlobalSearch();
 
   useEffect(() => {
     checkAuth();
@@ -150,9 +156,28 @@ function App() {
     switch (currentView.type) {
       case 'home':
         return (
-          <InboxList
-            onSelectInbox={(id, email) => setCurrentView({ type: 'inbox', inboxId: id, email })}
-          />
+          <div className="flex flex-col h-full">
+            <div className="px-4 py-2">
+              <SearchInput
+                value={globalSearch.query}
+                onChange={globalSearch.setQuery}
+                placeholder={t('searchAllMessages')}
+              />
+              {globalSearch.query.length >= 2 && (
+                <GlobalSearchResults
+                  results={globalSearch.results}
+                  loading={globalSearch.loading}
+                  onSelectMessage={(msg) => setCurrentView({ type: 'inbox', inboxId: msg.inboxId, email: '' })}
+                />
+              )}
+            </div>
+
+            {!globalSearch.query && (
+              <InboxList
+                onSelectInbox={(id, email) => setCurrentView({ type: 'inbox', inboxId: id, email })}
+              />
+            )}
+          </div>
         );
       case 'inbox':
         return (

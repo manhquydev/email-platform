@@ -80,5 +80,34 @@ export const storage = {
     } else if (current.length < 5) {
       await storage.set('pinnedInboxIds', [...current, inboxId]);
     }
+  },
+
+  // Message cache for offline mode
+  getMessageCache: async (inboxId: string) => {
+    const key = `messages_${inboxId}`;
+    const result = await browser.storage.local.get(key);
+    return result[key] as { messages: any[]; cachedAt: number } | null || null;
+  },
+
+  setMessageCache: async (inboxId: string, messages: any[]) => {
+    const key = `messages_${inboxId}`;
+    const cached = {
+      messages: messages.slice(0, 50), // Limit to 50 messages
+      cachedAt: Date.now()
+    };
+    await browser.storage.local.set({ [key]: cached });
+  },
+
+  clearMessageCache: async (inboxId: string) => {
+    const key = `messages_${inboxId}`;
+    await browser.storage.local.remove(key);
+  },
+
+  clearAllMessageCaches: async () => {
+    const all = await browser.storage.local.get(null);
+    const cacheKeys = Object.keys(all).filter(k => k.startsWith('messages_'));
+    if (cacheKeys.length > 0) {
+      await browser.storage.local.remove(cacheKeys);
+    }
   }
 };

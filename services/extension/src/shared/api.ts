@@ -213,6 +213,29 @@ class ApiClient {
     return this.request<{ data: Message[] }>(`/inboxes/${inboxId}/messages?limit=${limit}`);
   }
 
+  // Cache-first message fetching for offline support
+  async getMessagesWithCache(inboxId: string, limit = 10) {
+    const cached = await storage.getMessageCache(inboxId);
+
+    // If offline and have cache, return cached data
+    if (!navigator.onLine && cached) {
+      return { data: cached.messages as Message[], fromCache: true };
+    }
+
+    try {
+      const response = await this.getMessages(inboxId, limit);
+      // Update cache async (don't block)
+      storage.setMessageCache(inboxId, response.data);
+      return { data: response.data, fromCache: false };
+    } catch (err) {
+      // On network error, fallback to cache
+      if (cached) {
+        return { data: cached.messages as Message[], fromCache: true };
+      }
+      throw err;
+    }
+  }
+
   // Push Notifications
   async getVapidKey() {
     return this.request<{ vapidPublicKey: string }>('/push/vapid-key');

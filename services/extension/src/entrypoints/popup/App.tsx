@@ -41,6 +41,7 @@ function App() {
   const [showCompose, setShowCompose] = useState(false);
   const [composeSending, setComposeSending] = useState(false);
   const [composeError, setComposeError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<StorageData['settings'] | null>(null);
 
   const globalSearch = useGlobalSearch();
 
@@ -67,14 +68,16 @@ function App() {
   };
 
   const initTheme = async () => {
-    const settings = await storage.getSettings();
-    applyTheme(settings.theme);
+    const loadedSettings = await storage.getSettings();
+    setSettings(loadedSettings);
+    applyTheme(loadedSettings.theme);
 
     // Listen for storage changes to sync theme across extension parts
     browser.storage.onChanged.addListener((changes, area) => {
       if (area === 'local' && changes.settings) {
         const newValue = changes.settings.newValue as StorageData['settings'];
         if (newValue) {
+          setSettings(newValue);
           applyTheme(newValue.theme);
         }
       }
@@ -219,6 +222,7 @@ function App() {
             <Settings
               onBack={() => setCurrentView({ type: 'home' })}
               onLogout={handleLogout}
+              initialSettings={settings}
             />
           </Suspense>
         );

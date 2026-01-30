@@ -23,6 +23,8 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
   const [error, setError] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [fromCache, setFromCache] = useState(false);
 
   const compose = useCompose();
 
@@ -45,6 +47,22 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
     fetchMessages();
   }, [inboxId]);
 
+  // Online/offline event listeners
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      fetchMessages(); // Refresh when back online
+    };
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [inboxId]);
+
   const handleSelectMessage = (msg: Message) => {
     analytics.track('message_viewed', { messageId: msg.id });
     setSelectedMessage(msg);
@@ -53,8 +71,9 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const response = await api.getMessages(inboxId);
+      const response = await api.getMessagesWithCache(inboxId);
       setMessages(response.data);
+      setFromCache(response.fromCache);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load messages');
     } finally {
@@ -162,7 +181,15 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate uppercase tracking-widest">{email}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate uppercase tracking-widest">{email}</h2>
+            {isOffline && (
+              <span className="text-[9px] font-bold text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">OFFLINE</span>
+            )}
+            {fromCache && !isOffline && (
+              <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">cached</span>
+            )}
+          </div>
           <p className="text-[10px] text-slate-500 font-medium">
             {searchQuery ? `${filteredMessages.length} of ${messages.length}` : messages.length} messages
           </p>

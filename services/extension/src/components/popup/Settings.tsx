@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, LogOut, ExternalLink, Shield, CreditCard, Bell, BellOff, Loader2, Copy, Sparkles, User as UserIcon, Sun, Moon, Monitor, ChevronRight, Share2, Check } from 'lucide-react';
 import { api } from '../../shared/api';
 import { analytics } from '../../shared/analytics';
-import { User } from '../../shared/types';
+import { User, StorageData } from '../../shared/types';
 import { storage } from '../../shared/storage';
 import { CONFIG } from '../../shared/config';
 import { cn } from '../../utils/cn';
@@ -11,20 +11,24 @@ import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from '../../sh
 interface SettingsProps {
   onBack: () => void;
   onLogout: () => void;
+  initialSettings?: StorageData['settings'] | null;
 }
 
-export default function Settings({ onBack, onLogout }: SettingsProps) {
+export default function Settings({ onBack, onLogout, initialSettings }: SettingsProps) {
   const [user, setUser] = useState<User | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [autoCopy, setAutoCopy] = useState(true);
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [autoCopy, setAutoCopy] = useState(initialSettings?.autoCopy ?? true);
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(initialSettings?.theme || 'system');
   const [notifLoading, setNotifLoading] = useState(false);
   const [referralCopied, setReferralCopied] = useState(false);
 
   useEffect(() => {
     loadUser();
     checkNotificationStatus();
-    loadSettings();
+    // Only load settings from storage if not provided via props
+    if (!initialSettings) {
+      loadSettings();
+    }
   }, []);
 
   const loadSettings = async () => {

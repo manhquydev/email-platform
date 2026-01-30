@@ -27,7 +27,40 @@ export default defineBackground(() => {
       await storage.clearAuth();
     } else {
       // Re-setup push if authenticated on startup
-      setupPushNotification().catch(console.error);
+      setupPushNotificationWithRetry().catch(console.error);
+    }
+  });
+
+  // Verify alarm exists on browser startup (may be cleared on restart)
+  browser.runtime.onStartup.addListener(async () => {
+    console.log('[Background] Browser startup - verifying alarms');
+    const alarm = await browser.alarms.get(ALARM_POLL_MESSAGES);
+    if (!alarm) {
+      browser.alarms.create(ALARM_POLL_MESSAGES, {
+        periodInMinutes: 1
+      });
+    }
+
+    // Re-setup push if authenticated
+    const auth = await storage.getAuth();
+    if (auth?.isAuthenticated) {
+      setupPushNotificationWithRetry().catch(console.error);
+    }
+  });
+
+  // Handle alarm for periodic polling
+  browser.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === ALARM_POLL_MESSAGES) {
+      const auth = await storage.getAuth();
+      if (!auth?.isAuthenticated) return;
+
+      try {
+        const dashboard = await api.getDashboard();
+        const totalUnread = dashboard.stats?.totalUnread || 0;
+        updateBadge(totalUnread > 0 ? String(totalUnread) : '');
+      } catch (e) {
+        console.error('[Background] Poll failed:', e);
+      }
     }
   });
 
@@ -225,7 +258,7 @@ export default defineBackground(() => {
     }
 
     if (message.type === 'SETUP_PUSH') {
-      return setupPushNotification()
+      return setupPushNotificationWithRetry()
         .then(() => ({ success: true }))
         .catch(err => ({ success: false, error: err.message }));
     }
@@ -235,6 +268,22 @@ export default defineBackground(() => {
       return Promise.resolve({ success: true });
     }
   });
+
+  // Push Notification Setup with retry
+  async function setupPushNotificationWithRetry(retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await setupPushNotification();
+        return;
+      } catch (err) {
+        console.warn(`[Background] Push setup attempt ${i + 1} failed:`, err);
+        if (i < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000 * (i + 1))); // Backoff
+        }
+      }
+    }
+    console.error('[Background] Push setup failed after retries');
+  }
 
   // Push Notification Setup
   async function setupPushNotification() {
@@ -291,5 +340,19 @@ export default defineBackground(() => {
   // @ts-ignore
   self.addEventListener('notificationclick', (event: any) => {
     handleNotificationClick(event);
+  });
+
+  // Sync data when back online
+  self.addEventListener('online', async () => {
+    console.log('[Background] Back online - syncing data');
+    try {
+      const auth = await storage.getAuth();
+      if (auth.isAuthenticated) {
+        const dashboard = await api.getDashboard();
+        await storage.setInboxes(dashboard.inboxes);
+      }
+    } catch (e) {
+      console.error('[Background] Sync failed:', e);
+    }
   });
 });

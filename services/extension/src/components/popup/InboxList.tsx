@@ -4,7 +4,7 @@ import { analytics } from '../../shared/analytics';
 import { Inbox } from '../../shared/types';
 import { storage } from '../../shared/storage';
 import { t } from '../../shared/i18n';
-import { Plus, Copy, RefreshCw, Loader2, Mail, Clock, Sparkles, ExternalLink, CalendarPlus, Trash2, QrCode } from 'lucide-react';
+import { Plus, Copy, RefreshCw, Loader2, Mail, Clock, Sparkles, ExternalLink, CalendarPlus, Trash2, QrCode, Pin } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CONFIG } from '../../shared/config';
 import { TIER_LIMITS, COUNTDOWN_INTERVAL_MS } from '../../shared/constants';
@@ -12,6 +12,7 @@ import CreateInboxModal from '../shared/CreateInboxModal';
 import QRCodeModal from '../shared/QRCodeModal';
 import { InboxSkeleton } from '../shared/Skeleton';
 import CountdownRing from '../shared/CountdownRing';
+import { usePinnedInboxes } from '../../hooks/usePinnedInboxes';
 
 interface InboxListProps {
   onSelectInbox: (id: string, email: string) => void;
@@ -28,6 +29,17 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [qrEmail, setQrEmail] = useState<string | null>(null);
+
+  const { isPinned, togglePin } = usePinnedInboxes();
+
+  // Sort inboxes: pinned first, then by creation date
+  const sortedInboxes = [...inboxes].sort((a, b) => {
+    const aPinned = isPinned(a.id);
+    const bPinned = isPinned(b.id);
+    if (aPinned && !bPinned) return -1;
+    if (!aPinned && bPinned) return 1;
+    return 0;
+  });
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -324,10 +336,13 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
             </button>
           </div>
         ) : (
-          inboxes.map((inbox) => (
+          sortedInboxes.map((inbox) => (
             <div
               key={inbox.id}
-              className="card-material group p-3.5"
+              className={cn(
+                "card-material group p-3.5",
+                isPinned(inbox.id) && "ring-1 ring-primary-200 dark:ring-primary-800/50"
+              )}
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1 min-w-0 mr-2">
@@ -384,6 +399,19 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                     aria-label="Show QR code for this email"
                   >
                     <QrCode className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => togglePin(inbox.id)}
+                    className={cn(
+                      "p-2 rounded-xl transition-all duration-200",
+                      isPinned(inbox.id)
+                        ? "text-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                        : "text-slate-400 hover:text-primary-500 hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                    )}
+                    title={isPinned(inbox.id) ? t('unpinInbox') : t('pinInbox')}
+                    aria-label={isPinned(inbox.id) ? "Unpin inbox" : "Pin inbox"}
+                  >
+                    <Pin className={cn("w-3.5 h-3.5", isPinned(inbox.id) && "fill-current")} />
                   </button>
                   <button
                     onClick={() => handleTogglePermanent(inbox)}

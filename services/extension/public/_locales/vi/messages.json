@@ -87,5 +87,59 @@
   },
   "refresh": {
     "message": "Làm mới"
+  },
+  "reply": {
+    "message": "Trả lời"
+  },
+  "forward": {
+    "message": "Chuyển tiếp"
+  },
+  "send": {
+    "message": "Gửi"
+  },
+  "sending": {
+    "message": "Đang gửi..."
+  },
+  "messageSent": {
+    "message": "Đã gửi tin nhắn!"
+  },
+  "to": {
+    "message": "Đến"
+  },
+  "subject": {
+    "message": "Tiêu đề"
+  },
+  "composeBody": {
+    "message": "Nội dung"
+  },
+  "searchAllMessages": {
+    "message": "Tìm kiếm tất cả tin nhắn..."
+  },
+  "noSearchResults": {
+    "message": "Không tìm thấy kết quả"
+  },
+  "searchResultsCount": {
+    "message": "kết quả"
+  },
+  "pinInbox": {
+    "message": "Ghim hộp thư"
+  },
+  "unpinInbox": {
+    "message": "Bỏ ghim hộp thư"
+  },
+  "pinnedInboxes": {
+    "message": "Hộp thư đã ghim"
+  },
+  "noMessages": {
+    "message": "Chưa có tin nhắn"
+  },
+  "loadingPreview": {
+    "message": "Đang tải xem trước..."
+  },
+  "errorBoundary_title": {
+    "message": "Đã xảy ra lỗi"
+  },
+  "errorBoundary_message": {
+    "message": "Có lỗi xảy ra. Vui lòng thử lại."
   }
 }

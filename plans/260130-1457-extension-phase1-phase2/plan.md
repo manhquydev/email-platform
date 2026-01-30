@@ -1,7 +1,7 @@
 ---
 title: "Ephemera Extension Phase 1 & 2 Enhancement"
 description: "Quick wins and core enhancements for browser extension including OTP UI, shortcuts, search, and reply/forward"
-status: pending
+status: completed
 priority: P1
 effort: 16h
 branch: main
@@ -21,8 +21,8 @@ Enhance the Ephemera browser extension with two phases of features:
 
 | Phase | Description | Status | Effort |
 |-------|-------------|--------|--------|
-| [Phase 1](./phase-01-quick-wins.md) | OTP Auto-Extract, Shortcuts, Context Menu, Countdown | Pending | 6h |
-| [Phase 2](./phase-02-core-enhancement.md) | Reply/Forward, Search, Pinned, Tooltips | Pending | 10h |
+| [Phase 1](./phase-01-quick-wins.md) | OTP Auto-Extract, Shortcuts, Context Menu, Countdown | ✅ Done | 6h |
+| [Phase 2](./phase-02-core-enhancement.md) | Reply/Forward, Search, Pinned, Tooltips | ✅ Done | 10h |
 
 ## Key Dependencies
 

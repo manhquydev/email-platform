@@ -1,7 +1,7 @@
 ---
 title: "Provider Integration Gaps Fix"
 description: "Fix critical gaps in Provider/WHMCS integration system"
-status: in_progress
+status: completed
 priority: P1
 effort: 4h
 branch: main
@@ -24,8 +24,8 @@ Fix critical and important gaps identified in the Provider/WHMCS integration aud
 |-------|-------------|--------|--------|
 | [Phase 1](./phase-01-mailbox-update-api.md) | Add PATCH mailbox endpoint | 1h | ⬜ Pending |
 | [Phase 2](./phase-02-edit-provider-ui.md) | Add Edit Provider modal | 1.5h | ⬜ Pending |
-| [Phase 3](./phase-03-rate-limiting.md) | Add provider rate limiting | 1h | ⬜ Pending |
-| [Phase 4](./phase-04-tenant-list-ui.md) | Add tenant list in drawer | 0.5h | ⬜ Pending |
+| [Phase 3](./phase-03-rate-limiting.md) | Add provider rate limiting | 1h | ✅ Done |
+| [Phase 4](./phase-04-tenant-list-ui.md) | Add tenant list in drawer | 0.5h | ✅ Done |
 
 ## Success Criteria
 - [ ] Mailbox password/quota update works via API

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send, Loader2, Reply, Forward } from 'lucide-react';
+import { X, Send, Loader2, Reply, Forward, PenSquare } from 'lucide-react';
 import { Message, ComposeData } from '../../shared/types';
 import { t } from '../../shared/i18n';
 import { cn } from '../../utils/cn';
@@ -7,7 +7,7 @@ import { cn } from '../../utils/cn';
 interface ComposeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'reply' | 'forward';
+  mode: 'new' | 'reply' | 'forward';
   originalMessage: Message | null;
   onSend: (data: ComposeData) => Promise<void>;
   sending: boolean;
@@ -24,20 +24,44 @@ export default function ComposeModal({
   error
 }: ComposeModalProps) {
   const [to, setTo] = useState('');
+  const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setTo('');
+      setSubject('');
       setContent('');
     }
   }, [isOpen, originalMessage]);
 
-  if (!isOpen || !originalMessage) return null;
+  // For 'new' mode, don't require originalMessage
+  if (!isOpen) return null;
+  if (mode !== 'new' && !originalMessage) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSend({ to: mode === 'forward' ? to : undefined, content });
+    await onSend({
+      to: mode === 'new' || mode === 'forward' ? to : undefined,
+      subject: mode === 'new' ? subject : undefined,
+      content
+    });
+  };
+
+  const getIcon = () => {
+    switch (mode) {
+      case 'new': return <PenSquare className="w-4 h-4 text-primary-500" />;
+      case 'reply': return <Reply className="w-4 h-4 text-primary-500" />;
+      case 'forward': return <Forward className="w-4 h-4 text-primary-500" />;
+    }
+  };
+
+  const getTitle = () => {
+    switch (mode) {
+      case 'new': return t('send');
+      case 'reply': return t('reply');
+      case 'forward': return t('forward');
+    }
   };
 
   return (
@@ -45,13 +69,9 @@ export default function ComposeModal({
       <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800">
         <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2">
-            {mode === 'reply' ? (
-              <Reply className="w-4 h-4 text-primary-500" />
-            ) : (
-              <Forward className="w-4 h-4 text-primary-500" />
-            )}
+            {getIcon()}
             <h3 className="font-bold text-slate-800 dark:text-slate-100">
-              {mode === 'reply' ? t('reply') : t('forward')}
+              {getTitle()}
             </h3>
           </div>
           <button
@@ -64,7 +84,7 @@ export default function ComposeModal({
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="space-y-3">
-            {mode === 'forward' && (
+            {(mode === 'new' || mode === 'forward') && (
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                   {t('to')}
@@ -81,11 +101,29 @@ export default function ComposeModal({
               </div>
             )}
 
-            <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800/50">
-              <span className="font-bold block mb-1">Original Message:</span>
-              <div className="truncate opacity-75">{originalMessage.subject}</div>
-              <div className="truncate opacity-50 text-[10px]">From: {originalMessage.from}</div>
-            </div>
+            {mode === 'new' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  {t('subject')}
+                </label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  required
+                  placeholder="Email subject"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+                />
+              </div>
+            )}
+
+            {originalMessage && (
+              <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                <span className="font-bold block mb-1">Original Message:</span>
+                <div className="truncate opacity-75">{originalMessage.subject}</div>
+                <div className="truncate opacity-50 text-[10px]">From: {originalMessage.from}</div>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">

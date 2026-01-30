@@ -22,6 +22,7 @@ export type AnalyticsEvent =
   | 'message_viewed'
   | 'message_deleted'
   | 'message_searched'
+  | 'message_composed'
   // Feature usage
   | 'qr_code_generated'
   | 'qr_code_downloaded'

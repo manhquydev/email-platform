@@ -2,12 +2,13 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { storage } from '../../shared/storage';
 import { api } from '../../shared/api';
 import { analytics } from '../../shared/analytics';
-import { AuthState, StorageData } from '../../shared/types';
+import { AuthState, StorageData, ComposeData } from '../../shared/types';
 import Login from '../../components/popup/Login';
 import InboxList from '../../components/popup/InboxList';
 import OnboardingTour from '../../components/shared/OnboardingTour';
+import ComposeModal from '../../components/shared/ComposeModal';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
-import { Loader2, Settings as SettingsIcon, PanelLeftOpen } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, PanelLeftOpen, PenSquare } from 'lucide-react';
 import browser from 'webextension-polyfill';
 import { useGlobalSearch } from '../../hooks/useGlobalSearch';
 import GlobalSearchResults from '../../components/shared/GlobalSearchResults';
@@ -37,6 +38,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<View>({ type: 'home' });
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showCompose, setShowCompose] = useState(false);
+  const [composeSending, setComposeSending] = useState(false);
+  const [composeError, setComposeError] = useState<string | null>(null);
 
   const globalSearch = useGlobalSearch();
 
@@ -149,6 +153,25 @@ function App() {
     }
   };
 
+  const handleSendNewMessage = async (data: ComposeData) => {
+    if (!data.to || !data.subject) return;
+    setComposeSending(true);
+    setComposeError(null);
+    try {
+      await api.sendNewMessage({
+        to: data.to,
+        subject: data.subject,
+        content: data.content
+      });
+      setShowCompose(false);
+      analytics.track('message_composed');
+    } catch (err) {
+      setComposeError(err instanceof Error ? err.message : 'Failed to send message');
+    } finally {
+      setComposeSending(false);
+    }
+  };
+
   const renderContent = () => {
     if (!auth?.isAuthenticated) {
       return <Login onSuccess={handleLoginSuccess} />;
@@ -225,6 +248,15 @@ function App() {
           <div className="flex items-center gap-1.5">
             {auth?.isAuthenticated && (
               <button
+                onClick={() => setShowCompose(true)}
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
+                title="Compose"
+              >
+                <PenSquare className="w-4 h-4" />
+              </button>
+            )}
+            {auth?.isAuthenticated && (
+              <button
                 onClick={openSidePanel}
                 className="p-2 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
                 title="Open in Side Panel"
@@ -258,6 +290,17 @@ function App() {
           onSkip={handleOnboardingSkip}
         />
       )}
+
+      {/* Compose New Email Modal */}
+      <ComposeModal
+        isOpen={showCompose}
+        onClose={() => setShowCompose(false)}
+        mode="new"
+        originalMessage={null}
+        onSend={handleSendNewMessage}
+        sending={composeSending}
+        error={composeError}
+      />
       </div>
     </ErrorBoundary>
   );

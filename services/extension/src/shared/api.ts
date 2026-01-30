@@ -251,6 +251,14 @@ class ApiClient {
       body: JSON.stringify({ originalMessageId: messageId, ...body })
     });
   }
+
+  // Feature: Compose new message
+  async sendNewMessage(body: { to: string; subject: string; content: string; fromInboxId?: string }) {
+    return this.request('/outbound/send', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+  }
 }
 
 export const api = new ApiClient();

@@ -1,12 +1,13 @@
 ---
 title: "Extension Enhancements"
 description: "Optional enhancements: offline mode, background hardening, settings preload"
-status: pending
+status: complete
 priority: P2
 effort: 4h
 branch: main
 tags: [extension, offline, performance, chrome]
 created: 2026-01-31
+completed: 2026-01-31
 ---
 
 # Extension Enhancements Plan
@@ -18,9 +19,9 @@ Three optional enhancements for production-ready extension. Not critical but imp
 
 | Phase | Name | Priority | Effort | Status |
 |-------|------|----------|--------|--------|
-| 1 | [Offline Mode](./phase-01-offline-mode.md) | Medium | 2h | Pending |
-| 2 | [Background Hardening](./phase-02-background-hardening.md) | Low | 1h | Pending |
-| 3 | [Settings Quick Access](./phase-03-settings-quick-access.md) | Low | 1h | Pending |
+| 1 | [Offline Mode](./phase-01-offline-mode.md) | Medium | 2h | ✅ Complete |
+| 2 | [Background Hardening](./phase-02-background-hardening.md) | Low | 1h | ✅ Complete |
+| 3 | [Settings Quick Access](./phase-03-settings-quick-access.md) | Low | 1h | ✅ Complete |
 
 ## Current State Analysis
 

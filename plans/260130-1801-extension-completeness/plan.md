@@ -30,7 +30,7 @@ created: 2026-01-30
 | # | Phase | Status | File |
 |---|-------|--------|------|
 | 1 | [i18n Completion](./phase-01-i18n-completion.md) | ✅ Done | EN/VI locales |
-| 2 | [Error Handling](./phase-02-error-handling.md) | ⬜ Pending | App.tsx |
+| 2 | [Error Handling](./phase-02-error-handling.md) | ✅ Done | App.tsx |
 | 3 | [Pin/Unpin Inbox](./phase-03-pin-unpin-inbox.md) | ⬜ Pending | InboxList.tsx |
 | 4 | [Compose New Email](./phase-04-compose-new-email.md) | ⬜ Pending | ComposeModal.tsx |
 

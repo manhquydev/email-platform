@@ -9,7 +9,7 @@
 | Field | Value |
 |-------|-------|
 | Priority | High |
-| Status | ⬜ Pending |
+| Status | ✅ Done |
 | Effort | 15min |
 | Depends on | Phase 1 (i18n keys) |
 

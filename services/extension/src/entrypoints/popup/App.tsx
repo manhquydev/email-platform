@@ -6,6 +6,7 @@ import { AuthState, StorageData } from '../../shared/types';
 import Login from '../../components/popup/Login';
 import InboxList from '../../components/popup/InboxList';
 import OnboardingTour from '../../components/shared/OnboardingTour';
+import { ErrorBoundary } from '../../components/ErrorBoundary';
 import { Loader2, Settings as SettingsIcon, PanelLeftOpen } from 'lucide-react';
 import browser from 'webextension-polyfill';
 import { useGlobalSearch } from '../../hooks/useGlobalSearch';
@@ -212,7 +213,8 @@ function App() {
   }
 
   return (
-    <div className="w-[400px] min-h-[500px] bg-gray-50 dark:bg-slate-950 flex flex-col h-screen transition-colors duration-300">
+    <ErrorBoundary>
+      <div className="w-[400px] min-h-[500px] bg-gray-50 dark:bg-slate-950 flex flex-col h-screen transition-colors duration-300">
       {/* Header - Glassmorphism */}
       {currentView.type === 'home' && (
         <header className="glass-morphism sticky top-0 px-4 py-3 flex justify-between items-center z-20 shrink-0 mx-2 mt-2 rounded-2xl border border-white/20 dark:border-slate-800/50 shadow-lg">
@@ -256,7 +258,8 @@ function App() {
           onSkip={handleOnboardingSkip}
         />
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
 

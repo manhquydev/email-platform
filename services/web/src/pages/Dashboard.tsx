@@ -23,7 +23,7 @@ import type { RealtimeEvent } from "../types/realtime";
 import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
 
 // Import modular components
-import { useDashboardData, useMessageActions, MessageDetailPane, TOAST_DURATION, TOAST_POSITION } from "./dashboard-modules";
+import { useDashboardData, useMessageActions, MessageDetailPane, TOAST_DURATION, TOAST_POSITION, ViewMode } from "./dashboard-modules";
 
 // Lazy load heavy modal components
 const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
@@ -35,6 +35,9 @@ export function Dashboard() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    // Determine view mode from route
+    const viewMode: ViewMode = location.pathname === '/app/sent' ? 'sent' : 'inbox';
+
     // Search state (needed for data hook)
     const [messageSearch, setMessageSearch] = useState("");
 
@@ -45,7 +48,7 @@ export function Dashboard() {
         messageOffset, messageTotal, busy,
         setSelectedDomain, setSelectedTeam, setSelectedInbox,
         setMessages, loadMessages, refreshMessages
-    } = useDashboardData(messageSearch);
+    } = useDashboardData(messageSearch, viewMode);
 
     // Selected message state
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
@@ -127,22 +130,25 @@ export function Dashboard() {
         }
     }, [selectedInbox, selectedMessage, loadMessages, setMessages]);
 
-    // Load messages on inbox change
+    // Load messages on inbox change (inbox mode only)
     useEffect(() => {
-        if (selectedInbox) {
-            loadMessages(selectedInbox, { offset: 0 });
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (viewMode === 'sent') {
+            // Sent mode loads all sent messages, no inbox selection needed
+            loadMessages('', { offset: 0 });
             setSelectedMessage(null);
-        } else {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+        } else if (selectedInbox) {
+            loadMessages(selectedInbox, { offset: 0 });
+            setSelectedMessage(null);
         }
-    }, [selectedInbox, loadMessages, setMessages]);
+    }, [selectedInbox, loadMessages, setMessages, viewMode]);
 
-    // Debounced search
+    // Debounced search (inbox mode only)
     useEffect(() => {
-        const t = setTimeout(() => { if (selectedInbox) loadMessages(selectedInbox); }, 800);
-        return () => clearTimeout(t);
-    }, [messageSearch, selectedInbox, loadMessages]);
+        if (viewMode === 'inbox') {
+            const t = setTimeout(() => { if (selectedInbox) loadMessages(selectedInbox); }, 800);
+            return () => clearTimeout(t);
+        }
+    }, [messageSearch, selectedInbox, loadMessages, viewMode]);
 
     // Keyboard Shortcuts
     useKeyboardShortcuts({
@@ -150,14 +156,16 @@ export function Dashboard() {
         selectedMessageId: selectedMessage?.id,
         onSelectMessage: (idx) => messages[idx] && handleSelectMessage(messages[idx]),
         onDeleteMessage: selectedMessage ? () => handleDeleteMessage(selectedMessage.id) : undefined,
-        onMarkUnread: selectedMessage ? () => handleMarkUnread(selectedMessage.id) : undefined,
+        onMarkUnread: viewMode === 'inbox' && selectedMessage ? () => handleMarkUnread(selectedMessage.id) : undefined,
         onReply: canSendOutbound ? () => setShowCompose(true) : undefined,
-        onRefresh: selectedInbox ? refreshMessages : undefined,
+        onRefresh: refreshMessages,
         onFocusSearch: () => searchInputRef.current?.focus(),
         onShowHelp: () => setShowKeyboardHelp(true),
         onBack: () => setSelectedMessage(null),
         enabled: !showCompose && !showKeyboardHelp,
     });
+
+    const isSentMode = viewMode === 'sent';
 
     return (
         <AppShell>

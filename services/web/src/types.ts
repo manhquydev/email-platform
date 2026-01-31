@@ -302,3 +302,30 @@ export interface Team {
         sharedInboxes: number;
     };
 }
+
+// ==================
+// OUTBOUND MESSAGES
+// ==================
+
+export type OutboundStatus = 'QUEUED' | 'SENDING' | 'SENT' | 'DELIVERED' | 'BOUNCED' | 'COMPLAINED' | 'FAILED';
+
+export type OutboundMessage = {
+    id: string;
+    userId: string;
+    domainId: string;
+    inboxId: string | null;
+    fromAddress: string;
+    toAddress: string;
+    subject: string | null;
+    messageId: string;
+    status: OutboundStatus;
+    attempts: number;
+    lastAttemptAt: string | null;
+    sentAt: string | null;
+    deliveredAt: string | null;
+    bouncedAt: string | null;
+    espMessageId: string | null;
+    espProvider: string | null;
+    createdAt: string;
+    domain?: { name: string };
+};

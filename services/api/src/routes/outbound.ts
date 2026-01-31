@@ -1,9 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { outboundService } from "../services/outbound";
 import { prisma } from "../lib/prisma";
-import { recordAudit } from "../utils/audit";
 import { enforceDailyEmailLimit } from "../services/tier-enforcement.service";
+import { outboundQueue } from "../queue/outboundQueue";
 
 export async function outboundRoutes(app: FastifyInstance) {
     // Validation schema for outbound email
@@ -71,7 +70,7 @@ export async function outboundRoutes(app: FastifyInstance) {
             }
         }
 
-        // Create Outbound Message record (Status: SENDING)
+        // Create Outbound Message record (Status: QUEUED)
         const senderInbox = await prisma.inbox.findFirst({
             where: {
                 localPart,
@@ -89,48 +88,31 @@ export async function outboundRoutes(app: FastifyInstance) {
                 fromAddress: from,
                 toAddress: to,
                 subject,
-                messageId: `tmp-${Date.now()}-${Math.random().toString(36).substring(2)}`,
-                status: "SENDING"
+                messageId: `queued-${Date.now()}-${Math.random().toString(36).substring(2)}`,
+                status: "QUEUED"
             }
         });
 
-        // Send Email
-        try {
-            const info = await outboundService.sendEmail(from, to, subject, text, html, attachments);
+        // Add to queue for async processing
+        await outboundQueue.add('send-email', {
+            outboundMessageId: outboundMsg.id,
+            userId,
+            domainId: domain.id,
+            inboxId: senderInbox?.id,
+            from,
+            to,
+            subject,
+            text,
+            html,
+            attachments,
+        });
 
-            await prisma.outboundMessage.update({
-                where: { id: outboundMsg.id },
-                data: {
-                    messageId: info.messageId,
-                    status: "SENT",
-                    sentAt: new Date(),
-                }
-            });
-
-            await recordAudit(userId, "EMAIL_SENT", {
-                msgId: info.messageId,
-                outboundMessageId: outboundMsg.id,
-                from,
-                to
-            });
-
-            return {
-                ok: true,
-                messageId: info.messageId,
-                outboundId: outboundMsg.id
-            };
-        } catch (err: any) {
-            await prisma.outboundMessage.update({
-                where: { id: outboundMsg.id },
-                data: {
-                    status: "FAILED",
-                    bounceMessage: err.message
-                }
-            }).catch(() => { });
-
-            request.log.error(err, "Failed to send outbound email");
-            return reply.status(500).send({ error: "Failed to send email", details: err.message });
-        }
+        return reply.status(202).send({
+            ok: true,
+            message: "Email queued for delivery",
+            outboundId: outboundMsg.id,
+            status: "QUEUED"
+        });
     });
 
     // List outbound message history

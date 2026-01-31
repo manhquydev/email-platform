@@ -7,7 +7,9 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
 import { api, PAGE_SIZE } from "../../../utils/api";
 import { parseSearchQuery } from "../../../utils/searchParser";
-import type { Domain, Inbox, Message, PaginatedResponse, Team } from "../../../types";
+import type { Domain, Inbox, Message, OutboundMessage, PaginatedResponse, Team } from "../../../types";
+
+export type ViewMode = 'inbox' | 'sent';
 
 export interface UseDashboardDataReturn {
     // Data
@@ -15,6 +17,7 @@ export interface UseDashboardDataReturn {
     teams: Team[];
     inboxes: Inbox[];
     messages: Message[];
+    outboundMessages: OutboundMessage[];
 
     // Selection
     selectedDomain: string;
@@ -27,6 +30,7 @@ export interface UseDashboardDataReturn {
 
     // State
     busy: boolean;
+    viewMode: ViewMode;
 
     // Setters
     setSelectedDomain: (id: string) => void;
@@ -39,7 +43,23 @@ export interface UseDashboardDataReturn {
     refreshMessages: () => void;
 }
 
-export function useDashboardData(messageSearch: string): UseDashboardDataReturn {
+function mapOutboundToMessage(outbound: OutboundMessage): Message {
+    return {
+        id: outbound.id,
+        inboxId: outbound.inboxId || '',
+        subject: outbound.subject,
+        fromAddress: outbound.fromAddress,
+        toAddress: outbound.toAddress,
+        receivedAt: outbound.createdAt,
+        textBody: null,
+        htmlBody: null,
+        isRead: true,
+        isPinned: false,
+        attachments: [],
+    };
+}
+
+export function useDashboardData(messageSearch: string, viewMode: ViewMode = 'inbox'): UseDashboardDataReturn {
     const { token, user } = useAuth();
     const [busy, setBusy] = useState(false);
 
@@ -48,6 +68,7 @@ export function useDashboardData(messageSearch: string): UseDashboardDataReturn 
     const [teams, setTeams] = useState<Team[]>([]);
     const [inboxes, setInboxes] = useState<Inbox[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [outboundMessages, setOutboundMessages] = useState<OutboundMessage[]>([]);
 
     // Selection
     const [selectedDomain, setSelectedDomain] = useState<string>("");
@@ -138,6 +159,36 @@ export function useDashboardData(messageSearch: string): UseDashboardDataReturn 
         }
     }, [token, messageSearch]);
 
+    // Load outbound messages (sent emails)
+    const loadOutboundMessages = useCallback(async (params: { offset?: number; append?: boolean; background?: boolean } = {}) => {
+        if (!token) return;
+        if (!params.background) setBusy(true);
+        try {
+            const off = params.offset ?? 0;
+            const queryParams = new URLSearchParams({
+                limit: String(PAGE_SIZE.messages),
+                offset: String(off)
+            });
+
+            const res = await api<{ data: OutboundMessage[]; meta: { total: number; limit: number; offset: number } }>(
+                `/messages/outbound?${queryParams.toString()}`,
+                { token }
+            );
+
+            // Map outbound messages to Message format for UI compatibility
+            const mappedMessages = res.data.map(mapOutboundToMessage);
+
+            setMessages(prev => params.append ? [...prev, ...mappedMessages] : mappedMessages);
+            setOutboundMessages(prev => params.append ? [...prev, ...res.data] : res.data);
+            if (res.meta?.total !== undefined) setMessageTotal(res.meta.total);
+            if (params.offset !== undefined) setMessageOffset(params.offset);
+        } catch {
+            if (!params.background) toast.error("Lỗi tải thư đã gửi");
+        } finally {
+            if (!params.background) setBusy(false);
+        }
+    }, [token]);
+
     // Auto-select domain
     useEffect(() => {
         if (domains.length > 0 && !selectedDomain) {
@@ -158,31 +209,55 @@ export function useDashboardData(messageSearch: string): UseDashboardDataReturn 
         }
     }, [inboxes, selectedInbox, busy]);
 
-    // Initial load effects
+    // Initial load effects - skip for sent mode
     useEffect(() => { loadDomains(); }, [loadDomains]);
     useEffect(() => { loadTeams(); }, [loadTeams]);
-    useEffect(() => { loadInboxes(); }, [loadInboxes]);
+    useEffect(() => {
+        if (viewMode === 'inbox') loadInboxes();
+    }, [loadInboxes, viewMode]);
+
+    // Load outbound messages on mount for sent mode
+    useEffect(() => {
+        if (viewMode === 'sent') {
+            loadOutboundMessages();
+        }
+    }, [viewMode, loadOutboundMessages]);
 
     const refreshMessages = useCallback(() => {
-        if (selectedInbox) loadMessages(selectedInbox);
-    }, [selectedInbox, loadMessages]);
+        if (viewMode === 'sent') {
+            loadOutboundMessages();
+        } else if (selectedInbox) {
+            loadMessages(selectedInbox);
+        }
+    }, [selectedInbox, loadMessages, loadOutboundMessages, viewMode]);
+
+    // Unified load function that switches based on view mode
+    const unifiedLoadMessages = useCallback(async (inboxId: string, params?: { offset?: number; append?: boolean; background?: boolean }) => {
+        if (viewMode === 'sent') {
+            await loadOutboundMessages(params);
+        } else {
+            await loadMessages(inboxId, params);
+        }
+    }, [viewMode, loadMessages, loadOutboundMessages]);
 
     return {
         domains,
         teams,
         inboxes,
         messages,
+        outboundMessages,
         selectedDomain,
         selectedTeam,
         selectedInbox,
         messageOffset,
         messageTotal,
         busy,
+        viewMode,
         setSelectedDomain,
         setSelectedTeam,
         setSelectedInbox,
         setMessages,
-        loadMessages,
+        loadMessages: unifiedLoadMessages,
         refreshMessages
     };
 }

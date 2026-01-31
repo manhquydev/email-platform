@@ -106,6 +106,7 @@ function App() {
 
                   {/* Classic Dashboard (Wireframe Implementation) */}
                   <Route path="/app" element={<Dashboard />} />
+                  <Route path="/app/sent" element={<Dashboard />} />
 
                   {/* Inbox Manager */}
                   <Route path="/app/manager" element={<InboxManager />} />

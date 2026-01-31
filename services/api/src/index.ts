@@ -5,6 +5,7 @@ import { startSubmissionServer } from "./smtp/submission-server";
 import { setupEmailWorker } from "./worker";
 import { setupWebhookWorker } from "./webhookWorker";
 import { setupOutboundWorker } from "./services/outbound-delivery";
+import { setupOutboundEmailWorker } from "./workers/outbound-email";
 import { prisma } from "./lib/prisma";
 import { appConfig } from "./config";
 import { hashPassword } from "./utils/password";
@@ -75,6 +76,7 @@ const main = async () => {
   const worker = setupEmailWorker(app.log);
   const webhookWorker = setupWebhookWorker(app.log);
   const outboundWorker = setupOutboundWorker(); // Initialize outbound worker for graceful shutdown
+  const outboundEmailWorker = setupOutboundEmailWorker(app.log); // Async outbound email queue worker
 
   // Verify outbound email connection on startup
   const { outboundService } = await import("./services/outbound");
@@ -136,6 +138,7 @@ const main = async () => {
       worker.close(),
       webhookWorker.close(),
       outboundWorker.close(),
+      outboundEmailWorker.close(),
     ]);
 
     // 5. Disconnect database

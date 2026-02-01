@@ -90,7 +90,60 @@ describe("SubscriptionSettings - Basic Rendering", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        mockApi.mockResolvedValue({ payments: [] });
+        // Setup smart mock that handles both payments and tiers endpoints
+        mockApi.mockImplementation((url: string) => {
+            if (url === "/billing/tiers") {
+                return Promise.resolve({
+                    tiers: [
+                        {
+                            id: "FREE",
+                            name: "Free",
+                            price: 0,
+                            currency: "VND",
+                            limits: {
+                                domains: 1,
+                                inboxes: 5,
+                                storageGB: 1,
+                                dailyEmails: 100,
+                                retentionDays: 7,
+                                teams: 0,
+                                teamMembers: 0,
+                                filters: 5,
+                                forwardingRules: 5,
+                                labels: 10,
+                                webhooks: 0,
+                                apiAccess: false,
+                                prioritySupport: false
+                            }
+                        },
+                        {
+                            id: "STARTER",
+                            name: "Starter",
+                            price: 100000,
+                            currency: "VND",
+                            limits: {
+                                domains: 5,
+                                inboxes: 20,
+                                storageGB: 5,
+                                dailyEmails: 500,
+                                retentionDays: 30,
+                                teams: 1,
+                                teamMembers: 5,
+                                filters: 20,
+                                forwardingRules: 20,
+                                labels: 50,
+                                webhooks: 5,
+                                apiAccess: true,
+                                prioritySupport: true
+                            }
+                        }
+                    ],
+                    stripeEnabled: false
+                });
+            }
+            // Default empty payments
+            return Promise.resolve({ payments: [] });
+        });
     });
 
     afterEach(() => {
@@ -177,7 +230,7 @@ describe("SubscriptionSettings - Export Report", () => {
     });
 
     it("should show error when no payments to export", async () => {
-        mockApi.mockResolvedValue({ payments: [] });
+        // mockApi already configured in beforeEach to return empty payments
 
         render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
 
@@ -195,7 +248,7 @@ describe("SubscriptionSettings - Export Report", () => {
     });
 
     it("should call API to load payments on mount", async () => {
-        mockApi.mockResolvedValue({ payments: [] });
+        // mockApi already configured in beforeEach
 
         render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
 
@@ -227,7 +280,16 @@ describe("SubscriptionSettings - Payment History Display", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        mockApi.mockResolvedValue({ payments: mockPayments });
+        // Custom implementation for this suite
+        mockApi.mockImplementation((url: string) => {
+            if (url === "/billing/tiers") {
+                return Promise.resolve({ tiers: [], stripeEnabled: false });
+            }
+            if (url === "/billing/payments") {
+                return Promise.resolve({ payments: mockPayments });
+            }
+            return Promise.resolve({});
+        });
     });
 
     afterEach(() => {
@@ -272,7 +334,13 @@ describe("SubscriptionSettings - Redeem Code Functionality", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        mockApi.mockResolvedValue({ payments: [] });
+        // Setup smart mock
+        mockApi.mockImplementation((url: string) => {
+            if (url === "/billing/tiers") {
+                return Promise.resolve({ tiers: [], stripeEnabled: false });
+            }
+            return Promise.resolve({ payments: [] });
+        });
     });
 
     afterEach(() => {
@@ -292,8 +360,17 @@ describe("SubscriptionSettings - Redeem Code Functionality", () => {
     });
 
     it("should call redeem API when code is submitted", async () => {
-        mockApi.mockResolvedValueOnce({ payments: [] });
-        mockApi.mockResolvedValueOnce({ message: "Kích hoạt thành công!", user: {} });
+        // Mock specific sequence for this test
+        mockApi.mockImplementation(async (url: string, options?: any) => {
+            if (url === "/billing/tiers") return { tiers: [], stripeEnabled: false };
+
+            // Check for redeem call
+            if (url === "/subscription/redeem" && options?.method === "POST") {
+                 return { message: "Kích hoạt thành công!", user: {} };
+            }
+
+            return { payments: [] };
+        });
 
         render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
 
@@ -318,8 +395,11 @@ describe("SubscriptionSettings - Redeem Code Functionality", () => {
 
     // TODO: Fix flaky test - timing issue with mock API calls
     it.skip("should show success message after successful redeem", async () => {
-        mockApi.mockResolvedValueOnce({ payments: [] });
-        mockApi.mockResolvedValueOnce({ message: "Kích hoạt thành công!", user: {} });
+        mockApi.mockImplementation(async (url: string, options?: any) => {
+            if (url === "/billing/tiers") return { tiers: [], stripeEnabled: false };
+            if (url === "/subscription/redeem") return { message: "Kích hoạt thành công!", user: {} };
+            return { payments: [] };
+        });
 
         render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
 
@@ -338,8 +418,11 @@ describe("SubscriptionSettings - Redeem Code Functionality", () => {
     });
 
     it("should reload profile after successful redeem", async () => {
-        mockApi.mockResolvedValueOnce({ payments: [] });
-        mockApi.mockResolvedValueOnce({ message: "Success", user: {} });
+        mockApi.mockImplementation(async (url: string, options?: any) => {
+            if (url === "/billing/tiers") return { tiers: [], stripeEnabled: false };
+            if (url === "/subscription/redeem") return { message: "Success", user: {} };
+            return { payments: [] };
+        });
 
         render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
 
@@ -358,8 +441,11 @@ describe("SubscriptionSettings - Redeem Code Functionality", () => {
     });
 
     it("should clear input after successful redeem", async () => {
-        mockApi.mockResolvedValueOnce({ payments: [] });
-        mockApi.mockResolvedValueOnce({ message: "Success", user: {} });
+        mockApi.mockImplementation(async (url: string, options?: any) => {
+            if (url === "/billing/tiers") return { tiers: [], stripeEnabled: false };
+            if (url === "/subscription/redeem") return { message: "Success", user: {} };
+            return { payments: [] };
+        });
 
         render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
 
@@ -389,7 +475,59 @@ describe("SubscriptionSettings - Pricing Section", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        mockApi.mockResolvedValue({ payments: [] });
+        // Smart mock
+        mockApi.mockImplementation((url: string) => {
+            if (url === "/billing/tiers") {
+                return Promise.resolve({
+                    tiers: [
+                         {
+                            id: "FREE",
+                            name: "Free",
+                            price: 0,
+                            currency: "VND",
+                            limits: {
+                                domains: 1,
+                                inboxes: 5,
+                                storageGB: 1,
+                                dailyEmails: 100,
+                                retentionDays: 7,
+                                teams: 0,
+                                teamMembers: 0,
+                                filters: 5,
+                                forwardingRules: 5,
+                                labels: 10,
+                                webhooks: 0,
+                                apiAccess: false,
+                                prioritySupport: false
+                            }
+                        },
+                         {
+                            id: "STARTER",
+                            name: "Starter",
+                            price: 100000,
+                            currency: "VND",
+                            limits: {
+                                domains: 5,
+                                inboxes: 20,
+                                storageGB: 5,
+                                dailyEmails: 500,
+                                retentionDays: 30,
+                                teams: 1,
+                                teamMembers: 5,
+                                filters: 20,
+                                forwardingRules: 20,
+                                labels: 50,
+                                webhooks: 5,
+                                apiAccess: true,
+                                prioritySupport: true
+                            }
+                        }
+                    ],
+                    stripeEnabled: false
+                });
+            }
+            return Promise.resolve({ payments: [] });
+        });
     });
 
     it("should render pricing cards", async () => {

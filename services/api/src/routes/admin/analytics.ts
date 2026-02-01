@@ -6,12 +6,27 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { AnalyticsService } from "../../services/analytics-service";
 
 // Cache for Clarity API rate limit protection
 let clarityCache: { data: unknown; timestamp: number } | null = null;
 const CLARITY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export async function adminAnalyticsRoutes(app: FastifyInstance) {
+  /**
+   * GET /admin/analytics/system
+   * System-wide operational analytics (Queues, Volumes, Health)
+   */
+  app.get("/admin/analytics/system", { preHandler: app.requireAdmin }, async (request, reply) => {
+    try {
+      const stats = await AnalyticsService.getSystemStats();
+      return stats;
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({ error: "Failed to fetch system analytics" });
+    }
+  });
+
   /**
    * GET /admin/analytics/clarity/live-insights
    * Proxy to Clarity Data Export API

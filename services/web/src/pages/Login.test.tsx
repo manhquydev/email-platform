@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Login } from "./Login";
 import { vi, describe, it, expect } from "vitest";
 
@@ -12,6 +13,20 @@ vi.mock("react-router-dom", async () => {
         Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
     };
 });
+
+// Mock react-i18next
+vi.mock("react-i18next", () => ({
+    useTranslation: () => ({
+        t: (key: string, defaultValue: string) => defaultValue || key,
+        i18n: {
+            changeLanguage: () => new Promise(() => {}),
+        },
+    }),
+    initReactI18next: {
+        type: '3rdParty',
+        init: () => {},
+    }
+}));
 
 // Mock AuthContext
 vi.mock("../context/AuthContext", () => ({
@@ -94,9 +109,11 @@ vi.mock("../components/ui/Input", () => ({
 describe("Login Page", () => {
     it("renders login form correctly", () => {
         render(
-            <MemoryRouter>
-                <Login />
-            </MemoryRouter>
+            <HelmetProvider>
+                <MemoryRouter>
+                    <Login />
+                </MemoryRouter>
+            </HelmetProvider>
         );
 
         // Check for main title

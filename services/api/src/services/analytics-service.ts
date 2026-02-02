@@ -53,8 +53,8 @@ export class AnalyticsService {
     // 2. Get Database Counts
     const [users, totalEmails, sentEmails] = await Promise.all([
       prisma.user.count(),
-      prisma.email.count(), // Total received
-      prisma.email.count({ where: { from: { not: null } } }), // Rough approximation if strictly outbound isn't separated, or use a specific flag if available.
+      prisma.message.count(), // Total received
+      prisma.outboundMessage.count(), // Sent emails
       // Better approach for sent emails if we don't have a distinct model: check outbound queue job logs or specific table if exists.
       // Looking at schema from previous context, usually 'Email' table stores received.
       // Let's assume 'SentEmail' or similar exists, or query 'Email' for now.

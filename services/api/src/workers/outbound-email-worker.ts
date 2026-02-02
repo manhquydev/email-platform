@@ -30,7 +30,7 @@ export const setupOutboundEmailWorker = (logger: { info: any; error: any; warn: 
                 await prisma.outboundMessage.update({
                     where: { id: outboundMessageId },
                     data: {
-                        messageId: info.messageId || info.id || `sent-${Date.now()}`,
+                    messageId: info.messageId || `sent-${Date.now()}`,
                         status: 'SENT',
                         sentAt: new Date(),
                     }
@@ -38,7 +38,7 @@ export const setupOutboundEmailWorker = (logger: { info: any; error: any; warn: 
 
                 // Record audit log
                 await recordAudit(userId, 'EMAIL_SENT', {
-                    msgId: info.messageId || info.id,
+                    msgId: info.messageId,
                     outboundMessageId,
                     from,
                     to

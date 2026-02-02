@@ -1,16 +1,11 @@
-import React from 'react';
-import { useSystemAnalytics, QueueMetrics } from '../../hooks/useAnalytics';
+import { useSystemAnalytics, type QueueMetrics } from '../../hooks/useAnalytics';
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
   AreaChart,
   Area
 } from 'recharts';

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { Bold, Italic, List, ListOrdered, Link as LinkIcon, Unlink } from 'lucide-react';
@@ -12,7 +12,7 @@ interface RichTextEditorProps {
   className?: string;
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
+const MenuBar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) {
     return null;
   }
@@ -39,6 +39,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
   return (
     <div className="flex items-center space-x-1 border-b border-gray-200 p-2 dark:border-gray-700">
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
         className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${
@@ -49,6 +50,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <Bold size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
         className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${
@@ -62,6 +64,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2" />
 
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${
           editor.isActive('bulletList') ? 'bg-gray-200 dark:bg-gray-700 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'
@@ -71,6 +74,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <List size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${
           editor.isActive('orderedList') ? 'bg-gray-200 dark:bg-gray-700 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'
@@ -83,6 +87,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2" />
 
       <button
+        type="button"
         onClick={setLink}
         className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${
           editor.isActive('link') ? 'bg-gray-200 dark:bg-gray-700 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'
@@ -92,9 +97,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <LinkIcon size={18} />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().unsetLink().run()}
         disabled={!editor.isActive('link')}
-        className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 disabled:opacity-50"
+        className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
         title="Remove Link"
       >
         <Unlink size={18} />
@@ -106,7 +112,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   content,
   onChange,
-  placeholder,
+  placeholder: _placeholder,
   className = '',
 }) => {
   const editor = useEditor({

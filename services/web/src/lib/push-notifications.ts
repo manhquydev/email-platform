@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api } from '../utils/api';
 
 // Utility to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -37,8 +37,11 @@ export async function subscribeUserToPush(publicKey: string) {
     }
 
     // Send subscription to backend
-    await api.post('/push/subscribe', {
-      subscription: subscription
+    const token = localStorage.getItem('token') ?? undefined;
+    await api('/push/subscribe', {
+      method: 'POST',
+      body: { subscription },
+      token
     });
 
     return subscription;

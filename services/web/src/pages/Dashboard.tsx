@@ -23,7 +23,7 @@ import type { RealtimeEvent } from "../types/realtime";
 import type { EmailNewPayload, EmailReadPayload, EmailDeletedPayload } from "../types/realtime";
 
 // Import modular components
-import { useDashboardData, useMessageActions, MessageDetailPane, TOAST_DURATION, TOAST_POSITION, ViewMode } from "./dashboard-modules";
+import { useDashboardData, useMessageActions, MessageDetailPane, TOAST_DURATION, TOAST_POSITION, type ViewMode } from "./dashboard-modules";
 
 // Lazy load heavy modal components
 const ComposeModal = lazy(() => import("../components/ComposeModal").then(m => ({ default: m.ComposeModal })));
@@ -165,7 +165,7 @@ export function Dashboard() {
         enabled: !showCompose && !showKeyboardHelp,
     });
 
-    const isSentMode = viewMode === 'sent';
+    // viewMode is used for route-based view switching
 
     return (
         <AppShell>

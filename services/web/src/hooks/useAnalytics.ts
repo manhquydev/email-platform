@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { api } from '../utils/api';
 
 export interface QueueMetrics {
   waiting: number;
@@ -28,11 +28,11 @@ export interface SystemAnalytics {
 }
 
 export function useSystemAnalytics() {
+  const token = localStorage.getItem('token') ?? undefined;
   return useQuery<SystemAnalytics>({
     queryKey: ['admin', 'analytics', 'system'],
     queryFn: async () => {
-      const { data } = await api.get('/admin/analytics/system');
-      return data;
+      return api<SystemAnalytics>('/admin/analytics/system', { token });
     },
     refetchInterval: 10000, // Refresh every 10 seconds
   });

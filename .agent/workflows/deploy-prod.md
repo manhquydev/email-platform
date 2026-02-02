@@ -71,6 +71,20 @@ ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "curl -sf 
 ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans web api && docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy && docker compose -f docker-compose.prod.yml restart web api"
 ```
 
+### Manual Deploy với GitHub Token (khi SSH key bị lỗi)
+
+Khi server không thể pull qua SSH (`Permission denied (publickey)`), sử dụng HTTPS với Personal Access Token:
+
+```bash
+# Set remote URL với token và pull
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git remote set-url origin https://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@github.com/manhquydev/email-platform.git && git pull origin main"
+
+# Rebuild và restart containers
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && docker compose -f docker-compose.prod.yml up -d --build --force-recreate web api && docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy"
+```
+
+> **Token:** `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` (Updated: 2026-02-02)
+
 ### Force Rebuild (cache issue)
 
 ```bash

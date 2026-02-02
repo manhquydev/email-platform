@@ -2,7 +2,7 @@
  * IndexedDB offline storage for email caching
  * Uses 'idb' library for Promise-based IndexedDB access
  */
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 
 interface CachedEmail {
   id: string;

@@ -21,7 +21,7 @@ export default defineConfig({
     ],
     host_permissions: ['https://api.manhquy.click/*'],
     content_security_policy: {
-      extension_pages: "script-src 'self'; object-src 'self'; connect-src 'self' https://api.manhquy.click",
+      extension_pages: "script-src 'self'; object-src 'self'; connect-src 'self' https://api.manhquy.click; img-src 'self' https: data:",
     },
     action: {
       default_title: 'Ephemera',

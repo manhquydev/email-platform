@@ -1,9 +1,22 @@
 
 import { FastifyRequest, FastifyReply } from "fastify";
-import { webhookService } from "../services/webhook.service";
+import { webhookService } from "../../services/webhook.service";
 import { BounceType } from "@prisma/client";
 import https from "https";
-import crypto from "crypto";
+import MessageValidator from "sns-validator";
+
+// SNS message validator for cryptographic signature verification
+const snsValidator = new MessageValidator();
+
+// Promisified SNS validation wrapper
+function validateSnsMessage(message: unknown): Promise<void> {
+  return new Promise((resolve, reject) => {
+    snsValidator.validate(message, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
 
 // Minimal SES/SNS types
 interface SnsNotification {
@@ -40,19 +53,15 @@ interface SesMessage {
 
 export class SesWebhookHandler {
 
-    // Validate SNS Signature
-    // Note: For production, use a robust library like 'sns-validator'.
-    // Here is a simplified implementation for demonstration.
+    // Validate SNS Signature using sns-validator package
     async validateSignature(payload: SnsNotification): Promise<boolean> {
-        // In a real implementation, download the cert from SigningCertURL and verify Signature.
-        // For MVP/Dev, we might skip strict signature check if running locally,
-        // but strictly this SHOULD be done.
-
-        // Skip for now to keep implementation simple, but TODO: Add 'sns-validator' package.
-        if (process.env.NODE_ENV === 'development') return true;
-
-        // Just checking basic structure
-        return !!payload.Signature && !!payload.SigningCertURL;
+        try {
+            await validateSnsMessage(payload);
+            return true;
+        } catch (err) {
+            console.error("[SES-Webhook] SNS signature validation failed:", err);
+            return false;
+        }
     }
 
     async handle(request: FastifyRequest, reply: FastifyReply) {
@@ -70,6 +79,13 @@ export class SesWebhookHandler {
         }
 
         const snsMessage = body as SnsNotification;
+
+        // Validate SNS signature for all message types
+        const isValid = await this.validateSignature(snsMessage);
+        if (!isValid) {
+            console.error("[SES-Webhook] Rejected message with invalid signature");
+            return reply.status(401).send({ error: "Invalid SNS signature" });
+        }
 
         // 1. Handle Subscription Confirmation
         if (snsMessage.Type === 'SubscriptionConfirmation' && snsMessage.SubscribeURL) {

@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import Redis from "ioredis";
 import { AnonymousSessionService } from "../services/anonymous-session.service";
 import { prisma } from "../lib/prisma";
 import { appConfig } from "../config";
@@ -10,33 +11,25 @@ import {
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 
-// Challenge store with TTL (5 minutes) - TODO: Use Redis in production for multi-instance
-const CHALLENGE_TTL_MS = 5 * 60 * 1000;
-const challenges: Map<string, { challenge: string; expiresAt: number }> = new Map();
+// Redis-based challenge store for multi-instance support
+const redis = new Redis({
+  host: process.env.REDIS_HOST || "localhost",
+  port: parseInt(process.env.REDIS_PORT || "6379"),
+});
+const CHALLENGE_PREFIX = "auth:challenge:";
+const CHALLENGE_TTL_SECONDS = 300; // 5 minutes
 
-// Cleanup expired challenges periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of challenges.entries()) {
-    if (value.expiresAt < now) challenges.delete(key);
-  }
-}, 60 * 1000); // Run every minute
+// Async helper functions for Redis challenge store
+async function setChallenge(key: string, challenge: string): Promise<void> {
+  await redis.set(`${CHALLENGE_PREFIX}${key}`, challenge, "EX", CHALLENGE_TTL_SECONDS);
+}
 
-// Helper to get/set challenges with TTL
-function setChallenge(key: string, challenge: string): void {
-  challenges.set(key, { challenge, expiresAt: Date.now() + CHALLENGE_TTL_MS });
+async function getChallenge(key: string): Promise<string | null> {
+  return await redis.get(`${CHALLENGE_PREFIX}${key}`);
 }
-function getChallenge(key: string): string | undefined {
-  const entry = challenges.get(key);
-  if (!entry) return undefined;
-  if (entry.expiresAt < Date.now()) {
-    challenges.delete(key);
-    return undefined;
-  }
-  return entry.challenge;
-}
-function deleteChallenge(key: string): void {
-  challenges.delete(key);
+
+async function deleteChallenge(key: string): Promise<void> {
+  await redis.del(`${CHALLENGE_PREFIX}${key}`);
 }
 
 // Derive RP ID from webUrl (e.g., "http://localhost:5173" -> "localhost")
@@ -151,7 +144,7 @@ export async function anonymousAuthRoutes(app: FastifyInstance) {
     });
 
     // Save challenge with TTL
-    setChallenge(account.id, options.challenge);
+    await setChallenge(account.id, options.challenge);
 
     return reply.send(options);
   });
@@ -164,7 +157,7 @@ export async function anonymousAuthRoutes(app: FastifyInstance) {
     const account = await AnonymousSessionService.getById(user.anonymousId);
     if (!account) return reply.status(404).send({ error: "Account not found" });
 
-    const expectedChallenge = getChallenge(account.id);
+    const expectedChallenge = await getChallenge(account.id);
     if (!expectedChallenge) {
       return reply.status(400).send({ error: "Challenge expired or not found" });
     }
@@ -192,7 +185,7 @@ export async function anonymousAuthRoutes(app: FastifyInstance) {
       // Link to account
       await AnonymousSessionService.linkPasskey(account.id, passkey.id);
 
-      deleteChallenge(account.id);
+      await deleteChallenge(account.id);
       return reply.send({ success: true });
     }
 
@@ -226,7 +219,7 @@ export async function anonymousAuthRoutes(app: FastifyInstance) {
       userVerification: "preferred",
     });
 
-    setChallenge(account.accountCode, options.challenge);
+    await setChallenge(account.accountCode, options.challenge);
 
     return reply.send(options);
   });
@@ -244,7 +237,7 @@ export async function anonymousAuthRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: "Account not found" });
     }
 
-    const expectedChallenge = getChallenge(accountCode);
+    const expectedChallenge = await getChallenge(accountCode);
     if (!expectedChallenge) {
       return reply.status(400).send({ error: "Challenge expired" });
     }
@@ -289,7 +282,7 @@ export async function anonymousAuthRoutes(app: FastifyInstance) {
         anonTier: account.tier,
       });
 
-      deleteChallenge(accountCode);
+      await deleteChallenge(accountCode);
 
       return reply.send({
         accessToken: token,

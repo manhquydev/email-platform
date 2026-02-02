@@ -18,6 +18,8 @@ import { LazyMotionProvider } from "./components/LazyMotionProvider";
 import { VersionCheck } from "./components/VersionCheck";
 import { ErrorPage } from "./pages/ErrorPage";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { InstallPrompt } from "./components/InstallPrompt";
+import { OfflineBanner } from "./components/OfflineBanner";
 
 // Lazy load public pages for better initial bundle size
 const Features = lazy(() => import("./pages/Features").then(m => ({ default: m.Features })));
@@ -70,6 +72,8 @@ function App() {
             Bỏ qua đến nội dung chính
           </a>
           <Toaster position="top-right" />
+          <OfflineBanner />
+          <InstallPrompt />
           <BrowserRouter>
             <ScrollToTop />
             <VersionCheck />

@@ -11,6 +11,7 @@ import MessageList from './MessageList';
 vi.mock('../../shared/api', () => ({
   api: {
     getMessages: vi.fn(),
+    getMessagesWithCache: vi.fn(),
   },
 }));
 
@@ -67,7 +68,7 @@ describe('MessageList', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     const { api } = await import('../../shared/api');
-    (api.getMessages as ReturnType<typeof vi.fn>).mockResolvedValue({ data: mockMessages });
+    (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockResolvedValue({ data: mockMessages, fromCache: false });
   });
 
   describe('Loading State', () => {
@@ -77,7 +78,7 @@ describe('MessageList', () => {
       const pendingPromise = new Promise<{ data: typeof mockMessages }>((resolve) => {
         resolvePromise = resolve;
       });
-      (api.getMessages as ReturnType<typeof vi.fn>).mockImplementation(() => pendingPromise);
+      (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockImplementation(() => pendingPromise);
 
       render(<MessageList {...defaultProps} />);
 
@@ -188,11 +189,11 @@ describe('MessageList', () => {
       if (refreshButton) {
         await userEvent.click(refreshButton);
         await waitFor(() => {
-          expect(api.getMessages).toHaveBeenCalledTimes(2); // Initial + refresh
+          expect(api.getMessagesWithCache).toHaveBeenCalledTimes(2); // Initial + refresh
         });
       } else {
         // Component may not expose a dedicated refresh button - verify initial fetch happened
-        expect(api.getMessages).toHaveBeenCalledTimes(1);
+        expect(api.getMessagesWithCache).toHaveBeenCalledTimes(1);
       }
     });
   });
@@ -341,7 +342,7 @@ describe('MessageList', () => {
   describe('Empty State', () => {
     it('should display empty state when no messages', async () => {
       const { api } = await import('../../shared/api');
-      (api.getMessages as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [] });
+      (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [], fromCache: false });
 
       render(<MessageList {...defaultProps} />);
 
@@ -353,7 +354,7 @@ describe('MessageList', () => {
 
     it('should show check for messages button in empty state', async () => {
       const { api } = await import('../../shared/api');
-      (api.getMessages as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [] });
+      (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [], fromCache: false });
 
       render(<MessageList {...defaultProps} />);
 
@@ -364,7 +365,7 @@ describe('MessageList', () => {
 
     it('should not show search input when no messages', async () => {
       const { api } = await import('../../shared/api');
-      (api.getMessages as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [] });
+      (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [], fromCache: false });
 
       render(<MessageList {...defaultProps} />);
 
@@ -379,7 +380,7 @@ describe('MessageList', () => {
   describe('Error State', () => {
     it('should display error message when fetch fails', async () => {
       const { api } = await import('../../shared/api');
-      (api.getMessages as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
+      (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
 
       render(<MessageList {...defaultProps} />);
 
@@ -390,7 +391,7 @@ describe('MessageList', () => {
 
     it('should display generic error for non-Error exceptions', async () => {
       const { api } = await import('../../shared/api');
-      (api.getMessages as ReturnType<typeof vi.fn>).mockRejectedValue('Unknown error');
+      (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockRejectedValue('Unknown error');
 
       render(<MessageList {...defaultProps} />);
 

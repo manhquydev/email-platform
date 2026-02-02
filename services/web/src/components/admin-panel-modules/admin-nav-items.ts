@@ -20,6 +20,7 @@ export function getNavItems(counts: SidebarCounts): NavItem[] {
         { id: "system", label: "Hệ thống", path: "/admin/system", icon: adminIcons.server },
         { id: "notifications", label: "Thông báo", path: "/admin/notifications", icon: adminIcons.notifications },
         { id: "analytics", label: "Analytics", path: "/admin/analytics", icon: adminIcons.analytics },
+        { id: "queues", label: "Hàng chờ hệ thống", path: "/admin/queues", icon: adminIcons.server },
         { id: "telegram", label: "Telegram", path: "/admin/telegram", icon: adminIcons.telegram },
         { id: "providers", label: "Providers", path: "/admin/providers", icon: adminIcons.server },
         { id: "settings", label: "Cài đặt", path: "/admin/settings", icon: adminIcons.cog },

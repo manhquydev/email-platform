@@ -1,5 +1,4 @@
 
-import { appConfig } from "../../config";
 import { EmailProvider } from "./interface";
 import { GoogleProvider } from "./google-provider";
 import { MailgunProvider } from "./mailgun-provider";

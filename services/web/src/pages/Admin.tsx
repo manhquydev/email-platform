@@ -16,6 +16,7 @@ const TelegramManagementPage = lazy(() => import("./admin/TelegramManagementPage
 const ProvidersPage = lazy(() => import("./admin/ProvidersPage").then(m => ({ default: m.ProvidersPage })));
 const AdminSupportPage = lazy(() => import("./admin/admin-support-modules").then(m => ({ default: m.AdminSupportPage })));
 const AdminSupportDetail = lazy(() => import("./admin/admin-support-modules").then(m => ({ default: m.AdminSupportDetail })));
+const AnalyticsDashboard = lazy(() => import("./admin/AnalyticsDashboard").then(m => ({ default: m.AnalyticsDashboard })));
 
 // Lazy load legacy admin components
 const AdminDashboard = lazy(() => import("../components/admin/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
@@ -70,6 +71,7 @@ export function Admin() {
                         <Route path="system" element={<Suspense fallback={<AdminLoading />}><AdminSystem token={token} /></Suspense>} />
                         <Route path="notifications" element={<Suspense fallback={<AdminLoading />}><AdminNotificationPage /></Suspense>} />
                         <Route path="analytics" element={<Suspense fallback={<AdminLoading />}><AnalyticsPage /></Suspense>} />
+                        <Route path="queues" element={<Suspense fallback={<AdminLoading />}><AnalyticsDashboard /></Suspense>} />
                         <Route path="telegram" element={<Suspense fallback={<AdminLoading />}><TelegramManagementPage /></Suspense>} />
                         <Route path="providers" element={<Suspense fallback={<AdminLoading />}><ProvidersPage /></Suspense>} />
                         <Route path="settings" element={<Suspense fallback={<AdminLoading />}><AdminSettingsPage /></Suspense>} />

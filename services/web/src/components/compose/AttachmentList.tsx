@@ -1,6 +1,5 @@
 
-import React from 'react';
-import { File, X, Paperclip, Image as ImageIcon } from 'lucide-react';
+import { File, X, Image as ImageIcon } from 'lucide-react';
 
 export interface Attachment {
   id: string;

@@ -1,10 +1,13 @@
 {
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.980.0",
     "@fastify/websocket": "^11.2.0",
     "@node-saml/passport-saml": "^5.1.0",
     "@types/webextension-polyfill": "^0.12.4",
+    "form-data": "^4.0.5",
     "imap-handler": "^0.1.12",
     "ldapjs": "^3.0.7",
+    "mailgun.js": "^12.7.0",
     "openid-client": "^5.7.1",
     "webextension-polyfill": "^0.12.0"
   },

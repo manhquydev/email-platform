@@ -93,14 +93,14 @@ export function AdminRulesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div>
                         <label className="block text-xs text-slate-500 mb-1.5">Loại</label>
-                        <select value={newType} onChange={(e) => setNewType(e.target.value)} className="w-full text-sm py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                        <select value={newType} onChange={(e) => setNewType(e.target.value)} className="w-full text-sm py-2 px-3 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text">
                             <option value="BLOCK">Chặn</option>
                             <option value="ALLOW">Cho phép</option>
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs text-slate-500 mb-1.5">Phạm vi</label>
-                        <select value={newScope} onChange={(e) => setNewScope(e.target.value)} className="w-full text-sm py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                        <select value={newScope} onChange={(e) => setNewScope(e.target.value)} className="w-full text-sm py-2 px-3 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text">
                             <option value="SENDER_DOMAIN">Tên miền gửi</option>
                             <option value="SENDER_EMAIL">Email gửi</option>
                             <option value="RECIPIENT_DOMAIN">Tên miền nhận</option>
@@ -110,7 +110,7 @@ export function AdminRulesPage() {
                     <div className="md:col-span-1">
                         <label className="block text-xs text-slate-500 mb-1.5">Giá trị</label>
                         <input
-                            className="w-full text-sm py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="w-full text-sm py-2 px-3 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text focus:ring-2 focus:ring-nebula-violet/20 outline-none"
                             placeholder="example.com"
                             value={newValue}
                             onChange={(e) => setNewValue(e.target.value)}

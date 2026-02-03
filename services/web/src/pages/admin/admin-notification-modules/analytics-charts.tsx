@@ -32,7 +32,7 @@ export function DeliveryVolumeChart({ data }: DeliveryVolumeChartProps) {
     }));
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <div className="bg-nebula-surface rounded-lg border border-nebula-border p-4">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Khối lượng gửi theo ngày</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={formattedData}>
@@ -82,7 +82,7 @@ export function ChannelBreakdownChart({ data }: ChannelBreakdownChartProps) {
     }));
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <div className="bg-nebula-surface rounded-lg border border-nebula-border p-4">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Phân bổ kênh gửi</h3>
             <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -120,7 +120,7 @@ export function FailureReasonsChart({ data }: FailureReasonsChartProps) {
 
     if (chartData.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="bg-nebula-surface rounded-lg border border-nebula-border p-4">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Lý do thất bại</h3>
                 <div className="h-[250px] flex items-center justify-center text-gray-500">
                     Không có lỗi trong khoảng thời gian này
@@ -130,7 +130,7 @@ export function FailureReasonsChart({ data }: FailureReasonsChartProps) {
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <div className="bg-nebula-surface rounded-lg border border-nebula-border p-4">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Lý do thất bại</h3>
             <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -161,7 +161,7 @@ interface TemplatePerformanceTableProps {
 export function TemplatePerformanceTable({ data }: TemplatePerformanceTableProps) {
     if (data.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="bg-nebula-surface rounded-lg border border-nebula-border p-4">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Hiệu suất mẫu</h3>
                 <div className="text-center py-8 text-gray-500">
                     Chưa có dữ liệu mẫu trong khoảng thời gian này
@@ -171,7 +171,7 @@ export function TemplatePerformanceTable({ data }: TemplatePerformanceTableProps
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <div className="bg-nebula-surface rounded-lg border border-nebula-border p-4">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Hiệu suất mẫu</h3>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">

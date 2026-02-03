@@ -29,7 +29,7 @@ export function NotificationTypeSelector({ value, onChange }: TypeSelectorProps)
                 <select
                     value={value}
                     onChange={(e) => onChange(e.target.value as NotificationType)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all appearance-none text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 bg-nebula-surface border border-nebula-border rounded-xl focus:ring-2 focus:ring-nebula-violet focus:border-transparent outline-none transition-all appearance-none text-sm text-nebula-text"
                 >
                     <option value="INFO">Thông tin (Info)</option>
                     <option value="WARNING">Cảnh báo (Warning)</option>
@@ -58,12 +58,12 @@ export function TargetModeSelector({ value, onChange }: TargetModeSelectorProps)
     return (
         <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Đối tượng nhận</label>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <div className="flex bg-nebula-elevated p-1 rounded-xl">
                 <button
                     type="button"
                     onClick={() => onChange("specific")}
                     className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${value === "specific"
-                        ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm"
+                        ? "bg-nebula-surface text-nebula-violet shadow-sm"
                         : "text-slate-500 hover:text-slate-700"
                     }`}
                 >
@@ -73,7 +73,7 @@ export function TargetModeSelector({ value, onChange }: TargetModeSelectorProps)
                     type="button"
                     onClick={() => onChange("all")}
                     className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${value === "all"
-                        ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm"
+                        ? "bg-nebula-surface text-nebula-violet shadow-sm"
                         : "text-slate-500 hover:text-slate-700"
                     }`}
                 >
@@ -101,7 +101,7 @@ export function ImageUploadInput({ value, onChange, onUpload }: ImageUploadProps
                         type="url"
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm"
+                        className="w-full px-4 py-2.5 bg-nebula-surface border border-nebula-border rounded-xl focus:ring-2 focus:ring-nebula-violet focus:border-transparent outline-none transition-all text-sm text-nebula-text"
                         placeholder="https://example.com/image.jpg"
                     />
                 </div>
@@ -140,7 +140,7 @@ export function MessageTextarea({ value, onChange }: MessageTextareaProps) {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="Nhập nội dung thông báo..."
-                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm h-32 resize-none"
+                className="w-full px-4 py-3 bg-nebula-surface border border-nebula-border rounded-xl focus:ring-2 focus:ring-nebula-violet focus:border-transparent outline-none transition-all text-sm h-32 resize-none text-nebula-text"
                 required
             />
         </div>

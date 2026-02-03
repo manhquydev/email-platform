@@ -48,7 +48,7 @@ export function TemplateGrid({ templates, onEdit, onClone, onArchive, onPreview 
       {templates.map(template => (
         <div
           key={template.id}
-          className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+          className="bg-nebula-surface rounded-lg border border-nebula-border p-4 hover:shadow-md transition-shadow"
         >
           {/* Header */}
           <div className="flex items-start justify-between mb-3">

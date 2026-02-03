@@ -55,9 +55,9 @@ export function TemplateEditorModal({ template, isOpen, onClose, onSave, saving 
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
       {/* Modal */}
-      <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+      <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[90vh] bg-nebula-surface rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-nebula-border">
           <h2 className="text-lg font-semibold">
             {isEdit ? 'Chỉnh sửa mẫu' : 'Tạo mẫu mới'}
           </h2>

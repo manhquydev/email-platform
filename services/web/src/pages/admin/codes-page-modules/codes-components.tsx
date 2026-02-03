@@ -106,8 +106,8 @@ export function CreateCodeModal({ show, packages, formData, onUpdateField, onClo
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-800">
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+            <div className="bg-nebula-surface rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-nebula-border">
+                <div className="p-4 border-b border-nebula-border flex justify-between items-center">
                     <h3 className="font-semibold">Tạo mã đổi thưởng</h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>

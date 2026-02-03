@@ -68,7 +68,7 @@ export function NotificationHistoryTab() {
   const totalPages = data ? Math.ceil(data.total / (data.limit || 20)) : 1;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border dark:border-gray-700">
+    <div className="bg-nebula-surface rounded-lg shadow-sm border border-nebula-border">
       <div className="p-4">
         <NotificationHistoryFilters
           filters={filters}

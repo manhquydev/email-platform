@@ -53,9 +53,9 @@ export function TemplatePreviewModal({ template, isOpen, onClose }: Props) {
     <>
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
-      <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+      <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-nebula-surface rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-nebula-border">
           <h2 className="text-lg font-semibold">Xem trước: {template.name}</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
             ✕

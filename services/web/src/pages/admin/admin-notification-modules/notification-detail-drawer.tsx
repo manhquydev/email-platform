@@ -35,9 +35,9 @@ export function NotificationDetailDrawer({ item, onClose, onResend, resending }:
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-xl z-50 overflow-y-auto">
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-nebula-surface shadow-xl z-50 overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+        <div className="sticky top-0 bg-nebula-surface border-b border-nebula-border px-4 py-3 flex items-center justify-between">
           <h3 className="font-semibold text-lg">Chi tiết thông báo</h3>
           <button
             onClick={onClose}

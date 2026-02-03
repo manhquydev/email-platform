@@ -2,7 +2,7 @@
  * Dashboard Page - Email reading interface
  * Refactored to use modular hooks and components
  */
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -17,6 +17,8 @@ import { CompactToolbar } from "../components/compact-toolbar";
 import { EmptyStateWithActions } from "../components/empty-state-with-actions";
 import { EmailStream } from "../components/EmailStream";
 import { EmailSkeletonList } from "../components/email-stream-modules/email-stream-components";
+import { FolderTabs, type FolderTab } from "../components/folder-tabs";
+import { KeyboardBar } from "../components/keyboard-bar";
 import { cn } from "../utils/cn";
 import { useRealtimeSubscription, useRealtimeContext } from "../hooks/useRealtimeContext";
 import type { Message } from "../types";
@@ -76,6 +78,25 @@ export function Dashboard() {
 
     // Calculate unread count for stats bar
     const unreadCount = messages.filter(m => !m.isRead).length;
+
+    // Folder tab state and filtering
+    const [activeFolder, setActiveFolder] = useState<FolderTab>('all');
+
+    const folderCounts = useMemo(() => ({
+        all: messages.length,
+        unread: messages.filter(m => !m.isRead).length,
+        starred: messages.filter(m => m.isPinned).length,
+        attachment: messages.filter(m => m.attachments && m.attachments.length > 0).length,
+    }), [messages]);
+
+    const filteredMessages = useMemo(() => {
+        switch (activeFolder) {
+            case 'unread': return messages.filter(m => !m.isRead);
+            case 'starred': return messages.filter(m => m.isPinned);
+            case 'attachment': return messages.filter(m => m.attachments && m.attachments.length > 0);
+            default: return messages;
+        }
+    }, [messages, activeFolder]);
 
     // Sync state with URL params
     useEffect(() => {
@@ -211,6 +232,15 @@ export function Dashboard() {
                         totalCount={messageTotal}
                     />
 
+                    {/* Folder Tabs - Gmail-style filtering */}
+                    {selectedInbox && (
+                        <FolderTabs
+                            activeTab={activeFolder}
+                            onTabChange={setActiveFolder}
+                            counts={folderCounts}
+                        />
+                    )}
+
                     {/* List Content */}
                     <div className="flex-1 overflow-hidden relative">
                         {!selectedInbox ? (
@@ -240,11 +270,11 @@ export function Dashboard() {
                             <div className="h-full flex flex-col">
                                 <div className="flex-1 overflow-hidden">
                                     <EmailStream
-                                        messages={messages}
+                                        messages={filteredMessages}
                                         selectedMessageId={selectedMessage?.id || null}
                                         onSelectMessage={handleSelectMessage}
                                         onCopyOTP={copyOTP}
-                                        className="pb-24 md:pb-0"
+                                        className="pb-24 md:pb-12"
                                     />
                                     {messages.length < messageTotal && (
                                         <div className="p-4 flex justify-center border-t border-nebula-border">
@@ -293,6 +323,9 @@ export function Dashboard() {
                 )}
 
                 <OnboardingHints />
+
+                {/* Keyboard shortcuts bar - desktop only */}
+                <KeyboardBar />
             </div>
         </AppShell>
     );

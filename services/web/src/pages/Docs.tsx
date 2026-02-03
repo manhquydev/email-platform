@@ -107,7 +107,7 @@ export function Docs() {
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                 <div>
                                     <h3 className="text-lg font-semibold text-[#F1F5F9] mb-1">Cần hỗ trợ thêm?</h3>
-                                    <p className="text-sm text-slate-400">Liên hệ với đội ngũ hỗ trợ hoặc xem thêm trên GitHub.</p>
+                                    <p className="text-sm text-slate-400">Liên hệ với đội ngũ hỗ trợ để được giải đáp thắc mắc.</p>
                                 </div>
                                 <div className="flex gap-3">
                                     <Link
@@ -117,15 +117,6 @@ export function Docs() {
                                         <span className="material-symbols-outlined text-lg">support_agent</span>
                                         Hỗ trợ
                                     </Link>
-                                    <a
-                                        href="https://github.com"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 px-4 py-2 bg-white/10 text-[#F1F5F9] rounded-xl hover:bg-white/20 transition-colors cursor-pointer"
-                                    >
-                                        <span className="material-symbols-outlined text-lg">code</span>
-                                        GitHub
-                                    </a>
                                 </div>
                             </div>
                         </div>

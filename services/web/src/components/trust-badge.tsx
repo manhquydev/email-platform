@@ -17,7 +17,7 @@ export function TrustBadge({ variant = 'compact', className = '' }: TrustBadgePr
                 </div>
                 <div className="text-left">
                     <p className="text-green-400 font-bold text-sm tracking-wide">ZERO-LOG</p>
-                    <p className="text-green-300/60 text-xs">Không IP · Không Tracking · Mã nguồn mở</p>
+                    <p className="text-green-300/60 text-xs">Không IP · Không Tracking · Bảo mật cao</p>
                 </div>
                 <span className="material-symbols-outlined text-green-400/50 !text-[18px] group-hover:translate-x-1 transition-transform">
                     arrow_forward

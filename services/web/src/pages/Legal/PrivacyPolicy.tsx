@@ -43,7 +43,7 @@ export function PrivacyPolicy() {
                             <li><strong>Không tracking pixels:</strong> Chúng tôi tự động loại bỏ tracking pixels từ email đến</li>
                             <li><strong>Không quảng cáo:</strong> Không bao giờ có quảng cáo, không bán dữ liệu cho bên thứ 3</li>
                             <li><strong>Không cookies theo dõi:</strong> Chỉ sử dụng cookies thiết yếu cho xác thực</li>
-                            <li><strong>Mã nguồn mở:</strong> Code được công khai để audit tại GitHub</li>
+                            <li><strong>Bảo mật cao:</strong> Hệ thống được thiết kế với nguyên tắc Privacy by Design</li>
                         </ul>
                         <p className="mt-4 text-sm !text-green-300/60">
                             Kiến trúc của chúng tôi được thiết kế để việc theo dõi là <em>không thể thực hiện được về mặt kỹ thuật</em>,

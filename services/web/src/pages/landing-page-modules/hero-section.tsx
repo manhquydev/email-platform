@@ -39,7 +39,7 @@ export function HeroSection() {
                     >
                         <span className="material-symbols-outlined text-green-400 !text-[20px]">verified_user</span>
                         <span className="text-green-400 font-medium text-sm">ZERO-LOG PRIVACY</span>
-                        <span className="text-green-300/50 text-xs hidden sm:inline">Không IP · Không Tracking · Mã nguồn mở</span>
+                        <span className="text-green-300/50 text-xs hidden sm:inline">Không IP · Không Tracking · Bảo mật cao</span>
                         <span className="material-symbols-outlined text-green-400/50 !text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </Link>
                 </div>

@@ -151,7 +151,7 @@ const emails = await client.emails.list();`;
             <div className="flex gap-3 mt-4">
                 <a href="/docs" className="text-sm text-[var(--nebula-violet)] hover:underline">📖 Xem tài liệu đầy đủ</a>
                 <span className="text-white/20">|</span>
-                <a href="https://npmjs.com/package/@ephemera/sdk" target="_blank" rel="noopener" className="text-sm text-[var(--nebula-violet)] hover:underline">📦 npm install @ephemera/sdk</a>
+                <span className="text-sm text-slate-500">📦 Source: packages/sdk-js</span>
             </div>
         </div>
     );

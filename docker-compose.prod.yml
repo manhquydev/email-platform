@@ -310,7 +310,8 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        cat > /etc/alertmanager/alertmanager.yml << 'EOF'
+        if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ "$TELEGRAM_BOT_TOKEN" != "" ]; then
+          cat > /etc/alertmanager/alertmanager.yml << EOF
         global:
           resolve_timeout: 5m
         route:
@@ -322,19 +323,24 @@ services:
         receivers:
           - name: "telegram"
             telegram_configs:
-              - bot_token: "${TELEGRAM_BOT_TOKEN}"
-                chat_id: ${TELEGRAM_ALERT_CHAT_ID}
+              - bot_token: "$TELEGRAM_BOT_TOKEN"
+                chat_id: $TELEGRAM_ALERT_CHAT_ID
                 parse_mode: "HTML"
-                message: |
-                  <b>{{ .Status | toUpper }}</b>
-                  {{ range .Alerts }}
-                  <b>Alert:</b> {{ .Labels.alertname }}
-                  <b>Severity:</b> {{ .Labels.severity }}
-                  <b>Summary:</b> {{ .Annotations.summary }}
-                  {{ end }}
         EOF
-        sed -i "s|\${TELEGRAM_BOT_TOKEN}|$TELEGRAM_BOT_TOKEN|g" /etc/alertmanager/alertmanager.yml
-        sed -i "s|\${TELEGRAM_ALERT_CHAT_ID}|$TELEGRAM_ALERT_CHAT_ID|g" /etc/alertmanager/alertmanager.yml
+        else
+          cat > /etc/alertmanager/alertmanager.yml << 'EOF'
+        global:
+          resolve_timeout: 5m
+        route:
+          group_by: ["alertname"]
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 4h
+          receiver: "null"
+        receivers:
+          - name: "null"
+        EOF
+        fi
         exec /bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}

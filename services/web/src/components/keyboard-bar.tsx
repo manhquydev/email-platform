@@ -26,8 +26,8 @@ export function KeyboardBar({ className }: KeyboardBarProps) {
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 h-9 bg-[#1A1A1A]/95 backdrop-blur-sm border-t border-[#2A2A2A]",
-        "hidden md:flex items-center justify-center gap-6 z-40",
+        "fixed bottom-0 left-0 right-0 h-9 bg-nebula-surface/95 backdrop-blur-sm border-t border-nebula-border",
+        "hidden md:flex items-center justify-center gap-6 z-30",
         className
       )}
     >

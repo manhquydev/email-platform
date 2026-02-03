@@ -107,7 +107,7 @@ export function Settings() {
     }, [loadProfile, loadInboxes]);
 
     return (
-        <div className="flex flex-col h-full w-full bg-white dark:bg-bg overflow-hidden">
+        <div className="flex flex-col h-full w-full bg-nebula-void overflow-hidden">
             {/* Horizontal Tabs Header */}
             <SettingsTabs activeTab={activeTab} onTabChange={changeTab} />
 

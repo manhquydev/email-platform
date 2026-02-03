@@ -36,12 +36,12 @@ export function IdentitySuite() {
         return (
             <div className="min-h-screen neo-mesh-bg flex items-center justify-center p-4">
                 <div className="neo-glass rounded-xl p-8 text-center max-w-md">
-                    <span className="material-symbols-outlined text-[48px] text-[var(--nebula-violet)] mb-4">lock</span>
+                    <span className="material-symbols-outlined text-[48px] text-nebula-violet mb-4">lock</span>
                     <h1 className="text-xl font-bold text-white mb-2">Yêu cầu đăng nhập</h1>
-                    <p className="text-[var(--nebula-text-secondary)] mb-4">
+                    <p className="text-nebula-text-secondary mb-4">
                         Vui lòng đăng nhập để truy cập Identity Suite.
                     </p>
-                    <Link to="/login" className="inline-block px-6 py-3 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg font-medium transition-all">
+                    <Link to="/login" className="inline-block px-6 py-3 bg-nebula-violet hover:bg-nebula-violet-dark text-white rounded-lg font-medium transition-all">
                         Đăng nhập
                     </Link>
                 </div>
@@ -50,7 +50,7 @@ export function IdentitySuite() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--nebula-bg)]">
+        <div className="min-h-screen bg-nebula-void">
             <SEOHead
                 title="Identity Suite - Ephemera"
                 description="Quản lý bí danh email, giám sát rò rỉ dữ liệu và điểm bảo mật của bạn."
@@ -63,7 +63,7 @@ export function IdentitySuite() {
                     <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                         🛡️ Identity Suite
                     </h1>
-                    <p className="text-[var(--nebula-text-secondary)]">
+                    <p className="text-nebula-text-secondary">
                         Quản lý danh tính số và bảo vệ quyền riêng tư của bạn
                     </p>
                 </div>
@@ -76,8 +76,8 @@ export function IdentitySuite() {
                             onClick={() => handleTabChange(tab.id)}
                             className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
                                 activeTab === tab.id
-                                    ? 'bg-[var(--nebula-violet)] text-white shadow-lg'
-                                    : 'text-[var(--nebula-text-secondary)] hover:text-white hover:bg-white/5'
+                                    ? 'bg-nebula-violet text-white shadow-lg'
+                                    : 'text-nebula-text-secondary hover:text-white hover:bg-white/5'
                             }`}
                         >
                             <span className="material-symbols-outlined !text-[18px]">{tab.icon}</span>

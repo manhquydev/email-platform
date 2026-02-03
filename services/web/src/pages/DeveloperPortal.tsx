@@ -36,12 +36,12 @@ export function DeveloperPortal() {
         return (
             <div className="min-h-screen neo-mesh-bg flex items-center justify-center p-4">
                 <div className="neo-glass rounded-xl p-8 text-center max-w-md">
-                    <span className="material-symbols-outlined text-[48px] text-[var(--nebula-violet)] mb-4">lock</span>
+                    <span className="material-symbols-outlined text-[48px] text-nebula-violet mb-4">lock</span>
                     <h1 className="text-xl font-bold text-white mb-2">Yêu cầu đăng nhập</h1>
-                    <p className="text-[var(--nebula-text-secondary)] mb-4">
+                    <p className="text-nebula-text-secondary mb-4">
                         Vui lòng đăng nhập để truy cập Developer Portal.
                     </p>
-                    <Link to="/login" className="inline-block px-6 py-3 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg font-medium transition-all">
+                    <Link to="/login" className="inline-block px-6 py-3 bg-nebula-violet hover:bg-nebula-violet-dark text-white rounded-lg font-medium transition-all">
                         Đăng nhập
                     </Link>
                 </div>
@@ -50,7 +50,7 @@ export function DeveloperPortal() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--nebula-bg)]">
+        <div className="min-h-screen bg-nebula-void">
             <SEOHead
                 title="Developer Portal - Ephemera"
                 description="Quản lý API keys, theo dõi sử dụng và cấu hình webhooks."
@@ -63,7 +63,7 @@ export function DeveloperPortal() {
                     <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                         🔧 Developer Portal
                     </h1>
-                    <p className="text-[var(--nebula-text-secondary)]">
+                    <p className="text-nebula-text-secondary">
                         Quản lý API keys, webhooks và theo dõi sử dụng API
                     </p>
                 </div>
@@ -76,8 +76,8 @@ export function DeveloperPortal() {
                             onClick={() => handleTabChange(tab.id)}
                             className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
                                 activeTab === tab.id
-                                    ? 'bg-[var(--nebula-violet)] text-white shadow-lg'
-                                    : 'text-[var(--nebula-text-secondary)] hover:text-white hover:bg-white/5'
+                                    ? 'bg-nebula-violet text-white shadow-lg'
+                                    : 'text-nebula-text-secondary hover:text-white hover:bg-white/5'
                             }`}
                         >
                             <span className="material-symbols-outlined !text-[18px]">{tab.icon}</span>

@@ -16,6 +16,7 @@ import { Button } from "../components/ui/Button";
 import { CompactToolbar } from "../components/compact-toolbar";
 import { EmptyStateWithActions } from "../components/empty-state-with-actions";
 import { EmailStream } from "../components/EmailStream";
+import { EmailSkeletonList } from "../components/email-stream-modules/email-stream-components";
 import { cn } from "../utils/cn";
 import { useRealtimeSubscription, useRealtimeContext } from "../hooks/useRealtimeContext";
 import type { Message } from "../types";
@@ -72,6 +73,9 @@ export function Dashboard() {
     const isAdmin = user?.role === "ADMIN";
     const outboundEnabled = String(window.env?.OUTBOUND_ENABLED ?? import.meta.env.VITE_OUTBOUND_ENABLED ?? "false").toLowerCase() === "true";
     const canSendOutbound = outboundEnabled && isAdmin;
+
+    // Calculate unread count for stats bar
+    const unreadCount = messages.filter(m => !m.isRead).length;
 
     // Sync state with URL params
     useEffect(() => {
@@ -203,6 +207,8 @@ export function Dashboard() {
                         busy={busy}
                         canSendOutbound={canSendOutbound}
                         realtimeStatus={realtimeStatus === 'error' ? 'disconnected' : realtimeStatus}
+                        unreadCount={unreadCount}
+                        totalCount={messageTotal}
                     />
 
                     {/* List Content */}
@@ -214,6 +220,8 @@ export function Dashboard() {
                                     if (action === 'create-inbox') navigate('/app/manager');
                                 }}
                             />
+                        ) : messages.length === 0 && busy ? (
+                            <EmailSkeletonList count={5} />
                         ) : messages.length === 0 && !busy ? (
                             <EmptyStateWithActions
                                 variant={messageSearch ? 'no-results' : 'empty-inbox'}

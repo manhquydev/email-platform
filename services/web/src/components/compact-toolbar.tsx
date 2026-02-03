@@ -2,7 +2,7 @@
  * CompactToolbar - Merged toolbar with InboxSelector, Search, and Actions
  * Replaces separate search row to save vertical space
  */
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { InboxSelector } from './InboxSelector';
 import { ListeningIndicator } from './copy-first/ListeningIndicator';
@@ -40,6 +40,10 @@ interface CompactToolbarProps {
   // Realtime status
   realtimeStatus?: 'connecting' | 'connected' | 'disconnected' | 'error';
 
+  // Stats bar props
+  unreadCount?: number;
+  totalCount?: number;
+
   // Layout
   showInboxSelector?: boolean;
   showSearch?: boolean;
@@ -68,6 +72,8 @@ export function CompactToolbar({
   busy = false,
   canSendOutbound = false,
   realtimeStatus,
+  unreadCount,
+  totalCount,
   showInboxSelector = true,
   showSearch = true,
   className,
@@ -75,6 +81,8 @@ export function CompactToolbar({
   const navigate = useNavigate();
   const internalSearchRef = useRef<HTMLInputElement>(null);
   const inputRef = searchInputRef || internalSearchRef;
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className={cn(
@@ -111,20 +119,49 @@ export function CompactToolbar({
 
       {/* Center: Search (inline, flexible width) */}
       {showSearch && (
-        <div className="flex-1 min-w-0 max-w-[240px] hidden sm:block">
-          <div className="relative">
-            <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-nebula-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <>
+          {/* Desktop search */}
+          <div className="flex-1 min-w-0 max-w-[240px] hidden sm:block">
+            <div className="relative">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-nebula-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                ref={inputRef}
+                type="text"
+                className="w-full bg-nebula-elevated border border-nebula-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-nebula-text placeholder:text-nebula-text-muted focus:outline-none focus:border-nebula-violet/50 transition-colors"
+                placeholder={searchPlaceholder}
+                value={searchValue}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Mobile search button */}
+          <button
+            className="sm:hidden p-2 hover:bg-nebula-elevated rounded-lg text-nebula-text-muted hover:text-nebula-text transition-colors"
+            onClick={() => setShowMobileSearch(true)}
+            aria-label="Tìm kiếm"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
-              ref={inputRef}
-              type="text"
-              className="w-full bg-nebula-elevated border border-nebula-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-nebula-text placeholder:text-nebula-text-muted focus:outline-none focus:border-nebula-violet/50 transition-colors"
-              placeholder={searchPlaceholder}
-              value={searchValue}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-            />
-          </div>
+          </button>
+        </>
+      )}
+
+      {/* Stats bar - shows unread/total count */}
+      {(unreadCount !== undefined || totalCount !== undefined) && (
+        <div className="hidden sm:flex items-center text-xs text-nebula-text-muted ml-2">
+          {unreadCount !== undefined && unreadCount > 0 && (
+            <span className="text-primary font-medium">{unreadCount} chưa đọc</span>
+          )}
+          {unreadCount !== undefined && unreadCount > 0 && totalCount !== undefined && (
+            <span className="mx-1.5">•</span>
+          )}
+          {totalCount !== undefined && (
+            <span>{totalCount} email</span>
+          )}
         </div>
       )}
 
@@ -167,6 +204,42 @@ export function CompactToolbar({
           </Button>
         )}
       </div>
+
+      {/* Mobile search overlay */}
+      {showMobileSearch && (
+        <div className="fixed inset-0 z-50 bg-nebula-surface/95 backdrop-blur-lg p-4 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <button
+              className="p-2 hover:bg-nebula-elevated rounded-lg text-nebula-text-muted hover:text-nebula-text transition-colors"
+              onClick={() => setShowMobileSearch(false)}
+              aria-label="Đóng"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="flex-1 relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-nebula-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                ref={mobileSearchRef}
+                type="text"
+                className="w-full bg-nebula-elevated border border-nebula-border rounded-xl pl-10 pr-4 py-3 text-base text-nebula-text placeholder:text-nebula-text-muted focus:outline-none focus:border-nebula-violet/50 transition-colors"
+                placeholder={searchPlaceholder}
+                value={searchValue}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                autoFocus
+              />
+            </div>
+          </div>
+          {searchValue && (
+            <p className="text-sm text-nebula-text-muted text-center">
+              Nhấn Enter hoặc đóng để tìm kiếm
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

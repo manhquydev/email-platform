@@ -6,6 +6,53 @@ import { cn } from "../../utils/cn";
 import { extractOTP } from "../../utils/otpExtractor";
 import { formatRelativeTime } from "./email-stream-types";
 
+/** Generate consistent avatar color from email address */
+function getSenderAvatar(email: string): { letter: string; color: string } {
+    const name = email.split('@')[0];
+    const letter = name.charAt(0).toUpperCase() || '?';
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'];
+    const hash = email.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    const color = colors[hash % colors.length];
+    return { letter, color };
+}
+
+/** Skeleton shimmer for loading state */
+export function EmailSkeleton() {
+    return (
+        <div className="p-4 border-b border-nebula-border animate-pulse">
+            <div className="flex items-start gap-3">
+                {/* Avatar skeleton */}
+                <div className="w-8 h-8 rounded-full bg-nebula-elevated flex-shrink-0" />
+                <div className="flex-1 space-y-2 min-w-0">
+                    {/* Header skeleton */}
+                    <div className="flex justify-between items-center">
+                        <div className="h-4 w-32 bg-nebula-elevated rounded" />
+                        <div className="h-3 w-16 bg-nebula-elevated rounded" />
+                    </div>
+                    {/* Subject skeleton */}
+                    <div className="h-4 w-3/4 bg-nebula-elevated rounded" />
+                    {/* Preview skeleton */}
+                    <div className="space-y-1.5">
+                        <div className="h-3 w-full bg-nebula-elevated rounded" />
+                        <div className="h-3 w-2/3 bg-nebula-elevated rounded" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/** List of skeleton items for loading state */
+export function EmailSkeletonList({ count = 5 }: { count?: number }) {
+    return (
+        <div className="h-full">
+            {Array.from({ length: count }).map((_, i) => (
+                <EmailSkeleton key={i} />
+            ))}
+        </div>
+    );
+}
+
 /** Empty state when no messages */
 export function EmptyInbox() {
     return (
@@ -49,6 +96,7 @@ export function EmailItem({ message, isSelected, onSelect, onCopyOTP }: EmailIte
     const otpResult = extractOTP(message.textBody || message.subject || '');
     const otp = typeof otpResult === 'string' ? otpResult : otpResult?.code;
     const isUnread = !message.isRead;
+    const { letter, color } = getSenderAvatar(message.fromAddress || '');
 
     return (
         <div
@@ -69,81 +117,92 @@ export function EmailItem({ message, isSelected, onSelect, onCopyOTP }: EmailIte
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />
             )}
 
-            <div className="space-y-1.5">
-                {/* Header row: sender + time + indicators */}
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {message.isPinned && (
-                            <svg className="w-3 h-3 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                            </svg>
-                        )}
-                        <span className={cn(
-                            "text-sm truncate",
-                            isUnread || isSelected ? "text-nebula-text font-semibold" : "text-nebula-text-secondary font-medium"
-                        )}>
-                            {message.fromAddress}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                        {message.attachments && message.attachments.length > 0 && (
-                            <svg className="w-3.5 h-3.5 text-nebula-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                            </svg>
-                        )}
-                        <span className="text-xs text-nebula-text-muted whitespace-nowrap">
-                            {formatRelativeTime(new Date(message.receivedAt))}
-                        </span>
-                    </div>
+            <div className="flex items-start gap-3">
+                {/* Sender Avatar */}
+                <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0"
+                    style={{ backgroundColor: color }}
+                    aria-hidden="true"
+                >
+                    {letter}
                 </div>
 
-                {/* Subject */}
-                <div className={cn(
-                    "text-sm truncate",
-                    isUnread || isSelected ? "text-nebula-text font-medium" : "text-nebula-text-secondary"
-                )}>
-                    {message.subject || '(Không có tiêu đề)'}
-                </div>
-
-                {/* Preview */}
-                <div className="text-xs text-nebula-text-muted line-clamp-2 leading-relaxed">
-                    {message.textBody?.substring(0, 120) || 'Không có nội dung xem trước'}
-                </div>
-
-                {/* OTP Badge */}
-                {otp && (
-                    <button
-                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary/15 to-purple-500/10 hover:from-primary/25 hover:to-purple-500/15 text-primary text-xs font-semibold transition-all border border-primary/20 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.25)] active:scale-[0.98]"
-                        onClick={(e) => onCopyOTP(otp, e)}
-                        title="Nhấn để sao chép OTP"
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                        </svg>
-                        OTP: {otp}
-                    </button>
-                )}
-
-                {/* Labels */}
-                {message.labels && message.labels.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                        {message.labels.map(({ label }) => (
-                            <span
-                                key={label.id}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
-                                style={{
-                                    backgroundColor: `${label.color}20`,
-                                    color: label.color,
-                                    border: `1px solid ${label.color}40`
-                                }}
-                            >
-                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: label.color }} />
-                                {label.name}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                    {/* Header row: sender + time + indicators */}
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                            {message.isPinned && (
+                                <svg className="w-3 h-3 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            )}
+                            <span className={cn(
+                                "text-sm truncate",
+                                isUnread || isSelected ? "text-nebula-text font-semibold" : "text-nebula-text-secondary font-medium"
+                            )}>
+                                {message.fromAddress}
                             </span>
-                        ))}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {message.attachments && message.attachments.length > 0 && (
+                                <svg className="w-3.5 h-3.5 text-nebula-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                            )}
+                            <span className="text-xs text-nebula-text-muted whitespace-nowrap">
+                                {formatRelativeTime(new Date(message.receivedAt))}
+                            </span>
+                        </div>
                     </div>
-                )}
+
+                    {/* Subject */}
+                    <div className={cn(
+                        "text-sm truncate",
+                        isUnread || isSelected ? "text-nebula-text font-medium" : "text-nebula-text-secondary"
+                    )}>
+                        {message.subject || '(Không có tiêu đề)'}
+                    </div>
+
+                    {/* Preview */}
+                    <div className="text-xs text-nebula-text-muted line-clamp-2 leading-relaxed">
+                        {message.textBody?.substring(0, 120) || 'Không có nội dung xem trước'}
+                    </div>
+
+                    {/* OTP Badge */}
+                    {otp && (
+                        <button
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary/15 to-purple-500/10 hover:from-primary/25 hover:to-purple-500/15 text-primary text-xs font-semibold transition-all border border-primary/20 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.25)] active:scale-[0.98]"
+                            onClick={(e) => onCopyOTP(otp, e)}
+                            title="Nhấn để sao chép OTP"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                            </svg>
+                            OTP: {otp}
+                        </button>
+                    )}
+
+                    {/* Labels */}
+                    {message.labels && message.labels.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                            {message.labels.map(({ label }) => (
+                                <span
+                                    key={label.id}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                                    style={{
+                                        backgroundColor: `${label.color}20`,
+                                        color: label.color,
+                                        border: `1px solid ${label.color}40`
+                                    }}
+                                >
+                                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: label.color }} />
+                                    {label.name}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

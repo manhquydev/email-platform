@@ -72,7 +72,7 @@ export function Support() {
 
 function QuickLink({ icon, color, title, desc, to, href }: { icon: string; color: string; title: string; desc: string; to?: string; href?: string }) {
   const card = (
-    <GlassCard className="p-4 hover:border-primary/30 transition-all">
+    <GlassCard className="p-4 hover:border-primary/30 transition-all cursor-pointer">
       <div className="flex items-center gap-3">
         <span className={"material-symbols-outlined " + color}>{icon}</span>
         <div><h3 className="font-semibold">{title}</h3><p className="text-sm text-text-secondary">{desc}</p></div>

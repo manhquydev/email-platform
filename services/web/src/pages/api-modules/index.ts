@@ -8,5 +8,7 @@ export {
     APIFeatures,
     EndpointCard,
     AuthenticationSection,
-    WebhookSection
+    WebhookSection,
+    SearchBar,
+    QuickActionCards
 } from "./api-components";

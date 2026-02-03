@@ -11,6 +11,14 @@ export const DOC_TABS = [
     { id: "sdks", label: "SDKs", icon: "code" },
 ] as const;
 
+// Sidebar navigation sections with descriptions
+export const DOC_SECTIONS = [
+    { id: "quickstart", label: "Bắt đầu nhanh", icon: "rocket_launch", desc: "Tích hợp trong 5 phút" },
+    { id: "api", label: "API Reference", icon: "api", desc: "Endpoints & parameters" },
+    { id: "webhooks", label: "Webhooks", icon: "webhook", desc: "Real-time events" },
+    { id: "sdks", label: "SDKs", icon: "code", desc: "7 ngôn ngữ hỗ trợ" },
+] as const;
+
 export const CODE_EXAMPLES = {
     createInbox: `curl -X POST https://api.manhquy.click/inboxes \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -108,12 +116,63 @@ export const API_ENDPOINTS = [
     { method: "DELETE", path: "/api-keys/:id", desc: "Thu hồi API key" },
 ];
 
+// SDKs - Source available in packages/, not yet published to registries
+// Project is private - no external links
 export const AVAILABLE_SDKS = [
-    { name: "JavaScript/TypeScript", icon: "🟨", status: "✅ Available", install: "npm install @ephemera/sdk" },
-    { name: "Python", icon: "🐍", status: "✅ Available", install: "pip install ephemera" },
-    { name: "Go", icon: "🔵", status: "✅ Available", install: "go get github.com/ephemera/sdk-go" },
-    { name: "PHP", icon: "🐘", status: "✅ Available", install: "composer require ephemera/sdk" },
-    { name: "Java", icon: "☕", status: "✅ Available", install: "Maven: com.ephemera:sdk" },
-    { name: ".NET", icon: "🟣", status: "✅ Available", install: "dotnet add package Ephemera.Sdk" },
-    { name: "CLI", icon: "⌨️", status: "✅ Available", install: "npm install -g @ephemera/cli" },
+    {
+        name: "JavaScript/TypeScript",
+        icon: "javascript",
+        color: "#F7DF1E",
+        status: "Source Available",
+        path: "packages/sdk-js",
+        description: "Node.js & browser support",
+    },
+    {
+        name: "Python",
+        icon: "python",
+        color: "#3776AB",
+        status: "Source Available",
+        path: "packages/sdk-python",
+        description: "Python 3.8+ support",
+    },
+    {
+        name: "Go",
+        icon: "go",
+        color: "#00ADD8",
+        status: "Source Available",
+        path: "packages/sdk-go",
+        description: "Go 1.21+ support",
+    },
+    {
+        name: "PHP",
+        icon: "php",
+        color: "#777BB4",
+        status: "Source Available",
+        path: "packages/sdk-php",
+        description: "PHP 8.1+ with Laravel support",
+    },
+    {
+        name: "Java",
+        icon: "java",
+        color: "#ED8B00",
+        status: "Source Available",
+        path: "packages/sdk-java",
+        description: "Java 17+ support",
+    },
+    {
+        name: ".NET",
+        icon: "dotnet",
+        color: "#512BD4",
+        status: "Source Available",
+        path: "packages/sdk-dotnet",
+        description: ".NET 6+ support",
+    },
+    {
+        name: "CLI",
+        icon: "terminal",
+        color: "#64748B",
+        status: "Source Available",
+        path: "packages/cli",
+        description: "Command-line interface",
+    },
 ];

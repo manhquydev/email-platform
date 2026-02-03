@@ -1,27 +1,59 @@
 /**
  * Fallback Provider
- * Dual-provider system: tries Brevo API first, falls back to Postfix on failure
- * Handles rate limits, timeouts, and provider failures gracefully
+ * Multi-provider system with sequential fallback for HTTP API providers
+ * Chain: Mailgun -> SendGrid -> Brevo (all use HTTPS, bypass SMTP port blocks)
  */
 
 import { EmailProvider, SendEmailOptions, SendEmailResult } from "./interface";
+import { MailgunProvider } from "./mailgun-provider";
+import { SendGridProvider } from "./sendgrid-provider";
 import { BrevoApiProvider } from "./brevo-api-provider";
-import { PostfixProvider } from "./postfix-provider";
 
 interface ProviderEntry {
   provider: EmailProvider;
   name: string;
+  enabled: boolean;
 }
 
 export class FallbackProvider implements EmailProvider {
   private providers: ProviderEntry[];
 
   constructor() {
-    this.providers = [
-      { provider: new BrevoApiProvider(), name: "brevo" },
-      { provider: new PostfixProvider(), name: "postfix" },
-    ];
-    console.log("[FallbackProvider] Initialized with providers:", this.providers.map((p) => p.name).join(" -> "));
+    // Only include providers with configured API keys
+    this.providers = [];
+
+    // Mailgun (priority 1)
+    if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
+      this.providers.push({
+        provider: new MailgunProvider(process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN),
+        name: "mailgun",
+        enabled: true,
+      });
+    }
+
+    // SendGrid (priority 2)
+    if (process.env.SENDGRID_API_KEY) {
+      this.providers.push({
+        provider: new SendGridProvider(process.env.SENDGRID_API_KEY),
+        name: "sendgrid",
+        enabled: true,
+      });
+    }
+
+    // Brevo (priority 3)
+    if (process.env.BREVO_API_KEY) {
+      this.providers.push({
+        provider: new BrevoApiProvider(process.env.BREVO_API_KEY),
+        name: "brevo",
+        enabled: true,
+      });
+    }
+
+    if (this.providers.length === 0) {
+      console.warn("[FallbackProvider] No email providers configured!");
+    } else {
+      console.log("[FallbackProvider] Initialized with providers:", this.providers.map((p) => p.name).join(" -> "));
+    }
   }
 
   async sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {

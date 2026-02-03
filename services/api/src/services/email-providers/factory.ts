@@ -5,6 +5,7 @@ import { FallbackProvider } from "./fallback-provider";
 import { GoogleProvider } from "./google-provider";
 import { MailgunProvider } from "./mailgun-provider";
 import { PostfixProvider } from "./postfix-provider";
+import { SendGridProvider } from "./sendgrid-provider";
 import { SesProvider } from "./ses-provider";
 import { SmtpProvider } from "./smtp-provider";
 
@@ -21,6 +22,12 @@ export class EmailProviderFactory {
 
       case "postfix":
         return new PostfixProvider();
+
+      case "sendgrid":
+        if (!process.env.SENDGRID_API_KEY) {
+          throw new Error("SENDGRID_API_KEY not configured");
+        }
+        return new SendGridProvider(process.env.SENDGRID_API_KEY);
 
       case "fallback":
         // Dual provider: Brevo API (primary) -> Postfix (fallback)

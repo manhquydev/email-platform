@@ -1,7 +1,10 @@
 
 import { EmailProvider } from "./interface";
+import { BrevoApiProvider } from "./brevo-api-provider";
+import { FallbackProvider } from "./fallback-provider";
 import { GoogleProvider } from "./google-provider";
 import { MailgunProvider } from "./mailgun-provider";
+import { PostfixProvider } from "./postfix-provider";
 import { SesProvider } from "./ses-provider";
 import { SmtpProvider } from "./smtp-provider";
 
@@ -10,6 +13,19 @@ export class EmailProviderFactory {
     const providerType = process.env.OUTBOUND_PROVIDER || "smtp";
 
     switch (providerType.toLowerCase()) {
+      case "brevo":
+        if (!process.env.BREVO_API_KEY) {
+          throw new Error("BREVO_API_KEY not configured");
+        }
+        return new BrevoApiProvider(process.env.BREVO_API_KEY);
+
+      case "postfix":
+        return new PostfixProvider();
+
+      case "fallback":
+        // Dual provider: Brevo API (primary) -> Postfix (fallback)
+        return new FallbackProvider();
+
       case "google":
         return new GoogleProvider();
 

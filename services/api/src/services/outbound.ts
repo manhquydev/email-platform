@@ -1,6 +1,7 @@
 
 import { appConfig } from "../config";
 import { prisma } from "../lib/prisma";
+import { emailsSentCounter } from "../lib/metrics";
 import { decrypt } from "../utils/encryption";
 import { sanitizeEmailHeader, sanitizeEmailSubject } from "../utils/input-sanitizer";
 import { EmailProviderFactory } from "./email-providers/factory";
@@ -83,9 +84,15 @@ export class OutboundService {
                 dkim: dkimOptions
             });
 
+            // Increment success counter
+            emailsSentCounter.labels(result.provider || "unknown", "success").inc();
+
             console.log(`[OutboundService] Email sent successfully via ${result.provider}. Message ID: ${result.messageId}`);
             return result;
         } catch (error: any) {
+            // Increment failure counter
+            emailsSentCounter.labels(process.env.OUTBOUND_PROVIDER || "smtp", "failed").inc();
+
             console.error(`[OutboundService] Failed to send email to ${to}:`, error);
             throw new Error(`Email delivery failed: ${error.message}`);
         }

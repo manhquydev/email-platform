@@ -1,0 +1,49 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ["alertname", "severity"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: "telegram"
+  routes:
+    - match:
+        severity: critical
+      receiver: "telegram-critical"
+      continue: true
+
+receivers:
+  - name: "telegram"
+    telegram_configs:
+      - bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: ${TELEGRAM_ALERT_CHAT_ID}
+        parse_mode: "HTML"
+        message: |
+          <b>{{ .Status | toUpper }}</b>
+          {{ range .Alerts }}
+          <b>Alert:</b> {{ .Labels.alertname }}
+          <b>Severity:</b> {{ .Labels.severity }}
+          <b>Summary:</b> {{ .Annotations.summary }}
+          {{ if .Annotations.description }}<b>Details:</b> {{ .Annotations.description }}{{ end }}
+          {{ end }}
+
+  - name: "telegram-critical"
+    telegram_configs:
+      - bot_token: "${TELEGRAM_BOT_TOKEN}"
+        chat_id: ${TELEGRAM_ALERT_CHAT_ID}
+        parse_mode: "HTML"
+        message: |
+          🚨 <b>CRITICAL ALERT</b> 🚨
+          {{ range .Alerts }}
+          <b>Alert:</b> {{ .Labels.alertname }}
+          <b>Summary:</b> {{ .Annotations.summary }}
+          {{ if .Annotations.description }}<b>Details:</b> {{ .Annotations.description }}{{ end }}
+          {{ end }}
+
+inhibit_rules:
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["alertname"]

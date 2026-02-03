@@ -2,8 +2,15 @@ import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
 import { realtimePubSub } from "../services/realtime-pubsub";
 import { outboundService } from "../services/outbound";
+import { register as promRegister } from "prom-client";
 
 export async function healthRoutes(app: FastifyInstance) {
+  // Prometheus metrics endpoint (internal only - block in Caddy)
+  app.get("/metrics", async (request, reply) => {
+    reply.header("Content-Type", promRegister.contentType);
+    return promRegister.metrics();
+  });
+
   // Liveness probe: Is the process running?
   app.get("/health", async () => ({
     ok: true,

@@ -9,7 +9,6 @@ import { NotificationCenter } from "../components/NotificationCenter";
 import { BackgroundEffects } from "../components/BackgroundEffects";
 import { api } from "../utils/api";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
-import { pageVariants, pageTransition } from "../utils/animation-variants";
 import type { Domain, Inbox, PaginatedResponse } from "../types";
 
 interface AppShellProps {

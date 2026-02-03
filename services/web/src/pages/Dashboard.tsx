@@ -221,7 +221,10 @@ export function Dashboard() {
                                     if (action === 'clear-search') setMessageSearch('');
                                     if (action === 'share-address') {
                                         const inbox = inboxes.find(i => i.id === selectedInbox);
-                                        if (inbox) navigator.clipboard.writeText(`${inbox.localPart}@${domains.find(d => d.id === inbox.domainId)?.domain || ''}`);
+                                        if (inbox) {
+                                            const domain = domains.find(d => d.id === inbox.domainId);
+                                            navigator.clipboard.writeText(`${inbox.localPart}@${domain?.name || ''}`);
+                                        }
                                     }
                                 }}
                             />

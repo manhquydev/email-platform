@@ -104,11 +104,15 @@ export function EmailItem({ message, isSelected, onSelect, onCopyOTP, onStar, on
     return (
         <div
             className={cn(
-                "group relative p-4 cursor-pointer transition-all duration-200 border-b border-nebula-border last:border-0",
-                "hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent",
-                isUnread && "bg-gradient-to-r from-primary/[0.07] to-transparent",
-                isSelected && "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-l-4 border-l-primary shadow-[inset_0_0_25px_rgba(139,92,246,0.08)]",
-                !isSelected && "hover:border-l-4 hover:border-l-primary/30"
+                "group relative p-4 cursor-pointer transition-all duration-200 rounded-lg",
+                // Glassmorphism base states
+                !isUnread && !isSelected && "glass glass-hover",
+                isUnread && !isSelected && "glass-unread glass-hover",
+                isSelected && "glass-elevated border-l-4 border-l-primary shadow-nebula-glow",
+                // Hover border accent + depth animation
+                !isSelected && "hover:border-l-4 hover:border-l-primary/30",
+                // Hover scale and lift effect for card depth
+                "transform hover:scale-[1.02] hover:-translate-y-1"
             )}
             onClick={onSelect}
             role="button"

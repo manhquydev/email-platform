@@ -158,5 +158,32 @@ export default {
             },
         },
     },
-    plugins: [],
+    plugins: [
+        // Glassmorphism utilities for card-based email redesign
+        function({ addUtilities }) {
+            const glassUtilities = {
+                '.glass': {
+                    '@apply bg-nebula-elevated/50 backdrop-blur-[10px] border border-nebula-border/50': {},
+                    '-webkit-backdrop-filter': 'blur(10px)', // Safari support
+                },
+                '.glass-elevated': {
+                    '@apply bg-nebula-elevated/60 backdrop-blur-[12px] border border-nebula-border/60 shadow-nebula-md': {},
+                    '-webkit-backdrop-filter': 'blur(12px)',
+                },
+                '.glass-unread': {
+                    '@apply bg-gradient-to-r from-primary/10 via-nebula-elevated/50 to-transparent backdrop-blur-[10px] border-l-4 border-l-primary border-t border-r border-b border-nebula-border/50': {},
+                    '-webkit-backdrop-filter': 'blur(10px)',
+                },
+                // Hover variants
+                '.glass-hover': {
+                    '@apply hover:bg-nebula-elevated/70 hover:backdrop-blur-[14px] hover:border-nebula-border/70 hover:shadow-nebula-lg transition-all duration-200': {},
+                    '&:hover': {
+                        '-webkit-backdrop-filter': 'blur(14px)',
+                    },
+                },
+            };
+
+            addUtilities(glassUtilities, ['responsive', 'hover']);
+        },
+    ],
 }

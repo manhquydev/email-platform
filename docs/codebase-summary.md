@@ -103,6 +103,7 @@ This is a high-level estimate. A precise count would require running a LOC tool.
 - **`services/api/services/*`**: Business logic and service implementations (e.g., StripeService, OutboundService).
 - **`services/api/schemas/*`**: Data validation schemas (likely Zod).
 - **`services/web/src/components/*`**: Reusable UI components.
+- **`services/web/src/components/EmailItem.tsx`**: Email list item with glassmorphism card design (Phase 1 redesign).
 - **`services/web/src/components/ErrorBoundary/*`**: Error boundary components (SectionErrorBoundary, FeatureErrorBoundary).
 - **`services/web/src/components/skeletons/*`**: Loading skeleton components (MessageListSkeleton, MessageDetailSkeleton, PageSkeleton).
 - **`services/web/src/hooks/useAppToast.ts`**: Custom toast notification hook.
@@ -112,6 +113,8 @@ This is a high-level estimate. A precise count would require running a LOC tool.
 - **`Caddyfile`**: Reverse proxy and HTTPS configuration.
 - **`CLAUDE.md`**: Agent-specific instructions for the codebase.
 - **`.env.example`**: Environment variable definitions.
+- **`services/web/tailwind.config.js`**: Tailwind config with glassmorphism utilities (`.glass`, `.glass-elevated`, `.glass-unread`, `.glass-hover`).
+- **`services/web/src/index.css`**: Global styles with glassmorphism fallbacks for legacy browsers.
 
 ## 4. Module Dependencies (High-Level)
 

@@ -268,7 +268,43 @@ PUBLIC_INBOX_ENABLED=false
 REQUIRE_EMAIL_VERIFICATION=true
 ```
 
-## 8. Scalability Considerations
+## 8. Frontend UI Architecture
+
+### Phase 1: Glassmorphism Visual Redesign (Completed)
+**Objective:** Transform email list from flat UI to frosted glass cards
+
+**Implementation:**
+- **EmailItem Component**: Refactored from flat list to card-based layout
+  - Base: 10px backdrop blur with subtle borders
+  - Unread: Gradient overlay + 4px left accent (primary color)
+  - Hover: Scale 1.02 + lift effect (transform + shadow transition)
+  - Selected: Gradient fill + inset glow shadow
+
+**Design Tokens** (Tailwind utilities):
+```css
+.glass → 10px blur, 50% opacity elevated bg
+.glass-elevated → 12px blur + md shadow
+.glass-unread → gradient + left border accent
+.glass-hover → 14px blur on hover + lg shadow
+```
+
+**Browser Support:**
+- Modern: `backdrop-filter: blur()`
+- Safari: `-webkit-backdrop-filter` prefixes
+- Legacy (IE11, old Firefox): Solid RGBA fallbacks via `@supports not`
+
+**Performance:**
+- Target: 60fps animations
+- Transitions: `duration-200` (0.2s cubic-bezier)
+- GPU acceleration: `transform` + `backdrop-filter`
+
+**Files Modified:**
+- `services/web/tailwind.config.js` (lines 162-188: glass utilities plugin)
+- `services/web/src/components/EmailItem.tsx` (card-based structure)
+- `services/web/src/index.css` (lines 16-32: @supports fallbacks)
+- `services/web/src/components/EmailStream.tsx` (removed list wrapper styles)
+
+## 9. Scalability Considerations
 
 ### Current Architecture
 - Single API instance handles HTTP + SMTP

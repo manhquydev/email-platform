@@ -142,6 +142,29 @@ function Component() {
 <div className="bg-[var(--neo-glass-bg)] backdrop-blur-xl">
 ```
 
+### Glassmorphism Design System (Phase 1)
+```tsx
+// Card-based email redesign with frosted glass effect
+// Utilities defined in tailwind.config.js
+
+// Base glass card (10px blur)
+<div className="glass rounded-lg p-4">
+
+// Elevated glass card (12px blur + shadow)
+<div className="glass-elevated rounded-lg p-4">
+
+// Unread email card (gradient + left accent)
+<div className="glass-unread rounded-lg p-4">
+
+// Hover-interactive glass
+<div className="glass glass-hover rounded-lg p-4">
+```
+
+**Browser Compatibility:**
+- Safari: `-webkit-backdrop-filter` prefixes included
+- Legacy browsers: Solid background fallbacks via `@supports` in index.css
+- Performance: 60fps target with `transition-all duration-200`
+
 ### API Calls
 ```typescript
 // Use centralized api utility

@@ -13,6 +13,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Glassmorphism Browser Fallbacks - Phase 1: Card-Based Email Redesign */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass {
+    background: rgba(26, 26, 26, 0.85) !important; /* Solid fallback for older browsers */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .glass-elevated {
+    background: rgba(139, 92, 246, 0.25) !important;
+    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2) !important;
+  }
+
+  .glass-unread {
+    background: rgba(139, 92, 246, 0.18) !important;
+    border-left-color: rgba(139, 92, 246, 0.6) !important;
+  }
+}
+
 /* Wireframe Exact Matches */
 .glass-panel {
   background: var(--glass-panel-bg);

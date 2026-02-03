@@ -95,10 +95,10 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
                             <motion.div
                                 key={animate ? location.pathname : 'static'}
                                 className="flex-1 overflow-auto flex flex-col"
-                                initial={animate && !reducedMotion ? pageVariants.initial : false}
-                                animate={animate && !reducedMotion ? pageVariants.animate : undefined}
-                                exit={animate && !reducedMotion ? pageVariants.exit : undefined}
-                                transition={pageTransition}
+                                initial={animate && !reducedMotion ? { opacity: 0, x: 20 } : false}
+                                animate={animate && !reducedMotion ? { opacity: 1, x: 0 } : undefined}
+                                exit={animate && !reducedMotion ? { opacity: 0, x: -20 } : undefined}
+                                transition={{ duration: 0.2, ease: 'easeOut' }}
                             >
                                 {children}
                             </motion.div>

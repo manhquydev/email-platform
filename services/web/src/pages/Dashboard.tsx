@@ -196,7 +196,7 @@ export function Dashboard() {
                         searchValue={messageSearch}
                         onSearchChange={setMessageSearch}
                         searchPlaceholder="Tìm kiếm... (từ:, là:chưa đọc)"
-                        searchInputRef={searchInputRef}
+                        searchInputRef={searchInputRef as React.RefObject<HTMLInputElement>}
                         onRefresh={refreshMessages}
                         onCompose={() => setShowCompose(true)}
                         onManage={() => navigate('/app/manager')}
@@ -221,7 +221,7 @@ export function Dashboard() {
                                     if (action === 'clear-search') setMessageSearch('');
                                     if (action === 'share-address') {
                                         const inbox = inboxes.find(i => i.id === selectedInbox);
-                                        if (inbox) navigator.clipboard.writeText(inbox.address);
+                                        if (inbox) navigator.clipboard.writeText(`${inbox.localPart}@${domains.find(d => d.id === inbox.domainId)?.domain || ''}`);
                                     }
                                 }}
                             />

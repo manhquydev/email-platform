@@ -2,7 +2,7 @@
  * Shared framer-motion animation variants
  * Used across PageLayout, EmailStream, MobileNav
  */
-import type { Variants } from 'framer-motion';
+import type { Variants, Transition } from 'framer-motion';
 
 // Page transition variants (slide + fade)
 export const pageVariants: Variants = {
@@ -11,9 +11,9 @@ export const pageVariants: Variants = {
   exit: { opacity: 0, x: -20 },
 };
 
-export const pageTransition = {
+export const pageTransition: Transition = {
   duration: 0.2,
-  ease: 'easeOut',
+  ease: 'easeOut' as const,
 };
 
 // List item stagger variants

@@ -99,11 +99,11 @@ export function CompactToolbar({
               selectedDomainId={selectedDomainId}
               selectedTeamId={selectedTeamId}
               selectedInboxId={selectedInboxId}
-              onSelectDomain={onSelectDomain}
-              onSelectTeam={onSelectTeam}
-              onSelectInbox={onSelectInbox ? (id) => onSelectInbox(id) : undefined}
+              onSelectDomain={onSelectDomain || (() => {})}
+              onSelectTeam={onSelectTeam || (() => {})}
+              onSelectInbox={onSelectInbox || (() => {})}
               user={user}
-              token={token}
+              token={token ?? null}
             />
           </div>
         </div>

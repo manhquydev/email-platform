@@ -153,7 +153,6 @@ export function EmptyStateWithActions({
               size="sm"
               onClick={action.onClick}
             >
-              {action.icon}
               {action.label}
             </Button>
           ))}

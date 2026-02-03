@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { NavigationProvider, DesktopNav, MobileNav, HamburgerMenu, useNavigation } from "../components/Navigation/index";
 import { CommandPalette } from "../components/CommandPalette";
@@ -7,17 +8,23 @@ import { SearchAdvanced } from "../components/SearchAdvanced";
 import { NotificationCenter } from "../components/NotificationCenter";
 import { BackgroundEffects } from "../components/BackgroundEffects";
 import { api } from "../utils/api";
+import { useReducedMotion } from "../hooks/use-reduced-motion";
+import { pageVariants, pageTransition } from "../utils/animation-variants";
 import type { Domain, Inbox, PaginatedResponse } from "../types";
 
 interface AppShellProps {
     children: React.ReactNode;
+    /** Enable page transition animations (default: true) */
+    animate?: boolean;
 }
 
 // Inner component to access NavigationContext
-function AppShellInner({ children }: AppShellProps) {
+function AppShellInner({ children, animate = true }: AppShellProps) {
     const { user, token } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const { openDrawer } = useNavigation();
+    const reducedMotion = useReducedMotion();
 
     // UI States
     const [showSearch, setShowSearch] = useState(false);
@@ -84,7 +91,18 @@ function AppShellInner({ children }: AppShellProps) {
                     </header>
 
                     <main id="main-content" className="flex-1 relative overflow-hidden flex flex-col">
-                        {children}
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={animate ? location.pathname : 'static'}
+                                className="flex-1 overflow-auto flex flex-col"
+                                initial={animate && !reducedMotion ? pageVariants.initial : false}
+                                animate={animate && !reducedMotion ? pageVariants.animate : undefined}
+                                exit={animate && !reducedMotion ? pageVariants.exit : undefined}
+                                transition={pageTransition}
+                            >
+                                {children}
+                            </motion.div>
+                        </AnimatePresence>
                     </main>
 
                     {/* Mobile Bottom Nav */}

@@ -178,6 +178,7 @@ model AnonymousAccount {
   tier         String    @default("FREE")
   createdAt    DateTime  @default(now())
   lastSeenAt   DateTime  @default(now())
+  inboxes      Inbox[]   // Inboxes created during anonymous session (transferred on login)
 
   @@index([accountCode])
   @@index([visitorToken])

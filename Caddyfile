@@ -46,9 +46,19 @@ api.{$DOMAIN} {
 app.{$DOMAIN} {
 	# Proxy /api/* requests to API backend
 	@api path /api/*
+	handle @api {
+		header {
+			Access-Control-Allow-Origin https://app.{$DOMAIN}
+			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+			Access-Control-Allow-Headers "Authorization, Content-Type, Accept"
+			Access-Control-Allow-Credentials "true"
+		}
+		reverse_proxy api:3001
+	}
+
 	# Proxy /realtime/* and /ws/* to API backend (SSE, WebSocket)
 	@realtime path /realtime/* /ws/*
-	handle @api @realtime {
+	handle @realtime {
 		header {
 			Access-Control-Allow-Origin https://app.{$DOMAIN}
 			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"

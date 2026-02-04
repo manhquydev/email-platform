@@ -32,7 +32,17 @@ export async function telegramAuthRoutes(app: FastifyInstance) {
   }
 
   // POST /auth/telegram - Login or start registration via Telegram
+  // Supports optional preHandler to capture anonymous session for ownership transfer
   app.post("/auth/telegram", {
+    preHandler: async (request, reply, done) => {
+      // Try to authenticate but don't require it - captures anonymous session
+      try {
+        await app.authenticate(request, reply);
+      } catch {
+        // Ignore auth errors - anonymous access is allowed
+      }
+      done();
+    },
     config: {
       rateLimit: { max: 10, timeWindow: "1 minute" },
     },
@@ -57,6 +67,7 @@ export async function telegramAuthRoutes(app: FastifyInstance) {
     }
 
     const telegramId = String(authData.id);
+    const anonymousId = (request.user as any)?.anonymousId; // May be undefined
 
     // Check if user exists with this Telegram ID
     const existingUser = await prisma.user.findUnique({
@@ -74,6 +85,23 @@ export async function telegramAuthRoutes(app: FastifyInstance) {
           telegramAuthDate: new Date(authData.auth_date * 1000),
         },
       });
+
+      // Transfer ownership of anonymous inboxes if user was in anonymous session
+      if (anonymousId) {
+        const transferred = await prisma.inbox.updateMany({
+          where: {
+            anonymousAccountId: anonymousId,
+            ownerId: null,
+          },
+          data: {
+            ownerId: existingUser.id,
+            anonymousAccountId: null,
+          },
+        });
+        if (transferred.count > 0) {
+          app.log.info({ userId: existingUser.id, transferred: transferred.count }, "Transferred anonymous inboxes to user");
+        }
+      }
 
       // Check if account is disabled
       if (existingUser.isDisabled) {

@@ -15,7 +15,10 @@ export async function v1Routes(app: FastifyInstance) {
 
   // POST /v1/inboxes - Create a new inbox
   app.post("/v1/inboxes", { preHandler: app.authenticate }, async (req, reply) => {
-    const userId = (req.user as any).userId;
+    const user = req.user as any;
+    const userId = user.userId;
+    const anonymousId = user.anonymousId; // Check if anonymous session
+
     const schema = z.object({
       domain: z.string().optional(),
       localPart: z.string().optional(),
@@ -43,7 +46,7 @@ export async function v1Routes(app: FastifyInstance) {
     const existing = await prisma.inbox.findUnique({
       where: { domainId_localPart: { domainId: domain.id, localPart } },
     });
-    if (existing) {
+    if (existing && !existing.deletedAt) {
       return reply.status(409).send({ error: "Inbox already exists" });
     }
 
@@ -55,7 +58,12 @@ export async function v1Routes(app: FastifyInstance) {
       data: {
         domainId: domain.id,
         localPart,
-        ownerId: userId,
+        // For anonymous sessions: track anonymousAccountId instead of ownerId
+        // For regular users: set ownerId as normal
+        ...(anonymousId
+          ? { anonymousAccountId: anonymousId, ownerId: null }
+          : { ownerId: userId, anonymousAccountId: null }
+        ),
         expiresAt,
       },
       include: { domain: true },

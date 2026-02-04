@@ -228,6 +228,7 @@ model Inbox {
   deletedAt       DateTime?
   claimedAt       DateTime         @default(now())
   ownerId         String?
+  anonymousAccountId String?       // Track anonymous account ownership for transfer on login
   retentionDays   Int?             // Custom retention period (null = use user/global default)
   shareMode       ShareMode        @default(PRIVATE)
   emailFilters     EmailFilter[]
@@ -236,6 +237,7 @@ model Inbox {
   folders         Folder[]
   domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
   owner           User?            @relation(fields: [ownerId], references: [id])
+  anonymousAccount AnonymousAccount? @relation(fields: [anonymousAccountId], references: [id])
   organizationId  String?
   organization    Organization?    @relation(fields: [organizationId], references: [id])
   labels          Label[]
@@ -244,6 +246,7 @@ model Inbox {
 
   @@unique([domainId, localPart])
   @@index([ownerId])
+  @@index([anonymousAccountId])
 }
 
 model Folder {

@@ -46,7 +46,9 @@ api.{$DOMAIN} {
 app.{$DOMAIN} {
 	# Proxy /api/* requests to API backend
 	@api path /api/*
-	handle @api {
+	# Proxy /realtime/* and /ws/* to API backend (SSE, WebSocket)
+	@realtime path /realtime/* /ws/*
+	handle @api @realtime {
 		header {
 			Access-Control-Allow-Origin https://app.{$DOMAIN}
 			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"

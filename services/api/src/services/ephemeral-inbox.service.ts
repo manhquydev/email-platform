@@ -22,6 +22,7 @@ export interface CreateEphemeralInboxOptions {
   expiryHours?: number;
   localPart?: string;  // Custom alias (optional)
   domainId?: string;   // Specific domain (optional)
+  anonymousAccountId?: string;  // Track anonymous session for ownership transfer
 }
 
 export interface EphemeralInbox {
@@ -60,7 +61,7 @@ export const ephemeralInboxService = {
    * @param options - Optional configuration for custom alias and domain
    */
   async create(options: CreateEphemeralInboxOptions = {}): Promise<EphemeralInbox> {
-    const { expiryHours = DEFAULT_EXPIRY_HOURS, localPart: customAlias, domainId: customDomainId } = options;
+    const { expiryHours = DEFAULT_EXPIRY_HOURS, localPart: customAlias, domainId: customDomainId, anonymousAccountId } = options;
 
     // Resolve domain (custom or default)
     let domainId: string;
@@ -144,6 +145,8 @@ export const ephemeralInboxService = {
             localPart,
             domainId,
             expiresAt,
+            anonymousAccountId: anonymousAccountId || null,  // Track anonymous session
+            ownerId: null,  // Always null for public ephemeral inboxes
             flags: {
               isEphemeral: true,
               token,

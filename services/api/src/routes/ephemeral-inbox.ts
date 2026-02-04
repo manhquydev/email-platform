@@ -30,9 +30,19 @@ const messagesQuerySchema = z.object({
 });
 
 export async function ephemeralInboxRoutes(app: FastifyInstance) {
-  // Create new ephemeral inbox (no auth required)
+  // Create new ephemeral inbox (optional auth - captures anonymous session)
   // SECURITY: Strict rate limiting - 5 creations per IP per hour
   app.post("/ephemeral/inbox", {
+    // Optional preHandler: Try to authenticate but don't require it
+    // This captures anonymous session ID for ownership transfer on login
+    preHandler: async (request, reply, done) => {
+      try {
+        await app.authenticate(request, reply);
+      } catch {
+        // Ignore auth errors - anonymous access is allowed
+      }
+      done();
+    },
     config: {
       rateLimit: {
         max: 5,
@@ -45,12 +55,14 @@ export async function ephemeralInboxRoutes(app: FastifyInstance) {
     },
   }, async (request, reply) => {
     const body = createSchema.parse(request.body || {});
+    const anonymousId = (request.user as any)?.anonymousId;
 
     try {
       const inbox = await ephemeralInboxService.create({
         expiryHours: body.expiryHours,
         localPart: body.localPart,
         domainId: body.domainId,
+        anonymousAccountId: anonymousId,  // Track anonymous session
       });
 
       return reply.status(201).send({

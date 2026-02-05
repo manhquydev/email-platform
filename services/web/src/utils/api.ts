@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { getFriendlyErrorMessage } from './errorMapping';
 import { handleCriticalError } from '../hooks/useApiError';
 import { tokenManager } from './token-manager';

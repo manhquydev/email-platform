@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [initializing, setInitializing] = useState(true);
 
     // Phase 3: Background refresh and multi-tab sync
-    const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const refreshTimerRef = useRef<number | null>(null);
     const channelRef = useRef<BroadcastChannel | null>(null);
     const lastRefreshRef = useRef<number>(Date.now());
 

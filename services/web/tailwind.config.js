@@ -16,21 +16,23 @@ export default {
                 'border-hover': 'var(--color-border-hover)',
 
                 // NEBULA PALETTE (Mapped from nebula-glass.css)
+                // Using RGB format to support opacity modifiers (e.g., bg-nebula-elevated/50)
                 nebula: {
-                    void: 'var(--nebula-void)',
-                    surface: 'var(--nebula-surface)',
-                    elevated: 'var(--nebula-elevated)',
-                    border: 'var(--nebula-border)',
-                    'border-subtle': 'var(--nebula-border-subtle)',
-                    violet: 'var(--nebula-violet)',
-                    'violet-light': 'var(--nebula-violet-light)',
-                    'violet-dark': 'var(--nebula-violet-dark)',
-                    cyan: 'var(--nebula-cyan)',
-                    pink: 'var(--nebula-pink)',
-                    text: 'var(--nebula-text)',
-                    'text-secondary': 'var(--nebula-text-secondary)',
-                    'text-muted': 'var(--nebula-text-muted)',
-                    'text-inverse': 'var(--nebula-text-inverse)',
+                    void: 'rgb(var(--nebula-void-rgb) / <alpha-value>)',
+                    surface: 'rgb(var(--nebula-surface-rgb) / <alpha-value>)',
+                    elevated: 'rgb(var(--nebula-elevated-rgb) / <alpha-value>)',
+                    border: 'rgb(var(--nebula-border-rgb) / <alpha-value>)',
+                    'border-subtle': 'rgb(var(--nebula-border-subtle-rgb) / <alpha-value>)',
+                    'border-highlight': 'rgb(var(--nebula-border-highlight-rgb) / <alpha-value>)',
+                    violet: 'rgb(var(--nebula-violet-rgb) / <alpha-value>)',
+                    'violet-light': 'rgb(var(--nebula-violet-light-rgb) / <alpha-value>)',
+                    'violet-dark': 'rgb(var(--nebula-violet-dark-rgb) / <alpha-value>)',
+                    cyan: 'rgb(var(--nebula-cyan-rgb) / <alpha-value>)',
+                    pink: 'rgb(var(--nebula-pink-rgb) / <alpha-value>)',
+                    text: 'rgb(var(--nebula-text-rgb) / <alpha-value>)',
+                    'text-secondary': 'rgb(var(--nebula-text-secondary-rgb) / <alpha-value>)',
+                    'text-muted': 'rgb(var(--nebula-text-muted-rgb) / <alpha-value>)',
+                    'text-inverse': 'rgb(var(--nebula-text-inverse-rgb) / <alpha-value>)',
                 },
 
                 // Primary (Violet)

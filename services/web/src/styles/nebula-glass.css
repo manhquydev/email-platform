@@ -14,6 +14,15 @@
     --nebula-elevated: #F5F5F7;
     --nebula-border: #E5E5E5;
     --nebula-border-subtle: #F5F5F7;
+    --nebula-border-highlight: #D1D5DB;
+
+    /* RGB variants for Tailwind opacity modifiers (e.g., bg-nebula-elevated/50) */
+    --nebula-void-rgb: 248 250 252;
+    --nebula-surface-rgb: 255 255 255;
+    --nebula-elevated-rgb: 245 245 247;
+    --nebula-border-rgb: 229 229 229;
+    --nebula-border-subtle-rgb: 245 245 247;
+    --nebula-border-highlight-rgb: 209 213 219;
 
     /* Accent Colors - Electric Blue (Single Accent) */
     --nebula-violet: #3B82F6;
@@ -29,6 +38,13 @@
     /* Same as primary for monochrome */
     --nebula-pink-light: #60A5FA;
 
+    /* RGB variants for accent colors */
+    --nebula-violet-rgb: 59 130 246;
+    --nebula-violet-light-rgb: 96 165 250;
+    --nebula-violet-dark-rgb: 37 99 235;
+    --nebula-cyan-rgb: 59 130 246;
+    --nebula-pink-rgb: 59 130 246;
+
     /* Glow Effects - Electric Blue */
     --nebula-glow-violet: rgba(59, 130, 246, 0.15);
     --nebula-glow-cyan: rgba(59, 130, 246, 0.12);
@@ -39,6 +55,12 @@
     --nebula-text-secondary: #475569;
     --nebula-text-muted: #94A3B8;
     --nebula-text-inverse: #FFFFFF;
+
+    /* RGB variants for text colors */
+    --nebula-text-rgb: 15 23 42;
+    --nebula-text-secondary-rgb: 71 85 105;
+    --nebula-text-muted-rgb: 148 163 184;
+    --nebula-text-inverse-rgb: 255 255 255;
 
     /* Status Colors */
     --nebula-success: #10B981;
@@ -131,10 +153,25 @@
     --nebula-elevated: #1A2340;
     --nebula-border: #2D3A5C;
     --nebula-border-subtle: #1E293B;
+    --nebula-border-highlight: #3D4A6C;
+
+    /* RGB variants for dark mode */
+    --nebula-void-rgb: 10 15 28;
+    --nebula-surface-rgb: 18 24 43;
+    --nebula-elevated-rgb: 26 35 64;
+    --nebula-border-rgb: 45 58 92;
+    --nebula-border-subtle-rgb: 30 41 59;
+    --nebula-border-highlight-rgb: 61 74 108;
 
     --nebula-text: #F1F5F9;
     --nebula-text-secondary: #CBD5E1;
     --nebula-text-muted: #94A3B8;
+
+    /* RGB variants for dark mode text */
+    --nebula-text-rgb: 241 245 249;
+    --nebula-text-secondary-rgb: 203 213 225;
+    --nebula-text-muted-rgb: 148 163 184;
+    --nebula-text-inverse-rgb: 15 23 42;
 
     --nebula-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --nebula-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);

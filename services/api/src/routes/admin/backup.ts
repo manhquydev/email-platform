@@ -82,6 +82,7 @@ export async function adminBackupRoutes(app: FastifyInstance) {
                 // Scan all subdirectories in parallel
                 await Promise.all([
                     scanDirectory("postgres/encrypted", "postgres"),
+                    scanDirectory("postgres/daily", "postgres"),
                     scanDirectory("redis", "redis"),
                     scanDirectory("storage", "storage")
                 ]);

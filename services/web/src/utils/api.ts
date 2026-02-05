@@ -20,6 +20,7 @@ export class ApiError extends Error {
 const axiosInstance = axios.create({
   baseURL: API_BASE,
   timeout: 15000,
+  withCredentials: true, // Phase 4: Send cookies (httpOnly refreshToken + csrfToken)
   headers: {
     'Content-Type': 'application/json',
   },

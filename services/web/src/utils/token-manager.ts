@@ -11,7 +11,7 @@ interface JwtPayload {
 
 interface TokenResponse {
   token: string;
-  refreshToken: string;
+  csrfToken: string;
   expiresIn: number;
 }
 
@@ -23,17 +23,22 @@ class TokenManager {
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
+    // Phase 4: Refresh token now stored in httpOnly cookie, not localStorage
+    // This method returns null - cookies are handled automatically by browser
+    return null;
   }
 
-  setTokens(accessToken: string, refreshToken: string): void {
+  setTokens(accessToken: string, _refreshToken: string): void {
+    // Phase 4: Only store access token in localStorage
+    // Refresh token is stored as httpOnly cookie by backend
     localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
   }
 
   clearTokens(): void {
+    // Phase 4: Clear access token from localStorage
+    // Cookies will be cleared by backend /auth/logout endpoint
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('refreshToken'); // Cleanup old storage
     this.refreshPromise = null;
   }
 
@@ -45,6 +50,12 @@ class TokenManager {
     } catch {
       return true;
     }
+  }
+
+  // Phase 4: Read CSRF token from cookie for double-submit pattern
+  private getCsrfToken(): string {
+    const match = document.cookie.match(/csrfToken=([^;]+)/);
+    return match ? match[1] : '';
   }
 
   async refreshAccessToken(): Promise<string> {
@@ -63,19 +74,19 @@ class TokenManager {
   }
 
   private async _doRefresh(): Promise<string> {
-    const refreshToken = this.getRefreshToken();
-
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
     const API_BASE = (window as any).env?.API_BASE || import.meta.env.VITE_API_BASE || 'http://localhost:3001';
     const baseUrl = API_BASE.replace(/\/$/, '');
 
+    // Phase 4: Get CSRF token from cookie for double-submit pattern
+    const csrfToken = this.getCsrfToken();
+
     const response = await fetch(`${baseUrl}/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
+      credentials: 'include', // Send cookies (httpOnly refreshToken + csrfToken)
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken, // Double-submit pattern
+      },
     });
 
     if (!response.ok) {
@@ -84,7 +95,8 @@ class TokenManager {
     }
 
     const data: TokenResponse = await response.json();
-    this.setTokens(data.token, data.refreshToken);
+    // Phase 4: Store new access token (refresh token updated as cookie automatically)
+    localStorage.setItem('accessToken', data.token);
     return data.token;
   }
 }

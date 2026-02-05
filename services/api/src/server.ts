@@ -160,6 +160,15 @@ export const buildServer = () => {
       preload: true,
     },
   });
+  app.register(cookie, {
+    secret: appConfig.jwtSecret, // Sign cookies to prevent tampering
+    hook: 'onRequest',
+    parseOptions: {
+      httpOnly: true, // Default httpOnly for security
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    }
+  });
   app.register(multipart, { attachFieldsToBody: false, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
   app.register(fastifyStatic, {

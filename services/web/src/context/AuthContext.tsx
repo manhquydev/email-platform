@@ -58,12 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = useCallback(async (email: string, pass: string) => {
         setBusy(true);
         try {
-            const res = await api<{ token?: string, refreshToken?: string, user?: User, requires2FA?: boolean, tempToken?: string }>("/auth/login", {
+            const res = await api<{ token?: string; csrfToken?: string; user?: User; requires2FA?: boolean; tempToken?: string }>("/auth/login", {
                 method: "POST",
                 body: { email, password: pass },
             });
-            if (res.token && res.refreshToken && res.user) {
-                tokenManager.setTokens(res.token, res.refreshToken);
+            if (res.token && res.user) {
+                // Phase 4: Refresh token is now httpOnly cookie, only store access token
+                tokenManager.setTokens(res.token, "");
                 setToken(res.token);
                 setUser(res.user);
                 lastRefreshRef.current = Date.now();
@@ -91,11 +92,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const verify2FA = useCallback(async (tempToken: string, code: string) => {
         setBusy(true);
         try {
-            const res = await api<{ token: string, refreshToken: string, user: User }>("/auth/2fa/verify", {
+            const res = await api<{ token: string; csrfToken: string; user: User }>("/auth/2fa/verify", {
                 method: "POST",
                 body: { tempToken, code },
             });
-            tokenManager.setTokens(res.token, res.refreshToken);
+            // Phase 4: Refresh token is now httpOnly cookie, only store access token
+            tokenManager.setTokens(res.token, "");
             setToken(res.token);
             setUser(res.user);
             lastRefreshRef.current = Date.now();

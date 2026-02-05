@@ -149,6 +149,15 @@ Client Request
 5. Return { token, refreshToken, expiresIn }
 ```
 
+### 3.5 Client-Side Session Management
+The `AuthContext` in the web service manages the lifecycle of the authentication session:
+
+- **Background Refresh**: A background timer triggers a token refresh every 10 minutes to maintain active sessions.
+- **Visibility Awareness**: Uses the Page Visibility API to pause refresh timers when the tab is hidden, reducing unnecessary API calls and battery drain.
+- **Session Wake-up**: If a tab remains hidden for more than 15 minutes, it triggers an immediate refresh upon becoming visible to ensure the token hasn't expired.
+- **Multi-tab Synchronization**: Uses `BroadcastChannel` ('auth_session_sync') to synchronize authentication state across all open tabs (e.g., simultaneous logout, login state propagation).
+- **State Tracking**: Exposes `isAuthenticated` boolean for efficient UI conditional rendering without manually checking token presence.
+
 ## 4. Email Ingestion Flow
 
 ### 4.1 SMTP Server

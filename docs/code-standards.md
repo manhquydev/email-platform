@@ -126,6 +126,32 @@ function Component() {
 }
 ```
 
+### Advanced Hook Patterns
+- **Background Timers**: Always use `useEffect` with proper cleanup (`clearInterval`) to prevent memory leaks.
+- **Cross-Tab Sync**: Use `BroadcastChannel` for synchronizing state across tabs. Close the channel in the cleanup function.
+- **Lifecycle Optimization**: Use the Page Visibility API (`visibilitychange` event) to pause non-essential background tasks when the application is not active.
+
+Example of a robust background worker hook:
+```tsx
+useEffect(() => {
+  const channel = new BroadcastChannel('sync_channel');
+  const timer = setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      // perform task
+    }
+  }, 600000);
+
+  channel.onmessage = (event) => {
+    // handle sync
+  };
+
+  return () => {
+    clearInterval(timer);
+    channel.close();
+  };
+}, []);
+```
+
 ### Custom Hooks
 - Prefix with `use`: `useKeyboardShortcuts`, `useCopyToClipboard`
 - Return object with named values

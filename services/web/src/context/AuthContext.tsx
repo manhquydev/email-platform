@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import type { ReactNode } from "react";
 import { jwtDecode } from "jwt-decode";
 import toast from "react-hot-toast";
@@ -16,9 +16,15 @@ interface AuthContextType {
     verify2FA: (tempToken: string, code: string) => Promise<void>;
     logout: () => void;
     busy: boolean;
+    isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Background refresh every 10 minutes
+const REFRESH_INTERVAL = 10 * 60 * 1000;
+// Trigger immediate refresh if hidden for > 15 minutes
+const HIDDEN_REFRESH_THRESHOLD = 15 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [token, setToken] = useLocalStorage("token", "");
@@ -26,15 +32,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [busy, setBusy] = useState(false);
     const [initializing, setInitializing] = useState(true);
 
-    const logout = () => {
+    // Phase 3: Background refresh and multi-tab sync
+    const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const channelRef = useRef<BroadcastChannel | null>(null);
+    const lastRefreshRef = useRef<number>(Date.now());
+
+    const logout = useCallback(() => {
         clarityTrack("logout");
         tokenManager.clearTokens();
         setToken("");
         setUser(null);
-        toast.success("Đã đăng xuất");
-    };
 
-    const login = async (email: string, pass: string) => {
+        // Clear background refresh timer
+        if (refreshTimerRef.current) {
+            clearInterval(refreshTimerRef.current);
+            refreshTimerRef.current = null;
+        }
+
+        // Notify other tabs
+        channelRef.current?.postMessage({ type: 'logout' });
+
+        toast.success("Đã đăng xuất");
+    }, [setToken]);
+
+    const login = useCallback(async (email: string, pass: string) => {
         setBusy(true);
         try {
             const res = await api<{ token?: string, refreshToken?: string, user?: User, requires2FA?: boolean, tempToken?: string }>("/auth/login", {
@@ -45,6 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 tokenManager.setTokens(res.token, res.refreshToken);
                 setToken(res.token);
                 setUser(res.user);
+                lastRefreshRef.current = Date.now();
+
+                // Notify other tabs about login
+                channelRef.current?.postMessage({ type: 'login', token: res.token });
+
                 // Track login in Clarity
                 clarityIdentify(res.user.id, undefined, res.user.email);
                 claritySetTag("user_role", res.user.role);
@@ -60,9 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } finally {
             setBusy(false);
         }
-    };
+    }, [setToken]);
 
-    const verify2FA = async (tempToken: string, code: string) => {
+    const verify2FA = useCallback(async (tempToken: string, code: string) => {
         setBusy(true);
         try {
             const res = await api<{ token: string, refreshToken: string, user: User }>("/auth/2fa/verify", {
@@ -72,6 +98,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             tokenManager.setTokens(res.token, res.refreshToken);
             setToken(res.token);
             setUser(res.user);
+            lastRefreshRef.current = Date.now();
+
+            // Notify other tabs about login via 2FA
+            channelRef.current?.postMessage({ type: 'login', token: res.token });
+
             // Track 2FA verification in Clarity
             clarityIdentify(res.user.id, undefined, res.user.email);
             claritySetTag("user_role", res.user.role);
@@ -85,8 +116,163 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } finally {
             setBusy(false);
         }
-    };
+    }, [setToken]);
 
+    // Phase 3: Background token refresh every 10 minutes
+    useEffect(() => {
+        if (!user) return;
+
+        const startBackgroundRefresh = () => {
+            if (refreshTimerRef.current) {
+                clearInterval(refreshTimerRef.current);
+            }
+
+            refreshTimerRef.current = setInterval(async () => {
+                const accessToken = tokenManager.getAccessToken();
+                if (!accessToken) {
+                    clearInterval(refreshTimerRef.current!);
+                    return;
+                }
+
+                try {
+                    const newToken = await tokenManager.refreshAccessToken();
+                    const decoded = jwtDecode<User & { exp: number }>(newToken);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+                    lastRefreshRef.current = Date.now();
+
+                    // Notify other tabs
+                    channelRef.current?.postMessage({ type: 'token_refresh', token: newToken });
+                } catch (error) {
+                    console.error('Background refresh failed:', (error as Error).message);
+                    logout();
+                }
+            }, REFRESH_INTERVAL);
+        };
+
+        startBackgroundRefresh();
+
+        return () => {
+            if (refreshTimerRef.current) {
+                clearInterval(refreshTimerRef.current);
+                refreshTimerRef.current = null;
+            }
+        };
+    }, [user, logout]);
+
+    // Phase 3: BroadcastChannel for multi-tab synchronization
+    useEffect(() => {
+        if (typeof BroadcastChannel === 'undefined') {
+            return; // Graceful degradation for unsupported browsers
+        }
+
+        channelRef.current = new BroadcastChannel('auth_channel');
+
+        channelRef.current.onmessage = (event) => {
+            const { type, token: newToken } = event.data;
+
+            if (type === 'logout') {
+                tokenManager.clearTokens();
+                setUser(null);
+                setToken("");
+                if (refreshTimerRef.current) {
+                    clearInterval(refreshTimerRef.current);
+                    refreshTimerRef.current = null;
+                }
+            } else if (type === 'token_refresh' || type === 'login') {
+                try {
+                    const decoded = jwtDecode<User & { exp: number }>(newToken);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+                    setToken(newToken);
+
+                    // CRITICAL FIX: Sync to tokenManager so API calls use updated token
+                    const refreshToken = tokenManager.getRefreshToken();
+                    if (refreshToken) {
+                        tokenManager.setTokens(newToken, refreshToken);
+                    }
+                } catch (error) {
+                    console.error('Failed to sync token from other tab:', (error as Error).message);
+                }
+            }
+        };
+
+        return () => {
+            channelRef.current?.close();
+            channelRef.current = null;
+        };
+    }, [setToken]);
+
+    // Phase 3: Page Visibility API - pause refresh when tab hidden
+    useEffect(() => {
+        const startBackgroundRefresh = () => {
+            if (refreshTimerRef.current) {
+                clearInterval(refreshTimerRef.current);
+            }
+
+            refreshTimerRef.current = setInterval(async () => {
+                const accessToken = tokenManager.getAccessToken();
+                if (!accessToken) {
+                    clearInterval(refreshTimerRef.current!);
+                    return;
+                }
+
+                try {
+                    const newToken = await tokenManager.refreshAccessToken();
+                    const decoded = jwtDecode<User & { exp: number }>(newToken);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+                    lastRefreshRef.current = Date.now();
+
+                    // Notify other tabs
+                    channelRef.current?.postMessage({ type: 'token_refresh', token: newToken });
+                } catch (error) {
+                    console.error('Background refresh failed:', (error as Error).message);
+                    logout();
+                }
+            }, REFRESH_INTERVAL);
+        };
+
+        const handleVisibilityChange = async () => {
+            if (document.hidden) {
+                // Tab hidden - pause background refresh
+                if (refreshTimerRef.current) {
+                    clearInterval(refreshTimerRef.current);
+                    refreshTimerRef.current = null;
+                }
+            } else {
+                // Tab visible - check if we need immediate refresh
+                const timeSinceRefresh = Date.now() - lastRefreshRef.current;
+
+                if (timeSinceRefresh > HIDDEN_REFRESH_THRESHOLD && user) {
+                    try {
+                        const newToken = await tokenManager.refreshAccessToken();
+                        const decoded = jwtDecode<User & { exp: number }>(newToken);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+                        lastRefreshRef.current = Date.now();
+                    } catch (error) {
+                        console.error('Wake-up refresh failed:', (error as Error).message);
+                        logout();
+                        return;
+                    }
+                }
+
+                // CRITICAL FIX: Restart background refresh timer when tab becomes visible
+                if (user && !refreshTimerRef.current) {
+                    startBackgroundRefresh();
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [user, logout]);
+
+    // Initialize auth state from localStorage
     useEffect(() => {
         const initAuth = async () => {
             if (token) {
@@ -143,7 +329,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ token, user, login, verify2FA, logout, busy }}>
+        <AuthContext.Provider value={{ token, user, login, verify2FA, logout, busy, isAuthenticated: !!user }}>
             {children}
         </AuthContext.Provider>
     );

@@ -5,6 +5,7 @@ import rateLimit from "@fastify/rate-limit";
 import { getRateLimitConfig, createRateLimitRedis, userKeyGenerator, getTierBasedMax } from "./middleware/rate-limit-config";
 import { register as promRegister, collectDefaultMetrics, Histogram, Counter } from "prom-client";
 import helmet from "@fastify/helmet";
+import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import path from "path";

@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import toast from "react-hot-toast";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { api } from "../utils/api";
+import { tokenManager } from "../utils/token-manager";
 import type { User } from "../types";
 import { Loading } from "../components/Loading";
 import { clarityTrack, clarityIdentify, claritySetTag } from "../hooks/useClarity";
@@ -11,7 +12,7 @@ import { clarityTrack, clarityIdentify, claritySetTag } from "../hooks/useClarit
 interface AuthContextType {
     token: string;
     user: User | null;
-    login: (email: string, pass: string) => Promise<{ token?: string, user?: User, requires2FA?: boolean, tempToken?: string }>;
+    login: (email: string, pass: string) => Promise<{ token?: string, refreshToken?: string, user?: User, requires2FA?: boolean, tempToken?: string }>;
     verify2FA: (tempToken: string, code: string) => Promise<void>;
     logout: () => void;
     busy: boolean;
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = () => {
         clarityTrack("logout");
+        tokenManager.clearTokens();
         setToken("");
         setUser(null);
         toast.success("Đã đăng xuất");
@@ -35,11 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (email: string, pass: string) => {
         setBusy(true);
         try {
-            const res = await api<{ token?: string, user?: User, requires2FA?: boolean, tempToken?: string }>("/auth/login", {
+            const res = await api<{ token?: string, refreshToken?: string, user?: User, requires2FA?: boolean, tempToken?: string }>("/auth/login", {
                 method: "POST",
                 body: { email, password: pass },
             });
-            if (res.token && res.user) {
+            if (res.token && res.refreshToken && res.user) {
+                tokenManager.setTokens(res.token, res.refreshToken);
                 setToken(res.token);
                 setUser(res.user);
                 // Track login in Clarity
@@ -62,10 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const verify2FA = async (tempToken: string, code: string) => {
         setBusy(true);
         try {
-            const res = await api<{ token: string, user: User }>("/auth/2fa/verify", {
+            const res = await api<{ token: string, refreshToken: string, user: User }>("/auth/2fa/verify", {
                 method: "POST",
                 body: { tempToken, code },
             });
+            tokenManager.setTokens(res.token, res.refreshToken);
             setToken(res.token);
             setUser(res.user);
             // Track 2FA verification in Clarity

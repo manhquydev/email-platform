@@ -22,7 +22,7 @@ Ephemera is a high-performance, secure, and user-friendly email platform for pro
 - [x] UI Glassmorphism design system
 - [x] Attachment handling & preview
 - [x] Search & pagination for messages
-- [x] OAuth2-compliant automatic token refresh (Phase 1)
+- [x] OAuth2-compliant automatic token refresh (Phase 1 & 2)
 
 ### Phase 3: Browser Extension - Stabilization (Completed)
 **Status:** 100%

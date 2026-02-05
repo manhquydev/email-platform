@@ -5,6 +5,12 @@ All notable changes to the Ephemera project will be documented in this file.
 ## [0.3.4] - 2026-02-06
 
 ### Added
+- **Frontend Token Interceptor (Phase 2):**
+  - Migrated API utility from `fetch` to `axios` for robust interceptor support.
+  - Proactive token refresh mechanism (threshold < 5 min).
+  - Reactive 401 handling with automatic request queuing and retry.
+  - Singleton refresh promise pattern to prevent race conditions.
+  - New `token-manager.ts` utility for secure JWT handling.
 - **Backend Refresh Endpoint (Phase 1):**
   - `POST /auth/refresh` for secure OAuth2-style token rotation.
   - Implementation of refresh token reuse detection and family rotation.

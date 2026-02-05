@@ -35,8 +35,8 @@ Implement OAuth2-compliant token refresh architecture with:
 | Phase | Description | Effort | Status |
 |-------|-------------|--------|--------|
 | [Phase 1](./phase-01-backend-refresh-endpoint.md) | Backend Refresh Endpoint | 2h | Completed (2026-02-06) |
-| [Phase 2](./phase-02-frontend-token-interceptor.md) | Frontend Token Interceptor | 3h | Pending |
-| [Phase 3](./phase-03-auth-context-management.md) | AuthContext + Token Management | 1.5h | Pending |
+| [Phase 2](./phase-02-frontend-token-interceptor.md) | Frontend Token Interceptor | 3h | Completed (2026-02-06) |
+| [Phase 3](./phase-03-auth-context-management.md) | AuthContext + Token Management | 1.5h | in-progress |
 | [Phase 4](./phase-04-security-hardening.md) | Security Hardening | 1h | Pending |
 | [Phase 5](./phase-05-edge-cases-testing.md) | Edge Cases + Testing | 1.5h | Pending |
 

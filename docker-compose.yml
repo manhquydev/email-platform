@@ -123,6 +123,15 @@ services:
     environment:
       VITE_API_BASE: ${VITE_API_BASE:-https://api.manhquy.click}
 
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: email-platform-pushgateway-1
+    restart: unless-stopped
+    ports:
+      - "9091:9091"
+    command:
+      - --persistence.interval=5m
+
   prometheus:
     image: prom/prometheus:v2.45.0
     command:
@@ -134,6 +143,8 @@ services:
     ports:
       - "9090:9090"
     restart: unless-stopped
+    depends_on:
+      - pushgateway
 
   alertmanager:
     image: prom/alertmanager:v0.26.0

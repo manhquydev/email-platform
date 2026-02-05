@@ -90,3 +90,43 @@ groups:
           severity: critical
         annotations:
           summary: "Redis exporter is down"
+
+  - name: backup_alerts
+    interval: 5m
+    rules:
+      # Backup job failed
+      - alert: BackupJobFailed
+        expr: backup_success == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: backup
+        annotations:
+          summary: "Backup job failed for {{ $labels.service }}"
+          description: "Backup for {{ $labels.service }} has failed for 5 minutes"
+
+      # Backup too old
+      - alert: BackupAgeTooOld
+        expr: (time() - backup_timestamp) / 3600 > 26
+        for: 1m
+        labels:
+          severity: warning
+          service: backup
+        annotations:
+          summary: "Backup too old for {{ $labels.service }}"
+          description: "Last successful backup was {{ $value }} hours ago"
+
+      # Backup size anomaly
+      - alert: BackupSizeAnomaly
+        expr: |
+          abs(
+            (backup_size_bytes - avg_over_time(backup_size_bytes[7d]))
+            / avg_over_time(backup_size_bytes[7d])
+          ) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+          service: backup
+        annotations:
+          summary: "Backup size anomaly for {{ $labels.service }}"
+          description: "Backup size differs by >50% from 7-day average"

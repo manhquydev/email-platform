@@ -137,6 +137,18 @@ Client Request
 6. Return { token, user }
 ```
 
+### 3.4 Token Refresh (Rotation)
+```
+1. POST /auth/refresh { refreshToken }
+2. Verify refresh token & check for reuse detection
+3. If valid, rotate token:
+   a. Revoke current refresh token
+   b. Generate new JWT (Access Token)
+   c. Generate new Refresh Token (Family Rotation)
+4. Record audit log entry via recordAuditFromRequest
+5. Return { token, refreshToken, expiresIn }
+```
+
 ## 4. Email Ingestion Flow
 
 ### 4.1 SMTP Server

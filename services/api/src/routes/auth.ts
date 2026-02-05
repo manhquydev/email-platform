@@ -476,6 +476,76 @@ export async function authRoutes(app: FastifyInstance) {
     return { ok: true, message: "All sessions terminated" };
   });
 
+  // Token Refresh Endpoint - OAuth2 token rotation with reuse detection
+  app.post("/auth/refresh", {
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: "1 minute",
+        keyGenerator: (request) => {
+          const body = request.body as { refreshToken?: string };
+          return body?.refreshToken?.slice(0, 50) || request.ip;
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const parsed = z.object({
+      refreshToken: z.string().min(1),
+    }).safeParse(request.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
+    }
+
+    const { refreshToken } = parsed.data;
+
+    try {
+      const rotated = await RefreshTokenService.rotateToken(
+        refreshToken,
+        request.headers["user-agent"],
+        request.ip
+      );
+
+      if (!rotated) {
+        return reply.status(401).send({ error: "Invalid or expired refresh token" });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: rotated.userId },
+        select: { id: true, email: true, role: true, tier: true, emailVerified: true }
+      });
+
+      if (!user) {
+        return reply.status(401).send({ error: "User not found" });
+      }
+
+      const accessToken = app.jwt.sign(
+        {
+          userId: user.id,
+          role: user.role,
+          tier: user.tier,
+          type: "access",
+          jti: crypto.randomUUID()
+        },
+        { expiresIn: ACCESS_TOKEN_EXPIRY }
+      );
+
+      await recordAuditFromRequest(request, "auth.token_refresh", {
+        userId: rotated.userId,
+        familyId: rotated.familyId
+      });
+
+      return {
+        token: accessToken,
+        refreshToken: rotated.token,
+        expiresIn: 900
+      };
+    } catch (error) {
+      request.log.error(error, "Token refresh failed");
+      return reply.status(500).send({ error: "Token refresh failed" });
+    }
+  });
+
   // 2FA: Setup - Generate secret and QR code
   app.post("/auth/2fa/setup", { preHandler: app.authenticate }, async (request, reply) => {
     const userId = (request.user as any).userId;

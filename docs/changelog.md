@@ -2,6 +2,15 @@
 
 All notable changes to the Ephemera project will be documented in this file.
 
+## [0.3.4] - 2026-02-06
+
+### Added
+- **Backend Refresh Endpoint (Phase 1):**
+  - `POST /auth/refresh` for secure OAuth2-style token rotation.
+  - Implementation of refresh token reuse detection and family rotation.
+  - Integrated audit logging for rotation events.
+  - Rate limiting: 10 requests/min per token.
+
 ## [0.3.3] - 2026-01-20
 
 ### Added

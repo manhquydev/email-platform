@@ -252,6 +252,7 @@ describe('FeatureName', () => {
 
 ### Authentication
 - JWT expiration configured in env
+- **Token Rotation**: `POST /auth/refresh` implements rotation with reuse detection and family tracking.
 - API keys hashed before storage
 - 2FA secrets encrypted with AES-256-GCM
 

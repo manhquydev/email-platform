@@ -35,11 +35,11 @@ export default {
                     'text-inverse': 'rgb(var(--nebula-text-inverse-rgb) / <alpha-value>)',
                 },
 
-                // Primary (Violet)
-                primary: 'var(--color-primary)',
-                'primary-hover': 'var(--color-primary-hover)',
-                'primary-light': 'var(--color-primary-light)',
-                'primary-border': 'var(--color-primary-border)',
+                // Primary (Violet) - RGB format for opacity support
+                primary: 'rgb(var(--color-primary-rgb) / <alpha-value>)',
+                'primary-hover': 'rgb(var(--color-primary-hover-rgb) / <alpha-value>)',
+                'primary-light': 'rgb(var(--color-primary-light-rgb) / <alpha-value>)',
+                'primary-border': 'rgb(var(--color-primary-border-rgb) / <alpha-value>)',
                 // Secondary (Cyan)
                 'secondary': 'var(--color-brand-secondary)',
                 // Accent (Pink)

@@ -66,6 +66,12 @@
   --color-primary-600: var(--nebula-violet-dark);
   --color-primary-700: #1d4ed8;
 
+  /* RGB variants for opacity modifiers (e.g., from-primary/10) */
+  --color-primary-rgb: var(--nebula-violet-rgb);
+  --color-primary-hover-rgb: var(--nebula-violet-dark-rgb);
+  --color-primary-light-rgb: 239 246 255;
+  --color-primary-border-rgb: var(--nebula-violet-light-rgb);
+
   /* Neutral Colors */
   --color-bg: var(--nebula-void);
   --color-surface: var(--nebula-surface);

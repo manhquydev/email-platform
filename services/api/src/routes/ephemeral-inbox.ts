@@ -35,13 +35,18 @@ export async function ephemeralInboxRoutes(app: FastifyInstance) {
   app.post("/ephemeral/inbox", {
     // Optional preHandler: Try to authenticate but don't require it
     // This captures anonymous session ID for ownership transfer on login
-    preHandler: async (request, reply, done) => {
-      try {
-        await app.authenticate(request, reply);
-      } catch {
-        // Ignore auth errors - anonymous access is allowed
+    preHandler: async (request, reply) => {
+      // Try to authenticate, but don't fail if no token provided
+      const authHeader = request.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        try {
+          await app.authenticate(request, reply);
+        } catch {
+          // Ignore auth errors - anonymous access is allowed
+          // Continue without user context
+        }
       }
-      done();
+      // No auth header = anonymous access allowed
     },
     config: {
       rateLimit: {

@@ -22,7 +22,7 @@ interface BackupFile {
     size: number;
     sizeFormatted: string;
     createdAt: string;
-    type: "postgres" | "redis" | "unknown";
+    type: "postgres" | "redis" | "storage" | "unknown";
 }
 
 interface BackupStatus {
@@ -52,23 +52,39 @@ export async function adminBackupRoutes(app: FastifyInstance) {
         try {
             const localBackups: BackupFile[] = [];
 
-            // List local backups
+            // List local backups - scan subdirectories (postgres/, redis/, storage/)
             try {
-                const files = await readdir(BACKUP_DIR);
-                for (const file of files) {
-                    if (file.endsWith(".sql.gz") || file.endsWith(".rdb")) {
-                        const filePath = join(BACKUP_DIR, file);
-                        const stats = await stat(filePath);
-                        localBackups.push({
-                            name: file,
-                            size: stats.size,
-                            sizeFormatted: formatBytes(stats.size),
-                            createdAt: stats.mtime.toISOString(),
-                            type: file.includes("postgres") ? "postgres" :
-                                  file.includes("redis") ? "redis" : "unknown"
-                        });
+                const scanDirectory = async (dir: string, type: "postgres" | "redis" | "storage") => {
+                    try {
+                        const dirPath = join(BACKUP_DIR, dir);
+                        const files = await readdir(dirPath);
+                        for (const file of files) {
+                            // Support encrypted files (.gpg) and regular backups
+                            if (file.endsWith(".sql.gz") || file.endsWith(".sql.gz.gpg") ||
+                                file.endsWith(".rdb") || file.endsWith(".tar.gz") ||
+                                file.endsWith(".tar.gz.gpg")) {
+                                const filePath = join(dirPath, file);
+                                const stats = await stat(filePath);
+                                localBackups.push({
+                                    name: `${dir}/${file}`,
+                                    size: stats.size,
+                                    sizeFormatted: formatBytes(stats.size),
+                                    createdAt: stats.mtime.toISOString(),
+                                    type
+                                });
+                            }
+                        }
+                    } catch {
+                        // Subdirectory may not exist yet
                     }
-                }
+                };
+
+                // Scan all subdirectories in parallel
+                await Promise.all([
+                    scanDirectory("postgres/encrypted", "postgres"),
+                    scanDirectory("redis", "redis"),
+                    scanDirectory("storage", "storage")
+                ]);
             } catch {
                 // Backup dir may not exist yet
             }

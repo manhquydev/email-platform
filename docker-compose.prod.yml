@@ -462,6 +462,60 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: email-platform-pushgateway-1
+    restart: unless-stopped
+    command:
+      - --persistence.interval=5m
+    networks:
+      - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backup:
+    build:
+      context: .
+      dockerfile: services/backup/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backups:/backups
+    env_file:
+      - ./services/api/.env
+    environment:
+      - BACKUP_DIR=/backups
+      - CONTAINER_NAME=email-platform-postgres-1
+    depends_on:
+      - postgres
+    networks:
+      - email_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   # ===================
   # ANTI-ABUSE
   # ===================

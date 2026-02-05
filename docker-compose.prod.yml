@@ -82,6 +82,14 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    command: >
+      redis-server
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --appendonly yes
+      --appendfsync everysec
+      --aof-use-rdb-preamble yes
     networks:
       - email_network
     deploy:
@@ -97,7 +105,11 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    # Không expose port ra ngoài trong production
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
     # ===================
     # API BACKEND

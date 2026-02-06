@@ -12,6 +12,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/inconsolata": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/share-tech-mono": "^5.2.7",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@microsoft/clarity": "^1.0.2",
@@ -30,10 +33,11 @@
     "@types/three": "^0.182.0",
     "axios": "^1.13.4",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "detect-gpu": "^5.0.70",
     "dompurify": "^3.3.1",
-    "framer-motion": "^12.23.26",
+    "framer-motion": "^12.33.0",
     "i18next": "^25.7.4",
     "i18next-browser-languagedetector": "^8.2.0",
     "idb": "^8.0.3",
@@ -57,6 +61,7 @@
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
+    "use-sound": "^5.0.0",
     "workbox-window": "^7.4.0",
     "zod": "^4.2.1"
   },
@@ -79,6 +84,7 @@
     "jsdom": "^27.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",

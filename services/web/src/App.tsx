@@ -9,6 +9,7 @@ import { TermsOfService, PrivacyPolicy, AcceptableUse, GDPR } from "./pages/Lega
 import { Support, Contact } from "./pages/Support";
 import { Sales } from "./pages/Sales";
 import { SupportTicketDetailPage } from "./pages/SupportTicketDetailPage";
+import { AppLayout } from "./layouts/AppLayout";
 import { MainLayout } from "./layouts/MainLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AuthLayout } from "./layouts/AuthLayout";
@@ -109,14 +110,12 @@ function App() {
                   </Route>
 
                   {/* Classic Dashboard (Wireframe Implementation) */}
-                  <Route path="/app" element={<Dashboard />} />
-                  <Route path="/app/sent" element={<Dashboard />} />
-
-                  {/* Inbox Manager */}
-                  <Route path="/app/manager" element={<InboxManager />} />
-
-                  {/* Legacy Focus Stream Dashboard */}
-                  <Route path="/app/stream" element={<FocusDashboard />} />
+                  <Route element={<AppLayout />}>
+                    <Route path="/app" element={<Dashboard />} />
+                    <Route path="/app/sent" element={<Dashboard />} />
+                    <Route path="/app/manager" element={<InboxManager />} />
+                    <Route path="/app/stream" element={<FocusDashboard />} />
+                  </Route>
 
                   {/* Public Ephemeral Inbox - No auth required */}
                   <Route path="/e/:token?" element={<EphemeralInbox />} />

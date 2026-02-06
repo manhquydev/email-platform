@@ -134,19 +134,23 @@ sync_relay_domains() {
     if [ -f "${SHARED_RELAY_DOMAINS}" ]; then
         echo "[$(date)] Syncing relay domains from shared volume..."
 
-        # Read domains from shared file and merge with existing
+        # Overwrite relay_domains and transport files with content from shared volume
+        # This prevents duplicate entries and ensures consistency
+        cp "${SHARED_RELAY_DOMAINS}" "${RELAY_DOMAINS_FILE}"
+
+        # Regenerate transport map for all domains
+        > "${TRANSPORT_FILE}"  # Clear transport file
         while IFS= read -r line || [ -n "$line" ]; do
             domain=$(echo "$line" | cut -d' ' -f1)
-            if [ -n "$domain" ] && ! grep -q "^${domain} " "${RELAY_DOMAINS_FILE}"; then
-                echo "$line" >> "${RELAY_DOMAINS_FILE}"
+            if [ -n "$domain" ]; then
                 echo "${domain} smtp:[api]:2525" >> "${TRANSPORT_FILE}"
-                echo "  Added: ${domain}"
+                echo "  Configured: ${domain}"
             fi
         done < "${SHARED_RELAY_DOMAINS}"
 
         # Rebuild hash maps and reload Postfix
-        postmap "${RELAY_DOMAINS_FILE}"
-        postmap "${TRANSPORT_FILE}"
+        postmap lmdb:"${RELAY_DOMAINS_FILE}"
+        postmap lmdb:"${TRANSPORT_FILE}"
         postfix reload 2>/dev/null || true
         echo "[$(date)] Relay domains sync complete"
     fi

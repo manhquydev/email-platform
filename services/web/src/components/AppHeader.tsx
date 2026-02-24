@@ -41,7 +41,7 @@ export function AppHeader({ title, showBackButton, onBack }: AppHeaderProps) {
     }, []);
 
     const handleLogout = () => {
-        logout();
+        logout('manual');
         navigate("/login");
     };
 

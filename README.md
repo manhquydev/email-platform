@@ -142,7 +142,7 @@ npm run dev
 - Next: Outbound mail + DKIM signing + bounce/complaint webhooks, Rspamd/ClamAV integration, log shipping dashboards, backup/restore/runbooks, provider hybrid (SES/Mailgun/SendGrid) guardrails.
 
 ## Infra notes
-- Ingress: Postfix receives MX traffic; place behind a reverse proxy for TLS termination and cert renewals (e.g., Caddy/NGINX + Let’s Encrypt).
+- Ingress: Postfix receives MX traffic; place behind a reverse proxy for TLS termination and cert renewals (e.g., Caddy/NGINX + Let's Encrypt).
 - Secrets: load via env files in dev; in prod prefer secret stores (Docker/K8s secrets, Vault).
 - Containers: run as non-root where possible; keep images minimal and apply regular base updates.
 

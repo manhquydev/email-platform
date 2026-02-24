@@ -19,4 +19,4 @@ RUN npm run build
 
 EXPOSE 3001 2525
 
-CMD ["sh", "-c", "npm run prisma:deploy && node dist/index.js"]
+CMD ["sh", "-c", "node dist/index.js"]

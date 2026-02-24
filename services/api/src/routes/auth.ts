@@ -852,7 +852,7 @@ export async function authRoutes(app: FastifyInstance) {
 
     const parsed = bodySchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: "Invalid payload" });
+      return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
     }
 
     const userId = (request.user as any).userId;
@@ -1062,8 +1062,17 @@ export async function authRoutes(app: FastifyInstance) {
 
       await recordAuditFromRequest(request, "auth.sso_login", { email: user.email, providerId: ssoData.providerId });
 
-      // Redirect to Web App with tokens
-      const redirectUrl = `${appConfig.webUrl}/auth/sso?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+      // Set refreshToken as httpOnly cookie before redirect (do not expose in URL)
+      reply.setCookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: COOKIE_MAX_AGE_DEFAULT,
+        path: '/auth/refresh',
+      });
+
+      // Redirect to Web App with access token only (refresh token in httpOnly cookie)
+      const redirectUrl = `${appConfig.webUrl}/auth/sso?accessToken=${accessToken}`;
       return reply.redirect(redirectUrl);
 
     } catch (error) {

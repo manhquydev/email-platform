@@ -21,7 +21,7 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
     };
 
     const handleLogout = () => {
-        logout();
+        logout('manual');
         navigate("/login");
     };
 
@@ -141,7 +141,6 @@ export function NavigationSidebar({ isExpanded, onNavToggle }: NavigationSidebar
                             {isExpanded && <span className="text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-300">Quản trị</span>}
                         </Link>
                     )}
-
 
 
 

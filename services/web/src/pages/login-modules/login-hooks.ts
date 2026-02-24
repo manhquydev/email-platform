@@ -40,7 +40,8 @@ export function useLoginForm() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleLoginSuccess = (token: string, user: any) => {
-        localStorage.setItem('token', token);
+        // Use accessToken key to match tokenManager.getAccessToken() which reads localStorage.accessToken
+        localStorage.setItem('accessToken', token);
         localStorage.setItem('user', JSON.stringify(user));
         window.location.href = user.role === 'ADMIN' ? '/admin' : '/app';
     };

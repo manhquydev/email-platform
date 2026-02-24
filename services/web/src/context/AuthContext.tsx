@@ -216,36 +216,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, [setToken]);
 
-    // Phase 3: Page Visibility API - pause refresh when tab hidden
+    // Phase 3: Page Visibility API - pause refresh when tab hidden, trigger catch-up refresh when visible
     useEffect(() => {
-        const startBackgroundRefresh = () => {
-            if (refreshTimerRef.current) {
-                clearInterval(refreshTimerRef.current);
-            }
-
-            refreshTimerRef.current = setInterval(async () => {
-                const accessToken = tokenManager.getAccessToken();
-                if (!accessToken) {
-                    clearInterval(refreshTimerRef.current!);
-                    return;
-                }
-
-                try {
-                    const newToken = await tokenManager.refreshAccessToken();
-                    const decoded = jwtDecode<User & { exp: number }>(newToken);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
-                    lastRefreshRef.current = Date.now();
-
-                    // Notify other tabs
-                    channelRef.current?.postMessage({ type: 'token_refresh', token: newToken });
-                } catch (error) {
-                    console.error('Background refresh failed:', (error as Error).message);
-                    logout('expired');
-                }
-            }, REFRESH_INTERVAL);
-        };
-
         const handleVisibilityChange = async () => {
             if (document.hidden) {
                 // Tab hidden - pause background refresh
@@ -254,7 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     refreshTimerRef.current = null;
                 }
             } else {
-                // Tab visible - check if we need immediate refresh
+                // Tab visible - trigger immediate refresh if away too long
                 const timeSinceRefresh = Date.now() - lastRefreshRef.current;
 
                 if (timeSinceRefresh > HIDDEN_REFRESH_THRESHOLD && user) {
@@ -269,11 +241,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         logout('expired');
                         return;
                     }
-                }
-
-                // CRITICAL FIX: Restart background refresh timer when tab becomes visible
-                if (user && !refreshTimerRef.current) {
-                    startBackgroundRefresh();
                 }
             }
         };

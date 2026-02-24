@@ -35,7 +35,7 @@ export function HamburgerMenu({ context = "user" }: HamburgerMenuProps) {
     }, [isDrawerOpen]);
 
     const handleLogout = () => {
-        logout();
+        logout('manual');
         navigate("/login");
         closeDrawer();
     };

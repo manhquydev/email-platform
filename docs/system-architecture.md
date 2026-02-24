@@ -109,13 +109,14 @@ Client Request
 
 ### 3.1 Password Login
 ```
-1. POST /auth/login { email, password }
+1. POST /auth/login { email, password, rememberMe? }
 2. Verify password hash (bcrypt)
 3. If 2FA enabled:
    a. Return { requires2FA: true, tempToken }
    b. POST /auth/2fa/verify { tempToken, code }
 4. Generate JWT with { userId, role, tier }
-5. Return { token, user }
+5. Set refresh token as httpOnly cookie (7 days default, 30 days if rememberMe)
+6. Return { token, user }
 ```
 
 ### 3.2 API Key Authentication
@@ -152,11 +153,28 @@ Client Request
 ### 3.5 Client-Side Session Management
 The `AuthContext` in the web service manages the lifecycle of the authentication session:
 
+- **Single Initialization**: `initAuth` useEffect runs exactly once on mount via `hasInitialized` ref, preventing duplicate `/auth/me` calls on token refresh cycles.
 - **Background Refresh**: A background timer triggers a token refresh every 10 minutes to maintain active sessions.
 - **Visibility Awareness**: Uses the Page Visibility API to pause refresh timers when the tab is hidden, reducing unnecessary API calls and battery drain.
 - **Session Wake-up**: If a tab remains hidden for more than 15 minutes, it triggers an immediate refresh upon becoming visible to ensure the token hasn't expired.
-- **Multi-tab Synchronization**: Uses `BroadcastChannel` ('auth_session_sync') to synchronize authentication state across all open tabs (e.g., simultaneous logout, login state propagation).
+- **Multi-tab Synchronization**: Uses `BroadcastChannel` ('auth_session_sync') to synchronize authentication state across all open tabs — logout in one tab redirects all other tabs to `/login`.
 - **State Tracking**: Exposes `isAuthenticated` boolean for efficient UI conditional rendering without manually checking token presence.
+- **Expiry Redirect**: When a session expires (401 from API interceptor), dispatches `auth:unauthorized` event; `AuthContext` handles cleanup and redirects to `/login?reason=expired`.
+- **Expired Session UX**: Login page reads `?reason=expired` query param and shows a `toast.error` notification so users understand why they were redirected.
+- **Remember Me**: Login page "Ghi nhớ đăng nhớ (30 ngày)" checkbox extends refresh token cookie TTL from 7 days to 30 days server-side.
+- **SSO Security**: SSO redirect URL no longer embeds refresh token; token is set as httpOnly cookie server-side before the redirect.
+- **localStorage Consistency**: All login flows (password, Passkey, Telegram) write `accessToken` key to match `tokenManager.getAccessToken()`.
+
+### 3.6 Session Logout Flow
+```
+1. User clicks logout (any surface: AppHeader, NavigationSidebar, DesktopNav,
+   HamburgerMenu, GeneralSettings)
+2. logout('manual') called on AuthContext
+3. Access token cleared from localStorage
+4. Refresh token cookie cleared (server-side via POST /auth/logout)
+5. BroadcastChannel publishes logout event to all open tabs
+6. All tabs redirect to /login
+```
 
 ## 4. Email Ingestion Flow
 

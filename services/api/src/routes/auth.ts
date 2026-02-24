@@ -25,7 +25,10 @@ const passwordSchema = z.string()
 
 // JWT expiry configuration
 const ACCESS_TOKEN_EXPIRY = "15m"; // Short-lived access token
-const REFRESH_TOKEN_EXPIRY = "7d"; // Longer-lived refresh token
+const REFRESH_TOKEN_EXPIRY_DEFAULT = "7d";      // Standard session (7 days)
+const REFRESH_TOKEN_EXPIRY_REMEMBER = "30d";    // Remember Me session (30 days)
+const COOKIE_MAX_AGE_DEFAULT = 7 * 24 * 60 * 60;    // 604800 seconds
+const COOKIE_MAX_AGE_REMEMBER = 30 * 24 * 60 * 60;  // 2592000 seconds
 
 
 export async function authRoutes(app: FastifyInstance) {
@@ -92,7 +95,7 @@ export async function authRoutes(app: FastifyInstance) {
     const accessJti = crypto.randomUUID();
     const refreshJti = crypto.randomUUID();
     const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY_DEFAULT });
 
     // Phase 4: Generate CSRF token for double-submit pattern
     const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -243,6 +246,7 @@ export async function authRoutes(app: FastifyInstance) {
     const bodySchema = z.object({
       email: z.string().email(),
       password: z.string().min(6),
+      rememberMe: z.boolean().optional().default(false),
     });
 
     const parsed = bodySchema.safeParse(request.body);
@@ -250,7 +254,7 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
     }
 
-    const { email, password } = parsed.data;
+    const { email, password, rememberMe } = parsed.data;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       // Log failed attempt for unknown user (prevent enumeration, but log for security analysis)
@@ -322,7 +326,8 @@ export async function authRoutes(app: FastifyInstance) {
     // Check 2FA
     if (user.twoFactorEnabled) {
       // Return partial response - client needs to provide TOTP
-      const tempToken = app.jwt.sign({ userId: user.id, pending2FA: true } as any, { expiresIn: "5m" });
+      // Carry rememberMe through tempToken so 2FA verify can use it
+      const tempToken = app.jwt.sign({ userId: user.id, pending2FA: true, rememberMe: !!rememberMe } as any, { expiresIn: "5m" });
       return { requires2FA: true, tempToken };
     }
 
@@ -330,7 +335,10 @@ export async function authRoutes(app: FastifyInstance) {
     const loginAccessJti = crypto.randomUUID();
     const loginRefreshJti = crypto.randomUUID();
     const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: loginAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: loginRefreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    // Use rememberMe to determine refresh token TTL
+    const loginRefreshExpiry = rememberMe ? REFRESH_TOKEN_EXPIRY_REMEMBER : REFRESH_TOKEN_EXPIRY_DEFAULT;
+    const loginCookieMaxAge = rememberMe ? COOKIE_MAX_AGE_REMEMBER : COOKIE_MAX_AGE_DEFAULT;
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: loginRefreshJti }, { expiresIn: loginRefreshExpiry });
 
     // Phase 4: Generate CSRF token for double-submit pattern
     const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -340,7 +348,7 @@ export async function authRoutes(app: FastifyInstance) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: loginCookieMaxAge,
       path: '/auth/refresh',
     });
 
@@ -349,7 +357,7 @@ export async function authRoutes(app: FastifyInstance) {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: loginCookieMaxAge,
       path: '/',
     });
 
@@ -426,9 +434,9 @@ export async function authRoutes(app: FastifyInstance) {
       });
     }
 
-    let decoded: { userId: string; pending2FA?: boolean };
+    let decoded: { userId: string; pending2FA?: boolean; rememberMe?: boolean };
     try {
-      decoded = app.jwt.verify(tempToken) as { userId: string; pending2FA?: boolean };
+      decoded = app.jwt.verify(tempToken) as { userId: string; pending2FA?: boolean; rememberMe?: boolean };
     } catch {
       return reply.status(401).send({ error: "Invalid or expired token" });
     }
@@ -476,7 +484,11 @@ export async function authRoutes(app: FastifyInstance) {
     const twoFaAccessJti = crypto.randomUUID();
     const twoFaRefreshJti = crypto.randomUUID();
     const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: twoFaAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: twoFaRefreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    // Inherit rememberMe from tempToken to determine cookie TTL
+    const twoFaRememberMe = !!decoded.rememberMe;
+    const twoFaRefreshExpiry = twoFaRememberMe ? REFRESH_TOKEN_EXPIRY_REMEMBER : REFRESH_TOKEN_EXPIRY_DEFAULT;
+    const twoFaCookieMaxAge = twoFaRememberMe ? COOKIE_MAX_AGE_REMEMBER : COOKIE_MAX_AGE_DEFAULT;
+    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: twoFaRefreshJti }, { expiresIn: twoFaRefreshExpiry });
 
     // Phase 4: Generate CSRF token for double-submit pattern
     const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -486,7 +498,7 @@ export async function authRoutes(app: FastifyInstance) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: twoFaCookieMaxAge,
       path: '/auth/refresh',
     });
 
@@ -495,7 +507,7 @@ export async function authRoutes(app: FastifyInstance) {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: twoFaCookieMaxAge,
       path: '/',
     });
 
@@ -1046,7 +1058,7 @@ export async function authRoutes(app: FastifyInstance) {
       const accessJti = crypto.randomUUID();
       const refreshJti = crypto.randomUUID();
       const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-      const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY });
+      const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY_DEFAULT });
 
       await recordAuditFromRequest(request, "auth.sso_login", { email: user.email, providerId: ssoData.providerId });
 

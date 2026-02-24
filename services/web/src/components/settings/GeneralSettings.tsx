@@ -52,7 +52,7 @@ export function GeneralSettings({ profile, loadProfile }: { profile: UserProfile
         try {
             await api("/auth/me", { method: "DELETE", token });
             toast.success("Đã xóa tài khoản");
-            logout();
+            logout('manual');
         } catch (err) {
             console.error(err);
             toast.error("Không thể xóa tài khoản");

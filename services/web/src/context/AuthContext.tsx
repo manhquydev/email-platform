@@ -12,9 +12,9 @@ import { clarityTrack, clarityIdentify, claritySetTag } from "../hooks/useClarit
 interface AuthContextType {
     token: string;
     user: User | null;
-    login: (email: string, pass: string) => Promise<{ token?: string, refreshToken?: string, user?: User, requires2FA?: boolean, tempToken?: string }>;
+    login: (email: string, pass: string, rememberMe?: boolean) => Promise<{ token?: string, refreshToken?: string, user?: User, requires2FA?: boolean, tempToken?: string }>;
     verify2FA: (tempToken: string, code: string) => Promise<void>;
-    logout: () => void;
+    logout: (reason?: 'manual' | 'expired') => void;
     busy: boolean;
     isAuthenticated: boolean;
 }
@@ -36,8 +36,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const refreshTimerRef = useRef<number | null>(null);
     const channelRef = useRef<BroadcastChannel | null>(null);
     const lastRefreshRef = useRef<number>(Date.now());
+    // Prevents initAuth from re-running on every token change
+    const hasInitialized = useRef(false);
 
-    const logout = useCallback(() => {
+    const logout = useCallback((reason?: 'manual' | 'expired') => {
         clarityTrack("logout");
         tokenManager.clearTokens();
         setToken("");
@@ -52,15 +54,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Notify other tabs
         channelRef.current?.postMessage({ type: 'logout' });
 
-        toast.success("Đã đăng xuất");
+        if (reason === 'expired') {
+            // Redirect to login with reason so login page can show toast
+            window.location.replace('/login?reason=expired');
+        } else {
+            toast.success("Đã đăng xuất");
+        }
     }, [setToken]);
 
-    const login = useCallback(async (email: string, pass: string) => {
+    const login = useCallback(async (email: string, pass: string, rememberMe?: boolean) => {
         setBusy(true);
         try {
             const res = await api<{ token?: string; csrfToken?: string; user?: User; requires2FA?: boolean; tempToken?: string }>("/auth/login", {
                 method: "POST",
-                body: { email, password: pass },
+                body: { email, password: pass, rememberMe: !!rememberMe },
             });
             if (res.token && res.user) {
                 // Phase 4: Refresh token is now httpOnly cookie, only store access token
@@ -147,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     channelRef.current?.postMessage({ type: 'token_refresh', token: newToken });
                 } catch (error) {
                     console.error('Background refresh failed:', (error as Error).message);
-                    logout();
+                    logout('expired');
                 }
             }, REFRESH_INTERVAL);
         };
@@ -180,6 +187,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (refreshTimerRef.current) {
                     clearInterval(refreshTimerRef.current);
                     refreshTimerRef.current = null;
+                }
+                // Redirect this tab to login when another tab logged out
+                if (!window.location.pathname.startsWith('/login')) {
+                    window.location.replace('/login?reason=expired');
                 }
             } else if (type === 'token_refresh' || type === 'login') {
                 try {
@@ -230,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     channelRef.current?.postMessage({ type: 'token_refresh', token: newToken });
                 } catch (error) {
                     console.error('Background refresh failed:', (error as Error).message);
-                    logout();
+                    logout('expired');
                 }
             }, REFRESH_INTERVAL);
         };
@@ -255,7 +266,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         lastRefreshRef.current = Date.now();
                     } catch (error) {
                         console.error('Wake-up refresh failed:', (error as Error).message);
-                        logout();
+                        logout('expired');
                         return;
                     }
                 }
@@ -274,8 +285,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, [user, logout]);
 
-    // Initialize auth state from localStorage
+    // Initialize auth state from localStorage — runs once on mount only
     useEffect(() => {
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+
         const initAuth = async () => {
             if (token) {
                 try {
@@ -314,17 +328,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         initAuth();
 
         const handleUnauthorized = () => {
-            // Only clear if we actually have a user/token to avoid loops or unnecessary toasts
-            if (token || user) {
-                setToken("");
-                setUser(null);
-                toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại");
+            // Use tokenManager to avoid stale closure; redirect to login on expiry
+            if (tokenManager.getAccessToken()) {
+                logout('expired');
             }
         };
 
         window.addEventListener("auth:unauthorized", handleUnauthorized);
         return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
-    }, [token, setToken]); // Removed user to prevent infinite loop
+    }, []); // Empty deps — runs once on mount; token value captured from useLocalStorage initial read
 
     if (initializing) {
         return <Loading fullScreen message="Đang tải dữ liệu..." />;

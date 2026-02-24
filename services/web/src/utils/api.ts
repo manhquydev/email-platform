@@ -62,7 +62,8 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         tokenManager.clearTokens();
-        window.location.href = '/login';
+        // Dispatch event so AuthContext.logout() handles cleanup + BroadcastChannel notification
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         return Promise.reject(refreshError);
       }
     }

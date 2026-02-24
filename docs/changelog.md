@@ -2,6 +2,24 @@
 
 All notable changes to the Ephemera project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- **Session expiry redirect**: Users are now redirected to `/login?reason=expired` with an informative toast when session expires, instead of silently staying on authenticated pages
+- **initAuth loop**: `AuthContext` `initAuth` useEffect now runs only once on mount (hasInitialized ref), preventing repeated `/auth/me` calls on every token refresh
+- **SSO refresh token leak**: SSO redirect URL no longer exposes refresh token; token now set as httpOnly cookie before redirect
+- **localStorage key mismatch**: `handleLoginSuccess` (Passkey/Telegram flows) now writes `accessToken` key matching `tokenManager.getAccessToken()`
+- **api.ts 401 interceptor**: Now dispatches `auth:unauthorized` event instead of direct navigation, ensuring proper BroadcastChannel cleanup
+
+### Added
+- **Remember Me feature**: Login page now has "Ghi nhớ đăng nhập (30 ngày)" checkbox; when checked, refresh token cookie TTL extends from 7 days to 30 days
+- **Expired session toast**: Login page shows `toast.error` when navigated to with `?reason=expired` query param
+- **Multi-tab logout sync**: When one tab logs out, all other tabs are redirected to login page via BroadcastChannel
+
+### Changed
+- All `logout()` callsites updated to pass `'manual'` reason (AppHeader, NavigationSidebar, DesktopNav, HamburgerMenu, GeneralSettings)
+- Duplicate `startBackgroundRefresh` function removed from visibility-change useEffect (DRY)
+
 ## [0.3.4] - 2026-02-06
 
 ### Added
@@ -52,7 +70,6 @@ All notable changes to the Ephemera project will be documented in this file.
   - New API endpoint `GET /billing/compare/:targetTier` for tier comparison with improvements calculation
   - `TierComparisonTable` component with dynamic data fetching and current tier highlighting
   - Pricing row in comparison table showing $0 → $5 → $15 → $49/month
-  - Vietnamese localization for all 13 feature labels
 
 - **AI-Powered Email Summarization:**
   - New `AISummarizationService` with Google Gemini API integration (gemini-2.0-flash)

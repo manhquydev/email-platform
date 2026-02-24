@@ -28,7 +28,7 @@ export function DesktopNav({ context = "user" }: DesktopNavProps) {
     const navItems = useNavItems(context);
 
     const handleLogout = () => {
-        logout();
+        logout('manual');
         navigate("/login");
     };
 

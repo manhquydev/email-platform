@@ -2,8 +2,10 @@
  * Login - Authentication page with email/password and 2FA support
  * Modules extracted to login-modules/
  */
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 import { GlassCard } from "../components/ui/GlassCard";
 import { SEOHead } from "../components/seo/SEOHead";
 import {
@@ -29,12 +31,27 @@ export function Login() {
         error,
         busy,
         telegramBusy,
+        rememberMe,
         handleSubmit,
         handleVerify2FA,
         handleLoginSuccess,
         handleTelegramAuth,
-        handleBack
+        handleBack,
+        handleRememberMeChange
     } = useLoginForm();
+
+    const [searchParams] = useSearchParams();
+
+    // Show toast when redirected here due to session expiry
+    useEffect(() => {
+        const reason = searchParams.get('reason');
+        if (reason === 'expired') {
+            toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', {
+                duration: 5000,
+            });
+            window.history.replaceState({}, '', '/login');
+        }
+    }, []);
 
     return (
         <div className="flex-1 w-full flex flex-col p-4 py-12 relative">
@@ -63,8 +80,10 @@ export function Login() {
                             error={error}
                             busy={busy}
                             telegramBusy={telegramBusy}
+                            rememberMe={rememberMe}
                             onEmailChange={setEmail}
                             onPasswordChange={setPassword}
+                            onRememberMeChange={handleRememberMeChange}
                             onSubmit={handleSubmit}
                             onLoginSuccess={handleLoginSuccess}
                             onTelegramAuth={handleTelegramAuth}

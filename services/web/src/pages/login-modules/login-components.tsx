@@ -47,8 +47,10 @@ interface LoginFormProps {
     error: string | null;
     busy: boolean;
     telegramBusy?: boolean;
+    rememberMe: boolean;
     onEmailChange: (value: string) => void;
     onPasswordChange: (value: string) => void;
+    onRememberMeChange: (checked: boolean) => void;
     onSubmit: (e: React.FormEvent) => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onLoginSuccess: (token: string, user: any) => void;
@@ -61,8 +63,10 @@ export function LoginForm({
     error,
     busy,
     telegramBusy,
+    rememberMe,
     onEmailChange,
     onPasswordChange,
+    onRememberMeChange,
     onSubmit,
     onLoginSuccess,
     onTelegramAuth
@@ -107,6 +111,31 @@ export function LoginForm({
                         className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"
                         icon={<span className="material-symbols-outlined text-[20px]">lock</span>}
                     />
+                </div>
+
+                {/* Remember Me */}
+                <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2.5 cursor-pointer group select-none">
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                id="rememberMe"
+                                checked={rememberMe}
+                                onChange={(e) => onRememberMeChange(e.target.checked)}
+                                className="sr-only peer"
+                            />
+                            <div className="w-4 h-4 rounded border border-border bg-surface-elevated peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center">
+                                {rememberMe && (
+                                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )}
+                            </div>
+                        </div>
+                        <span className="text-sm text-text-secondary group-hover:text-text-main transition-colors">
+                            Ghi nhớ đăng nhập <span className="text-xs text-text-secondary/60">(30 ngày)</span>
+                        </span>
+                    </label>
                 </div>
 
                 <Button

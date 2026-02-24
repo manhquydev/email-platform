@@ -29,6 +29,9 @@ export function useLoginForm() {
     const [tempToken, setTempToken] = useState("");
     const [twoFactorCode, setTwoFactorCode] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [rememberMe, setRememberMe] = useState(() =>
+        localStorage.getItem('rememberMePref') === 'true'
+    );
 
     // Redirect if already logged in
     useEffect(() => {
@@ -46,7 +49,7 @@ export function useLoginForm() {
         e.preventDefault();
         setError(null);
         try {
-            const res = await login(email, password);
+            const res = await login(email, password, rememberMe);
             if (res.requires2FA && res.tempToken) {
                 setRequires2FA(true);
                 setTempToken(res.tempToken);
@@ -70,6 +73,11 @@ export function useLoginForm() {
     };
 
     const handleBack = () => setRequires2FA(false);
+
+    const handleRememberMeChange = (checked: boolean) => {
+        setRememberMe(checked);
+        localStorage.setItem('rememberMePref', String(checked));
+    };
 
     // Telegram login handler - only for existing linked accounts
     const [telegramBusy, setTelegramBusy] = useState(false);
@@ -123,10 +131,12 @@ export function useLoginForm() {
         error,
         busy,
         telegramBusy,
+        rememberMe,
         handleSubmit,
         handleVerify2FA,
         handleLoginSuccess,
         handleTelegramAuth,
-        handleBack
+        handleBack,
+        handleRememberMeChange
     };
 }

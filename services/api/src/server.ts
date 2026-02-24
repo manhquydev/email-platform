@@ -232,6 +232,8 @@ export const buildServer = () => {
     },
     methods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'x-api-key', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['x-csrf-token'],
   });
 
   // WebSocket plugin for realtime features

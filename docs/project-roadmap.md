@@ -5,8 +5,8 @@ Ephemera is a high-performance, secure, and user-friendly email platform for pro
 
 ## 2. Overall Progress
 **Current Status:** Production Beta
-**Overall Completion:** 96%
-**Last Updated:** 2026-02-06
+**Overall Completion:** 97%
+**Last Updated:** 2026-02-24
 
 ## 3. Implementation Phases
 
@@ -23,6 +23,7 @@ Ephemera is a high-performance, secure, and user-friendly email platform for pro
 - [x] Attachment handling & preview
 - [x] Search & pagination for messages
 - [x] OAuth2-compliant automatic token refresh (Phase 1 & 2)
+- [x] Session management hardening (expiry redirect, initAuth dedup, multi-tab sync, Remember Me)
 
 ### Phase 3: Browser Extension - Stabilization (Completed)
 **Status:** 100%
@@ -67,7 +68,8 @@ Ephemera is a high-performance, secure, and user-friendly email platform for pro
 **Target:** 2026-Q3+
 
 #### 7.1 Mobile App Development
-- [x] Core authentication & session management (Backend refresh endpoint implemented)
+- [x] Core authentication & session management (Backend refresh endpoint + client-side hardening)
+- [x] Remember Me (30-day TTL) and expired session UX
 - [ ] Technology selection (Flutter vs React Native evaluation)
 - [ ] Inbox list & message viewing
 - [ ] Push notifications (FCM/APNs)
@@ -98,4 +100,4 @@ Ephemera is a high-performance, secure, and user-friendly email platform for pro
 - [ ] SLA-backed support tiers
 
 ## 4. Changelog Summary
-Refer to [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
+Refer to [CHANGELOG.md](./changelog.md) for detailed version history.

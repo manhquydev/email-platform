@@ -1,0 +1,16 @@
+               total        used        free      shared  buff/cache   available
+Mem:           3.8Gi       1.1Gi       1.7Gi       8.0Mi       1.1Gi       2.5Gi
+Swap:          2.0Gi       256Mi       1.7Gi
+---
+NAME                        IMAGE                                                                     COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+email-platform-api-1        email-platform-api                                                        "docker-entrypoint.s…"   api        6 hours ago      Up 30 seconds             0.0.0.0:2525->2525/tcp, [::]:2525->2525/tcp, 3001/tcp
+email-platform-backup-1     email-platform-backup                                                     "crond -f"               backup     2 weeks ago      Up 2 weeks                
+email-platform-caddy-1      caddy:2-alpine                                                            "caddy run --config …"   caddy      2 weeks ago      Up 2 weeks                0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 443/udp, 2019/tcp
+email-platform-dovecot-1    sha256:c3ee22cbafbec33f22a54fd48705fb47fb6e25e19463aa4ffb4da8b4498f3e97   "dovecot -F"             dovecot    6 hours ago      Up 38 seconds (healthy)   0.0.0.0:143->143/tcp, [::]:143->143/tcp, 0.0.0.0:993->993/tcp, [::]:993->993/tcp
+email-platform-postfix-1    email-platform-postfix                                                    "/entrypoint.sh /usr…"   postfix    43 seconds ago   Up 29 seconds (healthy)   0.0.0.0:25->25/tcp, [::]:25->25/tcp, 0.0.0.0:587->587/tcp, [::]:587->587/tcp
+email-platform-postgres-1   postgres:16-alpine                                                        "docker-entrypoint.s…"   postgres   2 weeks ago      Up 2 weeks                5432/tcp
+email-platform-redis-1      redis:7-alpine                                                            "docker-entrypoint.s…"   redis      2 weeks ago      Up 2 weeks (healthy)      6379/tcp
+email-platform-web-1        email-platform-web                                                        "/docker-entrypoint.…"   web        6 hours ago      Up 40 seconds             80/tcp
+---
+200---
+200

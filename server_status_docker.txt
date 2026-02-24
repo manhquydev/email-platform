@@ -1,0 +1,40 @@
+top - 16:45:48 up 59 days, 11:26,  0 users,  load average: 15.92, 91.23, 128.20
+Tasks: 180 total,   1 running, 178 sleeping,   0 stopped,   1 zombie
+%Cpu(s):  2.9 us,  5.9 sy,  0.0 ni, 91.2 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   3911.8 total,   2116.3 free,    953.1 used,    842.4 buff/cache
+MiB Swap:   2048.0 total,   1733.6 free,    314.4 used.   2710.0 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+    919 root      20   0 4365176 476140  43620 S   0.0  11.9 994:36.20 dockerd
+ 735623 472       20   0  819716 128508  62036 S   0.0   3.2   0:04.29 grafana
+ 735775 11333     20   0  216460 115696  71596 S   0.0   2.9   0:00.92 rspamd
+ 735635 nobody    20   0 1519760  77232  50292 S   0.0   1.9   0:00.30 prometh+
+    755 root      20   0 2451852  69804  42744 S   0.0   1.7 290:37.18 contain+
+ 735822 11333     20   0  217368  56148  11656 S   0.0   1.4   0:00.02 rspamd
+ 735823 11333     20   0  216588  52620   8424 S   0.0   1.3   0:00.01 rspamd
+ 735821 11333     20   0  216460  50020   5908 S   0.0   1.2   0:00.00 rspamd
+ 735824 11333     20   0  216460  48072   3688 S   0.0   1.2   0:00.00 rspamd
+ 729336 root      20   0 1849916  40404  24760 S   0.0   1.0   0:07.58 snapd
+ 929914 root      20   0 1272216  34268  17152 S   0.0   0.9  22:11.89 caddy
+    404 root      rt   0  289316  27100   9072 S   0.0   0.7  11:23.93 multipa+
+ 735957 root      20   0   29788  25540   7264 S   0.0   0.6   0:00.43 supervi+
+---
+CONTAINER ID   IMAGE                                           COMMAND                  CREATED       STATUS                            PORTS                                                                                             NAMES
+a6e4b0e5f506   email-platform-api                              "docker-entrypoint.s…"   6 hours ago   Exited (137) 4 hours ago                                                                                                            email-platform-api-1
+c2868aa02b49   c3ee22cbafbe                                    "dovecot -F"             6 hours ago   Up 6 hours (healthy)              0.0.0.0:143->143/tcp, [::]:143->143/tcp, 0.0.0.0:993->993/tcp, [::]:993->993/tcp                  email-platform-dovecot-1
+cb6c3eea8fa2   a7f1403b9308                                    "/entrypoint.sh /usr…"   6 hours ago   Restarting (137) 10 seconds ago                                                                                                     email-platform-postfix-1
+cdd42a20d4e0   email-platform-web                              "/docker-entrypoint.…"   6 hours ago   Up 6 hours                        80/tcp                                                                                            email-platform-web-1
+e7ce08921c93   email-platform-backup                           "crond -f"               2 weeks ago   Up 2 weeks                                                                                                                          email-platform-backup-1
+9f0daa3affd4   prom/pushgateway:latest                         "/bin/pushgateway --…"   2 weeks ago   Up 2 weeks                        9091/tcp                                                                                          email-platform-pushgateway-1
+e74b3ec2f312   caddy:2-alpine                                  "caddy run --config …"   2 weeks ago   Up 2 weeks                        0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 443/udp, 2019/tcp   email-platform-caddy-1
+58cbaabf33af   grafana/grafana:10.0.3                          "/run.sh"                2 weeks ago   Restarting (137) 19 seconds ago                                                                                                     email-platform-grafana-1
+f3df1816ec27   prom/prometheus:v2.45.0                         "/bin/prometheus --c…"   2 weeks ago   Restarting (137) 19 seconds ago                                                                                                     email-platform-prometheus-1
+fb436e00a2e6   prom/alertmanager:v0.26.0                       "/bin/sh -c 'if [ -n…"   2 weeks ago   Up 2 weeks                        9093/tcp                                                                                          email-platform-alertmanager-1
+1ee6a2b5687b   redis:7-alpine                                  "docker-entrypoint.s…"   2 weeks ago   Up 2 weeks (healthy)              6379/tcp                                                                                          email-platform-redis-1
+53e5856a6f57   clamav/clamav:latest                            "/init"                  2 weeks ago   Up 2 weeks (healthy)              3310/tcp, 7357/tcp                                                                                email-platform-clamav-1
+41b2127d84a4   prometheuscommunity/postgres-exporter:v0.15.0   "/bin/postgres_expor…"   2 weeks ago   Up 2 weeks                        9187/tcp                                                                                          email-platform-postgres-exporter-1
+e982c5a245d6   rspamd/rspamd:latest                            "/usr/bin/rspamd -f"     2 weeks ago   Restarting (137) 18 seconds ago                                                                                                     email-platform-rspamd-1
+4c1aec355345   prom/node-exporter:v1.7.0                       "/bin/node_exporter"     2 weeks ago   Up 2 weeks                        9100/tcp                                                                                          email-platform-node-exporter-1
+65e091c48293   oliver006/redis_exporter:v1.55.0                "/redis_exporter"        2 weeks ago   Up 2 weeks                        9121/tcp                                                                                          email-platform-redis-exporter-1
+dd4a93932b45   postgres:16-alpine                              "docker-entrypoint.s…"   2 weeks ago   Up 2 weeks                        5432/tcp                                                                                          email-platform-postgres-1
+e04509d1c1f0   cungcon_tuhoc-cron                              "docker-entrypoint.s…"   2 weeks ago   Up 2 weeks                                                                                                                          cungcon_cron

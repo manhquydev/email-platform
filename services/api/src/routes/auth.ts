@@ -333,12 +333,11 @@ export async function authRoutes(app: FastifyInstance) {
 
     // SECURITY: Add jti (JWT ID) for token revocation support
     const loginAccessJti = crypto.randomUUID();
-    const loginRefreshJti = crypto.randomUUID();
     const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: loginAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
     // Use rememberMe to determine refresh token TTL
-    const loginRefreshExpiry = rememberMe ? REFRESH_TOKEN_EXPIRY_REMEMBER : REFRESH_TOKEN_EXPIRY_DEFAULT;
-    const loginCookieMaxAge = rememberMe ? COOKIE_MAX_AGE_REMEMBER : COOKIE_MAX_AGE_DEFAULT;
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: loginRefreshJti }, { expiresIn: loginRefreshExpiry });
+    const loginRefreshDays = rememberMe ? 30 : 7;
+    const loginCookieMaxAge = loginRefreshDays * 24 * 60 * 60;
+    const { token: refreshToken } = await RefreshTokenService.createToken(user.id, loginRefreshDays, request.headers["user-agent"], request.ip);
 
     // Phase 4: Generate CSRF token for double-submit pattern
     const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -482,13 +481,12 @@ export async function authRoutes(app: FastifyInstance) {
 
     // SECURITY: Add jti (JWT ID) for token revocation support
     const twoFaAccessJti = crypto.randomUUID();
-    const twoFaRefreshJti = crypto.randomUUID();
     const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: twoFaAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
     // Inherit rememberMe from tempToken to determine cookie TTL
     const twoFaRememberMe = !!decoded.rememberMe;
-    const twoFaRefreshExpiry = twoFaRememberMe ? REFRESH_TOKEN_EXPIRY_REMEMBER : REFRESH_TOKEN_EXPIRY_DEFAULT;
-    const twoFaCookieMaxAge = twoFaRememberMe ? COOKIE_MAX_AGE_REMEMBER : COOKIE_MAX_AGE_DEFAULT;
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: twoFaRefreshJti }, { expiresIn: twoFaRefreshExpiry });
+    const twoFaRefreshDays = twoFaRememberMe ? 30 : 7;
+    const twoFaCookieMaxAge = twoFaRefreshDays * 24 * 60 * 60;
+    const { token: refreshToken } = await RefreshTokenService.createToken(user.id, twoFaRefreshDays, request.headers["user-agent"], request.ip);
 
     // Phase 4: Generate CSRF token for double-submit pattern
     const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -595,7 +593,7 @@ export async function authRoutes(app: FastifyInstance) {
     const headerBuffer = Buffer.from(csrfHeader, 'utf8');
 
     if (csrfBuffer.length !== headerBuffer.length ||
-        !crypto.timingSafeEqual(csrfBuffer, headerBuffer)) {
+      !crypto.timingSafeEqual(csrfBuffer, headerBuffer)) {
       return reply.status(403).send({ error: "CSRF token mismatch" });
     }
 
@@ -634,11 +632,13 @@ export async function authRoutes(app: FastifyInstance) {
       const newCsrfToken = crypto.randomBytes(32).toString('hex');
 
       // Set rotated refreshToken as new httpOnly cookie
+      const cookieMaxAge = rotated.expiresInDays * 24 * 60 * 60;
+
       reply.setCookie('refreshToken', rotated.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
+        maxAge: cookieMaxAge,
         path: '/auth/refresh',
       });
 
@@ -647,7 +647,7 @@ export async function authRoutes(app: FastifyInstance) {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60,
+        maxAge: cookieMaxAge,
         path: '/',
       });
 

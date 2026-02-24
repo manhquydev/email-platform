@@ -1,0 +1,9 @@
+[Tue Feb 24 14:59:36 2026] Out of memory: Killed process 929737 (grafana) total-vm:823056kB, anon-rss:35816kB, file-rss:0kB, shmem-rss:0kB, UID:472 pgtables:444kB oom_score_adj:0
+[Tue Feb 24 15:48:36 2026] Out of memory: Killed process 929348 (prometheus) total-vm:1782560kB, anon-rss:28592kB, file-rss:0kB, shmem-rss:0kB, UID:65534 pgtables:804kB oom_score_adj:0
+[Tue Feb 24 16:14:41 2026] Out of memory: Killed process 726345 (unattended-upgr) total-vm:275704kB, anon-rss:6968kB, file-rss:0kB, shmem-rss:0kB, UID:0 pgtables:304kB oom_score_adj:0
+[Tue Feb 24 16:37:52 2026] Out of memory: Killed process 718439 (supervisord) total-vm:29788kB, anon-rss:1124kB, file-rss:4kB, shmem-rss:0kB, UID:0 pgtables:96kB oom_score_adj:0
+---
+{"level":30,"time":1771934102291,"pid":1,"hostname":"a6e4b0e5f506","reqId":"req-2g","req":{"method":"GET","url":"/metrics","host":"api:3001","remoteAddress":"172.18.0.8","remotePort":60696},"msg":"incoming request"}
+{"level":30,"time":1771934103616,"pid":1,"hostname":"a6e4b0e5f506","reqId":"req-2g","res":{"statusCode":200},"responseTime":998.7379083633423,"msg":"request completed"}
+{"level":30,"time":1771934112851,"pid":1,"hostname":"a6e4b0e5f506","reqId":"req-2h","req":{"method":"GET","url":"/metrics","host":"api:3001","remoteAddress":"172.18.0.8","remotePort":60696},"msg":"incoming request"}
+{"level":30,"time":1771934113658,"pid":1,"hostname":"a6e4b0e5f506","reqId":"req-2h","res":{"statusCode":200},"responseTime":781.4815073013306,"msg":"request completed"}

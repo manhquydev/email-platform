@@ -1,0 +1,23 @@
+ 16:45:04 up 59 days, 11:25,  0 users,  load average: 30.24, 104.18, 133.81
+---
+               total        used        free      shared  buff/cache   available
+Mem:           3.8Gi       923Mi       2.1Gi       6.0Mi       812Mi       2.7Gi
+Swap:          2.0Gi       318Mi       1.7Gi
+---
+NAME                                 IMAGE                                                                     COMMAND                  SERVICE             CREATED       STATUS                            PORTS
+email-platform-alertmanager-1        prom/alertmanager:v0.26.0                                                 "/bin/sh -c 'if [ -n…"   alertmanager        2 weeks ago   Up 2 weeks                        9093/tcp
+email-platform-backup-1              email-platform-backup                                                     "crond -f"               backup              2 weeks ago   Up 2 weeks                        
+email-platform-caddy-1               caddy:2-alpine                                                            "caddy run --config …"   caddy               2 weeks ago   Up 2 weeks                        0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 443/udp, 2019/tcp
+email-platform-clamav-1              clamav/clamav:latest                                                      "/init"                  clamav              2 weeks ago   Up 2 weeks (healthy)              3310/tcp, 7357/tcp
+email-platform-dovecot-1             sha256:c3ee22cbafbec33f22a54fd48705fb47fb6e25e19463aa4ffb4da8b4498f3e97   "dovecot -F"             dovecot             6 hours ago   Up 6 hours (healthy)              0.0.0.0:143->143/tcp, [::]:143->143/tcp, 0.0.0.0:993->993/tcp, [::]:993->993/tcp
+email-platform-grafana-1             grafana/grafana:10.0.3                                                    "/run.sh"                grafana             2 weeks ago   Restarting (137) 4 seconds ago    
+email-platform-node-exporter-1       prom/node-exporter:v1.7.0                                                 "/bin/node_exporter"     node-exporter       2 weeks ago   Up 2 weeks                        9100/tcp
+email-platform-postfix-1             sha256:a7f1403b9308cb4aebecf47e4f2f88ae7e603e392d6a9989269ac17327b336e8   "/entrypoint.sh /usr…"   postfix             6 hours ago   Restarting (137) 10 seconds ago   
+email-platform-postgres-1            postgres:16-alpine                                                        "docker-entrypoint.s…"   postgres            2 weeks ago   Up 2 weeks                        5432/tcp
+email-platform-postgres-exporter-1   prometheuscommunity/postgres-exporter:v0.15.0                             "/bin/postgres_expor…"   postgres-exporter   2 weeks ago   Up 2 weeks                        9187/tcp
+email-platform-prometheus-1          prom/prometheus:v2.45.0                                                   "/bin/prometheus --c…"   prometheus          2 weeks ago   Restarting (137) 3 seconds ago    
+email-platform-pushgateway-1         prom/pushgateway:latest                                                   "/bin/pushgateway --…"   pushgateway         2 weeks ago   Up 2 weeks                        9091/tcp
+email-platform-redis-1               redis:7-alpine                                                            "docker-entrypoint.s…"   redis               2 weeks ago   Up 2 weeks (healthy)              6379/tcp
+email-platform-redis-exporter-1      oliver006/redis_exporter:v1.55.0                                          "/redis_exporter"        redis-exporter      2 weeks ago   Up 2 weeks                        9121/tcp
+email-platform-rspamd-1              rspamd/rspamd:latest                                                      "/usr/bin/rspamd -f"     rspamd              2 weeks ago   Restarting (137) 2 seconds ago    
+email-platform-web-1                 email-platform-web                                                        "/docker-entrypoint.…"   web                 6 hours ago   Up 6 hours                        80/tcp

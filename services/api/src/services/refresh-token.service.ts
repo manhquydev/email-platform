@@ -19,13 +19,14 @@ export class RefreshTokenService {
    */
   static async createToken(
     userId: string,
+    expiresInDays: number = 7,
     userAgent?: string,
     ipAddress?: string
   ): Promise<{ token: string; familyId: string }> {
     const token = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
     const familyId = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000);
 
     await prisma.refreshToken.create({
       data: {
@@ -53,7 +54,7 @@ export class RefreshTokenService {
     oldToken: string,
     userAgent?: string,
     ipAddress?: string
-  ): Promise<{ token: string; userId: string; familyId: string } | null> {
+  ): Promise<{ token: string; userId: string; familyId: string; expiresInDays: number } | null> {
     const oldTokenHash = crypto.createHash("sha256").update(oldToken).digest("hex");
 
     const existingToken = await prisma.refreshToken.findUnique({
@@ -93,10 +94,13 @@ export class RefreshTokenService {
       data: { usedAt: new Date() },
     });
 
+    // Calculate original duration to preserve the "remember me" flag intention
+    const originalDurationDays = Math.max(1, Math.round((existingToken.expiresAt.getTime() - existingToken.createdAt.getTime()) / (1000 * 60 * 60 * 24)));
+
     // Create new token in same family
     const newToken = crypto.randomBytes(32).toString("hex");
     const newTokenHash = crypto.createHash("sha256").update(newToken).digest("hex");
-    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + originalDurationDays * 24 * 60 * 60 * 1000);
 
     await prisma.refreshToken.create({
       data: {
@@ -113,6 +117,7 @@ export class RefreshTokenService {
       token: newToken,
       userId: existingToken.userId,
       familyId: existingToken.familyId,
+      expiresInDays: originalDurationDays
     };
   }
 

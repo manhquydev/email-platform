@@ -152,6 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const decoded = jwtDecode<User & { exp: number }>(newToken);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+                    // FIX: Sync localStorage.token so initAuth sees fresh token on page reload
+                    setToken(newToken);
                     lastRefreshRef.current = Date.now();
 
                     // Notify other tabs (include CSRF token so they can sync it)
@@ -261,20 +263,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasInitialized.current = true;
 
         const initAuth = async () => {
-            if (token) {
+            // Prefer tokenManager's accessToken (kept fresh by background refresh)
+            // over localStorage.token (which only updates when setToken() is explicitly called)
+            const latestToken = tokenManager.getAccessToken() || token;
+
+            if (latestToken) {
                 try {
-                    const decoded = jwtDecode<User & { exp: number }>(token);
+                    const decoded = jwtDecode<User & { exp: number }>(latestToken);
                     if (decoded.exp * 1000 < Date.now()) {
-                        setToken("");
-                        setUser(null);
+                        // Token expired — try to refresh silently before giving up
+                        try {
+                            const refreshed = await tokenManager.refreshAccessToken();
+                            const refreshedDecoded = jwtDecode<User & { exp: number }>(refreshed);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            setUser({ id: refreshedDecoded.id, email: refreshedDecoded.email, role: refreshedDecoded.role, tier: (refreshedDecoded as any).tier });
+                            setToken(refreshed);
+                            // Fetch fresh user data with the new token
+                            try {
+                                const res = await api<{ user: User }>("/auth/me");
+                                setUser(res.user);
+                            } catch { /* user data from token is enough */ }
+                        } catch {
+                            // Refresh also failed — genuine session expiry
+                            setToken("");
+                            setUser(null);
+                        }
                     } else {
-                        // Initially set from token to avoid flicker
+                        // Token still valid — sync to ensure localStorage.token is up-to-date
+                        if (latestToken !== token) setToken(latestToken);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
 
                         // Fetch fresh user data
                         try {
-                            const res = await api<{ user: User }>("/auth/me", { token });
+                            const res = await api<{ user: User }>("/auth/me");
                             setUser(res.user);
                         } catch (err) {
                             // If user not found (404) or unauthorized (401), clear invalid token

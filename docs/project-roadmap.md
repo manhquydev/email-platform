@@ -6,7 +6,7 @@ Ephemera is a high-performance, secure, and user-friendly email platform for pro
 ## 2. Overall Progress
 **Current Status:** Production Beta
 **Overall Completion:** 97%
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-02-25
 
 ## 3. Implementation Phases
 
@@ -24,6 +24,7 @@ Ephemera is a high-performance, secure, and user-friendly email platform for pro
 - [x] Search & pagination for messages
 - [x] OAuth2-compliant automatic token refresh (Phase 1 & 2)
 - [x] Session management hardening (expiry redirect, initAuth dedup, multi-tab sync, Remember Me)
+- [x] Security hardening: opaque refresh tokens for register/SSO, multi-tab race condition fix, CSRF shared-cookie, CSRF removed from SSO redirect URL (Phase 4)
 
 ### Phase 3: Browser Extension - Stabilization (Completed)
 **Status:** 100%

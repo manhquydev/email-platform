@@ -5,6 +5,11 @@ All notable changes to the Ephemera project will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- **Register/SSO opaque refresh tokens**: Register and SSO endpoints now store DB opaque refresh tokens (same as login), preventing 15-min logout after register/SSO sign-in
+- **Multi-tab token rotation race condition**: Added cross-tab localStorage lock + 5s backend grace window to prevent concurrent refresh calls from invalidating each other
+- **CSRF token cross-tab**: CSRF token now uses shared parent-domain cookie with localStorage fallback; eliminates CSRF mismatch across tabs/iframes
+- **SsoCallback.tsx token API**: Now uses consistent `tokenManager` API instead of direct localStorage writes, matching interceptor expectations
+- **Security - CSRF in SSO redirect URL**: `csrfToken` removed from SSO redirect URL query param; prevents token leakage in browser history/logs
 - **Session expiry redirect**: Users are now redirected to `/login?reason=expired` with an informative toast when session expires, instead of silently staying on authenticated pages
 - **initAuth loop**: `AuthContext` `initAuth` useEffect now runs only once on mount (hasInitialized ref), preventing repeated `/auth/me` calls on every token refresh
 - **SSO refresh token leak**: SSO redirect URL no longer exposes refresh token; token now set as httpOnly cookie before redirect

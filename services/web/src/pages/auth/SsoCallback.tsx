@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loading } from '../../components/Loading';
 import toast from 'react-hot-toast';
+import { tokenManager } from '../../utils/token-manager';
 
 export function SsoCallback() {
   const [searchParams] = useSearchParams();
@@ -9,7 +10,6 @@ export function SsoCallback() {
 
   useEffect(() => {
     const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
     const error = searchParams.get('error');
 
     if (error) {
@@ -20,18 +20,12 @@ export function SsoCallback() {
 
     if (accessToken) {
       try {
-        // Store token in localStorage
-        // The useLocalStorage hook typically expects a JSON stringified value
-        window.localStorage.setItem('token', JSON.stringify(accessToken));
-
-        if (refreshToken) {
-          window.localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
-        }
-
+        // Store access token via tokenManager (consistent with login flow)
+        // CSRF token is set as a shared-domain cookie by the API — no manual handling needed
+        tokenManager.setTokens(accessToken, '');
         toast.success('Đăng nhập thành công');
 
-        // Redirect to app dashboard
-        // Using window.location to ensure AuthContext re-initializes with the new token
+        // Full reload so AuthContext re-initializes with the new token
         window.location.href = '/app';
       } catch (err) {
         console.error('SSO Error:', err);
@@ -39,7 +33,6 @@ export function SsoCallback() {
         navigate('/login');
       }
     } else {
-      // No token found, redirect to login
       navigate('/login');
     }
   }, [searchParams, navigate]);

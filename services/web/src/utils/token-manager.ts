@@ -15,6 +15,10 @@ interface TokenResponse {
   expiresIn: number;
 }
 
+// Cross-tab refresh lock: prevent multiple tabs from refreshing concurrently
+const REFRESH_LOCK_KEY = 'token_refresh_lock';
+const REFRESH_LOCK_TIMEOUT_MS = 10_000; // 10 seconds max hold time
+
 class TokenManager {
   private refreshPromise: Promise<string> | null = null;
 
@@ -23,22 +27,24 @@ class TokenManager {
   }
 
   getRefreshToken(): string | null {
-    // Phase 4: Refresh token now stored in httpOnly cookie, not localStorage
-    // This method returns null - cookies are handled automatically by browser
+    // Refresh token stored in httpOnly cookie - not accessible from JS
     return null;
   }
 
   setTokens(accessToken: string, _refreshToken: string): void {
-    // Phase 4: Only store access token in localStorage
-    // Refresh token is stored as httpOnly cookie by backend
     localStorage.setItem('accessToken', accessToken);
   }
 
+  // Store CSRF token in localStorage (cookie approach fails cross-subdomain)
+  setCsrfToken(token: string): void {
+    localStorage.setItem('csrfToken', token);
+  }
+
   clearTokens(): void {
-    // Phase 4: Clear access token from localStorage
-    // Cookies will be cleared by backend /auth/logout endpoint
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken'); // Cleanup old storage
+    localStorage.removeItem('refreshToken'); // Cleanup old storage key
+    localStorage.removeItem('csrfToken');
+    localStorage.removeItem(REFRESH_LOCK_KEY);
     this.refreshPromise = null;
   }
 
@@ -52,51 +58,114 @@ class TokenManager {
     }
   }
 
-  // Phase 4: Read CSRF token from cookie for double-submit pattern
+  // CSRF token: prefer cookie (set by backend with shared parent domain),
+  // fall back to localStorage (set after login response body is received).
   private getCsrfToken(): string {
-    const match = document.cookie.match(/csrfToken=([^;]+)/);
-    return match ? match[1] : '';
+    const fromCookie = document.cookie.match(/csrfToken=([^;]+)/);
+    if (fromCookie) return fromCookie[1];
+    return localStorage.getItem('csrfToken') || '';
+  }
+
+  // Acquire cross-tab refresh lock. Returns true if lock acquired, false if another tab holds it.
+  private acquireRefreshLock(): boolean {
+    const existing = localStorage.getItem(REFRESH_LOCK_KEY);
+    if (existing) {
+      const { timestamp } = JSON.parse(existing) as { timestamp: number };
+      if (Date.now() - timestamp < REFRESH_LOCK_TIMEOUT_MS) {
+        return false; // Another tab holds the lock
+      }
+    }
+    localStorage.setItem(REFRESH_LOCK_KEY, JSON.stringify({ timestamp: Date.now() }));
+    return true;
+  }
+
+  private releaseRefreshLock(): void {
+    localStorage.removeItem(REFRESH_LOCK_KEY);
+  }
+
+  // Wait for another tab to complete its refresh, then return the updated access token.
+  private waitForOtherTabRefresh(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const deadline = setTimeout(() => {
+        window.removeEventListener('storage', handler);
+        // Timeout: other tab may have failed - try refreshing ourselves
+        this.refreshPromise = null;
+        this.refreshAccessToken().then(resolve).catch(reject);
+      }, REFRESH_LOCK_TIMEOUT_MS);
+
+      const handler = (event: StorageEvent) => {
+        if (event.key === 'accessToken' && event.newValue) {
+          // Another tab stored a fresh access token
+          clearTimeout(deadline);
+          window.removeEventListener('storage', handler);
+          // Also sync the CSRF token if updated
+          resolve(event.newValue);
+        } else if (event.key === REFRESH_LOCK_KEY && !event.newValue) {
+          // Lock released - check for fresh token
+          const token = this.getAccessToken();
+          if (token) {
+            clearTimeout(deadline);
+            window.removeEventListener('storage', handler);
+            resolve(token);
+          }
+        }
+      };
+
+      window.addEventListener('storage', handler);
+    });
   }
 
   async refreshAccessToken(): Promise<string> {
+    // Deduplicate within the same tab
     if (this.refreshPromise) {
       return this.refreshPromise;
     }
 
-    this.refreshPromise = this._doRefresh();
-
-    try {
-      const newToken = await this.refreshPromise;
-      return newToken;
-    } finally {
-      this.refreshPromise = null;
+    // Cross-tab lock: if another tab is refreshing, wait for it
+    if (!this.acquireRefreshLock()) {
+      return this.waitForOtherTabRefresh();
     }
+
+    this.refreshPromise = this._doRefresh().finally(() => {
+      this.releaseRefreshLock();
+      this.refreshPromise = null;
+    });
+
+    return this.refreshPromise;
   }
 
   private async _doRefresh(): Promise<string> {
     const API_BASE = (window as any).env?.API_BASE || import.meta.env.VITE_API_BASE || 'http://localhost:3001';
     const baseUrl = API_BASE.replace(/\/$/, '');
-
-    // Phase 4: Get CSRF token from cookie for double-submit pattern
     const csrfToken = this.getCsrfToken();
 
     const response = await fetch(`${baseUrl}/auth/refresh`, {
       method: 'POST',
-      credentials: 'include', // Send cookies (httpOnly refreshToken + csrfToken)
+      credentials: 'include', // Send httpOnly refreshToken cookie
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken, // Double-submit pattern
+        'X-CSRF-Token': csrfToken,
       },
     });
 
     if (!response.ok) {
+      // Before clearing session, check if another tab just successfully refreshed.
+      // A freshly issued token has > 14 minutes remaining (15min total - 1min tolerance).
+      const existingToken = this.getAccessToken();
+      if (existingToken && !this.isTokenExpiringSoon(existingToken, 14 * 60)) {
+        return existingToken; // Another tab refreshed — use its token
+      }
       this.clearTokens();
       throw new Error('Token refresh failed');
     }
 
     const data: TokenResponse = await response.json();
-    // Phase 4: Store new access token (refresh token updated as cookie automatically)
+    // Store new access token (triggers storage event in other tabs)
     localStorage.setItem('accessToken', data.token);
+    // Update CSRF token for subsequent refreshes
+    if (data.csrfToken) {
+      localStorage.setItem('csrfToken', data.csrfToken);
+    }
     return data.token;
   }
 }

@@ -25,10 +25,23 @@ const passwordSchema = z.string()
 
 // JWT expiry configuration
 const ACCESS_TOKEN_EXPIRY = "15m"; // Short-lived access token
-const REFRESH_TOKEN_EXPIRY_DEFAULT = "7d";      // Standard session (7 days)
-const REFRESH_TOKEN_EXPIRY_REMEMBER = "30d";    // Remember Me session (30 days)
 const COOKIE_MAX_AGE_DEFAULT = 7 * 24 * 60 * 60;    // 604800 seconds
-const COOKIE_MAX_AGE_REMEMBER = 30 * 24 * 60 * 60;  // 2592000 seconds
+
+/**
+ * Returns the shared parent domain for cookies (e.g. ".manhquy.click") so
+ * the csrfToken cookie set by api.{domain} is readable by app.{domain}.
+ * Returns undefined for localhost/IP (no subdomain sharing needed).
+ */
+function getCookieDomain(): string | undefined {
+  try {
+    const { hostname } = new URL(appConfig.webUrl);
+    if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
+    const parts = hostname.split('.');
+    return parts.length >= 2 ? '.' + parts.slice(-2).join('.') : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 
 export async function authRoutes(app: FastifyInstance) {
@@ -93,9 +106,9 @@ export async function authRoutes(app: FastifyInstance) {
 
     // SECURITY: Add jti (JWT ID) for token revocation support
     const accessJti = crypto.randomUUID();
-    const refreshJti = crypto.randomUUID();
     const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-    const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY_DEFAULT });
+    // Use DB opaque refresh token (consistent with login endpoint, supports rotation + reuse detection)
+    const { token: refreshToken } = await RefreshTokenService.createToken(user.id, 7, request.headers["user-agent"], request.ip);
 
     // Phase 4: Generate CSRF token for double-submit pattern
     const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -116,6 +129,7 @@ export async function authRoutes(app: FastifyInstance) {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60,
       path: '/',
+        domain: getCookieDomain(),
     });
 
     await recordAuditFromRequest(request, "auth.register", { email: user.email });
@@ -358,6 +372,7 @@ export async function authRoutes(app: FastifyInstance) {
       sameSite: 'strict',
       maxAge: loginCookieMaxAge,
       path: '/',
+        domain: getCookieDomain(),
     });
 
     await recordAuditFromRequest(request, AuditAction.LOGIN_SUCCESS, { email: user.email, userId: user.id });
@@ -507,6 +522,7 @@ export async function authRoutes(app: FastifyInstance) {
       sameSite: 'strict',
       maxAge: twoFaCookieMaxAge,
       path: '/',
+        domain: getCookieDomain(),
     });
 
     await recordAuditFromRequest(request, AuditAction.TWO_FACTOR_VERIFIED, { email: user.email, userId: user.id });
@@ -649,6 +665,7 @@ export async function authRoutes(app: FastifyInstance) {
         sameSite: 'strict',
         maxAge: cookieMaxAge,
         path: '/',
+        domain: getCookieDomain(),
       });
 
       await recordAuditFromRequest(request, "auth.token_refresh", {
@@ -1056,9 +1073,10 @@ export async function authRoutes(app: FastifyInstance) {
 
       // Generate tokens
       const accessJti = crypto.randomUUID();
-      const refreshJti = crypto.randomUUID();
       const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
-      const refreshToken = app.jwt.sign({ userId: user.id, type: "refresh", jti: refreshJti }, { expiresIn: REFRESH_TOKEN_EXPIRY_DEFAULT });
+      // Use DB opaque refresh token (consistent with login endpoint)
+      const { token: refreshToken } = await RefreshTokenService.createToken(user.id, 7, request.headers["user-agent"], request.ip);
+      const csrfToken = crypto.randomBytes(32).toString('hex');
 
       await recordAuditFromRequest(request, "auth.sso_login", { email: user.email, providerId: ssoData.providerId });
 
@@ -1071,7 +1089,17 @@ export async function authRoutes(app: FastifyInstance) {
         path: '/auth/refresh',
       });
 
-      // Redirect to Web App with access token only (refresh token in httpOnly cookie)
+      // Set CSRF token cookie
+      reply.setCookie('csrfToken', csrfToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: COOKIE_MAX_AGE_DEFAULT,
+        path: '/',
+        domain: getCookieDomain(),
+      });
+
+      // Redirect to Web App with access token only (csrfToken in shared-domain cookie)
       const redirectUrl = `${appConfig.webUrl}/auth/sso?accessToken=${accessToken}`;
       return reply.redirect(redirectUrl);
 

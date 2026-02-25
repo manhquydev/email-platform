@@ -73,6 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // Phase 4: Refresh token is now httpOnly cookie, only store access token
                 tokenManager.setTokens(res.token, "");
                 setToken(res.token);
+                // Store CSRF token in localStorage for cross-subdomain use
+                if (res.csrfToken) tokenManager.setCsrfToken(res.csrfToken);
                 setUser(res.user);
                 lastRefreshRef.current = Date.now();
 
@@ -106,6 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Phase 4: Refresh token is now httpOnly cookie, only store access token
             tokenManager.setTokens(res.token, "");
             setToken(res.token);
+            // Store CSRF token in localStorage for cross-subdomain use
+            if (res.csrfToken) tokenManager.setCsrfToken(res.csrfToken);
             setUser(res.user);
             lastRefreshRef.current = Date.now();
 
@@ -150,8 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
                     lastRefreshRef.current = Date.now();
 
-                    // Notify other tabs
-                    channelRef.current?.postMessage({ type: 'token_refresh', token: newToken });
+                    // Notify other tabs (include CSRF token so they can sync it)
+                    const newCsrfToken = localStorage.getItem('csrfToken');
+                    channelRef.current?.postMessage({ type: 'token_refresh', token: newToken, csrfToken: newCsrfToken });
                 } catch (error) {
                     console.error('Background refresh failed:', (error as Error).message);
                     logout('expired');
@@ -198,12 +203,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
                     setToken(newToken);
-
-                    // CRITICAL FIX: Sync to tokenManager so API calls use updated token
-                    const refreshToken = tokenManager.getRefreshToken();
-                    if (refreshToken) {
-                        tokenManager.setTokens(newToken, refreshToken);
-                    }
+                    tokenManager.setTokens(newToken, '');
+                    // Sync CSRF token from the tab that performed the refresh
+                    const { csrfToken: newCsrfToken } = event.data;
+                    if (newCsrfToken) tokenManager.setCsrfToken(newCsrfToken);
                 } catch (error) {
                     console.error('Failed to sync token from other tab:', (error as Error).message);
                 }

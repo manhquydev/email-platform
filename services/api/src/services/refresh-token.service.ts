@@ -79,8 +79,15 @@ export class RefreshTokenService {
       return null;
     }
 
-    // SECURITY: Reuse detection - if token was already used, revoke entire family
+    // SECURITY: Reuse detection - if token was already used, check if it's concurrent or an attack
     if (existingToken.usedAt) {
+      const timeSinceUse = Date.now() - existingToken.usedAt.getTime();
+      const CONCURRENT_GRACE_MS = 5000; // 5 seconds - allow concurrent multi-tab refresh
+      if (timeSinceUse < CONCURRENT_GRACE_MS) {
+        // Likely a concurrent multi-tab refresh, not an attack - return null gracefully
+        console.warn("[RefreshToken] Concurrent token use detected (within grace window), skipping family revocation");
+        return null;
+      }
       console.error("[RefreshToken] SECURITY: Token reuse detected! Revoking family:", existingToken.familyId);
       await this.revokeFamily(existingToken.familyId);
       // Also revoke all user tokens via Redis for immediate effect

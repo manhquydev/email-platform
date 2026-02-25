@@ -114,10 +114,11 @@ export async function authRoutes(app: FastifyInstance) {
     const csrfToken = crypto.randomBytes(32).toString('hex');
 
     // Set refreshToken as httpOnly cookie (immune to XSS)
+    // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
     reply.setCookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/auth/refresh',
     });
@@ -357,10 +358,11 @@ export async function authRoutes(app: FastifyInstance) {
     const csrfToken = crypto.randomBytes(32).toString('hex');
 
     // Set refreshToken as httpOnly cookie (immune to XSS)
+    // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
     reply.setCookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: loginCookieMaxAge,
       path: '/auth/refresh',
     });
@@ -507,10 +509,11 @@ export async function authRoutes(app: FastifyInstance) {
     const csrfToken = crypto.randomBytes(32).toString('hex');
 
     // Set refreshToken as httpOnly cookie (immune to XSS)
+    // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
     reply.setCookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: twoFaCookieMaxAge,
       path: '/auth/refresh',
     });
@@ -653,7 +656,7 @@ export async function authRoutes(app: FastifyInstance) {
       reply.setCookie('refreshToken', rotated.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: cookieMaxAge,
         path: '/auth/refresh',
       });
@@ -1081,10 +1084,11 @@ export async function authRoutes(app: FastifyInstance) {
       await recordAuditFromRequest(request, "auth.sso_login", { email: user.email, providerId: ssoData.providerId });
 
       // Set refreshToken as httpOnly cookie before redirect (do not expose in URL)
+      // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
       reply.setCookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: COOKIE_MAX_AGE_DEFAULT,
         path: '/auth/refresh',
       });

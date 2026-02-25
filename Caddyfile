@@ -10,23 +10,9 @@
 
 # API Backend - api.yourdomain.com
 api.{$DOMAIN} {
-	# Handle CORS preflight requests
-	@options method OPTIONS
-	handle @options {
-		header Access-Control-Allow-Origin https://app.{$DOMAIN}
-		header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-		header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, x-csrf-token, x-api-key"
-		header Access-Control-Allow-Credentials "true"
-		header Access-Control-Max-Age "86400"
-		respond "" 204
-	}
-
-	# Add CORS headers to all responses
+	# Security headers only — CORS is handled entirely by Fastify (@fastify/cors)
+	# Do NOT add Access-Control-* headers here; duplicate headers cause browser CORS rejection
 	header {
-		Access-Control-Allow-Origin https://app.{$DOMAIN}
-		Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-		Access-Control-Allow-Headers "Authorization, Content-Type, Accept, x-csrf-token, x-api-key"
-		Access-Control-Allow-Credentials "true"
 		X-Content-Type-Options nosniff
 		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
@@ -47,24 +33,12 @@ app.{$DOMAIN} {
 	# Proxy /api/* requests to API backend
 	@api path /api/*
 	handle @api {
-		header {
-			Access-Control-Allow-Origin https://app.{$DOMAIN}
-			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-			Access-Control-Allow-Headers "Authorization, Content-Type, Accept, x-csrf-token, x-api-key"
-			Access-Control-Allow-Credentials "true"
-		}
 		reverse_proxy api:3001
 	}
 
 	# Proxy /realtime/* and /ws/* to API backend (SSE, WebSocket)
 	@realtime path /realtime/* /ws/*
 	handle @realtime {
-		header {
-			Access-Control-Allow-Origin https://app.{$DOMAIN}
-			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-			Access-Control-Allow-Headers "Authorization, Content-Type, Accept, x-csrf-token, x-api-key"
-			Access-Control-Allow-Credentials "true"
-		}
 		reverse_proxy api:3001
 	}
 

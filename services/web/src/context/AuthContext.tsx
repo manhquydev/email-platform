@@ -240,12 +240,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         const decoded = jwtDecode<User & { exp: number }>(newToken);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+                        setToken(newToken);
                         lastRefreshRef.current = Date.now();
                     } catch (error) {
                         console.error('Wake-up refresh failed:', (error as Error).message);
                         logout('expired');
                         return;
                     }
+                }
+
+                // Restart background refresh interval (was paused when tab was hidden)
+                if (user && !refreshTimerRef.current) {
+                    refreshTimerRef.current = setInterval(async () => {
+                        const accessToken = tokenManager.getAccessToken();
+                        if (!accessToken) { clearInterval(refreshTimerRef.current!); return; }
+                        try {
+                            const newToken = await tokenManager.refreshAccessToken();
+                            const decoded = jwtDecode<User & { exp: number }>(newToken);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
+                            setToken(newToken);
+                            lastRefreshRef.current = Date.now();
+                            const newCsrfToken = localStorage.getItem('csrfToken');
+                            channelRef.current?.postMessage({ type: 'token_refresh', token: newToken, csrfToken: newCsrfToken });
+                        } catch (error) {
+                            console.error('Background refresh failed:', (error as Error).message);
+                            logout('expired');
+                        }
+                    }, REFRESH_INTERVAL);
                 }
             }
         };

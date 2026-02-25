@@ -58,12 +58,13 @@ class TokenManager {
     }
   }
 
-  // CSRF token: prefer cookie (set by backend with shared parent domain),
-  // fall back to localStorage (set after login response body is received).
+  // CSRF token: prefer localStorage (updated after every token rotation),
+  // fall back to cookie (initial login, may be stale after rotation).
   private getCsrfToken(): string {
+    const fromStorage = localStorage.getItem('csrfToken');
+    if (fromStorage) return fromStorage;
     const fromCookie = document.cookie.match(/csrfToken=([^;]+)/);
-    if (fromCookie) return fromCookie[1];
-    return localStorage.getItem('csrfToken') || '';
+    return fromCookie ? fromCookie[1] : '';
   }
 
   // Acquire cross-tab refresh lock. Returns true if lock acquired, false if another tab holds it.

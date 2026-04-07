@@ -12,6 +12,13 @@ interface EphemeralMessageListProps {
     lastRefresh: Date | null;
 }
 
+function sanitizeEmailHtml(html: string): string {
+    return DOMPurify.sanitize(html, {
+        USE_PROFILES: { html: true },
+        ADD_ATTR: ['target', 'rel']
+    });
+}
+
 export function EphemeralMessageList({ messages, isLoading, lastRefresh }: EphemeralMessageListProps) {
     const [selectedMessage, setSelectedMessage] = useState<EphemeralMessage | null>(null);
 
@@ -64,7 +71,9 @@ export function EphemeralMessageList({ messages, isLoading, lastRefresh }: Ephem
             {/* Split View Container */}
             <div className="flex h-[calc(100%-60px)]">
                 {/* Left Panel - Message List */}
-                <div className="w-full lg:w-[340px] xl:w-[380px] border-r border-white/10 overflow-y-auto flex-shrink-0">
+                <div className={`w-full lg:w-[340px] xl:w-[380px] border-r border-white/10 overflow-y-auto flex-shrink-0 ${
+                    selectedMessage ? 'hidden lg:block' : ''
+                }`}>
                     <div className="divide-y divide-white/5">
                         {messages.map((message) => (
                             <MessageRow
@@ -89,7 +98,7 @@ export function EphemeralMessageList({ messages, isLoading, lastRefresh }: Ephem
 
             {/* Mobile: Full screen modal when message selected */}
             {selectedMessage && (
-                <div className="lg:hidden fixed inset-0 z-50 bg-[var(--nebula-bg)]">
+                <div className="lg:hidden fixed inset-0 z-[120] bg-[var(--nebula-void)]">
                     <MobileMessageView
                         message={selectedMessage}
                         onBack={() => setSelectedMessage(null)}
@@ -203,16 +212,16 @@ function MessageContent({ message }: { message: EphemeralMessage }) {
                 <div className="px-6 lg:px-8 py-6 lg:py-8">
                     {message.htmlBody ? (
                         <div
-                            className="prose prose-invert prose-base lg:prose-lg max-w-none
-                                prose-headings:text-white prose-p:text-white/85 prose-p:leading-relaxed
-                                prose-a:text-[var(--nebula-violet)] prose-a:no-underline hover:prose-a:underline
-                                prose-strong:text-white prose-code:text-[var(--nebula-cyan)]
-                                prose-pre:bg-black/30 prose-pre:border prose-pre:border-white/10
-                                prose-li:text-white/85"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.htmlBody) }}
+                            className="email-content rounded-xl border border-white/10 bg-white/[0.02] p-4 lg:p-6
+                                overflow-x-auto text-white/90
+                                [&_*]:max-w-full [&_table]:block [&_table]:overflow-x-auto
+                                [&_table]:whitespace-nowrap [&_td]:whitespace-normal [&_th]:whitespace-normal
+                                [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:break-words
+                                [&_code]:break-all [&_a]:break-all"
+                            dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(message.htmlBody) }}
                         />
                     ) : (
-                        <div className="whitespace-pre-wrap text-base lg:text-lg text-white/85 font-sans leading-relaxed">
+                        <div className="whitespace-pre-wrap break-words overflow-x-auto text-base lg:text-lg text-white/85 font-sans leading-relaxed">
                             {message.textBody || '(Không có nội dung)'}
                         </div>
                     )}
@@ -255,6 +264,11 @@ function MobileMessageView({
     onBack: () => void;
 }) {
     const receivedDate = new Date(message.receivedAt);
+    const [viewMode, setViewMode] = useState<'html' | 'text'>(message.htmlBody ? 'html' : 'text');
+
+    useEffect(() => {
+        setViewMode(message.htmlBody ? 'html' : 'text');
+    }, [message.id, message.htmlBody]);
 
     return (
         <div className="flex flex-col h-full">
@@ -281,17 +295,46 @@ function MobileMessageView({
                 <h2 className="text-lg font-semibold text-white leading-tight">
                     {message.subject || '(Không có tiêu đề)'}
                 </h2>
+                {message.htmlBody && message.textBody && (
+                    <div className="mt-3 inline-flex items-center rounded-lg bg-white/5 p-1">
+                        <button
+                            onClick={() => setViewMode('html')}
+                            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+                                viewMode === 'html'
+                                    ? 'bg-[var(--nebula-violet)] text-white'
+                                    : 'text-[var(--nebula-text-secondary)] hover:text-white'
+                            }`}
+                        >
+                            HTML
+                        </button>
+                        <button
+                            onClick={() => setViewMode('text')}
+                            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+                                viewMode === 'text'
+                                    ? 'bg-[var(--nebula-violet)] text-white'
+                                    : 'text-[var(--nebula-text-secondary)] hover:text-white'
+                            }`}
+                        >
+                            Text
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Body */}
             <div className="flex-1 overflow-auto px-4 py-5">
-                {message.htmlBody ? (
+                {viewMode === 'html' && message.htmlBody ? (
                     <div
-                        className="prose prose-invert prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.htmlBody) }}
+                        className="email-content text-sm text-white/90 rounded-xl border border-white/10 bg-white/[0.02] p-3
+                            overflow-x-auto
+                            [&_*]:max-w-full [&_table]:block [&_table]:overflow-x-auto
+                            [&_table]:whitespace-nowrap [&_td]:whitespace-normal [&_th]:whitespace-normal
+                            [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:break-words
+                            [&_code]:break-all [&_a]:break-all"
+                        dangerouslySetInnerHTML={{ __html: sanitizeEmailHtml(message.htmlBody) }}
                     />
                 ) : (
-                    <div className="whitespace-pre-wrap text-sm text-white/85 leading-relaxed">
+                    <div className="whitespace-pre-wrap break-words overflow-x-auto text-sm text-white/85 leading-relaxed">
                         {message.textBody || '(Không có nội dung)'}
                     </div>
                 )}
@@ -302,9 +345,9 @@ function MobileMessageView({
                 <div className="px-4 py-3 border-t border-white/10">
                     <div className="flex flex-wrap gap-2">
                         {message.attachments.map((att, i) => (
-                            <span key={i} className="inline-flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg text-sm text-white">
+                            <span key={i} className="inline-flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg text-sm text-white max-w-full">
                                 <span className="material-symbols-outlined !text-[16px]">attach_file</span>
-                                {att.filename}
+                                <span className="truncate max-w-[200px]">{att.filename}</span>
                             </span>
                         ))}
                     </div>

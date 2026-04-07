@@ -181,10 +181,10 @@ services:
       MAIL_DOMAIN: ${DOMAIN:-localhost}
       MAIL_HOSTNAME: mail.${DOMAIN:-localhost}
       DKIM_SELECTOR: mail
-      RELAY_HOST: ${RELAY_HOST}
+      RELAY_HOST: ${RELAY_HOST:-}
       RELAY_PORT: ${RELAY_PORT:-2525}
-      RELAY_USER: ${RELAY_USER}
-      RELAY_PASS: ${RELAY_PASS}
+      RELAY_USER: ${RELAY_USER:-}
+      RELAY_PASS: ${RELAY_PASS:-}
       EXTRA_DOMAINS: manhquy.online
     volumes:
       - postfix_dkim:/etc/opendkim/keys
@@ -290,6 +290,9 @@ services:
     image: prom/prometheus:v2.45.0
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+      - "--storage.tsdb.retention.size=2GB"
+      - "--storage.tsdb.wal-compression"
     volumes:
       - ./services/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./services/observability/alerts.yml:/etc/prometheus/alerts.yml:ro
@@ -300,11 +303,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 256M
+          cpus: '1.00'
+          memory: 768M
         reservations:
-          cpus: '0.10'
-          memory: 64M
+          cpus: '0.25'
+          memory: 256M
     logging:
       driver: "json-file"
       options:
@@ -316,7 +319,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ "$TELEGRAM_BOT_TOKEN" != "" ]; then
+        if [ -n "$$TELEGRAM_BOT_TOKEN" ] && [ "$$TELEGRAM_BOT_TOKEN" != "" ]; then
           cat > /etc/alertmanager/alertmanager.yml << EOF
         global:
           resolve_timeout: 5m
@@ -329,8 +332,8 @@ services:
         receivers:
           - name: "telegram"
             telegram_configs:
-              - bot_token: "$TELEGRAM_BOT_TOKEN"
-                chat_id: $TELEGRAM_ALERT_CHAT_ID
+              - bot_token: "$$TELEGRAM_BOT_TOKEN"
+                chat_id: $$TELEGRAM_ALERT_CHAT_ID
                 parse_mode: "HTML"
         EOF
         else

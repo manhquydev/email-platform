@@ -1,0 +1,251 @@
+{
+  "generatedAt": "2026-04-07T16:29:03.983Z",
+  "repo": "email-platform",
+  "querySetPath": "scripts\\gitnexus\\api-route-validation-queries.json",
+  "summary": {
+    "totalRoutes": 337,
+    "apiRoutes": 313,
+    "pollutedTest": 12,
+    "pollutedMobile": 11,
+    "nonApiRoutes": 24,
+    "responseKeysCoveragePct": 0,
+    "middlewareCoveragePct": 0,
+    "pollutedTestPctOfTotal": 3.56,
+    "pollutedMobilePctOfTotal": 3.26
+  },
+  "thresholds": {
+    "minResponseCoveragePct": 70,
+    "minMiddlewareCoveragePct": 70,
+    "maxPollutedTest": 0,
+    "maxPollutedMobile": 0
+  },
+  "strictMode": true,
+  "failedChecks": [
+    {
+      "key": "responseKeysCoveragePct",
+      "actual": 0,
+      "expected": ">= 70"
+    },
+    {
+      "key": "middlewareCoveragePct",
+      "actual": 0,
+      "expected": ">= 70"
+    },
+    {
+      "key": "pollutedTest",
+      "actual": 12,
+      "expected": "<= 0"
+    },
+    {
+      "key": "pollutedMobile",
+      "actual": 11,
+      "expected": "<= 0"
+    }
+  ],
+  "kpis": {
+    "total_route_nodes": 337,
+    "api_route_nodes": 313,
+    "polluted_test_route_handlers": 12,
+    "polluted_mobile_route_handlers": 11,
+    "api_routes_with_response_keys": 0,
+    "api_routes_with_middleware": 0
+  },
+  "validationResults": [
+    {
+      "id": "polluted_handlers_by_file",
+      "title": "Polluted handlers outside services/api/src/routes",
+      "kind": "table",
+      "row_count": 17,
+      "markdown": "| filePath | routeCount |\n| --- | --- |\n| services/api/test/api.integration.test.ts | 4 |\n| services/api/src/test/identity-bundles.test.ts | 4 |\n| services/api/src/test/auth-refresh.integration.test.ts | 2 |\n| services/mobile/app/team/create.tsx | 1 |\n| services/mobile/app/inbox/[id].tsx | 1 |\n| services/api/src/webdav/server.ts | 1 |\n| services/api/src/test/webhook-e2e.test.ts | 1 |\n| services/mobile/app/(auth)/register.tsx | 1 |\n| services/mobile/app/(tabs)/teams.tsx | 1 |\n| services/mobile/app/team/[id]/add-member.tsx | 1 |\n| services/mobile/app/team/[id].tsx | 1 |\n| services/api/test/smtp.e2e.test.ts | 1 |\n| services/mobile/app/(tabs)/settings.tsx | 1 |\n| services/mobile/app/(auth)/login.tsx | 1 |\n| services/mobile/app/index.tsx | 1 |\n| services/mobile/app/(tabs)/inboxes.tsx | 1 |\n| services/mobile/app/message/[id].tsx | 1 |",
+      "sample_rows": [
+        {
+          "filePath": "services/api/test/api.integration.test.ts",
+          "routeCount": "4"
+        },
+        {
+          "filePath": "services/api/src/test/identity-bundles.test.ts",
+          "routeCount": "4"
+        },
+        {
+          "filePath": "services/api/src/test/auth-refresh.integration.test.ts",
+          "routeCount": "2"
+        },
+        {
+          "filePath": "services/mobile/app/team/create.tsx",
+          "routeCount": "1"
+        },
+        {
+          "filePath": "services/mobile/app/inbox/[id].tsx",
+          "routeCount": "1"
+        },
+        {
+          "filePath": "services/api/src/webdav/server.ts",
+          "routeCount": "1"
+        },
+        {
+          "filePath": "services/api/src/test/webhook-e2e.test.ts",
+          "routeCount": "1"
+        },
+        {
+          "filePath": "services/mobile/app/(auth)/register.tsx",
+          "routeCount": "1"
+        },
+        {
+          "filePath": "services/mobile/app/(tabs)/teams.tsx",
+          "routeCount": "1"
+        },
+        {
+          "filePath": "services/mobile/app/team/[id]/add-member.tsx",
+          "routeCount": "1"
+        }
+      ]
+    },
+    {
+      "id": "api_route_density_by_file",
+      "title": "API route density by handler file",
+      "kind": "table",
+      "row_count": 50,
+      "markdown": "| filePath | routeCount |\n| --- | --- |\n| services/api/src/routes/messages.ts | 21 |\n| services/api/src/routes/provider.ts | 17 |\n| services/api/src/routes/auth.ts | 14 |\n| services/api/src/routes/billing.ts | 12 |\n| services/api/src/routes/filters.ts | 10 |\n| services/api/src/routes/forwarding.ts | 9 |\n| services/api/src/routes/domains.ts | 9 |\n| services/api/src/routes/admin/telegram.ts | 8 |\n| services/api/src/routes/admin-providers.ts | 8 |\n| services/api/src/routes/ephemeral-inbox.ts | 8 |\n| services/api/src/routes/notifications.ts | 7 |\n| services/api/src/routes/v1/index.ts | 7 |\n| services/api/src/routes/telegram.ts | 7 |\n| services/api/src/routes/identity-bundles.ts | 7 |\n| services/api/src/routes/anonymous-auth.ts | 7 |\n| services/api/src/routes/support.ts | 7 |\n| services/api/src/routes/webhooks.ts | 7 |\n| services/api/src/routes/webauthn.ts | 6 |\n| services/api/src/routes/admin/users.ts | 6 |\n| services/api/src/routes/admin/analytics.ts | 6 |\n| services/api/src/routes/visibility-rules.ts | 6 |\n| services/api/src/routes/subscription.ts | 5 |\n| services/api/src/routes/admin/stats.ts | 5 |\n| services/api/src/routes/teams.ts | 5 |\n| services/api/src/routes/webhook-test-receiver.ts | 5 |\n| services/api/src/routes/telegram-auth.ts | 5 |\n| services/api/src/routes/admin/system.ts | 5 |\n| services/api/src/routes/admin/backup.ts | 5 |\n| services/api/src/routes/referral.ts | 4 |\n| services/api/src/routes/sso.ts | 4 |\n| services/api/src/routes/admin/compliance.ts | 4 |\n| services/api/src/routes/public-inbox.ts | 4 |\n| services/api/src/routes/extension.ts | 4 |\n| services/api/src/routes/abuse.ts | 4 |\n| services/api/src/routes/sepay.ts | 4 |\n| services/api/src/routes/admin/notification-templates.ts | 3 |\n| services/api/src/routes/admin/notification-logs.ts | 3 |\n| services/api/src/routes/organizations.ts | 3 |\n| services/api/src/routes/admin/tenants.ts | 3 |\n| services/api/src/routes/admin/domains.ts | 3 |\n| services/api/src/routes/public-telegram.ts | 3 |\n| services/api/src/routes/admin/payments.ts | 3 |\n| services/api/src/routes/admin/migration.ts | 3 |\n| services/api/src/routes/api-usage.ts | 3 |\n| services/api/src/routes/push.ts | 3 |\n| services/api/src/routes/magic-link.ts | 2 |\n| services/api/src/routes/admin/emails.ts | 2 |\n| services/api/src/routes/inboxes.ts | 2 |\n| services/api/src/routes/contacts.ts | 2 |\n| services/api/src/routes/scim.ts | 2 |",
+      "sample_rows": [
+        {
+          "filePath": "services/api/src/routes/messages.ts",
+          "routeCount": "21"
+        },
+        {
+          "filePath": "services/api/src/routes/provider.ts",
+          "routeCount": "17"
+        },
+        {
+          "filePath": "services/api/src/routes/auth.ts",
+          "routeCount": "14"
+        },
+        {
+          "filePath": "services/api/src/routes/billing.ts",
+          "routeCount": "12"
+        },
+        {
+          "filePath": "services/api/src/routes/filters.ts",
+          "routeCount": "10"
+        },
+        {
+          "filePath": "services/api/src/routes/forwarding.ts",
+          "routeCount": "9"
+        },
+        {
+          "filePath": "services/api/src/routes/domains.ts",
+          "routeCount": "9"
+        },
+        {
+          "filePath": "services/api/src/routes/admin/telegram.ts",
+          "routeCount": "8"
+        },
+        {
+          "filePath": "services/api/src/routes/admin-providers.ts",
+          "routeCount": "8"
+        },
+        {
+          "filePath": "services/api/src/routes/ephemeral-inbox.ts",
+          "routeCount": "8"
+        }
+      ]
+    },
+    {
+      "id": "api_routes_missing_response_keys",
+      "title": "API routes missing responseKeys",
+      "kind": "table",
+      "row_count": 200,
+      "markdown": "| filePath | route |\n| --- | --- |\n| services/api/src/routes/webhooks.ts | /webhooks/events |\n| services/api/src/routes/webhooks.ts | /webhooks/verify-signature |\n| services/api/src/routes/webhooks.ts | /webhooks |\n| services/api/src/routes/webhooks.ts | /webhooks/:id |\n| services/api/src/routes/webhooks.ts | /webhooks/:id/logs |\n| services/api/src/routes/webhooks.ts | /webhooks/:id/test |\n| services/api/src/routes/webhooks.ts | /webhooks/:id/logs/:logId/retry |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/create |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/receive/:receiverId |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/payloads/:receiverId |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/verify |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/receiver/:receiverId |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/register/options |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/register/verify |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/login/options |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/login/verify |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/credentials |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/credentials/:id |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules |\n| services/api/src/routes/visibility-rules.ts | /visibility-rules/:id |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules/reorder |\n| services/api/src/routes/visibility-rules.ts | /visibility-templates |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules/apply-template |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules/test |\n| services/api/src/routes/upload.ts | /upload |\n| services/api/src/routes/telegram.ts | /telegram/status |\n| services/api/src/routes/telegram.ts | /telegram/link-token |\n| services/api/src/routes/telegram.ts | /telegram/unlink |\n| services/api/src/routes/telegram.ts | /telegram/preferences |\n| services/api/src/routes/telegram.ts | /telegram/inbox-links |\n| services/api/src/routes/telegram.ts | /telegram/inbox-links/:id |\n| services/api/src/routes/telegram.ts | /telegram/webhook |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/complete |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/link |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/unlink |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/status |\n| services/api/src/routes/teams.ts | /teams/:teamId |\n| services/api/src/routes/teams.ts | /teams/:teamId/members |\n| services/api/src/routes/teams.ts | /teams/:teamId/members/:memberId |\n| services/api/src/routes/teams.ts | /teams/:teamId/inboxes |\n| services/api/src/routes/teams.ts | /teams/:teamId/inboxes/:inboxId |\n| services/api/src/routes/support.ts | /support/tickets |\n| services/api/src/routes/support.ts | /support/tickets/:id |\n| services/api/src/routes/support.ts | /support/tickets/:id/messages |\n| services/api/src/routes/support.ts | /admin/support/tickets |\n| services/api/src/routes/support.ts | /admin/support/tickets/stats |\n| services/api/src/routes/support.ts | /admin/support/tickets/:id |\n| services/api/src/routes/support.ts | /admin/support/tickets/:id/messages |\n| services/api/src/routes/subscription.ts | /admin/codes |\n| services/api/src/routes/subscription.ts | /admin/codes/generate |\n| services/api/src/routes/subscription.ts | /admin/codes/:id/revoke |\n| services/api/src/routes/subscription.ts | /admin/codes/:id |\n| services/api/src/routes/subscription.ts | /subscription/redeem |\n| services/api/src/routes/sso.ts | /sso/saml/:providerId/login |\n| services/api/src/routes/sso.ts | /sso/saml/:providerId/acs |\n| services/api/src/routes/sso.ts | /sso/oidc/:providerId/login |\n| services/api/src/routes/sso.ts | /sso/oidc/:providerId/callback |\n| services/api/src/routes/sepay.ts | /billing/sepay/checkout |\n| services/api/src/routes/sepay.ts | /billing/sepay/status/:orderCode |\n| services/api/src/routes/sepay.ts | /billing/sepay/pending |\n| services/api/src/routes/sepay.ts | /sepay/webhook |\n| services/api/src/routes/scim.ts | /scim/v2/:providerId/Users |\n| services/api/src/routes/scim.ts | /scim/v2/:providerId/Users/:id |\n| services/api/src/routes/referral.ts | /api/referral/code |\n| services/api/src/routes/referral.ts | /api/referral/apply |\n| services/api/src/routes/referral.ts | /api/referral/stats |\n| services/api/src/routes/referral.ts | /api/referral/claim |\n| services/api/src/routes/realtime-ws.ts | /ws/events |\n| services/api/src/routes/realtime-sse.ts | /api/events |\n| services/api/src/routes/push.ts | /push/vapid-key |\n| services/api/src/routes/push.ts | /push/subscribe |\n| services/api/src/routes/push.ts | /push/subscriptions |\n| services/api/src/routes/public.ts | /public/inboxes |\n| services/api/src/routes/public-telegram.ts | /public/telegram/generate-token |\n| services/api/src/routes/public-telegram.ts | /public/telegram/status/:token |\n| services/api/src/routes/public-telegram.ts | /public/telegram/:inboxEmail/links |\n| services/api/src/routes/public-inbox.ts | /public/inbox/search |\n| services/api/src/routes/public-inbox.ts | /public/inbox/:email/messages |\n| services/api/src/routes/public-inbox.ts | /public/inbox/:email/messages/:messageId |\n| services/api/src/routes/public-inbox.ts | /public/attachments/:id/download |\n| services/api/src/routes/provider.ts | /v1/provider/me |\n| services/api/src/routes/provider.ts | /v1/provider/api-key |\n| services/api/src/routes/provider.ts | /v1/provider/tenants |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/suspend |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/unsuspend |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains/:domain/dns |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains/:domain/verify |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains/:domain |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/mailboxes |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/mailboxes/:email |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/mailboxes/:email/sso |\n| services/api/src/routes/provider.ts | /v1/provider/usage |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/usage |\n| services/api/src/routes/provider.ts | /v1/provider/webhooks/test |\n| services/api/src/routes/provider.ts | /v1/provider/webhooks/events |\n| services/api/src/routes/outbound.ts | /messages/outbound/:id |\n| services/api/src/routes/organizations.ts | /:id |\n| services/api/src/routes/organizations.ts | /:id/members |\n| services/api/src/routes/organizations.ts | /:id/members/:userId |\n| services/api/src/routes/notifications.ts | /:id/read |\n| services/api/src/routes/notifications.ts | /read-all |\n| services/api/src/routes/notifications.ts | /admin/send |\n| services/api/src/routes/notifications.ts | /admin/schedule |\n| services/api/src/routes/notifications.ts | /admin/scheduled |\n| services/api/src/routes/notifications.ts | /admin/scheduled/:id |\n| services/api/src/routes/notifications.ts | /admin/analytics |\n| services/api/src/routes/messages.ts | /messages |\n| services/api/src/routes/messages.ts | /inboxes/:id/messages |\n| services/api/src/routes/messages.ts | /messages/search |\n| services/api/src/routes/messages.ts | /messages/search/fuzzy |\n| services/api/src/routes/messages.ts | /messages/:id |\n| services/api/src/routes/messages.ts | /messages/:id/read |\n| services/api/src/routes/messages.ts | /messages/:id/pin |\n| services/api/src/routes/messages.ts | /messages/:id/snooze |\n| services/api/src/routes/messages.ts | /attachments/:id/download |\n| services/api/src/routes/messages.ts | /messages/:id/export |\n| services/api/src/routes/messages.ts | /messages/:id/reply |\n| services/api/src/routes/messages.ts | /messages/:id/forward |\n| services/api/src/routes/messages.ts | /messages/:id/summarize |\n| services/api/src/routes/messages.ts | /messages/:id/otp |\n| services/api/src/routes/messages.ts | /messages/:id/phishing |\n| services/api/src/routes/messages.ts | /messages/:id/category |\n| services/api/src/routes/messages.ts | /messages/:id/move |\n| services/api/src/routes/messages.ts | /messages/:id/archive |\n| services/api/src/routes/messages.ts | /messages/:id/trash |\n| services/api/src/routes/messages.ts | /messages/:id/flags |\n| services/api/src/routes/messages.ts | /messages/:id/flags/:flag |\n| services/api/src/routes/magic-link.ts | /auth/magic-link/request |\n| services/api/src/routes/magic-link.ts | /auth/magic-link/verify |\n| services/api/src/routes/inboxes.ts | /inboxes/:id |\n| services/api/src/routes/inboxes.ts | /inboxes/bulk |\n| services/api/src/routes/identity-bundles.ts | /api/aliases/:id |\n| services/api/src/routes/identity-bundles.ts | /api/aliases/:id/toggle |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/:email |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/status |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/history |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/check |\n| services/api/src/routes/identity-bundles.ts | /api/privacy-score/dashboard |\n| services/api/src/routes/health.ts | /metrics |\n| services/api/src/routes/health.ts | /ready |\n| services/api/src/routes/forwarding.ts | /forwarding/emails |\n| services/api/src/routes/forwarding.ts | /forwarding/verify-email |\n| services/api/src/routes/forwarding.ts | /forwarding/confirm-email |\n| services/api/src/routes/forwarding.ts | /forwarding/emails/:email |\n| services/api/src/routes/forwarding.ts | /forwarding/rules |\n| services/api/src/routes/forwarding.ts | /forwarding/rules/:id |\n| services/api/src/routes/forwarding.ts | /forwarding/rules/:id/logs |\n| services/api/src/routes/forwarding.ts | /forwarding/stats |\n| services/api/src/routes/forwarding.ts | /forwarding/rules/:id/test |\n| services/api/src/routes/folders.ts | /inboxes/:inboxId/folders |\n| services/api/src/routes/folders.ts | /inboxes/:inboxId/folders/:id |\n| services/api/src/routes/filters.ts | /inboxes/:inboxId/filters |\n| services/api/src/routes/filters.ts | /filters |\n| services/api/src/routes/filters.ts | /filters/:id |\n| services/api/src/routes/filters.ts | /filters/:id/test |\n| services/api/src/routes/filters.ts | /inboxes/:inboxId/filters/test |\n| services/api/src/routes/filters.ts | /inboxes/:inboxId/labels |\n| services/api/src/routes/filters.ts | /labels |\n| services/api/src/routes/filters.ts | /labels/:id |\n| services/api/src/routes/filters.ts | /messages/:messageId/labels/:labelId |\n| services/api/src/routes/filters.ts | /labels/:labelId/messages |\n| services/api/src/routes/extension.ts | /extension/check-auth |\n| services/api/src/routes/extension.ts | /extension/dashboard |\n| services/api/src/routes/extension.ts | /extension/quick-inbox |\n| services/api/src/routes/extension.ts | /extension/anonymous-inbox |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox/:token |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox/:token/extend |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox/:token/messages |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/domains |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/check-alias |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/stats |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/health |\n| services/api/src/routes/domains.ts | /domains/:id |\n| services/api/src/routes/domains.ts | /domains/:id/dns-check |\n| services/api/src/routes/domains.ts | /domains/:id/verify |\n| services/api/src/routes/domains.ts | /domains/:id/dkim |\n| services/api/src/routes/domains.ts | /domains/:id/dkim/rotate |\n| services/api/src/routes/domains.ts | /domains/:id/dkim/verify |\n| services/api/src/routes/domains.ts | /domains/validate-email |\n| services/api/src/routes/domains.ts | /domains/validate |\n| services/api/src/routes/domains.ts | /domains/can-receive |\n| services/api/src/routes/contacts.ts | /gal |\n| services/api/src/routes/contacts.ts | /gal/sync |\n| services/api/src/routes/contact.ts | /contact/sales |\n| services/api/src/routes/calendars.ts | /:id/events |\n| services/api/src/routes/billing.ts | /billing/tiers |\n| services/api/src/routes/billing.ts | /billing/clear-cache |\n| services/api/src/routes/billing.ts | /billing/compare/:targetTier |\n| services/api/src/routes/billing.ts | /billing/packages |\n| services/api/src/routes/billing.ts | /billing/plans |\n| services/api/src/routes/billing.ts | /billing/payments |\n| services/api/src/routes/billing.ts | /billing/payment-method |\n| services/api/src/routes/billing.ts | /billing/subscription |\n| services/api/src/routes/billing.ts | /billing/checkout |\n| services/api/src/routes/billing.ts | /billing/portal |\n| services/api/src/routes/billing.ts | /billing/cancel |",
+      "sample_rows": [
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/events"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/verify-signature"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id/logs"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id/test"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id/logs/:logId/retry"
+        },
+        {
+          "filePath": "services/api/src/routes/webhook-test-receiver.ts",
+          "route": "/webhook-test/create"
+        },
+        {
+          "filePath": "services/api/src/routes/webhook-test-receiver.ts",
+          "route": "/webhook-test/receive/:receiverId"
+        },
+        {
+          "filePath": "services/api/src/routes/webhook-test-receiver.ts",
+          "route": "/webhook-test/payloads/:receiverId"
+        }
+      ]
+    },
+    {
+      "id": "api_routes_missing_middleware",
+      "title": "API routes missing middleware",
+      "kind": "table",
+      "row_count": 200,
+      "markdown": "| filePath | route |\n| --- | --- |\n| services/api/src/routes/webhooks.ts | /webhooks/events |\n| services/api/src/routes/webhooks.ts | /webhooks/verify-signature |\n| services/api/src/routes/webhooks.ts | /webhooks |\n| services/api/src/routes/webhooks.ts | /webhooks/:id |\n| services/api/src/routes/webhooks.ts | /webhooks/:id/logs |\n| services/api/src/routes/webhooks.ts | /webhooks/:id/test |\n| services/api/src/routes/webhooks.ts | /webhooks/:id/logs/:logId/retry |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/create |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/receive/:receiverId |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/payloads/:receiverId |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/verify |\n| services/api/src/routes/webhook-test-receiver.ts | /webhook-test/receiver/:receiverId |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/register/options |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/register/verify |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/login/options |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/login/verify |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/credentials |\n| services/api/src/routes/webauthn.ts | /auth/webauthn/credentials/:id |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules |\n| services/api/src/routes/visibility-rules.ts | /visibility-rules/:id |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules/reorder |\n| services/api/src/routes/visibility-rules.ts | /visibility-templates |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules/apply-template |\n| services/api/src/routes/visibility-rules.ts | /inboxes/:inboxId/visibility-rules/test |\n| services/api/src/routes/upload.ts | /upload |\n| services/api/src/routes/telegram.ts | /telegram/status |\n| services/api/src/routes/telegram.ts | /telegram/link-token |\n| services/api/src/routes/telegram.ts | /telegram/unlink |\n| services/api/src/routes/telegram.ts | /telegram/preferences |\n| services/api/src/routes/telegram.ts | /telegram/inbox-links |\n| services/api/src/routes/telegram.ts | /telegram/inbox-links/:id |\n| services/api/src/routes/telegram.ts | /telegram/webhook |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/complete |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/link |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/unlink |\n| services/api/src/routes/telegram-auth.ts | /auth/telegram/status |\n| services/api/src/routes/teams.ts | /teams/:teamId |\n| services/api/src/routes/teams.ts | /teams/:teamId/members |\n| services/api/src/routes/teams.ts | /teams/:teamId/members/:memberId |\n| services/api/src/routes/teams.ts | /teams/:teamId/inboxes |\n| services/api/src/routes/teams.ts | /teams/:teamId/inboxes/:inboxId |\n| services/api/src/routes/support.ts | /support/tickets |\n| services/api/src/routes/support.ts | /support/tickets/:id |\n| services/api/src/routes/support.ts | /support/tickets/:id/messages |\n| services/api/src/routes/support.ts | /admin/support/tickets |\n| services/api/src/routes/support.ts | /admin/support/tickets/stats |\n| services/api/src/routes/support.ts | /admin/support/tickets/:id |\n| services/api/src/routes/support.ts | /admin/support/tickets/:id/messages |\n| services/api/src/routes/subscription.ts | /admin/codes |\n| services/api/src/routes/subscription.ts | /admin/codes/generate |\n| services/api/src/routes/subscription.ts | /admin/codes/:id/revoke |\n| services/api/src/routes/subscription.ts | /admin/codes/:id |\n| services/api/src/routes/subscription.ts | /subscription/redeem |\n| services/api/src/routes/sso.ts | /sso/saml/:providerId/login |\n| services/api/src/routes/sso.ts | /sso/saml/:providerId/acs |\n| services/api/src/routes/sso.ts | /sso/oidc/:providerId/login |\n| services/api/src/routes/sso.ts | /sso/oidc/:providerId/callback |\n| services/api/src/routes/sepay.ts | /billing/sepay/checkout |\n| services/api/src/routes/sepay.ts | /billing/sepay/status/:orderCode |\n| services/api/src/routes/sepay.ts | /billing/sepay/pending |\n| services/api/src/routes/sepay.ts | /sepay/webhook |\n| services/api/src/routes/scim.ts | /scim/v2/:providerId/Users |\n| services/api/src/routes/scim.ts | /scim/v2/:providerId/Users/:id |\n| services/api/src/routes/referral.ts | /api/referral/code |\n| services/api/src/routes/referral.ts | /api/referral/apply |\n| services/api/src/routes/referral.ts | /api/referral/stats |\n| services/api/src/routes/referral.ts | /api/referral/claim |\n| services/api/src/routes/realtime-ws.ts | /ws/events |\n| services/api/src/routes/realtime-sse.ts | /api/events |\n| services/api/src/routes/push.ts | /push/vapid-key |\n| services/api/src/routes/push.ts | /push/subscribe |\n| services/api/src/routes/push.ts | /push/subscriptions |\n| services/api/src/routes/public.ts | /public/inboxes |\n| services/api/src/routes/public-telegram.ts | /public/telegram/generate-token |\n| services/api/src/routes/public-telegram.ts | /public/telegram/status/:token |\n| services/api/src/routes/public-telegram.ts | /public/telegram/:inboxEmail/links |\n| services/api/src/routes/public-inbox.ts | /public/inbox/search |\n| services/api/src/routes/public-inbox.ts | /public/inbox/:email/messages |\n| services/api/src/routes/public-inbox.ts | /public/inbox/:email/messages/:messageId |\n| services/api/src/routes/public-inbox.ts | /public/attachments/:id/download |\n| services/api/src/routes/provider.ts | /v1/provider/me |\n| services/api/src/routes/provider.ts | /v1/provider/api-key |\n| services/api/src/routes/provider.ts | /v1/provider/tenants |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/suspend |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/unsuspend |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains/:domain/dns |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains/:domain/verify |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/domains/:domain |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/mailboxes |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/mailboxes/:email |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/mailboxes/:email/sso |\n| services/api/src/routes/provider.ts | /v1/provider/usage |\n| services/api/src/routes/provider.ts | /v1/provider/tenants/:id/usage |\n| services/api/src/routes/provider.ts | /v1/provider/webhooks/test |\n| services/api/src/routes/provider.ts | /v1/provider/webhooks/events |\n| services/api/src/routes/outbound.ts | /messages/outbound/:id |\n| services/api/src/routes/organizations.ts | /:id |\n| services/api/src/routes/organizations.ts | /:id/members |\n| services/api/src/routes/organizations.ts | /:id/members/:userId |\n| services/api/src/routes/notifications.ts | /:id/read |\n| services/api/src/routes/notifications.ts | /read-all |\n| services/api/src/routes/notifications.ts | /admin/send |\n| services/api/src/routes/notifications.ts | /admin/schedule |\n| services/api/src/routes/notifications.ts | /admin/scheduled |\n| services/api/src/routes/notifications.ts | /admin/scheduled/:id |\n| services/api/src/routes/notifications.ts | /admin/analytics |\n| services/api/src/routes/messages.ts | /messages |\n| services/api/src/routes/messages.ts | /inboxes/:id/messages |\n| services/api/src/routes/messages.ts | /messages/search |\n| services/api/src/routes/messages.ts | /messages/search/fuzzy |\n| services/api/src/routes/messages.ts | /messages/:id |\n| services/api/src/routes/messages.ts | /messages/:id/read |\n| services/api/src/routes/messages.ts | /messages/:id/pin |\n| services/api/src/routes/messages.ts | /messages/:id/snooze |\n| services/api/src/routes/messages.ts | /attachments/:id/download |\n| services/api/src/routes/messages.ts | /messages/:id/export |\n| services/api/src/routes/messages.ts | /messages/:id/reply |\n| services/api/src/routes/messages.ts | /messages/:id/forward |\n| services/api/src/routes/messages.ts | /messages/:id/summarize |\n| services/api/src/routes/messages.ts | /messages/:id/otp |\n| services/api/src/routes/messages.ts | /messages/:id/phishing |\n| services/api/src/routes/messages.ts | /messages/:id/category |\n| services/api/src/routes/messages.ts | /messages/:id/move |\n| services/api/src/routes/messages.ts | /messages/:id/archive |\n| services/api/src/routes/messages.ts | /messages/:id/trash |\n| services/api/src/routes/messages.ts | /messages/:id/flags |\n| services/api/src/routes/messages.ts | /messages/:id/flags/:flag |\n| services/api/src/routes/magic-link.ts | /auth/magic-link/request |\n| services/api/src/routes/magic-link.ts | /auth/magic-link/verify |\n| services/api/src/routes/inboxes.ts | /inboxes/:id |\n| services/api/src/routes/inboxes.ts | /inboxes/bulk |\n| services/api/src/routes/identity-bundles.ts | /api/aliases/:id |\n| services/api/src/routes/identity-bundles.ts | /api/aliases/:id/toggle |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/:email |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/status |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/history |\n| services/api/src/routes/identity-bundles.ts | /api/breach-monitor/check |\n| services/api/src/routes/identity-bundles.ts | /api/privacy-score/dashboard |\n| services/api/src/routes/health.ts | /metrics |\n| services/api/src/routes/health.ts | /ready |\n| services/api/src/routes/forwarding.ts | /forwarding/emails |\n| services/api/src/routes/forwarding.ts | /forwarding/verify-email |\n| services/api/src/routes/forwarding.ts | /forwarding/confirm-email |\n| services/api/src/routes/forwarding.ts | /forwarding/emails/:email |\n| services/api/src/routes/forwarding.ts | /forwarding/rules |\n| services/api/src/routes/forwarding.ts | /forwarding/rules/:id |\n| services/api/src/routes/forwarding.ts | /forwarding/rules/:id/logs |\n| services/api/src/routes/forwarding.ts | /forwarding/stats |\n| services/api/src/routes/forwarding.ts | /forwarding/rules/:id/test |\n| services/api/src/routes/folders.ts | /inboxes/:inboxId/folders |\n| services/api/src/routes/folders.ts | /inboxes/:inboxId/folders/:id |\n| services/api/src/routes/filters.ts | /inboxes/:inboxId/filters |\n| services/api/src/routes/filters.ts | /filters |\n| services/api/src/routes/filters.ts | /filters/:id |\n| services/api/src/routes/filters.ts | /filters/:id/test |\n| services/api/src/routes/filters.ts | /inboxes/:inboxId/filters/test |\n| services/api/src/routes/filters.ts | /inboxes/:inboxId/labels |\n| services/api/src/routes/filters.ts | /labels |\n| services/api/src/routes/filters.ts | /labels/:id |\n| services/api/src/routes/filters.ts | /messages/:messageId/labels/:labelId |\n| services/api/src/routes/filters.ts | /labels/:labelId/messages |\n| services/api/src/routes/extension.ts | /extension/check-auth |\n| services/api/src/routes/extension.ts | /extension/dashboard |\n| services/api/src/routes/extension.ts | /extension/quick-inbox |\n| services/api/src/routes/extension.ts | /extension/anonymous-inbox |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox/:token |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox/:token/extend |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/inbox/:token/messages |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/domains |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/check-alias |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/stats |\n| services/api/src/routes/ephemeral-inbox.ts | /ephemeral/health |\n| services/api/src/routes/domains.ts | /domains/:id |\n| services/api/src/routes/domains.ts | /domains/:id/dns-check |\n| services/api/src/routes/domains.ts | /domains/:id/verify |\n| services/api/src/routes/domains.ts | /domains/:id/dkim |\n| services/api/src/routes/domains.ts | /domains/:id/dkim/rotate |\n| services/api/src/routes/domains.ts | /domains/:id/dkim/verify |\n| services/api/src/routes/domains.ts | /domains/validate-email |\n| services/api/src/routes/domains.ts | /domains/validate |\n| services/api/src/routes/domains.ts | /domains/can-receive |\n| services/api/src/routes/contacts.ts | /gal |\n| services/api/src/routes/contacts.ts | /gal/sync |\n| services/api/src/routes/contact.ts | /contact/sales |\n| services/api/src/routes/calendars.ts | /:id/events |\n| services/api/src/routes/billing.ts | /billing/tiers |\n| services/api/src/routes/billing.ts | /billing/clear-cache |\n| services/api/src/routes/billing.ts | /billing/compare/:targetTier |\n| services/api/src/routes/billing.ts | /billing/packages |\n| services/api/src/routes/billing.ts | /billing/plans |\n| services/api/src/routes/billing.ts | /billing/payments |\n| services/api/src/routes/billing.ts | /billing/payment-method |\n| services/api/src/routes/billing.ts | /billing/subscription |\n| services/api/src/routes/billing.ts | /billing/checkout |\n| services/api/src/routes/billing.ts | /billing/portal |\n| services/api/src/routes/billing.ts | /billing/cancel |",
+      "sample_rows": [
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/events"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/verify-signature"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id/logs"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id/test"
+        },
+        {
+          "filePath": "services/api/src/routes/webhooks.ts",
+          "route": "/webhooks/:id/logs/:logId/retry"
+        },
+        {
+          "filePath": "services/api/src/routes/webhook-test-receiver.ts",
+          "route": "/webhook-test/create"
+        },
+        {
+          "filePath": "services/api/src/routes/webhook-test-receiver.ts",
+          "route": "/webhook-test/receive/:receiverId"
+        },
+        {
+          "filePath": "services/api/src/routes/webhook-test-receiver.ts",
+          "route": "/webhook-test/payloads/:receiverId"
+        }
+      ]
+    }
+  ]
+}

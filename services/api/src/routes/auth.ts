@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
-import { z } from "zod";
 import crypto from "crypto";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
+import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { verifyPassword, hashPassword } from "../utils/password";
 import { encrypt, decrypt } from "../utils/encryption";
@@ -15,33 +15,10 @@ import { tokenRevocationService } from "../services/token-revocation.service";
 import { RefreshTokenService } from "../services/refresh-token.service";
 import { ProviderSsoService } from "../services/provider-sso.service";
 import { twoFactorBackoff } from "../middleware/rate-limit-config";
-
-// Password validation with complexity requirements
-const passwordSchema = z.string()
-  .min(8, "Password must be at least 8 characters")
-  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-  .regex(/[0-9]/, "Password must contain at least one number");
-
-// JWT expiry configuration
-const ACCESS_TOKEN_EXPIRY = "15m"; // Short-lived access token
-const COOKIE_MAX_AGE_DEFAULT = 7 * 24 * 60 * 60;    // 604800 seconds
-
-/**
- * Returns the shared parent domain for cookies (e.g. ".manhquy.click") so
- * the csrfToken cookie set by api.{domain} is readable by app.{domain}.
- * Returns undefined for localhost/IP (no subdomain sharing needed).
- */
-function getCookieDomain(): string | undefined {
-  try {
-    const { hostname } = new URL(appConfig.webUrl);
-    if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
-    const parts = hostname.split('.');
-    return parts.length >= 2 ? '.' + parts.slice(-2).join('.') : undefined;
-  } catch {
-    return undefined;
-  }
-}
+import { passwordSchema } from "./auth/auth-schemas";
+import { COOKIE_MAX_AGE_DEFAULT } from "./auth/auth-config";
+import { clearCsrfCookie, clearRefreshCookies, setAuthCookies } from "./auth/auth-cookies";
+import { createAccessToken, createCsrfToken } from "./auth/auth-tokens";
 
 
 export async function authRoutes(app: FastifyInstance) {
@@ -104,34 +81,13 @@ export async function authRoutes(app: FastifyInstance) {
       }
     }
 
-    // SECURITY: Add jti (JWT ID) for token revocation support
-    const accessJti = crypto.randomUUID();
-    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const accessToken = createAccessToken(app, user);
     // Use DB opaque refresh token (consistent with login endpoint, supports rotation + reuse detection)
     const { token: refreshToken } = await RefreshTokenService.createToken(user.id, 7, request.headers["user-agent"], request.ip);
 
     // Phase 4: Generate CSRF token for double-submit pattern
-    const csrfToken = crypto.randomBytes(32).toString('hex');
-
-    // Set refreshToken as httpOnly cookie (immune to XSS)
-    // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
-    reply.setCookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: '/auth/refresh',
-    });
-
-    // Set CSRF token as readable cookie (for frontend access)
-    reply.setCookie('csrfToken', csrfToken, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-        domain: getCookieDomain(),
-    });
+    const csrfToken = createCsrfToken();
+    setAuthCookies(reply, request, refreshToken, csrfToken, 7 * 24 * 60 * 60);
 
     await recordAuditFromRequest(request, "auth.register", { email: user.email });
 
@@ -346,36 +302,15 @@ export async function authRoutes(app: FastifyInstance) {
       return { requires2FA: true, tempToken };
     }
 
-    // SECURITY: Add jti (JWT ID) for token revocation support
-    const loginAccessJti = crypto.randomUUID();
-    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: loginAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const accessToken = createAccessToken(app, user);
     // Use rememberMe to determine refresh token TTL
     const loginRefreshDays = rememberMe ? 30 : 7;
     const loginCookieMaxAge = loginRefreshDays * 24 * 60 * 60;
     const { token: refreshToken } = await RefreshTokenService.createToken(user.id, loginRefreshDays, request.headers["user-agent"], request.ip);
 
     // Phase 4: Generate CSRF token for double-submit pattern
-    const csrfToken = crypto.randomBytes(32).toString('hex');
-
-    // Set refreshToken as httpOnly cookie (immune to XSS)
-    // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
-    reply.setCookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: loginCookieMaxAge,
-      path: '/auth/refresh',
-    });
-
-    // Set CSRF token as readable cookie (for frontend access)
-    reply.setCookie('csrfToken', csrfToken, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: loginCookieMaxAge,
-      path: '/',
-        domain: getCookieDomain(),
-    });
+    const csrfToken = createCsrfToken();
+    setAuthCookies(reply, request, refreshToken, csrfToken, loginCookieMaxAge);
 
     await recordAuditFromRequest(request, AuditAction.LOGIN_SUCCESS, { email: user.email, userId: user.id });
 
@@ -496,9 +431,7 @@ export async function authRoutes(app: FastifyInstance) {
       });
     }
 
-    // SECURITY: Add jti (JWT ID) for token revocation support
-    const twoFaAccessJti = crypto.randomUUID();
-    const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: twoFaAccessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const accessToken = createAccessToken(app, user);
     // Inherit rememberMe from tempToken to determine cookie TTL
     const twoFaRememberMe = !!decoded.rememberMe;
     const twoFaRefreshDays = twoFaRememberMe ? 30 : 7;
@@ -506,27 +439,8 @@ export async function authRoutes(app: FastifyInstance) {
     const { token: refreshToken } = await RefreshTokenService.createToken(user.id, twoFaRefreshDays, request.headers["user-agent"], request.ip);
 
     // Phase 4: Generate CSRF token for double-submit pattern
-    const csrfToken = crypto.randomBytes(32).toString('hex');
-
-    // Set refreshToken as httpOnly cookie (immune to XSS)
-    // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
-    reply.setCookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: twoFaCookieMaxAge,
-      path: '/auth/refresh',
-    });
-
-    // Set CSRF token as readable cookie (for frontend access)
-    reply.setCookie('csrfToken', csrfToken, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: twoFaCookieMaxAge,
-      path: '/',
-        domain: getCookieDomain(),
-    });
+    const csrfToken = createCsrfToken();
+    setAuthCookies(reply, request, refreshToken, csrfToken, twoFaCookieMaxAge);
 
     await recordAuditFromRequest(request, AuditAction.TWO_FACTOR_VERIFIED, { email: user.email, userId: user.id });
 
@@ -542,17 +456,38 @@ export async function authRoutes(app: FastifyInstance) {
   app.post("/auth/logout", { preHandler: app.authenticate }, async (request, reply) => {
     const user = request.user as any;
     const jti = user?.jti;
+    const cookies = request.cookies as { refreshToken?: string };
+    const refreshToken = cookies.refreshToken;
 
     if (jti) {
       // Revoke the current access token (15 min TTL matches token expiry)
       await tokenRevocationService.revokeToken(jti, 900);
     }
 
-    // Phase 4: Clear cookies on logout
-    reply.clearCookie('refreshToken', { path: '/auth/refresh' });
-    reply.clearCookie('csrfToken', { path: '/' });
+    let revokedByToken = false;
+    if (refreshToken) {
+      revokedByToken = await RefreshTokenService.revokeToken(refreshToken);
+    }
 
-    await recordAuditFromRequest(request, "auth.logout", { userId: user.userId });
+    let revokedBySessionCount = 0;
+    // Fallback for legacy cookie path / proxy edge cases where refresh cookie is not present on this route.
+    if (!refreshToken) {
+      revokedBySessionCount = await RefreshTokenService.revokeSessionTokens(
+        user.userId,
+        request.headers["user-agent"],
+        request.ip
+      );
+    }
+
+    // Phase 4: Clear cookies on logout
+    clearRefreshCookies(reply);
+    clearCsrfCookie(reply, request);
+
+    await recordAuditFromRequest(request, "auth.logout", {
+      userId: user.userId,
+      refreshTokenRevoked: revokedByToken || revokedBySessionCount > 0,
+      revokedBySessionCount
+    });
 
     return { ok: true, message: "Logged out successfully" };
   });
@@ -568,8 +503,8 @@ export async function authRoutes(app: FastifyInstance) {
     await tokenRevocationService.revokeAllUserTokens(user.userId, 86400);
 
     // Phase 4: Clear cookies on logout-all
-    reply.clearCookie('refreshToken', { path: '/auth/refresh' });
-    reply.clearCookie('csrfToken', { path: '/' });
+    clearRefreshCookies(reply);
+    clearCsrfCookie(reply, request);
 
     await recordAuditFromRequest(request, "auth.logout_all", { userId: user.userId });
 
@@ -629,47 +564,31 @@ export async function authRoutes(app: FastifyInstance) {
 
       const user = await prisma.user.findUnique({
         where: { id: rotated.userId },
-        select: { id: true, email: true, role: true, tier: true, emailVerified: true }
+        select: { id: true, email: true, role: true, tier: true, emailVerified: true, isDisabled: true }
       });
 
       if (!user) {
         return reply.status(401).send({ error: "User not found" });
       }
 
-      const accessToken = app.jwt.sign(
-        {
+      if (user.isDisabled) {
+        await RefreshTokenService.revokeAllUserTokens(user.id);
+        clearRefreshCookies(reply);
+        clearCsrfCookie(reply, request);
+        await recordAuditFromRequest(request, AuditAction.LOGIN_FAILED, {
           userId: user.id,
-          role: user.role,
-          tier: user.tier,
-          type: "access",
-          jti: crypto.randomUUID()
-        },
-        { expiresIn: ACCESS_TOKEN_EXPIRY }
-      );
+          reason: "account_disabled_on_refresh"
+        }, false);
+        return reply.status(403).send({ error: "Account is disabled" });
+      }
+
+      const accessToken = createAccessToken(app, user);
 
       // Phase 4: Generate new CSRF token for next refresh
-      const newCsrfToken = crypto.randomBytes(32).toString('hex');
+      const newCsrfToken = createCsrfToken();
 
-      // Set rotated refreshToken as new httpOnly cookie
       const cookieMaxAge = rotated.expiresInDays * 24 * 60 * 60;
-
-      reply.setCookie('refreshToken', rotated.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: cookieMaxAge,
-        path: '/auth/refresh',
-      });
-
-      // Set new CSRF token
-      reply.setCookie('csrfToken', newCsrfToken, {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: cookieMaxAge,
-        path: '/',
-        domain: getCookieDomain(),
-      });
+      setAuthCookies(reply, request, rotated.token, newCsrfToken, cookieMaxAge);
 
       await recordAuditFromRequest(request, "auth.token_refresh", {
         userId: rotated.userId,
@@ -1075,33 +994,15 @@ export async function authRoutes(app: FastifyInstance) {
       }
 
       // Generate tokens
-      const accessJti = crypto.randomUUID();
-      const accessToken = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti }, { expiresIn: ACCESS_TOKEN_EXPIRY });
+      const accessToken = createAccessToken(app, user);
       // Use DB opaque refresh token (consistent with login endpoint)
       const { token: refreshToken } = await RefreshTokenService.createToken(user.id, 7, request.headers["user-agent"], request.ip);
-      const csrfToken = crypto.randomBytes(32).toString('hex');
+      const csrfToken = createCsrfToken();
 
       await recordAuditFromRequest(request, "auth.sso_login", { email: user.email, providerId: ssoData.providerId });
 
-      // Set refreshToken as httpOnly cookie before redirect (do not expose in URL)
-      // sameSite: 'lax' allows cookie to be sent from app.{domain} to api.{domain} (same-site subdomains)
-      reply.setCookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: COOKIE_MAX_AGE_DEFAULT,
-        path: '/auth/refresh',
-      });
-
-      // Set CSRF token cookie
-      reply.setCookie('csrfToken', csrfToken, {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: COOKIE_MAX_AGE_DEFAULT,
-        path: '/',
-        domain: getCookieDomain(),
-      });
+      // Set refreshToken and CSRF cookies before redirect (do not expose in URL)
+      setAuthCookies(reply, request, refreshToken, csrfToken, COOKIE_MAX_AGE_DEFAULT);
 
       // Redirect to Web App with access token only (csrfToken in shared-domain cookie)
       const redirectUrl = `${appConfig.webUrl}/auth/sso?accessToken=${accessToken}`;

@@ -4,7 +4,9 @@ import { SubscriptionTier, UserRole } from "@prisma/client";
 declare module "@fastify/jwt" {
   interface FastifyJWT {
     payload: {
+      id?: string; // Legacy compatibility: mirror userId in access token payload
       userId: string;
+      email?: string;
       role?: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
@@ -18,7 +20,9 @@ declare module "@fastify/jwt" {
       telegramPhotoUrl?: string;
     };
     user: {
+      id?: string;
       userId: string;
+      email?: string;
       role?: UserRole;
       tier?: SubscriptionTier;
       pending2FA?: boolean;
@@ -32,7 +36,9 @@ declare module "@fastify/jwt" {
 
 // Helper types for request handlers
 export interface AuthenticatedUser {
+  id?: string;
   userId: string;
+  email?: string;
   role?: UserRole;
   tier?: SubscriptionTier;
   pending2FA?: boolean;

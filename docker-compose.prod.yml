@@ -126,13 +126,7 @@ services:
       SMTP_PORT: 2525
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      # Self-hosted Postfix SMTP (local container)
-      OUTBOUND_SMTP_HOST: postfix
-      OUTBOUND_SMTP_PORT: 25
-      OUTBOUND_SMTP_USER: ""
-      OUTBOUND_SMTP_PASS: ""
-      OUTBOUND_SMTP_SECURE: "false"
-      OUTBOUND_ENABLED: "true"
+      # Transactional outbound config is sourced from services/api/.env
       # Mail configuration
       MAIL_DOMAIN: ${DOMAIN:-localhost}
       MAIL_FROM_NAME: "Ephemera"
@@ -157,8 +151,8 @@ services:
       - ./backups:/app/backups
       - /var/run/docker.sock:/var/run/docker.sock
       - /root/.config/rclone:/root/.config/rclone:ro
-    ports:
-      - "2525:2525" # SMTP Inbound (không qua Caddy)
+    # SMTP ingress stays internal to Docker network (Postfix -> API),
+    # avoid exposing API SMTP port directly to the public internet.
     networks:
       - email_network
     deploy:

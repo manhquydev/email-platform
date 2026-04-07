@@ -7,6 +7,9 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { recordAudit } from "../../utils/audit";
+import { addDomainToPostfix } from "../../utils/postfix-sync";
+import { verifyDomainOwnership } from "../../utils/dns";
+import { ensureDefaultInboxesForVerifiedDomain } from "../../services/domain-verification.service";
 
 export async function adminDomainsRoutes(app: FastifyInstance) {
     // List Domains for Admin (with approval filter)
@@ -86,11 +89,63 @@ export async function adminDomainsRoutes(app: FastifyInstance) {
         let affected = 0;
 
         if (action === "verify") {
-            const result = await prisma.domain.updateMany({
+            const domainsToVerify = await prisma.domain.findMany({
                 where: { id: { in: domainIds }, status: { not: "VERIFIED" } },
-                data: { status: "VERIFIED" }
+                select: { id: true, name: true, verificationToken: true, status: true },
             });
+            const idsToVerify: string[] = [];
+            const verificationFailures: Array<{ id: string; name: string; reason: string }> = [];
+
+            for (const domain of domainsToVerify) {
+                try {
+                    const ok = await verifyDomainOwnership(domain.name, domain.verificationToken);
+                    if (ok) {
+                        idsToVerify.push(domain.id);
+                    } else {
+                        verificationFailures.push({ id: domain.id, name: domain.name, reason: "DNS verification failed" });
+                    }
+                } catch (err) {
+                    verificationFailures.push({
+                        id: domain.id,
+                        name: domain.name,
+                        reason: (err as Error).message || "DNS verification error",
+                    });
+                }
+            }
+
+            let result = { count: 0 };
+            if (idsToVerify.length > 0) {
+                result = await prisma.domain.updateMany({
+                    where: { id: { in: idsToVerify }, status: { not: "VERIFIED" } },
+                    data: { status: "VERIFIED" }
+                });
+            }
+
+            if (result.count > 0) {
+                const syncResult = await addDomainToPostfix("bulk-verify");
+                if (!syncResult.success) {
+                    for (const domain of domainsToVerify) {
+                        if (!idsToVerify.includes(domain.id)) continue;
+                        await prisma.domain.update({
+                            where: { id: domain.id },
+                            data: { status: domain.status }
+                        });
+                    }
+                    return reply.status(503).send({
+                        error: "Bulk verify sync failed",
+                        details: syncResult.error ?? "Failed to sync verified domains to Postfix",
+                    });
+                }
+                await Promise.all(idsToVerify.map((domainId) => ensureDefaultInboxesForVerifiedDomain(domainId)));
+            }
             affected = result.count;
+            if (verificationFailures.length > 0) {
+                return {
+                    success: true,
+                    affected,
+                    failed: verificationFailures,
+                };
+            }
         } else if (action === "make_public") {
             const result = await prisma.domain.updateMany({
                 where: { id: { in: domainIds } },

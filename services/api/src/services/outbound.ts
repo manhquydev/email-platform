@@ -192,6 +192,38 @@ export class OutboundService {
     }
 
     /**
+     * Send payment success confirmation email
+     */
+    async sendPaymentSuccessEmail(params: {
+        to: string;
+        packageName: string;
+        amount: number;
+        currency: string;
+        paymentMethod: "STRIPE" | "SEPAY";
+        paidAt?: Date;
+        orderCode?: string;
+    }) {
+        const { paymentSuccessEmailTemplate } = await import("./emailTemplates");
+        const template = paymentSuccessEmailTemplate({
+            recipientEmail: params.to,
+            packageName: params.packageName,
+            amount: params.amount,
+            currency: params.currency,
+            paymentMethod: params.paymentMethod,
+            paidAt: params.paidAt,
+            orderCode: params.orderCode
+        });
+
+        return this.sendEmail(
+            appConfig.defaultAdminEmail,
+            params.to,
+            template.subject,
+            template.text,
+            template.html
+        );
+    }
+
+    /**
      * Verify connection
      */
     async verifyConnection(): Promise<boolean> {

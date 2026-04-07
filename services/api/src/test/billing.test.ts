@@ -11,6 +11,9 @@ const mockStripeService = vi.hoisted(() => ({
     createCheckoutSession: vi.fn(),
     createPortalSession: vi.fn(),
     handleWebhook: vi.fn(),
+    cancelSubscription: vi.fn(),
+    getPaymentMethod: vi.fn(),
+    getSubscription: vi.fn(),
 }));
 
 vi.mock("../services/stripe.service", () => ({
@@ -45,7 +48,8 @@ vi.mock("../lib/prisma", () => ({
 // Mock app config
 vi.mock("../config", () => ({
     appConfig: {
-        stripe: { apiKey: "sk_test_mock", webhookSecret: "whsec_mock" },
+        stripe: { enabled: true, apiKey: "sk_test_mock", webhookSecret: "whsec_mock" },
+        sepay: { enabled: true },
         webUrl: "http://localhost:3000",
         storageDir: "/tmp",
     },
@@ -227,6 +231,10 @@ describe("Billing Routes", () => {
                 id: "user-123",
                 stripeSubscriptionId: "sub_mock123",
             });
+            mockStripeService.cancelSubscription.mockResolvedValue({
+                id: "sub_mock123",
+                cancel_at_period_end: true,
+            });
 
             const response = await app.inject({
                 method: "POST",
@@ -237,6 +245,51 @@ describe("Billing Routes", () => {
             expect(response.statusCode).toBe(200);
             const body = JSON.parse(response.body);
             expect(body.success).toBe(true);
+            expect(body.message).toBe("Subscription will be canceled at period end");
+            expect(mockStripeService.cancelSubscription).toHaveBeenCalledWith("user-123", { immediately: false });
+        });
+
+        it("should cancel subscription immediately", async () => {
+            prismaMock.user.findUnique.mockResolvedValue({
+                id: "user-123",
+                stripeSubscriptionId: "sub_mock123",
+            });
+            mockStripeService.cancelSubscription.mockResolvedValue({
+                id: "sub_mock123",
+                status: "canceled",
+            });
+
+            const response = await app.inject({
+                method: "POST",
+                url: "/billing/cancel",
+                payload: { immediately: true },
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.body);
+            expect(body.success).toBe(true);
+            expect(body.message).toBe("Subscription canceled immediately");
+            expect(mockStripeService.cancelSubscription).toHaveBeenCalledWith("user-123", { immediately: true });
+        });
+
+        it("should default to period-end cancel when immediately is omitted", async () => {
+            prismaMock.user.findUnique.mockResolvedValue({
+                id: "user-123",
+                stripeSubscriptionId: "sub_mock123",
+            });
+            mockStripeService.cancelSubscription.mockResolvedValue({
+                id: "sub_mock123",
+                cancel_at_period_end: true,
+            });
+
+            const response = await app.inject({
+                method: "POST",
+                url: "/billing/cancel",
+                payload: {},
+            });
+
+            expect(response.statusCode).toBe(200);
+            expect(mockStripeService.cancelSubscription).toHaveBeenCalledWith("user-123", { immediately: false });
         });
 
         it("should reject when no active subscription", async () => {

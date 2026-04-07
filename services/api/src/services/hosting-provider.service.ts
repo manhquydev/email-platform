@@ -9,6 +9,9 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { TenantPlan, TenantStatus, ProviderTier } from '@prisma/client';
 import { generateProviderApiKey } from '../middleware/provider-auth';
+import { verifyDomainOwnership } from '../utils/dns';
+import { addDomainToPostfix } from '../utils/postfix-sync';
+import { ensureDefaultInboxesForVerifiedDomain } from './domain-verification.service';
 
 // Plan limits configuration
 const PLAN_LIMITS = {
@@ -430,7 +433,17 @@ export class HostingProviderService {
       throw new Error('Domain not found');
     }
 
-    // Update domain and tenant domain as verified
+    const isVerified = await verifyDomainOwnership(
+      tenantDomain.domain.name,
+      tenantDomain.domain.verificationToken
+    );
+    if (!isVerified) {
+      throw new Error('DNS verification failed');
+    }
+
+    const previousStatus = tenantDomain.domain.status;
+    const previousTenantVerified = tenantDomain.verified;
+    const previousTenantVerifiedAt = tenantDomain.verifiedAt;
     await prisma.$transaction([
       prisma.domain.update({
         where: { id: tenantDomain.domain.id },
@@ -441,6 +454,22 @@ export class HostingProviderService {
         data: { verified: true, verifiedAt: new Date() },
       }),
     ]);
+
+    const syncResult = await addDomainToPostfix(tenantDomain.domain.name);
+    if (!syncResult.success) {
+      await prisma.$transaction([
+        prisma.domain.update({
+          where: { id: tenantDomain.domain.id },
+          data: { status: previousStatus },
+        }),
+        prisma.providerTenantDomain.update({
+          where: { id: tenantDomain.id },
+          data: { verified: previousTenantVerified, verifiedAt: previousTenantVerifiedAt },
+        }),
+      ]);
+      throw new Error(`Postfix sync failed: ${syncResult.error ?? 'unknown error'}`);
+    }
+    await ensureDefaultInboxesForVerifiedDomain(tenantDomain.domain.id);
 
     return { verified: true, domainName };
   }

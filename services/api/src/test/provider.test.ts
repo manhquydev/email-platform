@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
 import { app, prisma } from "./setup";
 import { HostingProviderService } from "../services/hosting-provider.service";
 import { ProviderWebhookService } from "../services/provider-webhook.service";
 import crypto from "crypto";
+
+vi.mock("../utils/dns", () => ({
+    verifyDomainOwnership: vi.fn(async () => true),
+}));
 
 // Helper to clean up provider tables
 async function cleanupProviderData() {

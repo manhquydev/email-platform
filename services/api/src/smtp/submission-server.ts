@@ -1,7 +1,8 @@
 import { SMTPServer, SMTPServerAuthentication, SMTPServerAuthenticationResponse, SMTPServerSession } from "smtp-server";
 import { simpleParser, ParsedMail } from "mailparser";
+import { Queue } from "bullmq";
 import { appConfig } from "../config";
-import { emailQueue } from "../queue/emailQueue";
+import { redisConfig } from "../config/redis";
 import { SmtpAuthHandler } from "./auth-handler";
 import { DkimService } from "../services/dkim.service";
 import { FolderService } from "../services/folder-service";
@@ -11,6 +12,7 @@ import path from "path";
 import fs from "fs/promises";
 import { createWriteStream } from "fs";
 import { generateToken } from "../utils/token";
+import { OUTBOUND_INGEST_QUEUE_NAME } from "../services/outbound-delivery";
 
 type Logger = {
   info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -31,6 +33,10 @@ const ensureRawStorageDir = async () => {
   await fs.mkdir(dir, { recursive: true });
   return dir;
 };
+
+const outboundIngestQueue = new Queue(OUTBOUND_INGEST_QUEUE_NAME, {
+  connection: redisConfig,
+});
 
 export const startSubmissionServer = (logger: Logger, port = 587) => {
   const server = new SMTPServer({
@@ -106,7 +112,7 @@ export const startSubmissionServer = (logger: Logger, port = 587) => {
 
         // 2. Queue for delivery (DKIM signing happens in worker)
         // We pass the file path and user context
-        await emailQueue.add("outbound", {
+        await outboundIngestQueue.add("outbound", {
           rawPath: filePath,
           userId: user.id,
           envelope: {

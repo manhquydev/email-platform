@@ -58,13 +58,13 @@ class TokenManager {
     }
   }
 
-  // CSRF token: prefer localStorage (updated after every token rotation),
-  // fall back to cookie (initial login, may be stale after rotation).
+  // CSRF token: prefer cookie, then fall back to localStorage.
+  // Cookie is server-side source-of-truth for /auth/refresh validation.
   private getCsrfToken(): string {
-    const fromStorage = localStorage.getItem('csrfToken');
-    if (fromStorage) return fromStorage;
     const fromCookie = document.cookie.match(/csrfToken=([^;]+)/);
-    return fromCookie ? fromCookie[1] : '';
+    if (fromCookie) return fromCookie[1];
+    const fromStorage = localStorage.getItem('csrfToken');
+    return fromStorage || '';
   }
 
   // Acquire cross-tab refresh lock. Returns true if lock acquired, false if another tab holds it.
@@ -150,14 +150,14 @@ class TokenManager {
     });
 
     if (!response.ok) {
-      // Before clearing session, check if another tab just successfully refreshed.
-      // A freshly issued token has > 14 minutes remaining (15min total - 1min tolerance).
+      // Avoid premature logout on transient refresh failures while current access token is still valid.
+      // This keeps active sessions stable and lets next refresh attempt recover.
       const existingToken = this.getAccessToken();
-      if (existingToken && !this.isTokenExpiringSoon(existingToken, 14 * 60)) {
-        return existingToken; // Another tab refreshed — use its token
+      if (existingToken && !this.isTokenExpiringSoon(existingToken, 0)) {
+        return existingToken;
       }
       this.clearTokens();
-      throw new Error('Token refresh failed');
+      throw new Error(`Token refresh failed (${response.status})`);
     }
 
     const data: TokenResponse = await response.json();

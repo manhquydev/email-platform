@@ -1,11 +1,6 @@
 import { FastifyInstance } from "fastify";
-import { z } from "zod";
 import { prisma } from "../lib/prisma";
-import path from "path";
-import { version } from "../../package.json";
-import { appConfig } from "../config";
 import { storageService } from "../services/storage";
-import { promises as fs } from "fs";
 import { recordAudit } from "../utils/audit";
 import Mailbuild from "mailbuild";
 import { realtimeEvents } from "../services/realtime-events";
@@ -14,18 +9,31 @@ import { outboundService } from "../services/outbound";
 import { OTPExtractorService } from "../services/otp-extractor.service";
 import { PhishingDetectorService } from "../services/phishing-detector.service";
 import { EmailCategorizerService } from "../services/email-categorizer.service";
+import {
+  flagBodySchema,
+  flagParamsSchema,
+  forwardBodySchema,
+  fuzzySearchQuerySchema,
+  inboxMessagesQuerySchema,
+  listMessagesQuerySchema,
+  messageIdParamsSchema,
+  moveBodySchema,
+  pinBodySchema,
+  readBodySchema,
+  replyBodySchema,
+  searchMessagesQuerySchema,
+  snoozeBodySchema,
+  summarizeBodySchema,
+} from "./messages/schemas";
+import {
+  buildMessageTextSearchFilters,
+  buildTempOutboundMessageId,
+  sanitizeHeaderFilename,
+} from "./messages/utilities";
 
 export const messageRoutes = async (app: FastifyInstance) => {
   app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
-    const query = z
-      .object({
-        inboxId: z.string().uuid(),
-        limit: z.coerce.number().min(1).max(200).optional(),
-        offset: z.coerce.number().min(0).optional(),
-        q: z.string().optional(),
-        hasAttachments: z.coerce.boolean().optional(),
-      })
-      .safeParse(request.query);
+    const query = listMessagesQuerySchema.safeParse(request.query);
     if (!query.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
@@ -44,12 +52,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
       deletedAt: null,
       ...(q
         ? {
-          OR: [
-            { subject: { contains: q, mode: "insensitive" as const } },
-            { fromAddress: { contains: q, mode: "insensitive" as const } },
-            { toAddress: { contains: q, mode: "insensitive" as const } },
-            { textBody: { contains: q, mode: "insensitive" as const } },
-          ],
+          OR: buildMessageTextSearchFilters(q),
         }
         : {}),
       ...(hasAttachments
@@ -80,20 +83,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   app.get("/inboxes/:id/messages", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const query = z
-      .object({
-        limit: z.coerce.number().min(1).max(200).optional(),
-        offset: z.coerce.number().min(0).optional(),
-        q: z.string().optional(),
-        from: z.string().optional(),
-        subject: z.string().optional(),
-        start: z.string().datetime().optional(),
-        end: z.string().datetime().optional(),
-        hasAttachments: z.coerce.boolean().optional(),
-        isRead: z.coerce.boolean().optional(),
-      })
-      .safeParse(request.query);
+    const params = messageIdParamsSchema.safeParse(request.params);
+    const query = inboxMessagesQuerySchema.safeParse(request.query);
     if (!params.success || !query.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
@@ -114,12 +105,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
       deletedAt: null,
       ...(query.data.q
         ? {
-          OR: [
-            { subject: { contains: query.data.q, mode: "insensitive" as const } },
-            { fromAddress: { contains: query.data.q, mode: "insensitive" as const } },
-            { toAddress: { contains: query.data.q, mode: "insensitive" as const } },
-            { textBody: { contains: query.data.q, mode: "insensitive" as const } },
-          ],
+          OR: buildMessageTextSearchFilters(query.data.q),
         }
         : {}),
       ...(query.data.from ? { fromAddress: { contains: query.data.from, mode: "insensitive" as const } } : {}),
@@ -161,18 +147,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   app.get("/messages/search", { preHandler: app.authenticate }, async (request, reply) => {
-    const query = z
-      .object({
-        q: z.string().optional(),
-        domain: z.string().optional(),
-        from: z.string().optional(),
-        hasAttachment: z.enum(["true", "false"]).optional(),
-        isRead: z.enum(["true", "false"]).optional(),
-        after: z.string().optional(),
-        limit: z.coerce.number().min(1).max(200).optional(),
-        offset: z.coerce.number().min(0).optional(),
-      })
-      .safeParse(request.query);
+    const query = searchMessagesQuerySchema.safeParse(request.query);
     if (!query.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
@@ -197,12 +172,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
     // Text search
     if (q) {
-      where.OR = [
-        { subject: { contains: q, mode: "insensitive" as const } },
-        { fromAddress: { contains: q, mode: "insensitive" as const } },
-        { toAddress: { contains: q, mode: "insensitive" as const } },
-        { textBody: { contains: q, mode: "insensitive" as const } },
-      ];
+      where.OR = buildMessageTextSearchFilters(q);
     }
 
     // From address filter
@@ -244,13 +214,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
   // Fuzzy search using pg_trgm similarity ranking
   // SECURITY: Added ownership filter to prevent BOLA vulnerability
   app.get("/messages/search/fuzzy", { preHandler: app.authenticate }, async (request, reply) => {
-    const query = z
-      .object({
-        q: z.string().min(1),
-        limit: z.coerce.number().min(1).max(100).optional(),
-        threshold: z.coerce.number().min(0).max(1).optional(),
-      })
-      .safeParse(request.query);
+    const query = fuzzySearchQuerySchema.safeParse(request.query);
     if (!query.success) {
       return reply.status(400).send({ error: "Search query required" });
     }
@@ -305,7 +269,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   app.get("/messages/:id", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
@@ -328,7 +292,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   app.delete("/messages/:id", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
@@ -362,8 +326,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   app.patch("/messages/:id/read", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const body = z.object({ isRead: z.boolean() }).safeParse(request.body);
+    const params = messageIdParamsSchema.safeParse(request.params);
+    const body = readBodySchema.safeParse(request.body);
 
     if (!params.success || !body.success) {
       return reply.status(400).send({ error: "Invalid request" });
@@ -401,8 +365,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
   // Pin/unpin message
   app.patch("/messages/:id/pin", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const body = z.object({ isPinned: z.boolean() }).safeParse(request.body);
+    const params = messageIdParamsSchema.safeParse(request.params);
+    const body = pinBodySchema.safeParse(request.body);
 
     if (!params.success || !body.success) {
       return reply.status(400).send({ error: "Invalid request" });
@@ -433,10 +397,8 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
   // Snooze message
   app.patch("/messages/:id/snooze", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const body = z.object({
-      snoozedUntil: z.string().datetime().nullable()
-    }).safeParse(request.body);
+    const params = messageIdParamsSchema.safeParse(request.params);
+    const body = snoozeBodySchema.safeParse(request.body);
 
     if (!params.success || !body.success) {
       return reply.status(400).send({ error: "Invalid request" });
@@ -467,7 +429,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
   // SECURITY: Optimized attachment download - check ownership BEFORE loading file
   app.get("/attachments/:id/download", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
@@ -499,8 +461,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
     try {
       const stream = await storageService.getReadStream(attachmentMeta.storageKey);
-      // Sanitize filename to prevent header injection
-      const safeFilename = attachmentMeta.filename.replace(/["\\]/g, "_");
+      const safeFilename = sanitizeHeaderFilename(attachmentMeta.filename);
       reply.header("Content-Disposition", `attachment; filename="${safeFilename}"`);
       reply.header("Content-Type", attachmentMeta.mimeType || "application/octet-stream");
       return reply.send(stream);
@@ -512,7 +473,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
   // Export message as .eml file
   app.get("/messages/:id/export", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid request" });
     }
@@ -577,8 +538,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
         const attPart = mail.appendChild();
         attPart.setHeader("Content-Type", attachment.mimeType || "application/octet-stream");
         attPart.setHeader("Content-Transfer-Encoding", "base64");
-        // Sanitize filename to prevent header injection
-        const safeAttFilename = attachment.filename.replace(/["\\]/g, "_");
+        const safeAttFilename = sanitizeHeaderFilename(attachment.filename);
         attPart.setHeader("Content-Disposition", `attachment; filename="${safeAttFilename}"`);
         attPart.setContent(content);
       } catch (err) {
@@ -597,19 +557,13 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
   // Reply to a message
   app.post("/messages/:id/reply", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const bodySchema = z.object({
-      text: z.string().optional(),
-      html: z.string().optional(),
-      subject: z.string().optional(),
-      replyAll: z.boolean().optional().default(false),
-    });
+    const params = messageIdParamsSchema.safeParse(request.params);
 
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid message ID" });
     }
 
-    const body = bodySchema.safeParse(request.body);
+    const body = replyBodySchema.safeParse(request.body);
     if (!body.success) {
       return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
     }
@@ -676,7 +630,7 @@ export const messageRoutes = async (app: FastifyInstance) => {
         fromAddress,
         toAddress,
         subject: replySubject,
-        messageId: `tmp-${Date.now()}-${Math.random().toString(36).substring(2)}`,
+        messageId: buildTempOutboundMessageId(),
         status: "SENDING",
         inReplyTo,
         replyToMessageId: originalMessage.id,
@@ -740,19 +694,13 @@ export const messageRoutes = async (app: FastifyInstance) => {
 
   // Forward a message to another address
   app.post("/messages/:id/forward", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const bodySchema = z.object({
-      to: z.string().email(),
-      text: z.string().optional(),
-      html: z.string().optional(),
-      includeAttachments: z.boolean().optional().default(false),
-    });
+    const params = messageIdParamsSchema.safeParse(request.params);
 
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid message ID" });
     }
 
-    const body = bodySchema.safeParse(request.body);
+    const body = forwardBodySchema.safeParse(request.body);
     if (!body.success) {
       return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
     }
@@ -846,7 +794,7 @@ To: ${originalMessage.toAddress || "unknown"}
         fromAddress,
         toAddress,
         subject: forwardSubject,
-        messageId: `tmp-${Date.now()}-${Math.random().toString(36).substring(2)}`,
+        messageId: buildTempOutboundMessageId(),
         status: "SENDING",
         replyToMessageId: originalMessage.id,
       },
@@ -902,16 +850,13 @@ To: ${originalMessage.toAddress || "unknown"}
 
   // AI Summarization endpoint
   app.post("/messages/:id/summarize", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const bodySchema = z.object({
-      forceRegenerate: z.boolean().optional().default(false),
-    });
+    const params = messageIdParamsSchema.safeParse(request.params);
 
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid message ID" });
     }
 
-    const body = bodySchema.safeParse(request.body || {});
+    const body = summarizeBodySchema.safeParse(request.body || {});
     const forceRegenerate = body.success ? body.data.forceRegenerate : false;
 
     const userId = (request.user as any).userId;
@@ -986,7 +931,7 @@ To: ${originalMessage.toAddress || "unknown"}
 
   // GET /messages/:id/otp - Extract OTP from message
   app.get("/messages/:id/otp", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid message ID" });
     }
@@ -1021,7 +966,7 @@ To: ${originalMessage.toAddress || "unknown"}
 
   // GET /messages/:id/phishing - Analyze message for phishing
   app.get("/messages/:id/phishing", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid message ID" });
     }
@@ -1050,7 +995,7 @@ To: ${originalMessage.toAddress || "unknown"}
 
   // GET /messages/:id/category - Get message category
   app.get("/messages/:id/category", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid message ID" });
     }
@@ -1077,8 +1022,8 @@ To: ${originalMessage.toAddress || "unknown"}
   // --- Message Move/Copy/Archive/Trash ---
 
   app.post("/messages/:id/move", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const body = z.object({ folderId: z.string().uuid() }).safeParse(request.body);
+    const params = messageIdParamsSchema.safeParse(request.params);
+    const body = moveBodySchema.safeParse(request.body);
 
     if (!params.success || !body.success) return reply.status(400).send({ error: "Invalid request" });
 
@@ -1110,7 +1055,7 @@ To: ${originalMessage.toAddress || "unknown"}
   });
 
   app.post("/messages/:id/archive", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) return reply.status(400).send({ error: "Invalid request" });
 
     const message = await prisma.message.findUnique({
@@ -1149,7 +1094,7 @@ To: ${originalMessage.toAddress || "unknown"}
   });
 
   app.post("/messages/:id/trash", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) return reply.status(400).send({ error: "Invalid request" });
 
     const message = await prisma.message.findUnique({
@@ -1189,8 +1134,8 @@ To: ${originalMessage.toAddress || "unknown"}
 
   // Flag operations
   app.post("/messages/:id/flags", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const body = z.object({ flag: z.string() }).safeParse(request.body);
+    const params = messageIdParamsSchema.safeParse(request.params);
+    const body = flagBodySchema.safeParse(request.body);
 
     if (!params.success || !body.success) return reply.status(400).send({ error: "Invalid request" });
 
@@ -1215,7 +1160,7 @@ To: ${originalMessage.toAddress || "unknown"}
   });
 
   app.delete("/messages/:id/flags/:flag", { preHandler: app.authenticate }, async (request, reply) => {
-    const params = z.object({ id: z.string().uuid(), flag: z.string() }).safeParse(request.params);
+    const params = flagParamsSchema.safeParse(request.params);
 
     if (!params.success) return reply.status(400).send({ error: "Invalid request" });
 

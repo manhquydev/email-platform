@@ -8,6 +8,7 @@ import { prisma } from "../lib/prisma";
 import { PackageType, SubscriptionTier, SubscriptionStatus } from "@prisma/client";
 import { customAlphabet } from "nanoid";
 import crypto from "crypto";
+import { outboundService } from "./outbound";
 
 // Generate order code: EP_XXXXXX (uppercase alphanumeric, no confusing chars)
 const generateOrderCode = customAlphabet("2346789ABCDEFGHJKLMNPQRTUVWXYZ", 8);
@@ -36,6 +37,27 @@ export interface PendingPaymentResult {
 }
 
 export class SepayService {
+  private static async notifyPaymentSuccess(params: {
+    email: string;
+    packageName: string;
+    amount: number;
+    currency: string;
+    paidAt?: Date;
+  }) {
+    try {
+      await outboundService.sendPaymentSuccessEmail({
+        to: params.email,
+        packageName: params.packageName,
+        amount: params.amount,
+        currency: params.currency,
+        paymentMethod: "SEPAY",
+        paidAt: params.paidAt,
+      });
+    } catch (err) {
+      console.error("Failed to send SePay payment success email:", err);
+    }
+  }
+
   /**
    * Generate VietQR URL for payment
    */
@@ -236,6 +258,16 @@ export class SepayService {
         });
       }
     });
+
+    if (pending.user?.email) {
+      void this.notifyPaymentSuccess({
+        email: pending.user.email,
+        packageName: pending.package.name,
+        amount: Number(pending.amount),
+        currency: pending.currency,
+        paidAt: new Date(),
+      });
+    }
 
     console.log(`SePay payment processed: ${orderCode} - ${receivedAmount} VND`);
     return { success: true, message: "Payment processed successfully" };

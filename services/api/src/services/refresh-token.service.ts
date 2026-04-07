@@ -55,11 +55,11 @@ export class RefreshTokenService {
     userAgent?: string,
     ipAddress?: string
   ): Promise<{ token: string; userId: string; familyId: string; expiresInDays: number } | null> {
+    const CONCURRENT_GRACE_MS = 5000; // 5 seconds - allow concurrent multi-tab refresh
     const oldTokenHash = crypto.createHash("sha256").update(oldToken).digest("hex");
 
     const existingToken = await prisma.refreshToken.findUnique({
       where: { tokenHash: oldTokenHash },
-      include: { user: true },
     });
 
     if (!existingToken) {
@@ -82,7 +82,6 @@ export class RefreshTokenService {
     // SECURITY: Reuse detection - if token was already used, check if it's concurrent or an attack
     if (existingToken.usedAt) {
       const timeSinceUse = Date.now() - existingToken.usedAt.getTime();
-      const CONCURRENT_GRACE_MS = 5000; // 5 seconds - allow concurrent multi-tab refresh
       if (timeSinceUse < CONCURRENT_GRACE_MS) {
         // Likely a concurrent multi-tab refresh, not an attack - return null gracefully
         console.warn("[RefreshToken] Concurrent token use detected (within grace window), skipping family revocation");
@@ -95,30 +94,69 @@ export class RefreshTokenService {
       return null;
     }
 
-    // Mark old token as used
-    await prisma.refreshToken.update({
-      where: { id: existingToken.id },
-      data: { usedAt: new Date() },
-    });
-
     // Calculate original duration to preserve the "remember me" flag intention
     const originalDurationDays = Math.max(1, Math.round((existingToken.expiresAt.getTime() - existingToken.createdAt.getTime()) / (1000 * 60 * 60 * 24)));
 
     // Create new token in same family
     const newToken = crypto.randomBytes(32).toString("hex");
     const newTokenHash = crypto.createHash("sha256").update(newToken).digest("hex");
-    const expiresAt = new Date(Date.now() + originalDurationDays * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + originalDurationDays * 24 * 60 * 60 * 1000);
 
-    await prisma.refreshToken.create({
-      data: {
-        tokenHash: newTokenHash,
-        userId: existingToken.userId,
-        familyId: existingToken.familyId, // Same family
-        expiresAt,
-        userAgent,
-        ipAddress,
-      },
+    const rotateSucceeded = await prisma.$transaction(async (tx) => {
+      const claimed = await tx.refreshToken.updateMany({
+        where: {
+          id: existingToken.id,
+          usedAt: null,
+          revokedAt: null,
+          expiresAt: { gt: now },
+        },
+        data: { usedAt: now },
+      });
+
+      if (claimed.count === 0) {
+        return false;
+      }
+
+      await tx.refreshToken.create({
+        data: {
+          tokenHash: newTokenHash,
+          userId: existingToken.userId,
+          familyId: existingToken.familyId, // Same family
+          expiresAt,
+          userAgent,
+          ipAddress,
+        },
+      });
+
+      return true;
     });
+
+    if (!rotateSucceeded) {
+      const latest = await prisma.refreshToken.findUnique({
+        where: { id: existingToken.id },
+        select: { usedAt: true, familyId: true, userId: true, revokedAt: true },
+      });
+
+      if (!latest) {
+        console.warn("[RefreshToken] Token disappeared during rotation");
+        return null;
+      }
+
+      if (latest.usedAt) {
+        const timeSinceUse = Date.now() - latest.usedAt.getTime();
+        if (timeSinceUse < CONCURRENT_GRACE_MS) {
+          console.warn("[RefreshToken] Concurrent token use detected during atomic claim, skipping family revocation");
+          return null;
+        }
+
+        console.error("[RefreshToken] SECURITY: Token reuse detected after failed atomic claim! Revoking family:", latest.familyId);
+        await this.revokeFamily(latest.familyId);
+        await tokenRevocationService.revokeAllUserTokens(latest.userId, 86400);
+      }
+
+      return null;
+    }
 
     return {
       token: newToken,
@@ -165,6 +203,44 @@ export class RefreshTokenService {
     });
     // Also set Redis flag for immediate effect on access tokens
     await tokenRevocationService.revokeAllUserTokens(userId, 86400);
+  }
+
+  /**
+   * Revoke active refresh tokens matching the current session fingerprint.
+   * Used as fallback when refresh cookie is unavailable on logout.
+   */
+  static async revokeSessionTokens(
+    userId: string,
+    userAgent?: string,
+    ipAddress?: string
+  ): Promise<number> {
+    if (!userAgent && !ipAddress) {
+      return 0;
+    }
+
+    const where: {
+      userId: string;
+      revokedAt: null;
+      usedAt: null;
+      expiresAt: { gt: Date };
+      userAgent?: string;
+      ipAddress?: string;
+    } = {
+      userId,
+      revokedAt: null,
+      usedAt: null,
+      expiresAt: { gt: new Date() },
+    };
+
+    if (userAgent) where.userAgent = userAgent;
+    if (ipAddress) where.ipAddress = ipAddress;
+
+    const result = await prisma.refreshToken.updateMany({
+      where,
+      data: { revokedAt: new Date() },
+    });
+
+    return result.count;
   }
 
   /**

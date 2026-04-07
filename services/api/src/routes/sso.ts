@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { SamlService } from "../identity/saml-sp";
-import { OidcService } from "../identity/oidc-client";
-import { provisionUser } from "../identity/jit-provisioning";
+import { SamlService } from "../_wip/identity/saml-sp";
+import { OidcService } from "../_wip/identity/oidc-client";
+import { provisionUser } from "../_wip/identity/jit-provisioning";
 import { appConfig } from "../config";
 import crypto from "crypto";
 
@@ -12,7 +12,7 @@ export async function ssoRoutes(app: FastifyInstance) {
     const { providerId } = request.params as { providerId: string };
     try {
       const service = await SamlService.getProvider(providerId);
-      const loginUrl = await service.getAuthorizeUrl();
+      const loginUrl = await service.getAuthorizeUrl(request.headers.host);
       return reply.redirect(loginUrl);
     } catch (err) {
       request.log.error(err);

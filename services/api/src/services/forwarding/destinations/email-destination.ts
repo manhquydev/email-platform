@@ -1,6 +1,6 @@
 /**
  * Email Destination Handler
- * Forwards email to external email address via SMTP
+ * Forwards email to external email address via configured outbound provider
  */
 
 import { extractOTP } from "../../../utils/otpExtractor";
@@ -22,7 +22,8 @@ export async function forwardToEmail(
     return { success: false, error: "No email destination configured" };
   }
 
-  if (!process.env.OUTBOUND_SMTP_HOST) {
+  const providerType = (process.env.OUTBOUND_PROVIDER || "smtp").toLowerCase();
+  if (providerType === "smtp" && !process.env.OUTBOUND_SMTP_HOST) {
     return { success: false, error: "SMTP not configured" };
   }
 

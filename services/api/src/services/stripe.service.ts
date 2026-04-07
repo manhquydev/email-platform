@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { appConfig } from "../config";
 import { PrismaClient, PackageType, SubscriptionTier, SubscriptionStatus } from "@prisma/client";
-import Decimal from "decimal.js";
+import { outboundService } from "./outbound";
 
 const prisma = new PrismaClient();
 const stripe = new Stripe(appConfig.stripe.apiKey, {
@@ -79,7 +79,7 @@ export class StripeService {
                 const invoice = event.data.object as Stripe.Invoice;
                 const subscriptionId = (invoice as any).subscription as string;
 
-                if (!subscriptionId) {
+                if (subscriptionId) {
                     await this.handleSubscriptionPaid(invoice);
                 }
                 break;
@@ -125,6 +125,27 @@ export class StripeService {
         }
     }
 
+    private static async notifyPaymentSuccess(params: {
+        email: string;
+        packageName: string;
+        amount: number;
+        currency: string;
+        paidAt?: Date;
+    }) {
+        try {
+            await outboundService.sendPaymentSuccessEmail({
+                to: params.email,
+                packageName: params.packageName,
+                amount: params.amount,
+                currency: params.currency,
+                paymentMethod: "STRIPE",
+                paidAt: params.paidAt,
+            });
+        } catch (err) {
+            console.error("Failed to send Stripe payment success email:", err);
+        }
+    }
+
     private static async fulfillOrder(session: Stripe.Checkout.Session) {
         const userId = session.metadata?.userId;
         const packageId = session.metadata?.packageId;
@@ -148,6 +169,11 @@ export class StripeService {
         const pkg = await prisma.servicePackage.findUnique({ where: { id: packageId } });
         if (!pkg) return;
 
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { email: true }
+        });
+
         // Apply package benefits (TIME_BASED only - USAGE_BASED removed)
         if (pkg.durationDays) {
             const endsAt = new Date();
@@ -161,6 +187,16 @@ export class StripeService {
                     subscriptionEndsAt: endsAt,
                     stripeSubscriptionId: session.subscription as string,
                 },
+            });
+        }
+
+        if (session.payment_status === "paid" && user?.email) {
+            await this.notifyPaymentSuccess({
+                email: user.email,
+                packageName: pkg.name,
+                amount: session.amount_total || 0,
+                currency: (session.currency || "vnd").toUpperCase(),
+                paidAt: new Date(),
             });
         }
     }
@@ -220,6 +256,14 @@ export class StripeService {
                 },
             });
         }
+
+        await this.notifyPaymentSuccess({
+            email: user.email,
+            packageName: pkg?.name || "Gói gia hạn",
+            amount: invoice.amount_paid,
+            currency: invoice.currency.toUpperCase(),
+            paidAt: new Date(),
+        });
     }
 
     private static async handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -264,24 +308,33 @@ export class StripeService {
     /**
      * Cancel a subscription
      */
-    static async cancelSubscription(userId: string) {
+    static async cancelSubscription(userId: string, options?: { immediately?: boolean }) {
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user || !user.stripeSubscriptionId) throw new Error("No active subscription to cancel");
 
-        try {
-            const deleted = await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+        const immediately = options?.immediately ?? true;
 
-            // Webhook will handle the DB update, but we can do it optimistically here too
-            if (deleted.status === 'canceled') {
-                await prisma.user.update({
-                    where: { id: userId },
-                    data: {
-                        subscriptionStatus: SubscriptionStatus.CANCELED,
-                        tier: SubscriptionTier.FREE
-                    }
-                });
+        try {
+            if (immediately) {
+                const deleted = await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+
+                // Webhook will handle the DB update, but we can do it optimistically here too
+                if (deleted.status === 'canceled') {
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: {
+                            subscriptionStatus: SubscriptionStatus.CANCELED,
+                            tier: SubscriptionTier.FREE
+                        }
+                    });
+                }
+                return deleted;
             }
-            return deleted;
+
+            const updated = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+                cancel_at_period_end: true,
+            });
+            return updated;
         } catch (err: any) {
             throw new Error(err.message);
         }

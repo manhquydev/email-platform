@@ -62,6 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [setToken]);
 
+    const shouldDeferLogoutAfterRefreshError = useCallback(() => {
+        const currentToken = tokenManager.getAccessToken();
+        return !!currentToken && !tokenManager.isTokenExpiringSoon(currentToken, 0);
+    }, []);
+
     const login = useCallback(async (email: string, pass: string, rememberMe?: boolean) => {
         setBusy(true);
         try {
@@ -161,6 +166,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     channelRef.current?.postMessage({ type: 'token_refresh', token: newToken, csrfToken: newCsrfToken });
                 } catch (error) {
                     console.error('Background refresh failed:', (error as Error).message);
+                    if (shouldDeferLogoutAfterRefreshError()) {
+                        return;
+                    }
                     logout('expired');
                 }
             }, REFRESH_INTERVAL);
@@ -174,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 refreshTimerRef.current = null;
             }
         };
-    }, [user, logout]);
+    }, [user, logout, shouldDeferLogoutAfterRefreshError]);
 
     // Phase 3: BroadcastChannel for multi-tab synchronization
     useEffect(() => {
@@ -244,8 +252,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         lastRefreshRef.current = Date.now();
                     } catch (error) {
                         console.error('Wake-up refresh failed:', (error as Error).message);
-                        logout('expired');
-                        return;
+                        if (!shouldDeferLogoutAfterRefreshError()) {
+                            logout('expired');
+                            return;
+                        }
                     }
                 }
 
@@ -265,6 +275,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             channelRef.current?.postMessage({ type: 'token_refresh', token: newToken, csrfToken: newCsrfToken });
                         } catch (error) {
                             console.error('Background refresh failed:', (error as Error).message);
+                            if (shouldDeferLogoutAfterRefreshError()) {
+                                return;
+                            }
                             logout('expired');
                         }
                     }, REFRESH_INTERVAL);
@@ -277,7 +290,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [user, logout]);
+    }, [user, logout, shouldDeferLogoutAfterRefreshError]);
 
     // Initialize auth state from localStorage — runs once on mount only
     useEffect(() => {

@@ -1,6 +1,6 @@
 import { SAML } from "@node-saml/passport-saml";
-import { appConfig } from "../config";
-import { prisma } from "../lib/prisma";
+import { appConfig } from "../../config";
+import { prisma } from "../../lib/prisma";
 
 export class SamlService {
   private saml: SAML;
@@ -10,14 +10,14 @@ export class SamlService {
       callbackUrl: `${appConfig.apiUrl}/sso/saml/${providerId}/acs`,
       entryPoint: providerConfig.entryPoint,
       issuer: providerConfig.issuer || "email-platform",
-      cert: providerConfig.cert,
+      idpCert: providerConfig.idpCert || providerConfig.cert,
       identifierFormat: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
       disableRequestedAuthnContext: true
     });
   }
 
-  getAuthorizeUrl(): Promise<string> {
-    return this.saml.getAuthorizeUrlAsync();
+  getAuthorizeUrl(host?: string): Promise<string> {
+    return this.saml.getAuthorizeUrlAsync("", host, {});
   }
 
   async validatePostResponse(body: any): Promise<any> {
@@ -26,8 +26,8 @@ export class SamlService {
 
   generateMetadata(): string {
     return this.saml.generateServiceProviderMetadata(
-      this.providerConfig.cert, // Optional: signing cert
-      this.providerConfig.privateKey // Optional: signing key
+      null,
+      this.providerConfig.publicCert || null
     );
   }
 

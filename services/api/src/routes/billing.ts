@@ -215,20 +215,17 @@ export const billingRoutes: FastifyPluginAsync = async (app) => {
             return reply.status(400).send({ error: 'No active subscription' });
         }
 
-        // Placeholder for Stripe cancellation
-        /*
-        const stripe = new Stripe(stripeSecretKey);
-        
-        if (body.immediately) {
-          await stripe.subscriptions.cancel(userData.stripeSubscriptionId);
-        } else {
-          await stripe.subscriptions.update(userData.stripeSubscriptionId, {
-            cancel_at_period_end: true,
-          });
+        try {
+            await StripeService.cancelSubscription(user.userId, { immediately: body.immediately });
+            return {
+                success: true,
+                message: body.immediately
+                    ? 'Subscription canceled immediately'
+                    : 'Subscription will be canceled at period end'
+            };
+        } catch (error: any) {
+            return reply.status(400).send({ error: error.message });
         }
-        */
-
-        return { success: true, message: 'Subscription will be canceled' };
     });
 
     // Stripe webhook handler

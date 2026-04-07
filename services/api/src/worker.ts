@@ -39,7 +39,8 @@ type Logger = {
 // Actually, we can pass a logger instance if we run this inside index.ts
 
 const ensureDomainAndInbox = async (address: string) => {
-    const [localPart, domainName] = address.split("@");
+    const [localPart, rawDomainName] = address.split("@");
+    const domainName = rawDomainName?.toLowerCase();
     if (!localPart || !domainName) {
         throw new Error(`Invalid recipient ${address}`);
     }
@@ -52,6 +53,8 @@ const ensureDomainAndInbox = async (address: string) => {
         domain = await prisma.domain.create({
             data: { name: domainName, verificationToken: generateToken() },
         });
+    } else if (!appConfig.allowAutoDomainCreation && domain.status !== "VERIFIED") {
+        throw new Error(`Domain ${domainName} not verified`);
     }
 
     let inbox = await prisma.inbox.findUnique({
@@ -59,10 +62,16 @@ const ensureDomainAndInbox = async (address: string) => {
     });
 
     if (!inbox) {
+        if (!appConfig.allowAutoDomainCreation) {
+            throw new Error(`Recipient ${address} not provisioned`);
+        }
         inbox = await prisma.inbox.create({
             data: { domainId: domain.id, localPart },
         });
     } else if (inbox.deletedAt) {
+        if (!appConfig.allowAutoDomainCreation) {
+            throw new Error(`Recipient ${address} is disabled`);
+        }
         inbox = await prisma.inbox.update({ where: { id: inbox.id }, data: { deletedAt: null, expiresAt: null } });
     }
 
@@ -181,12 +190,6 @@ export const setupEmailWorker = (logger: Logger) => {
                     throw new Error("No recipients found");
                 }
 
-                const primaryRecipient = recipients[0]!;
-                const [localPart, recipientDomain] = primaryRecipient.split("@");
-                if (!localPart || !recipientDomain) {
-                    throw new Error(`Invalid recipient ${primaryRecipient}`);
-                }
-
                 const rawHtmlBody = typeof mail.html === "string" ? mail.html : "";
                 const textBody = mail.text ?? "";
 
@@ -200,40 +203,14 @@ export const setupEmailWorker = (logger: Logger) => {
                     }, 'email sanitized for privacy');
                 }
 
-                const toAddress = addressToText(mail.to) ?? primaryRecipient;
                 const fromAddress = addressToText(mail.from as AddressObject | AddressObject[] | undefined);
                 const sourceIp = envelope.remoteAddress;
+                const sanitizedHeaders = sanitizeHeaders(headersToObject(mail.headers as Map<string, string | string[] | undefined>));
 
                 // Blocked sender domains
                 const senderDomain = fromAddress?.split("@")[1]?.toLowerCase();
                 if (senderDomain && appConfig.blockedSenderDomains.includes(senderDomain)) {
                     throw new Error(`Sender domain blocked: ${senderDomain}`);
-                }
-
-                const ruleResult = await evaluateRules({
-                    senderDomain,
-                    senderEmail: fromAddress?.toLowerCase(),
-                    recipientDomain,
-                    recipientInbox: `${localPart}@${recipientDomain}`,
-                    sourceIp,
-                });
-                if (ruleResult.action === "BLOCK") {
-                    throw new Error(`Blocked by rule ${ruleResult.rule.scope}:${ruleResult.rule.value}`);
-                }
-
-                const { inbox, domain } = await ensureDomainAndInbox(primaryRecipient);
-                await enforceRateLimits({ inboxId: inbox.id, domainName: domain.name, sourceIp });
-
-                // Quota checks
-                const inboxMessageCount = await prisma.message.count({ where: { inboxId: inbox.id, deletedAt: null } });
-                if (inboxMessageCount >= appConfig.quotaMessagesPerInbox) {
-                    throw new Error("Inbox quota exceeded");
-                }
-                const domainMessageCount = await prisma.message.count({
-                    where: { inbox: { domainId: inbox.domainId }, deletedAt: null },
-                });
-                if (domainMessageCount >= appConfig.quotaMessagesPerDomain) {
-                    throw new Error("Domain quota exceeded");
                 }
 
                 // Spam check using Rspamd
@@ -274,202 +251,261 @@ export const setupEmailWorker = (logger: Logger) => {
                     logger.info({ otp: otpResult.code, confidence: otpResult.confidence }, 'OTP extracted from email');
                 }
 
-                // Get Thread ID and Folder ID
-                const inboxFolder = await FolderService.getInboxFolder(inbox.id);
-                const uid = await FolderService.getNextUid(inboxFolder.id);
-                const threadId = await ThreadingService.computeThreadId(
-                    mail.messageId ?? null,
-                    mail.references ? (Array.isArray(mail.references) ? mail.references.join(' ') : mail.references) : null,
-                    mail.inReplyTo ? (Array.isArray(mail.inReplyTo) ? mail.inReplyTo.join(' ') : mail.inReplyTo) : null,
-                    inbox.id
-                );
+                let processedRecipients = 0;
+                const recipientFailures: string[] = [];
 
-                const message = await prisma.message.create({
-                    data: {
-                        inboxId: inbox.id,
-                        folderId: inboxFolder.id,
-                        uid,
-                        threadId,
-                        messageId: mail.messageId ?? generateToken(),
-                        fromAddress,
-                        toAddress,
-                        subject: mail.subject ?? "",
-                        receivedAt: new Date(),
-                        textBody,
-                        htmlBody,
-                        headers: sanitizeHeaders(headersToObject(mail.headers as Map<string, string | string[] | undefined>)),
-                        spamScore: spamResult.score,
-                        spfResult: spamResult.spf,
-                        dkimResult: spamResult.dkim,
-                        dmarcResult: spamResult.dmarc,
-                        size: rawContent.length,
-                        sourceIp: anonymizeIp(sourceIp),
-                        // OTP extraction data
-                        extractedOtp: otpResult?.code || null,
-                        otpConfidence: otpResult?.confidence || null,
-                        otpExtractedAt: otpResult ? new Date() : null,
-                    },
-                });
+                for (const recipient of recipients) {
+                    const [localPart, recipientDomain] = recipient.split("@");
+                    if (!localPart || !recipientDomain) {
+                        recipientFailures.push(`${recipient}: invalid recipient`);
+                        continue;
+                    }
 
-                await persistAttachments(message.id, inbox.id, mail.attachments, logger);
-
-                // Sync message to Maildir for IMAP access
-                try {
-                    const messageWithRelations = await prisma.message.findUnique({
-                        where: { id: message.id },
-                        include: { inbox: { include: { domain: true } } },
-                    });
-                    if (messageWithRelations) {
-                        await syncMessageToMaildir(messageWithRelations as any);
-                        logger.info({ messageId: message.id }, 'synced message to Maildir');
-
-                        // Release 2: Telegram Notification
-                        try {
-                            if (messageWithRelations.inbox.ownerId) {
-                                await notifyNewEmail(messageWithRelations.inbox.ownerId, messageWithRelations as any);
-                            }
-                        } catch (telegramErr) {
-                            logger.warn({ err: telegramErr }, 'failed to send Telegram notification');
+                    try {
+                        const ruleResult = await evaluateRules({
+                            senderDomain,
+                            senderEmail: fromAddress?.toLowerCase(),
+                            recipientDomain,
+                            recipientInbox: `${localPart}@${recipientDomain}`,
+                            sourceIp,
+                        });
+                        if (ruleResult.action === "BLOCK") {
+                            throw new Error(`Blocked by rule ${ruleResult.rule.scope}:${ruleResult.rule.value}`);
                         }
 
-                        // Release 2b: Per-Inbox Telegram Notifications (with visibility check)
-                        try {
-                            const inboxEmail = `${messageWithRelations.inbox.localPart}@${messageWithRelations.inbox.domain.name}`;
+                        const { inbox, domain } = await ensureDomainAndInbox(recipient);
+                        await enforceRateLimits({ inboxId: inbox.id, domainName: domain.name, sourceIp });
 
-                            // Check visibility rules before sending Telegram notification
-                            const emailDataForVisibility: EmailData = {
-                                fromAddress: fromAddress ?? null,
-                                toAddress: toAddress ?? null,
-                                subject: message.subject,
+                        // Quota checks
+                        const inboxMessageCount = await prisma.message.count({ where: { inboxId: inbox.id, deletedAt: null } });
+                        if (inboxMessageCount >= appConfig.quotaMessagesPerInbox) {
+                            throw new Error("Inbox quota exceeded");
+                        }
+                        const domainMessageCount = await prisma.message.count({
+                            where: { inbox: { domainId: inbox.domainId }, deletedAt: null },
+                        });
+                        if (domainMessageCount >= appConfig.quotaMessagesPerDomain) {
+                            throw new Error("Domain quota exceeded");
+                        }
+
+                        // Get Thread ID and Folder ID
+                        const inboxFolder = await FolderService.getInboxFolder(inbox.id);
+                        const uid = await FolderService.getNextUid(inboxFolder.id);
+                        const threadId = await ThreadingService.computeThreadId(
+                            mail.messageId ?? null,
+                            mail.references ? (Array.isArray(mail.references) ? mail.references.join(' ') : mail.references) : null,
+                            mail.inReplyTo ? (Array.isArray(mail.inReplyTo) ? mail.inReplyTo.join(' ') : mail.inReplyTo) : null,
+                            inbox.id
+                        );
+
+                        const message = await prisma.message.create({
+                            data: {
+                                inboxId: inbox.id,
+                                folderId: inboxFolder.id,
+                                uid,
+                                threadId,
+                                messageId: mail.messageId ?? generateToken(),
+                                fromAddress,
+                                toAddress: recipient,
+                                subject: mail.subject ?? "",
+                                receivedAt: new Date(),
                                 textBody,
                                 htmlBody,
-                                headers: message.headers as Record<string, string> | null,
-                                size: message.size,
-                                spamScore: message.spamScore,
-                                hasAttachment: (messageWithRelations as any).attachments?.length > 0 || false,
-                            };
+                                headers: sanitizedHeaders,
+                                spamScore: spamResult.score,
+                                spfResult: spamResult.spf,
+                                dkimResult: spamResult.dkim,
+                                dmarcResult: spamResult.dmarc,
+                                size: rawContent.length,
+                                sourceIp: anonymizeIp(sourceIp),
+                                // OTP extraction data
+                                extractedOtp: otpResult?.code || null,
+                                otpConfidence: otpResult?.confidence || null,
+                                otpExtractedAt: otpResult ? new Date() : null,
+                            },
+                        });
 
-                            const visibilityResult = await evaluateVisibility(messageWithRelations.inbox.id, emailDataForVisibility);
+                        await persistAttachments(message.id, inbox.id, mail.attachments, logger);
 
-                            // Only send notification if email is visible (not hidden)
-                            if (visibilityResult.action !== 'HIDDEN') {
-                                await notifyInboxTelegramSubscribers(inboxEmail, {
-                                    id: message.id,
-                                    fromAddress: fromAddress ?? null,
-                                    subject: message.subject,
+                        // Sync message to Maildir for IMAP access
+                        try {
+                            const messageWithRelations = await prisma.message.findUnique({
+                                where: { id: message.id },
+                                include: { inbox: { include: { domain: true } } },
+                            });
+                            if (messageWithRelations) {
+                                await syncMessageToMaildir(messageWithRelations as any);
+                                logger.info({ messageId: message.id }, 'synced message to Maildir');
+
+                                // Release 2: Telegram Notification
+                                try {
+                                    if (messageWithRelations.inbox.ownerId) {
+                                        await notifyNewEmail(messageWithRelations.inbox.ownerId, messageWithRelations as any);
+                                    }
+                                } catch (telegramErr) {
+                                    logger.warn({ err: telegramErr }, 'failed to send Telegram notification');
+                                }
+
+                                // Release 2b: Per-Inbox Telegram Notifications (with visibility check)
+                                try {
+                                    const inboxEmail = `${messageWithRelations.inbox.localPart}@${messageWithRelations.inbox.domain.name}`;
+
+                                    // Check visibility rules before sending Telegram notification
+                                    const emailDataForVisibility: EmailData = {
+                                        fromAddress: fromAddress ?? null,
+                                        toAddress: recipient,
+                                        subject: message.subject,
+                                        textBody,
+                                        htmlBody,
+                                        headers: message.headers as Record<string, string> | null,
+                                        size: message.size,
+                                        spamScore: message.spamScore,
+                                        hasAttachment: (messageWithRelations as any).attachments?.length > 0 || false,
+                                    };
+
+                                    const visibilityResult = await evaluateVisibility(messageWithRelations.inbox.id, emailDataForVisibility);
+
+                                    // Only send notification if email is visible (not hidden)
+                                    if (visibilityResult.action !== 'HIDDEN') {
+                                        await notifyInboxTelegramSubscribers(inboxEmail, {
+                                            id: message.id,
+                                            fromAddress: fromAddress ?? null,
+                                            subject: message.subject,
+                                            textBody,
+                                            extractedOtp: message.extractedOtp,
+                                            otpConfidence: message.otpConfidence,
+                                        });
+                                        logger.info({ messageId: message.id, visibility: visibilityResult.action }, 'sent inbox Telegram notification');
+                                    } else {
+                                        logger.info({ messageId: message.id, reason: visibilityResult.reason }, 'skipped Telegram notification - message hidden by visibility rules');
+                                    }
+                                } catch (inboxTelegramErr) {
+                                    logger.warn({ err: inboxTelegramErr }, 'failed to send inbox Telegram notifications');
+                                }
+
+                                // Release 3: Email Forwarding (Legacy)
+                                try {
+                                    await forwardMessageIfMatched(messageWithRelations as any);
+                                } catch (forwardErr) {
+                                    logger.warn({ err: forwardErr }, 'failed to forward email (legacy)');
+                                }
+
+                                // Release 3+: Enhanced Forwarding Rules (multi-destination)
+                                try {
+                                    await processForwardingRules(messageWithRelations as any);
+                                } catch (forwardRulesErr) {
+                                    logger.warn({ err: forwardRulesErr }, 'failed to process forwarding rules');
+                                }
+
+                                // Release 4: Webhooks (enhanced with OTP)
+                                try {
+                                    await triggerEmailReceivedWebhook(messageWithRelations as any);
+                                } catch (webhookErr) {
+                                    logger.warn({ err: webhookErr }, 'failed to trigger webhook');
+                                }
+
+                                // Realtime WebSocket/SSE notification
+                                try {
+                                    if (messageWithRelations.inbox.ownerId) {
+                                        await realtimeEvents.publishEmailNew(
+                                            messageWithRelations.inbox.ownerId,
+                                            {
+                                                inboxId: inbox.id,
+                                                messageId: message.id,
+                                                from: fromAddress ?? null,
+                                                subject: message.subject ?? null,
+                                                receivedAt: message.receivedAt.toISOString(),
+                                                spf: spamResult.spf,
+                                                dkim: spamResult.dkim,
+                                                dmarc: spamResult.dmarc,
+                                            }
+                                        );
+                                        logger.info({ messageId: message.id }, 'published realtime email.new event');
+                                    }
+                                } catch (realtimeErr) {
+                                    logger.warn({ err: realtimeErr }, 'failed to publish realtime event');
+                                }
+
+                                // Browser Push notification
+                                try {
+                                    if (messageWithRelations.inbox.ownerId) {
+                                        await pushNotification.sendEmailNotification(
+                                            messageWithRelations.inbox.ownerId,
+                                            {
+                                                from: fromAddress ?? null,
+                                                subject: message.subject ?? null,
+                                                inboxId: inbox.id,
+                                                spf: spamResult.spf,
+                                                dkim: spamResult.dkim,
+                                                dmarc: spamResult.dmarc,
+                                            }
+                                        );
+                                        logger.info({ messageId: message.id }, 'sent browser push notification');
+                                    }
+                                } catch (pushErr) {
+                                    logger.warn({ err: pushErr }, 'failed to send push notification');
+                                }
+                            }
+                        } catch (maildirErr) {
+                            logger.warn({ err: maildirErr }, 'failed to sync message to Maildir');
+                        }
+
+                        logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: spamResult.score, spf: spamResult.spf, dkim: spamResult.dkim, dmarc: spamResult.dmarc }, "stored inbound email via worker");
+
+                        // Process email filters
+                        try {
+                            const filterResult = await processFiltersForMessage(
+                                message.id,
+                                inbox.id,
+                                {
+                                    fromAddress,
+                                    toAddress: recipient,
+                                    subject: mail.subject ?? null,
                                     textBody,
-                                    extractedOtp: message.extractedOtp,
-                                    otpConfidence: message.otpConfidence,
-                                });
-                                logger.info({ messageId: message.id, visibility: visibilityResult.action }, 'sent inbox Telegram notification');
-                            } else {
-                                logger.info({ messageId: message.id, reason: visibilityResult.reason }, 'skipped Telegram notification - message hidden by visibility rules');
+                                    htmlBody,
+                                    hasAttachment: (mail.attachments?.length ?? 0) > 0,
+                                }
+                            );
+                            if (filterResult.filtersMatched > 0) {
+                                logger.info({
+                                    messageId: message.id,
+                                    filtersMatched: filterResult.filtersMatched,
+                                    actionsExecuted: filterResult.actionsExecuted,
+                                    deleted: filterResult.deleted
+                                }, 'email filters processed');
                             }
-                        } catch (inboxTelegramErr) {
-                            logger.warn({ err: inboxTelegramErr }, 'failed to send inbox Telegram notifications');
+                        } catch (filterErr) {
+                            logger.warn({ err: filterErr }, 'failed to process email filters');
                         }
 
-                        // Release 3: Email Forwarding (Legacy)
-                        try {
-                            await forwardMessageIfMatched(messageWithRelations as any);
-                        } catch (forwardErr) {
-                            logger.warn({ err: forwardErr }, 'failed to forward email (legacy)');
-                        }
-
-                        // Release 3+: Enhanced Forwarding Rules (multi-destination)
-                        try {
-                            await processForwardingRules(messageWithRelations as any);
-                        } catch (forwardRulesErr) {
-                            logger.warn({ err: forwardRulesErr }, 'failed to process forwarding rules');
-                        }
-
-                        // Release 4: Webhooks (enhanced with OTP)
-                        try {
-                            await triggerEmailReceivedWebhook(messageWithRelations as any);
-                        } catch (webhookErr) {
-                            logger.warn({ err: webhookErr }, 'failed to trigger webhook');
-                        }
-
-                        // Realtime WebSocket/SSE notification
-                        try {
-                            if (messageWithRelations.inbox.ownerId) {
-                                await realtimeEvents.publishEmailNew(
-                                    messageWithRelations.inbox.ownerId,
-                                    {
-                                        inboxId: inbox.id,
-                                        messageId: message.id,
-                                        from: fromAddress ?? null,
-                                        subject: message.subject ?? null,
-                                        receivedAt: message.receivedAt.toISOString(),
-                                        spf: spamResult.spf,
-                                        dkim: spamResult.dkim,
-                                        dmarc: spamResult.dmarc,
-                                    }
-                                );
-                                logger.info({ messageId: message.id }, 'published realtime email.new event');
-                            }
-                        } catch (realtimeErr) {
-                            logger.warn({ err: realtimeErr }, 'failed to publish realtime event');
-                        }
-
-                        // Browser Push notification
-                        try {
-                            if (messageWithRelations.inbox.ownerId) {
-                                await pushNotification.sendEmailNotification(
-                                    messageWithRelations.inbox.ownerId,
-                                    {
-                                        from: fromAddress ?? null,
-                                        subject: message.subject ?? null,
-                                        inboxId: inbox.id,
-                                        spf: spamResult.spf,
-                                        dkim: spamResult.dkim,
-                                        dmarc: spamResult.dmarc,
-                                    }
-                                );
-                                logger.info({ messageId: message.id }, 'sent browser push notification');
-                            }
-                        } catch (pushErr) {
-                            logger.warn({ err: pushErr }, 'failed to send push notification');
-                        }
+                        processedRecipients += 1;
+                    } catch (recipientErr) {
+                        const reason = recipientErr instanceof Error ? recipientErr.message : "Unknown recipient error";
+                        recipientFailures.push(`${recipient}: ${reason}`);
+                        logger.warn({ err: recipientErr, recipient, jobId: job.id }, "failed recipient delivery in email job");
                     }
-                } catch (maildirErr) {
-                    logger.warn({ err: maildirErr }, 'failed to sync message to Maildir');
                 }
 
-                logger.info({ inboxId: inbox.id, messageId: message.id, spamScore: spamResult.score, spf: spamResult.spf, dkim: spamResult.dkim, dmarc: spamResult.dmarc }, "stored inbound email via worker");
-
-                // Process email filters
-                try {
-                    const filterResult = await processFiltersForMessage(
-                        message.id,
-                        inbox.id,
+                if (recipientFailures.length > 0) {
+                    logger.warn(
                         {
-                            fromAddress,
-                            toAddress,
-                            subject: mail.subject ?? null,
-                            textBody,
-                            htmlBody,
-                            hasAttachment: (mail.attachments?.length ?? 0) > 0,
-                        }
+                            jobId: job.id,
+                            failureCount: recipientFailures.length,
+                            failures: recipientFailures.slice(0, 10),
+                        },
+                        "email job completed with recipient failures"
                     );
-                    if (filterResult.filtersMatched > 0) {
-                        logger.info({
-                            messageId: message.id,
-                            filtersMatched: filterResult.filtersMatched,
-                            actionsExecuted: filterResult.actionsExecuted,
-                            deleted: filterResult.deleted
-                        }, 'email filters processed');
-                    }
-                } catch (filterErr) {
-                    logger.warn({ err: filterErr }, 'failed to process email filters');
                 }
 
-                // Clean up raw file
-                await fs.unlink(rawPath).catch(e => logger.warn({ err: e }, "failed to delete raw file"));
+                if (processedRecipients === 0) {
+                    throw new Error(recipientFailures[0] ?? "All recipients failed");
+                }
 
             } catch (err) {
                 logger.error({ err, jobId: job.id }, "failed to process email job");
                 throw err;
+            } finally {
+                await fs.unlink(rawPath).catch(e => logger.warn({ err: e, rawPath }, "failed to delete raw file"));
             }
         },
         {

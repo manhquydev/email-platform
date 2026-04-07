@@ -20,11 +20,6 @@ export async function sendForwardVerification(
     userId: string,
     email: string
 ): Promise<{ success: boolean; error?: string }> {
-    // Check if outbound email is configured
-    if (!process.env.OUTBOUND_SMTP_HOST) {
-        return { success: false, error: "SMTP chưa được cấu hình" };
-    }
-
     try {
         // Delete existing verification for this email
         await prisma.forwardVerification.deleteMany({
@@ -355,9 +350,6 @@ export async function forwardMessageIfMatched(
     message: Message & { inbox: { id: string; ownerId: string | null } }
 ): Promise<void> {
     if (!message.inbox.ownerId) return;
-
-    // Check if outbound email is configured
-    if (!process.env.OUTBOUND_SMTP_HOST) return;
 
     // Get active rules for this user and inbox
     const rules = await prisma.forwardingRule.findMany({

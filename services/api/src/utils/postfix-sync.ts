@@ -43,6 +43,7 @@ export async function getVerifiedDomains(): Promise<string[]> {
 export function generateRelayDomainsContent(domains: string[]): string {
   // Postfix relay_domains format: domain OK
   const lines = domains.map((domain) => `${domain} OK`);
+  if (lines.length === 0) return "";
   return lines.join("\n") + "\n";
 }
 
@@ -128,11 +129,7 @@ export async function syncPostfixRelayDomains(): Promise<SyncResult> {
   }
 
   const domains = await getVerifiedDomains();
-
-  if (domains.length === 0) {
-    console.log("[postfix-sync] No verified domains to sync");
-    return { success: true, method: "skipped", domains: [] };
-  }
+  console.log(`[postfix-sync] Syncing ${domains.length} verified domains`);
 
   // Try file method first (if shared volume is configured)
   if (fs.existsSync(path.dirname(RELAY_DOMAINS_PATH))) {

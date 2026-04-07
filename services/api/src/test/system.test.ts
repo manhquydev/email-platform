@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { app, prisma } from "./setup";
 import bcrypt from "bcryptjs";
+
+vi.mock("../utils/dns", () => ({
+    verifyDomainOwnership: vi.fn(async () => true),
+}));
 
 describe("Comprehensive System Workflow", () => {
     it("should complete a full end-to-end user journey", async () => {

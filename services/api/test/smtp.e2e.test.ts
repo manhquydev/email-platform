@@ -64,6 +64,12 @@ describe("SMTP ingest e2e", () => {
       const login = await request(app.server).post("/auth/login").send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
       token = login.body.token;
       await prisma.domain.create({ data: { name: TEST_DOMAIN, verificationToken: "token", status: "VERIFIED" } });
+      await prisma.inbox.create({
+        data: {
+          localPart: "hello",
+          domain: { connect: { name: TEST_DOMAIN } },
+        },
+      });
     } catch (e) {
       console.error("Reset DB failed", e);
       throw e;
@@ -102,5 +108,84 @@ describe("SMTP ingest e2e", () => {
     expect(messages.body.data.length).toBe(1);
     expect(messages.body.data[0].subject).toContain("Hello inbound");
     expect(messages.body.data[0].textBody).toContain("test email");
+  });
+
+  it("rejects unknown recipient in strict mode", async () => {
+    const transport = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: smtpPort,
+      secure: false,
+      tls: { rejectUnauthorized: false },
+    });
+
+    await expect(
+      transport.sendMail({
+        from: "sender@test.local",
+        to: `unknown@${TEST_DOMAIN}`,
+        subject: "Should reject",
+        text: "unknown recipient",
+      })
+    ).rejects.toBeDefined();
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const unknownInbox = await prisma.inbox.findFirst({
+      where: {
+        localPart: "unknown",
+        domain: { name: TEST_DOMAIN },
+      },
+    });
+    expect(unknownInbox).toBeNull();
+  });
+
+  it("rejects recipient when inbox is disabled", async () => {
+    await prisma.inbox.updateMany({
+      where: { localPart: "hello", domain: { name: TEST_DOMAIN } },
+      data: { deletedAt: new Date() },
+    });
+
+    const transport = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: smtpPort,
+      secure: false,
+      tls: { rejectUnauthorized: false },
+    });
+
+    await expect(
+      transport.sendMail({
+        from: "sender@test.local",
+        to: `hello@${TEST_DOMAIN}`,
+        subject: "Should reject disabled",
+        text: "disabled inbox",
+      })
+    ).rejects.toBeDefined();
+  });
+
+  it("rejects recipient when domain is pending", async () => {
+    const pendingDomain = `pending-${Date.now()}.example.com`;
+    await prisma.domain.create({
+      data: { name: pendingDomain, verificationToken: "pending-token", status: "PENDING" },
+    });
+    await prisma.inbox.create({
+      data: {
+        localPart: "hello",
+        domain: { connect: { name: pendingDomain } },
+      },
+    });
+
+    const transport = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: smtpPort,
+      secure: false,
+      tls: { rejectUnauthorized: false },
+    });
+
+    await expect(
+      transport.sendMail({
+        from: "sender@test.local",
+        to: `hello@${pendingDomain}`,
+        subject: "Should reject pending domain",
+        text: "pending domain",
+      })
+    ).rejects.toBeDefined();
   });
 });

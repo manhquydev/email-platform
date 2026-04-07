@@ -4,7 +4,8 @@ import { prisma } from "../lib/prisma";
 import { generateToken } from "../utils/token";
 import { recordAudit } from "../utils/audit";
 import { addDomainToPostfix, removeDomainFromPostfix } from "../utils/postfix-sync";
-import { validateEmail, validateDomain, canReceiveEmail } from "../utils/email-validation";
+import { isValidDomainFormat } from "../utils/email-validation";
+import { ensureDefaultInboxesForVerifiedDomain } from "../services/domain-verification.service";
 
 export async function domainRoutes(app: FastifyInstance) {
   app.get("/domains", { preHandler: app.authenticate }, async (request, reply) => {
@@ -134,10 +135,15 @@ export async function domainRoutes(app: FastifyInstance) {
     }
 
     const user = request.user as { userId: string; role: string };
-    const { name } = parsed.data;
-// Validate domain format    const { isValidDomainFormat } = await import("../utils/email-validation");    if (!isValidDomainFormat(name)) {      return reply.status(400).send({        error: "Invalid domain format",        details: "Domain must be a valid format (e.g., example.com)"      });    }
+    const normalizedName = parsed.data.name.trim().toLowerCase();
+    if (!isValidDomainFormat(normalizedName)) {
+      return reply.status(400).send({
+        error: "Invalid domain format",
+        details: "Domain must be a valid format (e.g., example.com)"
+      });
+    }
 
-    const existing = await prisma.domain.findUnique({ where: { name } });
+    const existing = await prisma.domain.findUnique({ where: { name: normalizedName } });
     if (existing) {
       return reply.status(409).send({ error: "Domain already exists", domain: existing });
     }
@@ -147,7 +153,7 @@ export async function domainRoutes(app: FastifyInstance) {
     const isAdmin = user.role === "ADMIN";
     const domain = await prisma.domain.create({
       data: {
-        name,
+        name: normalizedName,
         verificationToken: generateToken(),
         ownerId: user.userId,
         isPublic: isAdmin, // Admin-created domains are public by default
@@ -165,7 +171,7 @@ export async function domainRoutes(app: FastifyInstance) {
 
   app.post("/domains/:id/verify", { preHandler: app.authenticate }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
-    const body = z.object({ token: z.string().min(6) }).safeParse(request.body);
+    const body = z.object({ token: z.string().min(6).optional() }).safeParse(request.body ?? {});
     if (!params.success || !body.success) {
       return reply.status(400).send({ error: "Invalid payload" });
     }
@@ -195,15 +201,37 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: "Internal DNS error" });
     }
 
-    const updated = await prisma.domain.update({
-      where: { id: domain.id },
-      data: { status: "VERIFIED" },
-    });
+    const previousStatus = domain.status;
+    let statusChanged = false;
+    if (domain.status !== "VERIFIED") {
+      await prisma.domain.update({
+        where: { id: domain.id },
+        data: { status: "VERIFIED" },
+      });
+      statusChanged = true;
+    }
 
     // Sync to Postfix relay_domains so it accepts mail for this domain
     const syncResult = await addDomainToPostfix(domain.name);
     if (!syncResult.success) {
+      if (statusChanged) {
+        await prisma.domain.update({
+          where: { id: domain.id },
+          data: { status: previousStatus },
+        });
+      }
       request.log.warn({ domain: domain.name, error: syncResult.error }, "Postfix sync failed");
+      return reply.status(503).send({
+        error: "Domain sync failed",
+        details: "DNS verified but Postfix relay sync failed. Please retry verification.",
+      });
+    }
+
+    await ensureDefaultInboxesForVerifiedDomain(domain.id);
+
+    const updated = await prisma.domain.findUnique({ where: { id: domain.id } });
+    if (!updated) {
+      return reply.status(404).send({ error: "Domain not found after verification" });
     }
 
     await recordAudit(user.userId, "DOMAIN_VERIFIED", { domainId: domain.id, name: domain.name });

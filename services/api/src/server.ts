@@ -65,6 +65,9 @@ import { referralRoutes } from "./routes/referral";
 import { providerRoutes } from "./routes/provider";
 import { adminProvidersRoutes } from "./routes/admin-providers";
 import { initializeJobs } from "./jobs";
+import { isFeatureEnabled } from "./lib/feature-flags";
+import { ssoRoutes } from "./routes/sso";
+import { scimRoutes } from "./routes/scim";
 
 import { tokenRevocationService } from "./services/token-revocation.service";
 
@@ -80,10 +83,6 @@ declare module "fastify" {
     requireAdmin: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
-
-// TODO: Enterprise SSO/SCIM - dependencies not yet implemented
-// import { ssoRoutes } from "./routes/sso";
-// import { scimRoutes } from "./routes/scim";
 
 export const buildServer = () => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -451,9 +450,15 @@ export const buildServer = () => {
 
   // Phase 4: Identity Suite Bundles
   app.register(identityBundleRoutes);
-  // TODO: Enterprise SSO/SCIM - dependencies not yet implemented
-  // app.register(ssoRoutes);
-  // app.register(scimRoutes);
+  if (isFeatureEnabled("sso")) {
+    try {
+      app.register(ssoRoutes);
+      app.register(scimRoutes);
+      app.log.info("Enterprise SSO/SCIM routes enabled");
+    } catch (error) {
+      app.log.warn({ error }, "Failed to register SSO/SCIM routes; continuing without enterprise identity routes");
+    }
+  }
 
   // Phase 5: Public Ephemeral Inbox
   app.register(ephemeralInboxRoutes);

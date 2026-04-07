@@ -684,3 +684,95 @@ Website: ${appConfig.webUrl}
     subject: `✨ Link đăng nhập của bạn - ${templateParams.platformName}`,
   };
 }
+
+/**
+ * Generate payment success email
+ */
+export function paymentSuccessEmailTemplate(params: {
+  recipientEmail: string;
+  packageName: string;
+  amount: number;
+  currency: string;
+  paymentMethod: "STRIPE" | "SEPAY";
+  paidAt?: Date;
+  orderCode?: string;
+}): { html: string; text: string; subject: string } {
+  const templateParams: TemplateParams = {
+    recipientEmail: params.recipientEmail,
+    platformName: process.env.MAIL_FROM_NAME || "Ephemera",
+    supportEmail: process.env.MAIL_FROM_ADDRESS || appConfig.defaultAdminEmail,
+    currentYear: new Date().getFullYear(),
+  };
+
+  const paidAtText = (params.paidAt || new Date()).toLocaleString("vi-VN");
+  const amountText = new Intl.NumberFormat("vi-VN").format(params.amount);
+  const paymentMethodLabel = params.paymentMethod === "SEPAY" ? "SePay (VietQR)" : "Stripe";
+
+  const html = `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Thanh toán thành công - ${templateParams.platformName}</title>
+  ${getBaseStyles()}
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="email-container">
+      ${getHeader(templateParams.platformName!)}
+      <div class="email-body">
+        <h1 class="greeting">Thanh toán thành công ✅</h1>
+        <p class="message">
+          Xin chào <strong>${params.recipientEmail}</strong>, chúng tôi đã ghi nhận thanh toán của bạn.
+        </p>
+
+        <div class="info-box" style="background: #ecfdf5; border-left-color: #10b981; color: #065f46;">
+          <strong>Chi tiết giao dịch</strong><br>
+          Gói: <strong>${params.packageName}</strong><br>
+          Số tiền: <strong>${amountText} ${params.currency.toUpperCase()}</strong><br>
+          Phương thức: <strong>${paymentMethodLabel}</strong><br>
+          Thời gian: <strong>${paidAtText}</strong>
+          ${params.orderCode ? `<br>Mã đơn hàng: <strong>${params.orderCode}</strong>` : ""}
+        </div>
+
+        <div class="cta-container">
+          <a href="${appConfig.webUrl}/settings" class="cta-button">Mở cài đặt gói</a>
+        </div>
+      </div>
+      ${getFooter(templateParams)}
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+  const text = `
+Thanh toán thành công - ${templateParams.platformName}
+
+Xin chào ${params.recipientEmail},
+
+Chúng tôi đã ghi nhận thanh toán của bạn.
+
+Chi tiết giao dịch:
+- Gói: ${params.packageName}
+- Số tiền: ${amountText} ${params.currency.toUpperCase()}
+- Phương thức: ${paymentMethodLabel}
+- Thời gian: ${paidAtText}
+${params.orderCode ? `- Mã đơn hàng: ${params.orderCode}` : ""}
+
+Quản lý gói dịch vụ tại: ${appConfig.webUrl}/settings
+
+---
+${templateParams.platformName}
+Email: ${templateParams.supportEmail}
+Website: ${appConfig.webUrl}
+`;
+
+  return {
+    html,
+    text,
+    subject: `✅ Thanh toán thành công - ${templateParams.platformName}`,
+  };
+}

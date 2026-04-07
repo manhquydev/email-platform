@@ -1,5 +1,5 @@
-import { appConfig } from "../config";
-import { prisma } from "../lib/prisma";
+import { appConfig } from "../../config";
+import { prisma } from "../../lib/prisma";
 
 export class OidcService {
   private client: any;

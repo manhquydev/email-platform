@@ -62,7 +62,7 @@ describe("Auth Integration", () => {
             method: "POST",
             url: "/auth/change-password",
             headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-            payload: { newPassword: "newpass123" },
+            payload: { newPassword: "Newpass123" },
         });
 
         if (changeRes.statusCode !== 200) {
@@ -75,7 +75,7 @@ describe("Auth Integration", () => {
             method: "POST",
             url: "/auth/login",
             headers: { "Content-Type": "application/json" },
-            payload: { email: "change@example.com", password: "newpass123" },
+            payload: { email: "change@example.com", password: "Newpass123" },
         });
         expect(verifyRes.statusCode).toBe(200);
     });

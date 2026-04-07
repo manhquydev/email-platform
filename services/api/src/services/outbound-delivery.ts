@@ -8,7 +8,7 @@ import { DkimService } from '../services/dkim.service';
 import { FolderService } from '../services/folder-service';
 import { Message, User } from '@prisma/client';
 
-export const EMAIL_QUEUE_NAME = 'email-ingest';
+export const OUTBOUND_INGEST_QUEUE_NAME = 'email-outbound-ingest';
 
 // Define the Queue here if not already imported or keep it in queue/emailQueue.ts
 // We are implementing the worker logic here
@@ -23,11 +23,10 @@ interface OutboundJobData {
 }
 
 export const setupOutboundWorker = () => {
-  const worker = new Worker(EMAIL_QUEUE_NAME, async (job: Job) => {
+  const worker = new Worker(OUTBOUND_INGEST_QUEUE_NAME, async (job: Job) => {
     if (job.name === 'outbound') {
       await processOutboundEmail(job.data as OutboundJobData);
     }
-    // 'inbound' jobs are processed by existing worker or webhookWorker
   }, {
     connection: redisConfig,
     concurrency: 5,

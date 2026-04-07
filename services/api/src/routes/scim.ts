@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
-import { provisionUser } from "../identity/jit-provisioning";
+import { provisionUser } from "../_wip/identity/jit-provisioning";
 
 export async function scimRoutes(app: FastifyInstance) {
   // Middleware to validate SCIM token
@@ -9,6 +9,9 @@ export async function scimRoutes(app: FastifyInstance) {
     if (!request.url.startsWith("/scim/v2")) return;
 
     const { providerId } = request.params as { providerId: string };
+    if (!providerId) {
+      return reply.status(400).send({ error: "Missing providerId" });
+    }
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {

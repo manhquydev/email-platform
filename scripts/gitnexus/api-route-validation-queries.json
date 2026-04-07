@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "description": "GitNexus graph/index quality baseline queries (API-only focus)",
+  "apiRouteFilter": "r.filePath STARTS WITH 'services/api/src/routes/'",
+  "kpiQueries": [
+    {
+      "id": "total_route_nodes",
+      "title": "Total Route nodes (all indexed)",
+      "kind": "single_value",
+      "query": "MATCH (r:Route) RETURN count(r) as value"
+    },
+    {
+      "id": "api_route_nodes",
+      "title": "API route nodes (services/api/src/routes)",
+      "kind": "single_value",
+      "query": "MATCH (r:Route) WHERE r.filePath STARTS WITH 'services/api/src/routes/' RETURN count(r) as value"
+    },
+    {
+      "id": "polluted_test_route_handlers",
+      "title": "Polluted test route handlers",
+      "kind": "single_value",
+      "query": "MATCH (r:Route) WHERE r.filePath CONTAINS '/test/' RETURN count(r) as value"
+    },
+    {
+      "id": "polluted_mobile_route_handlers",
+      "title": "Polluted mobile route handlers",
+      "kind": "single_value",
+      "query": "MATCH (r:Route) WHERE r.filePath STARTS WITH 'services/mobile/' RETURN count(r) as value"
+    },
+    {
+      "id": "api_routes_with_response_keys",
+      "title": "API routes with responseKeys",
+      "kind": "single_value",
+      "query": "MATCH (r:Route) WHERE r.filePath STARTS WITH 'services/api/src/routes/' AND size(r.responseKeys) > 0 RETURN count(r) as value"
+    },
+    {
+      "id": "api_routes_with_middleware",
+      "title": "API routes with middleware",
+      "kind": "single_value",
+      "query": "MATCH (r:Route) WHERE r.filePath STARTS WITH 'services/api/src/routes/' AND size(r.middleware) > 0 RETURN count(r) as value"
+    }
+  ],
+  "validationQueries": [
+    {
+      "id": "polluted_handlers_by_file",
+      "title": "Polluted handlers outside services/api/src/routes",
+      "kind": "table",
+      "query": "MATCH (r:Route) WHERE NOT r.filePath STARTS WITH 'services/api/src/routes/' RETURN r.filePath as filePath, count(*) as routeCount ORDER BY routeCount DESC LIMIT 50"
+    },
+    {
+      "id": "api_route_density_by_file",
+      "title": "API route density by handler file",
+      "kind": "table",
+      "query": "MATCH (r:Route) WHERE r.filePath STARTS WITH 'services/api/src/routes/' RETURN r.filePath as filePath, count(*) as routeCount ORDER BY routeCount DESC LIMIT 50"
+    },
+    {
+      "id": "api_routes_missing_response_keys",
+      "title": "API routes missing responseKeys",
+      "kind": "table",
+      "query": "MATCH (r:Route) WHERE r.filePath STARTS WITH 'services/api/src/routes/' AND size(r.responseKeys) = 0 RETURN r.filePath as filePath, r.name as route LIMIT 200"
+    },
+    {
+      "id": "api_routes_missing_middleware",
+      "title": "API routes missing middleware",
+      "kind": "table",
+      "query": "MATCH (r:Route) WHERE r.filePath STARTS WITH 'services/api/src/routes/' AND size(r.middleware) = 0 RETURN r.filePath as filePath, r.name as route LIMIT 200"
+    }
+  ]
+}

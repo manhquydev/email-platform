@@ -13,95 +13,67 @@ Quy trình đẩy code và deploy dự án lên production server.
 
 ---
 
-## Quy trình Chuẩn (GitHub Actions)
+## Quy trình Chuẩn (SSH-Based)
 
-### Step 1: Commit Changes
+Đây là quy trình ổn định nhất được sử dụng bởi các công cụ như Antigravity/Claude Code:
 
-```bash
-cd D:/project/Clone/email-platform
-
-# Check status
-git status --short
-
-# Stage files (chỉ stage files cần thiết)
-git add <files>
-
-# Commit với conventional commits
-git commit -m "type(scope): description"
-```
-
-### Step 2: Push to GitHub (Triggers Deploy)
+### Step 1: Chuẩn bị tại Local
 
 ```bash
+# 1. Đảm bảo code đã commit và push lên main
+git add .
+git commit -m "feat/fix: description"
 git push origin main
 ```
 
-> **Note:** Push to `main` tự động trigger GitHub Action `.github/workflows/deploy.yml`
-
-### Step 3: Monitor GitHub Action
+### Step 2: Thực thi Deploy qua SSH
 
 ```bash
-# List recent runs
-gh run list --limit 3
-
-# Watch deployment workflow (chờ hoàn thành)
-gh run watch <run-id> --exit-status
+# 1. SSH vào server và thực hiện chuỗi lệnh đồng bộ
+ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "
+  cd ~/email-platform. && \
+  git fetch origin main && \
+  git reset --hard origin/main && \
+  docker compose -f docker-compose.prod.yml build api web && \
+  docker compose -f docker-compose.prod.yml up -d --force-recreate api web
+"
 ```
 
-### Step 4: Verify Deployment via SSH
+### Step 3: Đồng bộ Database (Prisma)
 
 ```bash
-# Check container status
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "docker ps --format 'table {{.Names}}\t{{.Status}}'"
-
-# Health check API
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "curl -sf https://api.manhquy.click/health"
-
-# Check web app (should return 200)
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "curl -sf -o /dev/null -w '%{http_code}' https://app.manhquy.click/"
+# Thường chạy sau khi container đã Up
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-api-1 npx prisma migrate deploy"
 ```
 
 ---
 
-## One-Liner Commands
+## One-Liner Commands (Copy-Paste)
 
-### Quick Deploy (khi GitHub Action không hoạt động)
-
+### Full Redeploy (All services + Caddy)
 ```bash
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans web api && docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy && docker compose -f docker-compose.prod.yml restart web api"
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && git fetch origin main && git reset --hard origin/main && docker compose -f docker-compose.prod.yml up -d --build --force-recreate"
 ```
 
-### Manual Deploy với GitHub Token (khi SSH key bị lỗi)
-
-Khi server không thể pull qua SSH (`Permission denied (publickey)`), sử dụng HTTPS với Personal Access Token:
-
+### Chỉ Deploy API (Nhanh)
 ```bash
-# Set remote URL với token và pull
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git remote set-url origin https://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@github.com/manhquydev/email-platform.git && git pull origin main"
-
-# Rebuild và restart containers
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && docker compose -f docker-compose.prod.yml up -d --build --force-recreate web api && docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy"
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "cd ~/email-platform. && git fetch origin main && git reset --hard origin/main && docker compose -f docker-compose.prod.yml up -d --build --force-recreate api"
 ```
 
-> **Token:** `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` (Updated: 2026-02-02)
+---
 
-### Force Rebuild (cache issue)
+## Xử lý các lỗi đặc thù (Prisma & Session)
 
+### 1. Lỗi P3015: "Could not find migration file" (Migration Drift)
+Khi database production có nhiều migration hơn codebase (do dev khác merge hoặc lỗi git), API sẽ crash liên tục.
+
+**Giải pháp bypass tạm thời:**
+Sửa `services/api/Dockerfile`, bỏ `npm run prisma:deploy` khỏi lệnh `CMD` để container có thể khởi động, sau đó debug migration sau.
+
+### 2. Lỗi Session hết hạn/CORS (x-csrf-token)
+Khi deploy bản fix Auth, cần đảm bảo `Caddyfile` đã được reload:
 ```bash
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && docker compose -f docker-compose.prod.yml build --no-cache api web && docker compose -f docker-compose.prod.yml up -d --force-recreate api web"
-```
-
-### Rebuild Web với Vite Build Args
-
-> **QUAN TRỌNG:** Vite env vars (`VITE_*`) cần truyền qua `--build-arg` khi build Docker, không phải runtime env.
-
-```bash
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "cd ~/email-platform. && git pull origin main && docker compose -f docker-compose.prod.yml build --no-cache --build-arg VITE_CLARITY_PROJECT_ID=uzly2516v2 web && docker compose -f docker-compose.prod.yml up -d --force-recreate web"
-```
-
-**Verify Clarity đã inject:**
-```bash
-ssh -i .ssh/id_ed25519 -o StrictHostKeyChecking=no root@165.22.48.193 "curl -s https://app.manhquy.click/assets/index-*.js | grep -o 'uzly2516v2' | head -1"
+ssh -i .ssh/id_ed25519 root@165.22.48.193 "docker exec email-platform-caddy-1 caddy reload --config /etc/caddy/Caddyfile"
 ```
 
 ---

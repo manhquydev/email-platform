@@ -1,0 +1,12 @@
+﻿node.exe : npm warn "src/routes/telegram-auth.ts" is being parsed as a normal command line argument.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn "src/r... line argument.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm warn Unknown cli config "--noEmit". This will stop working in the next major version of npm.
+npm warn Unknown cli config "--traceResolution". This will stop working in the next major version of npm.
+error TS6053: File 'src/routes/telegram-auth.ts' not found.
+  The file is in the program because:
+    Root file specified for compilation

@@ -531,6 +531,14 @@ export async function authRoutes(app: FastifyInstance) {
     const refreshToken = cookies.refreshToken;
 
     if (!refreshToken) {
+      request.log.warn({
+        origin: request.headers.origin,
+        referer: request.headers.referer,
+        host: request.headers.host,
+        forwardedHost: request.headers["x-forwarded-host"],
+        hasCsrfCookie: !!cookies.csrfToken,
+        hasCsrfHeader: !!request.headers["x-csrf-token"],
+      }, "Refresh rejected: missing refreshToken cookie");
       return reply.status(401).send({ error: "No refresh token provided" });
     }
 
@@ -559,6 +567,14 @@ export async function authRoutes(app: FastifyInstance) {
       );
 
       if (!rotated) {
+        request.log.warn({
+          origin: request.headers.origin,
+          referer: request.headers.referer,
+          host: request.headers.host,
+          forwardedHost: request.headers["x-forwarded-host"],
+          hasCsrfCookie: !!cookies.csrfToken,
+          hasCsrfHeader: !!request.headers["x-csrf-token"],
+        }, "Refresh rejected: invalid/expired/reused token");
         return reply.status(401).send({ error: "Invalid or expired refresh token" });
       }
 

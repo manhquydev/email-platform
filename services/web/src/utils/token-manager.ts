@@ -17,7 +17,7 @@ interface TokenResponse {
 
 // Cross-tab refresh lock: prevent multiple tabs from refreshing concurrently
 const REFRESH_LOCK_KEY = 'token_refresh_lock';
-const REFRESH_LOCK_TIMEOUT_MS = 10_000; // 10 seconds max hold time
+const REFRESH_LOCK_TIMEOUT_MS = 30_000; // 30 seconds max hold time (network + hidden tab tolerance)
 
 class TokenManager {
   private refreshPromise: Promise<string> | null = null;
@@ -71,9 +71,14 @@ class TokenManager {
   private acquireRefreshLock(): boolean {
     const existing = localStorage.getItem(REFRESH_LOCK_KEY);
     if (existing) {
-      const { timestamp } = JSON.parse(existing) as { timestamp: number };
-      if (Date.now() - timestamp < REFRESH_LOCK_TIMEOUT_MS) {
-        return false; // Another tab holds the lock
+      try {
+        const { timestamp } = JSON.parse(existing) as { timestamp: number };
+        if (Date.now() - timestamp < REFRESH_LOCK_TIMEOUT_MS) {
+          return false; // Another tab holds the lock
+        }
+      } catch {
+        // Corrupted lock payload - clear and continue acquiring a fresh lock.
+        localStorage.removeItem(REFRESH_LOCK_KEY);
       }
     }
     localStorage.setItem(REFRESH_LOCK_KEY, JSON.stringify({ timestamp: Date.now() }));
@@ -89,7 +94,27 @@ class TokenManager {
     return new Promise((resolve, reject) => {
       const deadline = setTimeout(() => {
         window.removeEventListener('storage', handler);
-        // Timeout: other tab may have failed - try refreshing ourselves
+        // Timeout: another tab may be slow or storage event was missed.
+        // If we already have a valid token, keep session stable and avoid replaying stale refresh tokens.
+        const latestToken = this.getAccessToken();
+        if (latestToken && !this.isTokenExpiringSoon(latestToken, 0)) {
+          resolve(latestToken);
+          return;
+        }
+
+        // Lock looks stale -> release and retry ourselves.
+        const existingLock = localStorage.getItem(REFRESH_LOCK_KEY);
+        if (existingLock) {
+          try {
+            const { timestamp } = JSON.parse(existingLock) as { timestamp: number };
+            if (Date.now() - timestamp >= REFRESH_LOCK_TIMEOUT_MS) {
+              localStorage.removeItem(REFRESH_LOCK_KEY);
+            }
+          } catch {
+            localStorage.removeItem(REFRESH_LOCK_KEY);
+          }
+        }
+
         this.refreshPromise = null;
         this.refreshAccessToken().then(resolve).catch(reject);
       }, REFRESH_LOCK_TIMEOUT_MS);

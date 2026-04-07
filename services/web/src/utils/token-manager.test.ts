@@ -102,4 +102,22 @@ describe("token-manager refresh resilience", () => {
 
     await expect(refreshPromise).resolves.toBe(tokenFromOtherTab);
   });
+
+  it("keeps current token when waiting for other tab times out", async () => {
+    vi.useFakeTimers();
+    const validToken = createJwt(600);
+    localStorage.setItem("accessToken", validToken);
+    localStorage.setItem("token_refresh_lock", JSON.stringify({ timestamp: Date.now() }));
+
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const refreshPromise = tokenManager.refreshAccessToken();
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    await expect(refreshPromise).resolves.toBe(validToken);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
 });

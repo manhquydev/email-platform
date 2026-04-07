@@ -223,6 +223,43 @@ describe("Auth Refresh Token Integration", () => {
     expect(rotatedTokenAttempt.status).toBe(401);
   });
 
+  it("should not revoke token family for delayed concurrent reuse within grace window", async () => {
+    const { refreshToken: originalToken, csrfToken } = await registerAndLogin();
+
+    const firstRefresh = await request(app.server)
+      .post("/auth/refresh")
+      .set("Cookie", [`refreshToken=${originalToken}`, `csrfToken=${csrfToken}`])
+      .set("x-csrf-token", csrfToken);
+
+    expect(firstRefresh.status).toBe(200);
+    const firstCookies = firstRefresh.headers["set-cookie"] as string[] | undefined;
+    const rotatedRefreshCookie = firstCookies?.find((cookie) => cookie.startsWith("refreshToken="));
+    expect(rotatedRefreshCookie).toBeDefined();
+    const rotatedToken = rotatedRefreshCookie!.split(";")[0].split("=")[1];
+    const rotatedCsrf = firstRefresh.body.csrfToken as string;
+
+    // Simulate a slow second tab retrying the old token within grace window.
+    const originalHash = crypto.createHash("sha256").update(originalToken).digest("hex");
+    await prisma.refreshToken.update({
+      where: { tokenHash: originalHash },
+      data: { usedAt: new Date(Date.now() - 20 * 1000) }
+    });
+
+    const oldTokenRetry = await request(app.server)
+      .post("/auth/refresh")
+      .set("Cookie", [`refreshToken=${originalToken}`, `csrfToken=${csrfToken}`])
+      .set("x-csrf-token", csrfToken);
+
+    expect(oldTokenRetry.status).toBe(401);
+
+    const rotatedTokenStillWorks = await request(app.server)
+      .post("/auth/refresh")
+      .set("Cookie", [`refreshToken=${rotatedToken}`, `csrfToken=${rotatedCsrf}`])
+      .set("x-csrf-token", rotatedCsrf);
+
+    expect(rotatedTokenStillWorks.status).toBe(200);
+  });
+
   it("should allow only one successful rotation for concurrent refresh requests", async () => {
     const { refreshToken, csrfToken } = await registerAndLogin();
 

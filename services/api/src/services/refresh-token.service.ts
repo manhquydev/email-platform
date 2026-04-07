@@ -55,7 +55,7 @@ export class RefreshTokenService {
     userAgent?: string,
     ipAddress?: string
   ): Promise<{ token: string; userId: string; familyId: string; expiresInDays: number } | null> {
-    const CONCURRENT_GRACE_MS = 5000; // 5 seconds - allow concurrent multi-tab refresh
+    const CONCURRENT_GRACE_MS = 60_000; // 60 seconds - tolerate slow/hidden-tab concurrent refreshes
     const oldTokenHash = crypto.createHash("sha256").update(oldToken).digest("hex");
 
     const existingToken = await prisma.refreshToken.findUnique({

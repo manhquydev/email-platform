@@ -147,6 +147,9 @@ class TokenManager {
         'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken,
       },
+      // Backend expects JSON when Content-Type is application/json.
+      // Send a minimal body to avoid Fastify FST_ERR_CTP_EMPTY_JSON_BODY.
+      body: '{}',
     });
 
     if (!response.ok) {

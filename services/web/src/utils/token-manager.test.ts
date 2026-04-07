@@ -43,6 +43,7 @@ describe("token-manager refresh resilience", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect((options.headers as Record<string, string>)["X-CSRF-Token"]).toBe("cookie-csrf");
+    expect(options.body).toBe("{}");
   });
 
   it("keeps current session when refresh fails but access token is still valid", async () => {

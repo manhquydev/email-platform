@@ -16,8 +16,8 @@ export default defineConfig({
         '/pricing',
         '/features',
         '/docs',
-        '/privacy-policy',
-        '/terms-of-service',
+        '/privacy',
+        '/terms',
         '/acceptable-use',
         '/gdpr'
       ],

@@ -32,7 +32,30 @@ interface UserProfile {
     limits: { domains: number; inboxes: number; storageGB: number; dailyEmails: number };
 }
 
-type SettingsTab = 'general' | 'security' | 'subscription' | 'developer' | 'notifications' | 'filters' | 'labels' | 'teams' | 'retention' | 'domains' | 'referral';
+const SETTINGS_TABS = [
+    "general",
+    "security",
+    "subscription",
+    "developer",
+    "notifications",
+    "filters",
+    "labels",
+    "teams",
+    "retention",
+    "referral",
+] as const;
+
+type SettingsTab = (typeof SETTINGS_TABS)[number];
+
+const isSettingsTab = (tab: string | null): tab is SettingsTab =>
+    tab !== null && SETTINGS_TABS.includes(tab as SettingsTab);
+
+const normalizeSettingsTab = (tab: string | null): SettingsTab | null => {
+    if (!tab) return null;
+    if (isSettingsTab(tab)) return tab;
+    if (tab === "billing") return "subscription";
+    return null;
+};
 
 export function Settings() {
     const { token } = useAuth();
@@ -46,13 +69,29 @@ export function Settings() {
     // Sync activeTab with URL params
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const tab = params.get('tab') as SettingsTab;
-        if (tab && ['general', 'security', 'subscription', 'developer', 'notifications', 'filters', 'labels', 'teams', 'retention', 'referral'].includes(tab)) {
-            if (tab !== activeTab) {
-                setActiveTab(tab);
-            }
+        const tab = params.get("tab");
+
+        if (tab === "domains") {
+            navigate("/my-domains", { replace: true });
+            return;
         }
-    }, [location.search, activeTab]);
+
+        const normalizedTab = normalizeSettingsTab(tab);
+
+        if (normalizedTab) {
+            if (normalizedTab !== activeTab) {
+                setActiveTab(normalizedTab);
+            }
+            if (tab !== normalizedTab) {
+                navigate(`?tab=${normalizedTab}`, { replace: true });
+            }
+            return;
+        }
+
+        if (tab) {
+            navigate("?tab=general", { replace: true });
+        }
+    }, [location.search, activeTab, navigate]);
 
     // Scroll to top when tab changes
     useEffect(() => {
@@ -63,7 +102,11 @@ export function Settings() {
 
     // Update URL when tab changes
     const changeTab = (tab: string) => {
-        setActiveTab(tab as SettingsTab);
+        if (!isSettingsTab(tab)) {
+            return;
+        }
+
+        setActiveTab(tab);
         navigate(`?tab=${tab}`, { replace: true });
     };
 

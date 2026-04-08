@@ -4,10 +4,12 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { referralService, type ReferralCode, type ReferralStats } from '../../services/referralService';
+import { getFriendlyErrorMessage } from '../../utils/errorMapping';
 
 export function ReferralSection() {
     const [code, setCode] = useState<ReferralCode | null>(null);
     const [stats, setStats] = useState<ReferralStats | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isClaiming, setIsClaiming] = useState(false);
     const [copied, setCopied] = useState<'code' | 'link' | null>(null);
@@ -17,6 +19,7 @@ export function ReferralSection() {
     }, []);
 
     const loadData = async () => {
+        setErrorMessage(null);
         try {
             const [codeData, statsData] = await Promise.all([
                 referralService.getCode(),
@@ -24,24 +27,10 @@ export function ReferralSection() {
             ]);
             setCode(codeData);
             setStats(statsData);
-        } catch {
-            // Mock data for demo
-            const mockCode = 'EPHE-M3R4-2026';
-            setCode({
-                code: mockCode,
-                createdAt: '2026-01-15T10:00:00Z',
-                shareUrl: referralService.generateShareUrl(mockCode),
-            });
-            setStats({
-                totalReferrals: 5,
-                pendingRewards: 2,
-                claimedRewards: 3,
-                bonusAliases: 30,
-                recentReferrals: [
-                    { id: '1', date: '2026-01-25T10:00:00Z', status: 'pending' },
-                    { id: '2', date: '2026-01-20T14:00:00Z', status: 'claimed' },
-                ],
-            });
+        } catch (error) {
+            setCode(null);
+            setStats(null);
+            setErrorMessage(getFriendlyErrorMessage((error as Error).message) || 'Không thể tải thông tin giới thiệu');
         } finally {
             setIsLoading(false);
         }
@@ -70,18 +59,12 @@ export function ReferralSection() {
                 setStats(prev => prev ? {
                     ...prev,
                     pendingRewards: 0,
-                    claimedRewards: prev.claimedRewards + prev.pendingRewards,
+                    claimedRewards: prev.claimedRewards + (result.claimedRewards ?? prev.pendingRewards),
                     bonusAliases: result.newTotal,
                 } : null);
             }
-        } catch {
-            // Mock success for demo
-            toast.success(`Đã nhận +${stats.pendingRewards * 10} bí danh!`);
-            setStats(prev => prev ? {
-                ...prev,
-                pendingRewards: 0,
-                claimedRewards: prev.claimedRewards + prev.pendingRewards,
-            } : null);
+        } catch (error) {
+            toast.error(getFriendlyErrorMessage((error as Error).message));
         } finally {
             setIsClaiming(false);
         }
@@ -89,6 +72,10 @@ export function ReferralSection() {
 
     if (isLoading) {
         return <LoadingState />;
+    }
+
+    if (errorMessage) {
+        return <ErrorState message={errorMessage} onRetry={loadData} />;
     }
 
     if (!code) {
@@ -176,7 +163,7 @@ export function ReferralSection() {
             )}
 
             {/* Recent Referrals */}
-            {stats && stats.recentReferrals.length > 0 && (
+            {stats?.recentReferrals && stats.recentReferrals.length > 0 && (
                 <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Giới thiệu gần đây</h3>
                     <div className="neo-glass rounded-xl divide-y divide-white/10">
@@ -277,6 +264,24 @@ function LoadingState() {
                     </div>
                 ))}
             </div>
+        </div>
+    );
+}
+
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+    return (
+        <div className="neo-glass rounded-xl p-6 text-center space-y-3">
+            <span className="material-symbols-outlined text-[32px] text-red-400">error</span>
+            <div>
+                <h3 className="font-semibold text-white">Không thể tải thông tin giới thiệu</h3>
+                <p className="text-sm text-[var(--nebula-text-secondary)] mt-1">{message}</p>
+            </div>
+            <button
+                onClick={onRetry}
+                className="px-4 py-2 bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)] text-white rounded-lg text-sm font-medium transition-all"
+            >
+                Thử lại
+            </button>
         </div>
     );
 }

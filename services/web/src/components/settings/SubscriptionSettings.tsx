@@ -39,8 +39,10 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
     // Use modular hooks
     const {
         payments,
+        paymentMethod,
         packages,
         loadingPayments,
+        loadingPaymentMethod,
         loadingPackages
     } = useSubscriptionData();
 
@@ -106,7 +108,7 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
             {/* Dashboard Grid: Stats + Payment Method */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <SubscriptionStatsCards profile={profile} />
-                <PaymentMethodCard />
+                <PaymentMethodCard paymentMethod={paymentMethod} loading={loadingPaymentMethod} />
             </div>
 
             {/* Pricing Section */}

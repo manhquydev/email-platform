@@ -9,8 +9,8 @@ Allow: /register
 Allow: /pricing
 Allow: /features
 Allow: /docs
-Allow: /privacy-policy
-Allow: /terms-of-service
+Allow: /privacy
+Allow: /terms
 Allow: /acceptable-use
 Allow: /gdpr
 

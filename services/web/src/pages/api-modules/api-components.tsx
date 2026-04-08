@@ -189,7 +189,7 @@ export function APIFeatures() {
                     Xem Tài Liệu
                 </Link>
                 <Link
-                    to="/app/settings?tab=developer"
+                    to="/settings?tab=developer"
                     className="inline-flex items-center gap-2 bg-white/10 text-[#F1F5F9] px-5 py-2.5 rounded-xl font-semibold hover:bg-white/20 transition-colors cursor-pointer"
                 >
                     <span className="material-symbols-outlined text-lg">key</span>

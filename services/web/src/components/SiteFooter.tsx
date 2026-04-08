@@ -81,7 +81,7 @@ export function SiteFooter({ variant = "full" }: SiteFooterProps) {
                         <Link to="/terms" className="neo-hover-lift" onClick={handleNavClick}>Điều khoản dịch vụ</Link>
                         <Link to="/privacy" className="neo-hover-lift" onClick={handleNavClick}>Chính sách bảo mật</Link>
                         <Link to="/acceptable-use" className="neo-hover-lift" onClick={handleNavClick}>Sử dụng chấp nhận</Link>
-                        <Link to="/gdpr" className="neo-hover-lift" onClick={handleNavClick}>Tuân thủ GDPR</Link>
+                        <Link to="/gdpr" className="neo-hover-lift" onClick={handleNavClick}>Bảo vệ dữ liệu (VN/EU)</Link>
                     </div>
                 </div>
             </div>

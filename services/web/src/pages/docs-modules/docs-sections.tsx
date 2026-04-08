@@ -213,7 +213,7 @@ export function QuickstartSection() {
                     <h2 className="text-xl font-bold text-[#F1F5F9]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Lấy API Key</h2>
                 </div>
                 <p className="text-slate-400 mb-4 text-sm">
-                    Truy cập <Link to="/app/settings?tab=developer" className="text-blue-400 hover:underline">Settings → Developer</Link> để tạo API Key mới.
+                    Truy cập <Link to="/settings?tab=developer" className="text-blue-400 hover:underline">Settings → Developer</Link> để tạo API Key mới.
                 </p>
                 <code className="block bg-[#1E293B] rounded-lg p-3 text-green-400 text-sm font-mono border border-white/5">
                     epk_live_xxxxxxxxxxxxxxxxxxxxxxxx
@@ -327,7 +327,7 @@ export function WebhooksSection() {
             <GlassCard className="p-6">
                 <h2 className="text-xl font-bold text-[#F1F5F9] mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Cấu hình Webhook</h2>
                 <p className="text-slate-400 mb-4 text-sm">
-                    Vào <Link to="/app/settings?tab=developer" className="text-blue-400 hover:underline">Settings → Developer</Link> để tạo webhook endpoint.
+                    Vào <Link to="/settings?tab=developer" className="text-blue-400 hover:underline">Settings → Developer</Link> để tạo webhook endpoint.
                 </p>
                 <div className="flex flex-wrap gap-3">
                     <div className="flex items-center gap-2 px-3 py-2 bg-[#1E293B]/50 rounded-lg text-xs text-slate-400">

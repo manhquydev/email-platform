@@ -2,67 +2,65 @@ import { LegalPageLayout } from "../../components/LegalPageLayout";
 
 export function GDPR() {
     const tocItems = [
-        { id: "overview", label: "1. Tổng quan GDPR" },
-        { id: "rights", label: "2. Quyền của bạn" },
-        { id: "data-processing", label: "3. Xử lý dữ liệu" },
-        { id: "contact", label: "4. Liên hệ DPO" },
+        { id: "vn-framework", label: "1. Khung pháp lý Việt Nam" },
+        { id: "eu-framework", label: "2. Khung GDPR cho người dùng EU" },
+        { id: "cross-border", label: "3. Chuyển dữ liệu xuyên biên giới" },
+        { id: "contact", label: "4. Đầu mối liên hệ dữ liệu" },
     ];
 
     return (
         <LegalPageLayout
-            title="Tuân thủ GDPR"
-            description="Cam kết của chúng tôi về bảo vệ dữ liệu và quyền riêng tư theo Quy định Chung về Bảo vệ Dữ liệu (GDPR)."
-            lastUpdated="Tháng 12, 2025"
+            title="Bảo vệ dữ liệu (VN/EU)"
+            description="Tổng quan nghĩa vụ bảo vệ dữ liệu của Ephemera theo pháp luật Việt Nam hiện hành và cơ chế hỗ trợ yêu cầu dữ liệu của người dùng quốc tế."
+            lastUpdated="08/04/2026"
             tocItems={tocItems}
         >
-            <section id="overview" className="scroll-mt-32 mb-16 border-b border-white/5 pb-12 last:border-0">
-                <h2>1. Tổng quan GDPR</h2>
+            <section id="vn-framework" className="scroll-mt-32 mb-16 border-b border-white/5 pb-12 last:border-0">
+                <h2>1. Khung pháp lý Việt Nam</h2>
                 <p>
-                    Ephemera cam kết tuân thủ đầy đủ Quy định Chung về Bảo vệ Dữ liệu (GDPR) của Liên minh Châu Âu.
-                    Chúng tôi thiết kế hệ thống của mình với nguyên tắc "Privacy by Design" (Quyền riêng tư theo thiết kế),
-                    đảm bảo rằng dữ liệu cá nhân của bạn được bảo vệ ở mức cao nhất.
+                    Ephemera vận hành chính sách dữ liệu theo Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 (hiệu lực từ 01/01/2026),
+                    Nghị định số 356/2025/NĐ-CP, Luật Dữ liệu số 60/2024/QH15 và các quy định liên quan. Đối với nghĩa vụ triển khai kỹ thuật,
+                    chúng tôi tiếp tục áp dụng các biện pháp bảo vệ dữ liệu theo Nghị định số 13/2023/NĐ-CP trong phạm vi còn phù hợp.
                 </p>
                 <p>
-                    Mặc dù dịch vụ của chúng tôi tập trung vào tính ẩn danh và tính tạm thời, chúng tôi vẫn áp dụng các biện pháp
-                    nghiêm ngặt để xử lý bất kỳ dữ liệu nào có thể liên quan đến người dùng.
+                    Chúng tôi áp dụng nguyên tắc giảm thiểu dữ liệu, giới hạn mục đích xử lý, kiểm soát truy cập và lưu trữ có thời hạn.
                 </p>
             </section>
 
-            <section id="rights" className="scroll-mt-32 mb-16 border-b border-white/5 pb-12 last:border-0">
-                <h2>2. Quyền của bạn theo GDPR</h2>
-                <p>Bạn có các quyền sau đối với dữ liệu của mình:</p>
-                <ul>
-                    <li><strong>Quyền truy cập:</strong> Bạn có quyền yêu cầu bản sao dữ liệu cá nhân mà chúng tôi lưu giữ về bạn.</li>
-                    <li><strong>Quyền chỉnh sửa:</strong> Bạn có quyền yêu cầu chúng tôi sửa bất kỳ thông tin nào không chính xác.</li>
-                    <li><strong>Quyền xóa bỏ ("Quyền được lãng quên"):</strong> Bạn có quyền yêu cầu xóa dữ liệu của mình bất cứ lúc nào (dữ liệu email đã tự động xóa sau thời gian hết hạn).</li>
-                    <li><strong>Quyền hạn chế xử lý:</strong> Bạn có quyền yêu cầu chúng tôi hạn chế xử lý dữ liệu của bạn trong một số trường hợp nhất định.</li>
-                    <li><strong>Quyền phản đối:</strong> Bạn có quyền phản đối việc xử lý dữ liệu của mình.</li>
-                    <li><strong>Quyền khả chuyển dữ liệu:</strong> Bạn có quyền yêu cầu chúng tôi chuyển dữ liệu của bạn cho một tổ chức khác hoặc trực tiếp cho bạn.</li>
-                </ul>
+            <section id="eu-framework" className="scroll-mt-32 mb-16 border-b border-white/5 pb-12 last:border-0">
+                <h2>2. Khung GDPR cho người dùng EU</h2>
+                <p>
+                    Với người dùng thuộc phạm vi GDPR, Ephemera hỗ trợ thực thi các quyền cơ bản như yêu cầu truy cập, chỉnh sửa, xóa,
+                    giới hạn xử lý và phản đối xử lý theo điều kiện pháp lý áp dụng.
+                </p>
+                <p>
+                    Các yêu cầu được xử lý thông qua đầu mối dữ liệu của chúng tôi và có thể cần xác minh danh tính để bảo vệ an toàn thông tin.
+                </p>
             </section>
 
-            <section id="data-processing" className="scroll-mt-32 mb-16 border-b border-white/5 pb-12 last:border-0">
-                <h2>3. Cơ sở pháp lý và Mục đích xử lý</h2>
+            <section id="cross-border" className="scroll-mt-32 mb-16 border-b border-white/5 pb-12 last:border-0">
+                <h2>3. Chuyển dữ liệu xuyên biên giới</h2>
                 <p>
-                    Chúng tôi chỉ xử lý dữ liệu của bạn khi cần thiết để cung cấp dịch vụ (ví dụ: chuyển tiếp email, xác thực tài khoản).
-                    Cơ sở pháp lý cho việc xử lý này là:
+                    Trong trường hợp sử dụng hạ tầng hoặc dịch vụ xử lý dữ liệu đặt ngoài Việt Nam, Ephemera thực hiện biện pháp bảo vệ phù hợp
+                    và thủ tục đánh giá/ghi nhận theo yêu cầu của pháp luật hiện hành.
                 </p>
                 <ul>
-                    <li>Việc thực hiện hợp đồng giữa bạn và Ephemera (Điều khoản Dịch vụ).</li>
-                    <li>Đồng ý của bạn (đối với cookie hoặc tiếp thị).</li>
-                    <li>Lợi ích hợp pháp của chúng tôi trong việc bảo vệ dịch vụ khỏi lạm dụng.</li>
+                    <li>Ràng buộc trách nhiệm bảo vệ dữ liệu với bên nhận xử lý.</li>
+                    <li>Giới hạn phạm vi dữ liệu chuyển theo mục đích nghiệp vụ.</li>
+                    <li>Áp dụng biện pháp kỹ thuật và tổ chức để giảm rủi ro lộ, mất dữ liệu.</li>
                 </ul>
             </section>
 
             <section id="contact" className="scroll-mt-32 mb-16 border-b border-white/5 pb-12 last:border-0">
-                <h2>4. Liên hệ Nhân viên Bảo vệ Dữ liệu (DPO)</h2>
+                <h2>4. Đầu mối liên hệ dữ liệu</h2>
                 <p>
-                    Nếu bạn có bất kỳ câu hỏi nào về việc tuân thủ GDPR của chúng tôi hoặc muốn thực hiện quyền của mình,
-                    vui lòng liên hệ với Nhân viên Bảo vệ Dữ liệu của chúng tôi tại:
+                    Mọi yêu cầu liên quan đến dữ liệu cá nhân (VN/EU) vui lòng gửi về:
                 </p>
                 <p>
-                    <strong>Email:</strong> privacy@manhquy.click<br />
-                    <strong>Địa chỉ:</strong> [Địa chỉ công ty của bạn]
+                    <strong>Email:</strong> privacy@manhquy.click
+                </p>
+                <p>
+                    Trường hợp cần khiếu nại, người dùng có thể thực hiện theo cơ chế tại chính sách bảo mật và quy định pháp luật áp dụng.
                 </p>
             </section>
         </LegalPageLayout>

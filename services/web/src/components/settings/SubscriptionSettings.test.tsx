@@ -210,6 +210,63 @@ describe("SubscriptionSettings - Basic Rendering", () => {
             expect(screen.getByText("Chưa có giao dịch thanh toán nào.")).toBeInTheDocument();
         });
     });
+
+    it("should show empty payment method state when no method exists", async () => {
+        render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Chưa có phương thức thanh toán đã lưu")).toBeInTheDocument();
+        });
+    });
+});
+
+describe("SubscriptionSettings - Payment Method Display", () => {
+    const mockProfile = {
+        tier: "FREE",
+        credits: 100,
+        subscriptionEndsAt: null,
+    };
+
+    const mockLoadProfile = vi.fn();
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockApi.mockImplementation((url: string) => {
+            if (url === "/billing/tiers") {
+                return Promise.resolve({ tiers: [], stripeEnabled: false });
+            }
+
+            if (url === "/billing/payment-method") {
+                return Promise.resolve({
+                    paymentMethod: {
+                        id: "pm_123",
+                        brand: "visa",
+                        last4: "4242",
+                        expMonth: 12,
+                        expYear: 2029,
+                        billingEmail: "billing@example.com",
+                    },
+                });
+            }
+
+            return Promise.resolve({ payments: [] });
+        });
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("should render payment method details when available", async () => {
+        render(<SubscriptionSettings profile={mockProfile} loadProfile={mockLoadProfile} />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Visa •••• 4242")).toBeInTheDocument();
+        });
+
+        expect(screen.getByText("Hết hạn 12/29")).toBeInTheDocument();
+        expect(screen.getByText("billing@example.com")).toBeInTheDocument();
+    });
 });
 
 describe("SubscriptionSettings - Export Report", () => {

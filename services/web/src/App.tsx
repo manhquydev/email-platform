@@ -87,7 +87,9 @@ function App() {
                     <Route path="/api" element={<API />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/terms-of-service" element={<Navigate to="/terms" replace />} />
                     <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />
                     <Route path="/acceptable-use" element={<AcceptableUse />} />
                     <Route path="/gdpr" element={<GDPR />} />
                     <Route path="/support" element={<Support />} />

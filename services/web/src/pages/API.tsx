@@ -105,7 +105,7 @@ export function API() {
                             Xem Tài Liệu Đầy Đủ
                         </Link>
                         <Link
-                            to="/app/settings?tab=developer"
+                            to="/settings?tab=developer"
                             className="flex items-center gap-2 px-6 py-3 text-slate-300 hover:text-white transition-colors cursor-pointer"
                         >
                             <span className="material-symbols-outlined text-lg">key</span>

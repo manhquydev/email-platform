@@ -91,7 +91,7 @@ export function AISummaryCard({ messageId, initialSummary }: AISummaryCardProps)
                         </p>
                     </div>
                     <a
-                        href="/settings?tab=billing"
+                        href="/settings?tab=subscription"
                         className="px-3 py-1.5 text-xs font-medium bg-nebula-violet text-white rounded-lg hover:bg-nebula-violet/90 transition-colors"
                     >
                         Nâng cấp
@@ -211,7 +211,7 @@ export function AISummaryCard({ messageId, initialSummary }: AISummaryCardProps)
                                 Tính năng AI yêu cầu gói Starter trở lên
                             </p>
                             <a
-                                href="/settings?tab=billing"
+                                href="/settings?tab=subscription"
                                 className="px-4 py-2 text-sm font-medium bg-nebula-violet text-white rounded-lg hover:bg-nebula-violet/90 transition-colors"
                             >
                                 Xem các gói dịch vụ

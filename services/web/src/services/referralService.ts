@@ -17,7 +17,7 @@ export interface ReferralStats {
     pendingRewards: number;
     claimedRewards: number;
     bonusAliases: number; // +10 per referral
-    recentReferrals: Array<{
+    recentReferrals?: Array<{
         id: string;
         date: string;
         status: 'pending' | 'claimed';
@@ -26,6 +26,7 @@ export interface ReferralStats {
 
 export interface ClaimResult {
     success: boolean;
+    claimedRewards?: number;
     aliasesAwarded: number;
     newTotal: number;
 }
@@ -38,28 +39,77 @@ export interface ApplyCodeResult {
 
 // ============ API Client ============
 
+type ReferralCodeResponse = {
+    code: string;
+    createdAt: string;
+    shareUrl?: string;
+};
+
+type ReferralStatsResponse = {
+    totalReferrals: number;
+    pendingRewards: number;
+    claimedRewards: number;
+    bonusAliases?: number;
+    recentReferrals?: ReferralStats['recentReferrals'];
+};
+
+type ClaimRewardsResponse = {
+    success?: boolean;
+    claimedRewards?: number;
+    aliasesAwarded?: number;
+    aliasesAdded?: number;
+    newTotal?: number;
+};
+
+function normalizeReferralCode(data: ReferralCodeResponse): ReferralCode {
+    return {
+        code: data.code,
+        createdAt: data.createdAt,
+        shareUrl: data.shareUrl || referralService.generateShareUrl(data.code),
+    };
+}
+
+function normalizeReferralStats(data: ReferralStatsResponse): ReferralStats {
+    return {
+        totalReferrals: data.totalReferrals,
+        pendingRewards: data.pendingRewards,
+        claimedRewards: data.claimedRewards,
+        bonusAliases: data.bonusAliases ?? (data.claimedRewards * 10),
+        recentReferrals: data.recentReferrals,
+    };
+}
+
 export const referralService = {
     /**
      * Get user's personal referral code
      */
     async getCode(): Promise<ReferralCode> {
-        return api('/api/referral/code');
+        const response = await api<ReferralCodeResponse>('/api/referral/code');
+        return normalizeReferralCode(response);
     },
 
     /**
      * Get referral statistics
      */
     async getStats(): Promise<ReferralStats> {
-        return api('/api/referral/stats');
+        const response = await api<ReferralStatsResponse>('/api/referral/stats');
+        return normalizeReferralStats(response);
     },
 
     /**
      * Claim pending referral rewards
      */
     async claimRewards(): Promise<ClaimResult> {
-        return api('/api/referral/claim', {
+        const response = await api<ClaimRewardsResponse>('/api/referral/claim', {
             method: 'POST',
         });
+        const aliasesAwarded = response.aliasesAwarded ?? response.aliasesAdded ?? 0;
+        return {
+            success: response.success ?? true,
+            claimedRewards: response.claimedRewards,
+            aliasesAwarded,
+            newTotal: response.newTotal ?? aliasesAwarded,
+        };
     },
 
     /**

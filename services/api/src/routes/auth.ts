@@ -17,8 +17,47 @@ import { ProviderSsoService } from "../services/provider-sso.service";
 import { twoFactorBackoff } from "../middleware/rate-limit-config";
 import { passwordSchema } from "./auth/auth-schemas";
 import { COOKIE_MAX_AGE_DEFAULT } from "./auth/auth-config";
-import { clearCsrfCookie, clearRefreshCookies, setAuthCookies } from "./auth/auth-cookies";
+import { clearCsrfCookie, clearRefreshCookies, getRefreshTokenFromRequest, setAuthCookies } from "./auth/auth-cookies";
 import { createAccessToken, createCsrfToken } from "./auth/auth-tokens";
+import { sharedErrorResponseSchema } from "../plugins/swagger";
+
+const authErrorResponseSchema = {
+  ...sharedErrorResponseSchema,
+  properties: {
+    ...sharedErrorResponseSchema.properties,
+    lockedUntil: { type: "string", format: "date-time" },
+  },
+};
+
+const authLoginSuccessSchema = {
+  type: "object",
+  properties: {
+    token: { type: "string" },
+    csrfToken: { type: "string" },
+    expiresIn: { type: "number" },
+    message: { type: "string" },
+    requires2FA: { type: "boolean" },
+    tempToken: { type: "string" },
+    user: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        email: { type: "string" },
+        role: { type: "string" },
+      },
+    },
+  },
+};
+
+const authRefreshSuccessSchema = {
+  type: "object",
+  properties: {
+    token: { type: "string" },
+    csrfToken: { type: "string" },
+    expiresIn: { type: "number" },
+  },
+  required: ["token", "csrfToken", "expiresIn"],
+};
 
 
 export async function authRoutes(app: FastifyInstance) {
@@ -212,7 +251,28 @@ export async function authRoutes(app: FastifyInstance) {
         max: 10,
         timeWindow: "5 minutes"
       }
-    }
+    },
+    schema: {
+      tags: ["auth"],
+      summary: "Login with email and password",
+      body: {
+        type: "object",
+        required: ["email", "password"],
+        properties: {
+          email: { type: "string", format: "email" },
+          password: { type: "string", minLength: 6 },
+          rememberMe: { type: "boolean" },
+        },
+      },
+      response: {
+        200: authLoginSuccessSchema,
+        400: authErrorResponseSchema,
+        401: authErrorResponseSchema,
+        403: authErrorResponseSchema,
+        423: authErrorResponseSchema,
+        500: authErrorResponseSchema,
+      },
+    },
   }, async (request, reply) => {
     const bodySchema = z.object({
       email: z.string().email(),
@@ -456,8 +516,7 @@ export async function authRoutes(app: FastifyInstance) {
   app.post("/auth/logout", { preHandler: app.authenticate }, async (request, reply) => {
     const user = request.user as any;
     const jti = user?.jti;
-    const cookies = request.cookies as { refreshToken?: string };
-    const refreshToken = cookies.refreshToken;
+    const refreshToken = getRefreshTokenFromRequest(request);
 
     if (jti) {
       // Revoke the current access token (15 min TTL matches token expiry)
@@ -520,15 +579,31 @@ export async function authRoutes(app: FastifyInstance) {
         timeWindow: "1 minute",
         keyGenerator: (request) => {
           // Phase 4: Rate limit by cookie token instead of body
-          const cookies = request.cookies as { refreshToken?: string };
-          return cookies?.refreshToken?.slice(0, 50) || request.ip;
+          const refreshToken = getRefreshTokenFromRequest(request);
+          return refreshToken?.slice(0, 50) || request.ip;
         }
       }
-    }
+    },
+    schema: {
+      tags: ["auth"],
+      summary: "Rotate refresh token and issue new access token",
+      headers: {
+        type: "object",
+        properties: {
+          "x-csrf-token": { type: "string" },
+        },
+      },
+      response: {
+        200: authRefreshSuccessSchema,
+        401: authErrorResponseSchema,
+        403: authErrorResponseSchema,
+        500: authErrorResponseSchema,
+      },
+    },
   }, async (request, reply) => {
     // Phase 4: Read refreshToken from httpOnly cookie
-    const cookies = request.cookies as { refreshToken?: string; csrfToken?: string };
-    const refreshToken = cookies.refreshToken;
+    const cookies = request.cookies as { csrfToken?: string };
+    const refreshToken = getRefreshTokenFromRequest(request);
 
     if (!refreshToken) {
       request.log.warn({

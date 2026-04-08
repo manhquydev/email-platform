@@ -116,6 +116,18 @@ describe("Auth Refresh Token Integration", () => {
     expect(newTokenRecord?.familyId).toBe(oldTokenRecord?.familyId);
   });
 
+  it("should prefer the latest refreshToken when duplicate cookie names are sent", async () => {
+    const { refreshToken, csrfToken } = await registerAndLogin();
+
+    const res = await request(app.server)
+      .post("/auth/refresh")
+      .set("Cookie", [`refreshToken=legacy-revoked-token`, `refreshToken=${refreshToken}`, `csrfToken=${csrfToken}`])
+      .set("x-csrf-token", csrfToken);
+
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeDefined();
+  });
+
   it("should return 401 when refresh token cookie is missing", async () => {
     const { csrfToken } = await registerAndLogin();
 
@@ -156,6 +168,11 @@ describe("Auth Refresh Token Integration", () => {
 
     const loginRefreshCookie = setCookie?.find((cookie) => cookie.startsWith("refreshToken="));
     expect(loginRefreshCookie).toContain("Max-Age=2592000");
+    const loginLegacyClearCookie = setCookie?.find(
+      (cookie) => cookie.startsWith("refreshToken=") && cookie.includes("Path=/auth/refresh")
+    );
+    expect(loginLegacyClearCookie).toBeDefined();
+    expect(loginLegacyClearCookie).toMatch(/(?:Max-Age=0|Expires=)/i);
 
     const refreshRes = await request(app.server)
       .post("/auth/refresh")
@@ -166,6 +183,11 @@ describe("Auth Refresh Token Integration", () => {
     const rotatedCookies = refreshRes.headers["set-cookie"] as string[] | undefined;
     const rotatedRefreshCookie = rotatedCookies?.find((cookie) => cookie.startsWith("refreshToken="));
     expect(rotatedRefreshCookie).toContain("Max-Age=2592000");
+    const rotatedLegacyClearCookie = rotatedCookies?.find(
+      (cookie) => cookie.startsWith("refreshToken=") && cookie.includes("Path=/auth/refresh")
+    );
+    expect(rotatedLegacyClearCookie).toBeDefined();
+    expect(rotatedLegacyClearCookie).toMatch(/(?:Max-Age=0|Expires=)/i);
   });
 
   it("should return 401 with expired refresh token", async () => {

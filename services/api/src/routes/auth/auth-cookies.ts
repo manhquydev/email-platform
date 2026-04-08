@@ -36,6 +36,46 @@ export function clearRefreshCookies(reply: FastifyReply) {
   reply.clearCookie("refreshToken", { path: LEGACY_REFRESH_COOKIE_PATH });
 }
 
+/**
+ * Fastify cookie parser keeps the first duplicate key, while browsers can send
+ * both legacy (/auth/refresh) and current (/auth) refreshToken cookies.
+ * We intentionally read the last occurrence to prefer the current cookie.
+ */
+export function getLatestCookieValue(request: FastifyRequest, cookieName: string): string | undefined {
+  const cookieHeader = request.headers.cookie;
+  if (!cookieHeader) return undefined;
+
+  let latest: string | undefined;
+  const pairs = cookieHeader.split(";");
+  for (const pair of pairs) {
+    const trimmed = pair.trim();
+    if (!trimmed) continue;
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex <= 0) continue;
+
+    const name = trimmed.slice(0, separatorIndex).trim();
+    if (name !== cookieName) continue;
+
+    const rawValue = trimmed.slice(separatorIndex + 1).trim();
+    if (!rawValue) continue;
+
+    try {
+      latest = decodeURIComponent(rawValue);
+    } catch {
+      latest = rawValue;
+    }
+  }
+
+  return latest;
+}
+
+export function getRefreshTokenFromRequest(request: FastifyRequest): string | undefined {
+  const latest = getLatestCookieValue(request, "refreshToken");
+  if (latest) return latest;
+  const cookies = request.cookies as { refreshToken?: string };
+  return cookies.refreshToken;
+}
+
 export function clearCsrfCookie(reply: FastifyReply, request: FastifyRequest) {
   const csrfDomain = getCookieDomain(getEffectiveRequestHost(request));
   reply.clearCookie("csrfToken", {
@@ -68,4 +108,7 @@ export function setAuthCookies(
     path: "/",
     ...(csrfDomain ? { domain: csrfDomain } : {}),
   });
+
+  // Clear legacy refresh cookie path so old revoked tokens are not sent first.
+  reply.clearCookie("refreshToken", { path: LEGACY_REFRESH_COOKIE_PATH });
 }

@@ -1,0 +1,20 @@
+{
+  "total": 387,
+  "registered": 344,
+  "unregistered": 43,
+  "authBreakdown": {
+    "PUBLIC": 71,
+    "ADMIN": 85,
+    "AUTH": 208,
+    "PROVIDER": 23
+  },
+  "unregisteredFiles": [
+    "services/api/src/routes/billing.ts",
+    "services/api/src/routes/filters.ts",
+    "services/api/src/routes/push.ts",
+    "services/api/src/routes/realtime-sse.ts",
+    "services/api/src/routes/realtime-ws.ts",
+    "services/api/src/routes/sepay.ts",
+    "services/api/src/routes/visibility-rules.ts"
+  ]
+}

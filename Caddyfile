@@ -32,7 +32,7 @@ api.{$DOMAIN} {
 app.{$DOMAIN} {
 	# Proxy /api/* requests to API backend
 	@api path /api/*
-	handle @api {
+	handle_path @api {
 		reverse_proxy api:3001
 	}
 

@@ -1,0 +1,3101 @@
+{
+  "total": 387,
+  "endpoints": [
+    {
+      "method": "OPTIONS",
+      "path": "/.well-known/caldav",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/webdav/server.ts",
+      "line": 19
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/.well-known/caldav/*",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/webdav/server.ts",
+      "line": 20
+    },
+    {
+      "method": "GET",
+      "path": "/abuse/reports",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/abuse.ts",
+      "line": 53
+    },
+    {
+      "method": "POST",
+      "path": "/abuse/reports",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/abuse.ts",
+      "line": 61
+    },
+    {
+      "method": "PATCH",
+      "path": "/abuse/reports/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/abuse.ts",
+      "line": 102
+    },
+    {
+      "method": "GET",
+      "path": "/abuse/rules",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/abuse.ts",
+      "line": 8
+    },
+    {
+      "method": "POST",
+      "path": "/abuse/rules",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/abuse.ts",
+      "line": 13
+    },
+    {
+      "method": "DELETE",
+      "path": "/abuse/rules/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/abuse.ts",
+      "line": 38
+    },
+    {
+      "method": "GET",
+      "path": "/addressbook",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/contacts.ts",
+      "line": 11
+    },
+    {
+      "method": "POST",
+      "path": "/addressbook",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/contacts.ts",
+      "line": 21
+    },
+    {
+      "method": "GET",
+      "path": "/addressbook/gal",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/contacts.ts",
+      "line": 47
+    },
+    {
+      "method": "POST",
+      "path": "/addressbook/gal/sync",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/contacts.ts",
+      "line": 54
+    },
+    {
+      "method": "GET",
+      "path": "/admin/activity",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/stats.ts",
+      "line": 84
+    },
+    {
+      "method": "GET",
+      "path": "/admin/analytics/clarity/live-insights",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/analytics.ts",
+      "line": 34
+    },
+    {
+      "method": "GET",
+      "path": "/admin/analytics/public-viewer",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/analytics.ts",
+      "line": 84
+    },
+    {
+      "method": "GET",
+      "path": "/admin/analytics/public-viewer/details",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/analytics.ts",
+      "line": 242
+    },
+    {
+      "method": "GET",
+      "path": "/admin/analytics/public-viewer/export",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/analytics.ts",
+      "line": 347
+    },
+    {
+      "method": "GET",
+      "path": "/admin/analytics/public-viewer/sessions",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/analytics.ts",
+      "line": 171
+    },
+    {
+      "method": "GET",
+      "path": "/admin/analytics/system",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/analytics.ts",
+      "line": 20
+    },
+    {
+      "method": "GET",
+      "path": "/admin/audit-logs",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/audit.ts",
+      "line": 12
+    },
+    {
+      "method": "GET",
+      "path": "/admin/audit-logs/export",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/audit.ts",
+      "line": 53
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/backup/:filename",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/backup.ts",
+      "line": 244
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backup/download/:filename",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/backup.ts",
+      "line": 222
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backup/logs",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/backup.ts",
+      "line": 267
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backup/status",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/backup.ts",
+      "line": 51
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backup/trigger",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/backup.ts",
+      "line": 176
+    },
+    {
+      "method": "GET",
+      "path": "/admin/codes",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/subscription.ts",
+      "line": 16
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/codes/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/subscription.ts",
+      "line": 118
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/codes/:id/revoke",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/subscription.ts",
+      "line": 102
+    },
+    {
+      "method": "POST",
+      "path": "/admin/codes/generate",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/subscription.ts",
+      "line": 50
+    },
+    {
+      "method": "GET",
+      "path": "/admin/domains",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/domains.ts",
+      "line": 16
+    },
+    {
+      "method": "POST",
+      "path": "/admin/domains/:id/review",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/domains.ts",
+      "line": 45
+    },
+    {
+      "method": "POST",
+      "path": "/admin/domains/bulk",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/domains.ts",
+      "line": 76
+    },
+    {
+      "method": "GET",
+      "path": "/admin/emails",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/emails.ts",
+      "line": 13
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/emails/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/emails.ts",
+      "line": 108
+    },
+    {
+      "method": "GET",
+      "path": "/admin/emails/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/emails.ts",
+      "line": 81
+    },
+    {
+      "method": "GET",
+      "path": "/admin/health",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/admin/health.ts",
+      "line": 8
+    },
+    {
+      "method": "GET",
+      "path": "/admin/health/detailed",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/admin/health.ts",
+      "line": 13
+    },
+    {
+      "method": "POST",
+      "path": "/admin/migration/imap-sync",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/migration.ts",
+      "line": 10
+    },
+    {
+      "method": "POST",
+      "path": "/admin/migration/upload-mbox",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/migration.ts",
+      "line": 45
+    },
+    {
+      "method": "POST",
+      "path": "/admin/migration/upload-pst",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/migration.ts",
+      "line": 26
+    },
+    {
+      "method": "GET",
+      "path": "/admin/monitoring/stats",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/monitoring.ts",
+      "line": 52
+    },
+    {
+      "method": "GET",
+      "path": "/admin/monitoring/stream",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/monitoring.ts",
+      "line": 10
+    },
+    {
+      "method": "GET",
+      "path": "/admin/orders",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/payments.ts",
+      "line": 14
+    },
+    {
+      "method": "GET",
+      "path": "/admin/packages",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/packages.ts",
+      "line": 13
+    },
+    {
+      "method": "POST",
+      "path": "/admin/packages",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/packages.ts",
+      "line": 29
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/packages/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/packages.ts",
+      "line": 108
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/packages/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/packages.ts",
+      "line": 70
+    },
+    {
+      "method": "POST",
+      "path": "/admin/payments/:id/refund",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/payments.ts",
+      "line": 45
+    },
+    {
+      "method": "GET",
+      "path": "/admin/profile",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/users.ts",
+      "line": 299
+    },
+    {
+      "method": "GET",
+      "path": "/admin/stats",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/stats.ts",
+      "line": 12
+    },
+    {
+      "method": "GET",
+      "path": "/admin/stats/revenue",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/stats.ts",
+      "line": 170
+    },
+    {
+      "method": "GET",
+      "path": "/admin/stats/timeseries",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/stats.ts",
+      "line": 101
+    },
+    {
+      "method": "GET",
+      "path": "/admin/stats/trends",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/stats.ts",
+      "line": 45
+    },
+    {
+      "method": "GET",
+      "path": "/admin/support/tickets",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 134
+    },
+    {
+      "method": "GET",
+      "path": "/admin/support/tickets/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 163
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/support/tickets/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 180
+    },
+    {
+      "method": "POST",
+      "path": "/admin/support/tickets/:id/messages",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 205
+    },
+    {
+      "method": "GET",
+      "path": "/admin/support/tickets/stats",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 155
+    },
+    {
+      "method": "GET",
+      "path": "/admin/system-info",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/system.ts",
+      "line": 13
+    },
+    {
+      "method": "POST",
+      "path": "/admin/system/check-db",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/system.ts",
+      "line": 108
+    },
+    {
+      "method": "POST",
+      "path": "/admin/system/cleanup",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/system.ts",
+      "line": 89
+    },
+    {
+      "method": "GET",
+      "path": "/admin/system/settings",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/system.ts",
+      "line": 60
+    },
+    {
+      "method": "POST",
+      "path": "/admin/system/settings",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/system.ts",
+      "line": 66
+    },
+    {
+      "method": "POST",
+      "path": "/admin/system/sync-postfix",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/system.ts",
+      "line": 118
+    },
+    {
+      "method": "GET",
+      "path": "/admin/telegram/inbox-links",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 119
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/telegram/inbox-links/:linkId",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 395
+    },
+    {
+      "method": "POST",
+      "path": "/admin/telegram/inbox-links/:linkId/reactivate",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 349
+    },
+    {
+      "method": "POST",
+      "path": "/admin/telegram/inbox-links/:linkId/revoke",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 298
+    },
+    {
+      "method": "GET",
+      "path": "/admin/telegram/notifications",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 195
+    },
+    {
+      "method": "GET",
+      "path": "/admin/telegram/overview",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 16
+    },
+    {
+      "method": "GET",
+      "path": "/admin/telegram/user-links",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 67
+    },
+    {
+      "method": "POST",
+      "path": "/admin/telegram/user-links/:userId/unlink",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/telegram.ts",
+      "line": 242
+    },
+    {
+      "method": "GET",
+      "path": "/admin/tenants",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/tenants.ts",
+      "line": 10
+    },
+    {
+      "method": "GET",
+      "path": "/admin/tenants/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/tenants.ts",
+      "line": 42
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/tenants/:id/quota",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/tenants.ts",
+      "line": 58
+    },
+    {
+      "method": "POST",
+      "path": "/admin/tenants/:id/suspend",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/tenants.ts",
+      "line": 75
+    },
+    {
+      "method": "POST",
+      "path": "/admin/tenants/:id/unsuspend",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/tenants.ts",
+      "line": 101
+    },
+    {
+      "method": "GET",
+      "path": "/admin/users",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/users.ts",
+      "line": 15
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/users/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/users.ts",
+      "line": 162
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/users/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/users.ts",
+      "line": 68
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/:id/subscription/cancel",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/payments.ts",
+      "line": 59
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/users/:id/tier",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/users.ts",
+      "line": 126
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/:id/verify",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/users.ts",
+      "line": 260
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/bulk",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin/users.ts",
+      "line": 202
+    },
+    {
+      "method": "GET",
+      "path": "/api-keys",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/api-keys.ts",
+      "line": 10
+    },
+    {
+      "method": "POST",
+      "path": "/api-keys",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/api-keys.ts",
+      "line": 28
+    },
+    {
+      "method": "DELETE",
+      "path": "/api-keys/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/api-keys.ts",
+      "line": 72
+    },
+    {
+      "method": "GET",
+      "path": "/api-usage/overview",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/api-usage.ts",
+      "line": 15
+    },
+    {
+      "method": "GET",
+      "path": "/api-usage/rate-limits",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/api-usage.ts",
+      "line": 73
+    },
+    {
+      "method": "GET",
+      "path": "/api-usage/webhooks",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/api-usage.ts",
+      "line": 123
+    },
+    {
+      "method": "GET",
+      "path": "/api/aliases",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 64
+    },
+    {
+      "method": "POST",
+      "path": "/api/aliases",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 32
+    },
+    {
+      "method": "POST",
+      "path": "/api/breach-monitor",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 135
+    },
+    {
+      "method": "POST",
+      "path": "/api/breach-monitor/check",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 190
+    },
+    {
+      "method": "GET",
+      "path": "/api/breach-monitor/history",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 181
+    },
+    {
+      "method": "GET",
+      "path": "/api/breach-monitor/status",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 166
+    },
+    {
+      "method": "GET",
+      "path": "/api/bundles",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 222
+    },
+    {
+      "method": "GET",
+      "path": "/api/events",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/realtime-sse.ts",
+      "line": 13
+    },
+    {
+      "method": "GET",
+      "path": "/api/privacy-score",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 202
+    },
+    {
+      "method": "GET",
+      "path": "/api/privacy-score/dashboard",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/identity-bundles.ts",
+      "line": 211
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/attachments/:id/download",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public-inbox.ts",
+      "line": 386
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/inbox/:email/messages",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public-inbox.ts",
+      "line": 93
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/inbox/:email/messages/:messageId",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public-inbox.ts",
+      "line": 266
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/inbox/search",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public-inbox.ts",
+      "line": 25
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/telegram/:inboxEmail/links",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public-telegram.ts",
+      "line": 57
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/telegram/generate-token",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public-telegram.ts",
+      "line": 15
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/telegram/status/:token",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public-telegram.ts",
+      "line": 43
+    },
+    {
+      "method": "POST",
+      "path": "/api/referral/apply",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/referral.ts",
+      "line": 25
+    },
+    {
+      "method": "POST",
+      "path": "/api/referral/claim",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/referral.ts",
+      "line": 50
+    },
+    {
+      "method": "GET",
+      "path": "/api/referral/code",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/referral.ts",
+      "line": 16
+    },
+    {
+      "method": "GET",
+      "path": "/api/referral/stats",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/referral.ts",
+      "line": 41
+    },
+    {
+      "method": "GET",
+      "path": "/attachments/:id/download",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 431
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/disable",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 708
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/enable",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 656
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/setup",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 626
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/verify",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 352
+    },
+    {
+      "method": "POST",
+      "path": "/auth/anonymous",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/anonymous-auth.ts",
+      "line": 47
+    },
+    {
+      "method": "GET",
+      "path": "/auth/anonymous/me",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/anonymous-auth.ts",
+      "line": 70
+    },
+    {
+      "method": "POST",
+      "path": "/auth/anonymous/passkey/login/options",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/anonymous-auth.ts",
+      "line": 197
+    },
+    {
+      "method": "POST",
+      "path": "/auth/anonymous/passkey/login/verify",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/anonymous-auth.ts",
+      "line": 227
+    },
+    {
+      "method": "POST",
+      "path": "/auth/anonymous/passkey/register/options",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/anonymous-auth.ts",
+      "line": 122
+    },
+    {
+      "method": "POST",
+      "path": "/auth/anonymous/passkey/register/verify",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/anonymous-auth.ts",
+      "line": 152
+    },
+    {
+      "method": "POST",
+      "path": "/auth/anonymous/restore",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/anonymous-auth.ts",
+      "line": 92
+    },
+    {
+      "method": "GET",
+      "path": "/auth/authenticator/accounts",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/authenticator.ts",
+      "line": 52
+    },
+    {
+      "method": "POST",
+      "path": "/auth/authenticator/accounts",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/authenticator.ts",
+      "line": 9
+    },
+    {
+      "method": "DELETE",
+      "path": "/auth/authenticator/accounts/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/authenticator.ts",
+      "line": 80
+    },
+    {
+      "method": "POST",
+      "path": "/auth/change-password",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 325
+    },
+    {
+      "method": "POST",
+      "path": "/auth/forgot-password",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 879
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 209
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 456
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout-all",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 496
+    },
+    {
+      "method": "POST",
+      "path": "/auth/magic-link/request",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/magic-link.ts",
+      "line": 11
+    },
+    {
+      "method": "POST",
+      "path": "/auth/magic-link/verify",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/magic-link.ts",
+      "line": 75
+    },
+    {
+      "method": "DELETE",
+      "path": "/auth/me",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 866
+    },
+    {
+      "method": "GET",
+      "path": "/auth/me",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 747
+    },
+    {
+      "method": "PATCH",
+      "path": "/auth/me",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 827
+    },
+    {
+      "method": "PATCH",
+      "path": "/auth/profile",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 803
+    },
+    {
+      "method": "POST",
+      "path": "/auth/refresh",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 516
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 26
+    },
+    {
+      "method": "POST",
+      "path": "/auth/resend-verification",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 153
+    },
+    {
+      "method": "POST",
+      "path": "/auth/reset-password",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 935
+    },
+    {
+      "method": "GET",
+      "path": "/auth/sso",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 988
+    },
+    {
+      "method": "POST",
+      "path": "/auth/telegram",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram-auth.ts",
+      "line": 36
+    },
+    {
+      "method": "POST",
+      "path": "/auth/telegram/complete",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/telegram-auth.ts",
+      "line": 153
+    },
+    {
+      "method": "POST",
+      "path": "/auth/telegram/link",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram-auth.ts",
+      "line": 223
+    },
+    {
+      "method": "GET",
+      "path": "/auth/telegram/status",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram-auth.ts",
+      "line": 304
+    },
+    {
+      "method": "DELETE",
+      "path": "/auth/telegram/unlink",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram-auth.ts",
+      "line": 267
+    },
+    {
+      "method": "POST",
+      "path": "/auth/verify-email",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/auth.ts",
+      "line": 105
+    },
+    {
+      "method": "GET",
+      "path": "/auth/webauthn/credentials",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webauthn.ts",
+      "line": 258
+    },
+    {
+      "method": "DELETE",
+      "path": "/auth/webauthn/credentials/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webauthn.ts",
+      "line": 275
+    },
+    {
+      "method": "POST",
+      "path": "/auth/webauthn/login/options",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/webauthn.ts",
+      "line": 134
+    },
+    {
+      "method": "POST",
+      "path": "/auth/webauthn/login/verify",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/webauthn.ts",
+      "line": 170
+    },
+    {
+      "method": "POST",
+      "path": "/auth/webauthn/register/options",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webauthn.ts",
+      "line": 23
+    },
+    {
+      "method": "POST",
+      "path": "/auth/webauthn/register/verify",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webauthn.ts",
+      "line": 57
+    },
+    {
+      "method": "POST",
+      "path": "/billing/cancel",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 197
+    },
+    {
+      "method": "POST",
+      "path": "/billing/checkout",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 157
+    },
+    {
+      "method": "POST",
+      "path": "/billing/clear-cache",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 59
+    },
+    {
+      "method": "GET",
+      "path": "/billing/compare/:targetTier",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 69
+    },
+    {
+      "method": "GET",
+      "path": "/billing/packages",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 108
+    },
+    {
+      "method": "GET",
+      "path": "/billing/payment-method",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 135
+    },
+    {
+      "method": "GET",
+      "path": "/billing/payments",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 124
+    },
+    {
+      "method": "GET",
+      "path": "/billing/plans",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 116
+    },
+    {
+      "method": "POST",
+      "path": "/billing/portal",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 181
+    },
+    {
+      "method": "POST",
+      "path": "/billing/sepay/checkout",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/sepay.ts",
+      "line": 24
+    },
+    {
+      "method": "GET",
+      "path": "/billing/sepay/pending",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/sepay.ts",
+      "line": 69
+    },
+    {
+      "method": "GET",
+      "path": "/billing/sepay/status/:orderCode",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/sepay.ts",
+      "line": 58
+    },
+    {
+      "method": "GET",
+      "path": "/billing/subscription",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 146
+    },
+    {
+      "method": "GET",
+      "path": "/billing/tiers",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 45
+    },
+    {
+      "method": "POST",
+      "path": "/billing/webhook",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/billing.ts",
+      "line": 232
+    },
+    {
+      "method": "GET",
+      "path": "/calendars",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/calendars.ts",
+      "line": 9
+    },
+    {
+      "method": "POST",
+      "path": "/calendars",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/calendars.ts",
+      "line": 23
+    },
+    {
+      "method": "GET",
+      "path": "/calendars/:id/events",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/calendars.ts",
+      "line": 45
+    },
+    {
+      "method": "POST",
+      "path": "/contact/sales",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/contact.ts",
+      "line": 15
+    },
+    {
+      "method": "GET",
+      "path": "/domains",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 11
+    },
+    {
+      "method": "POST",
+      "path": "/domains",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 128
+    },
+    {
+      "method": "DELETE",
+      "path": "/domains/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 389
+    },
+    {
+      "method": "GET",
+      "path": "/domains/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 67
+    },
+    {
+      "method": "PATCH",
+      "path": "/domains/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 421
+    },
+    {
+      "method": "GET",
+      "path": "/domains/:id/dkim",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 279
+    },
+    {
+      "method": "POST",
+      "path": "/domains/:id/dkim",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 243
+    },
+    {
+      "method": "POST",
+      "path": "/domains/:id/dkim/rotate",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 312
+    },
+    {
+      "method": "POST",
+      "path": "/domains/:id/dkim/verify",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 348
+    },
+    {
+      "method": "GET",
+      "path": "/domains/:id/dns-check",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 94
+    },
+    {
+      "method": "POST",
+      "path": "/domains/:id/verify",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 172
+    },
+    {
+      "method": "GET",
+      "path": "/domains/can-receive",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 576
+    },
+    {
+      "method": "POST",
+      "path": "/domains/validate",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 561
+    },
+    {
+      "method": "POST",
+      "path": "/domains/validate-email",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/domains.ts",
+      "line": 546
+    },
+    {
+      "method": "POST",
+      "path": "/ephemeral/check-alias",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/ephemeral-inbox.ts",
+      "line": 179
+    },
+    {
+      "method": "GET",
+      "path": "/ephemeral/domains",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/ephemeral-inbox.ts",
+      "line": 173
+    },
+    {
+      "method": "GET",
+      "path": "/ephemeral/health",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/ephemeral-inbox.ts",
+      "line": 203
+    },
+    {
+      "method": "POST",
+      "path": "/ephemeral/inbox",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/ephemeral-inbox.ts",
+      "line": 35
+    },
+    {
+      "method": "GET",
+      "path": "/ephemeral/stats",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/ephemeral-inbox.ts",
+      "line": 197
+    },
+    {
+      "method": "POST",
+      "path": "/extension/anonymous-inbox",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/extension.ts",
+      "line": 148
+    },
+    {
+      "method": "GET",
+      "path": "/extension/check-auth",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/extension.ts",
+      "line": 20
+    },
+    {
+      "method": "GET",
+      "path": "/extension/dashboard",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/extension.ts",
+      "line": 33
+    },
+    {
+      "method": "POST",
+      "path": "/extension/quick-inbox",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/extension.ts",
+      "line": 87
+    },
+    {
+      "method": "POST",
+      "path": "/filters",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 70
+    },
+    {
+      "method": "DELETE",
+      "path": "/filters/:id",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 131
+    },
+    {
+      "method": "PATCH",
+      "path": "/filters/:id",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 104
+    },
+    {
+      "method": "POST",
+      "path": "/filters/:id/test",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 158
+    },
+    {
+      "method": "POST",
+      "path": "/forwarding/confirm-email",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 75
+    },
+    {
+      "method": "GET",
+      "path": "/forwarding/emails",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 47
+    },
+    {
+      "method": "DELETE",
+      "path": "/forwarding/emails/:email",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 97
+    },
+    {
+      "method": "GET",
+      "path": "/forwarding/rules",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 106
+    },
+    {
+      "method": "POST",
+      "path": "/forwarding/rules",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 122
+    },
+    {
+      "method": "DELETE",
+      "path": "/forwarding/rules/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 205
+    },
+    {
+      "method": "PATCH",
+      "path": "/forwarding/rules/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 178
+    },
+    {
+      "method": "GET",
+      "path": "/forwarding/rules/:id/logs",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 222
+    },
+    {
+      "method": "POST",
+      "path": "/forwarding/rules/:id/test",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 250
+    },
+    {
+      "method": "GET",
+      "path": "/forwarding/stats",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 244
+    },
+    {
+      "method": "POST",
+      "path": "/forwarding/verify-email",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/forwarding.ts",
+      "line": 54
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/health.ts",
+      "line": 15
+    },
+    {
+      "method": "GET",
+      "path": "/inboxes",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/inboxes.ts",
+      "line": 10
+    },
+    {
+      "method": "POST",
+      "path": "/inboxes",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/inboxes.ts",
+      "line": 76
+    },
+    {
+      "method": "DELETE",
+      "path": "/inboxes/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/inboxes.ts",
+      "line": 148
+    },
+    {
+      "method": "PATCH",
+      "path": "/inboxes/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/inboxes.ts",
+      "line": 204
+    },
+    {
+      "method": "GET",
+      "path": "/inboxes/:id/messages",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 85
+    },
+    {
+      "method": "GET",
+      "path": "/inboxes/:inboxId/filters",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 48
+    },
+    {
+      "method": "POST",
+      "path": "/inboxes/:inboxId/filters/test",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 202
+    },
+    {
+      "method": "GET",
+      "path": "/inboxes/:inboxId/folders",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/folders.ts",
+      "line": 9
+    },
+    {
+      "method": "POST",
+      "path": "/inboxes/:inboxId/folders",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/folders.ts",
+      "line": 34
+    },
+    {
+      "method": "DELETE",
+      "path": "/inboxes/:inboxId/folders/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/folders.ts",
+      "line": 112
+    },
+    {
+      "method": "PATCH",
+      "path": "/inboxes/:inboxId/folders/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/folders.ts",
+      "line": 75
+    },
+    {
+      "method": "GET",
+      "path": "/inboxes/:inboxId/labels",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 247
+    },
+    {
+      "method": "GET",
+      "path": "/inboxes/:inboxId/visibility-rules",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 83
+    },
+    {
+      "method": "POST",
+      "path": "/inboxes/:inboxId/visibility-rules",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 103
+    },
+    {
+      "method": "POST",
+      "path": "/inboxes/:inboxId/visibility-rules/apply-template",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 293
+    },
+    {
+      "method": "PATCH",
+      "path": "/inboxes/:inboxId/visibility-rules/reorder",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 244
+    },
+    {
+      "method": "POST",
+      "path": "/inboxes/:inboxId/visibility-rules/test",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 356
+    },
+    {
+      "method": "DELETE",
+      "path": "/inboxes/bulk",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/inboxes.ts",
+      "line": 426
+    },
+    {
+      "method": "POST",
+      "path": "/inboxes/bulk",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/inboxes.ts",
+      "line": 324
+    },
+    {
+      "method": "POST",
+      "path": "/labels",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 273
+    },
+    {
+      "method": "DELETE",
+      "path": "/labels/:id",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 339
+    },
+    {
+      "method": "PATCH",
+      "path": "/labels/:id",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 312
+    },
+    {
+      "method": "GET",
+      "path": "/labels/:labelId/messages",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 415
+    },
+    {
+      "method": "GET",
+      "path": "/messages",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 35
+    },
+    {
+      "method": "DELETE",
+      "path": "/messages/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 294
+    },
+    {
+      "method": "GET",
+      "path": "/messages/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 271
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:id/archive",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 1057
+    },
+    {
+      "method": "GET",
+      "path": "/messages/:id/category",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 997
+    },
+    {
+      "method": "GET",
+      "path": "/messages/:id/export",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 475
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:id/flags",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 1136
+    },
+    {
+      "method": "DELETE",
+      "path": "/messages/:id/flags/:flag",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 1162
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:id/forward",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 696
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:id/move",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 1024
+    },
+    {
+      "method": "GET",
+      "path": "/messages/:id/otp",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 933
+    },
+    {
+      "method": "GET",
+      "path": "/messages/:id/phishing",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 968
+    },
+    {
+      "method": "PATCH",
+      "path": "/messages/:id/pin",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 367
+    },
+    {
+      "method": "PATCH",
+      "path": "/messages/:id/read",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 328
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:id/reply",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 559
+    },
+    {
+      "method": "PATCH",
+      "path": "/messages/:id/snooze",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 399
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:id/summarize",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 852
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:id/trash",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 1096
+    },
+    {
+      "method": "DELETE",
+      "path": "/messages/:messageId/labels/:labelId",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 394
+    },
+    {
+      "method": "POST",
+      "path": "/messages/:messageId/labels/:labelId",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/filters.ts",
+      "line": 362
+    },
+    {
+      "method": "GET",
+      "path": "/messages/outbound",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/outbound.ts",
+      "line": 119
+    },
+    {
+      "method": "POST",
+      "path": "/messages/outbound",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/outbound.ts",
+      "line": 19
+    },
+    {
+      "method": "GET",
+      "path": "/messages/outbound/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/outbound.ts",
+      "line": 151
+    },
+    {
+      "method": "GET",
+      "path": "/messages/search",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 149
+    },
+    {
+      "method": "GET",
+      "path": "/messages/search/fuzzy",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/messages.ts",
+      "line": 216
+    },
+    {
+      "method": "GET",
+      "path": "/metrics",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/health.ts",
+      "line": 9
+    },
+    {
+      "method": "GET",
+      "path": "/notifications",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 37
+    },
+    {
+      "method": "PATCH",
+      "path": "/notifications/:id/read",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 60
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/admin/analytics",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 312
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/admin/schedule",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 194
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/admin/scheduled",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 226
+    },
+    {
+      "method": "DELETE",
+      "path": "/notifications/admin/scheduled/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 291
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/admin/scheduled/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 245
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/admin/scheduled/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 264
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/admin/send",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 97
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/logs",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-logs.ts",
+      "line": 23
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/logs/:id/resend",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-logs.ts",
+      "line": 138
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/logs/notification/:notificationId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-logs.ts",
+      "line": 82
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/logs/stats",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-logs.ts",
+      "line": 105
+    },
+    {
+      "method": "PATCH",
+      "path": "/notifications/read-all",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/notifications.ts",
+      "line": 83
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/templates",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 31
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/templates",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 56
+    },
+    {
+      "method": "DELETE",
+      "path": "/notifications/templates/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 81
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/templates/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 43
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/templates/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 68
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/templates/:id/clone",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 105
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/templates/:id/restore",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 93
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/templates/variables/system",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/admin/notification-templates.ts",
+      "line": 118
+    },
+    {
+      "method": "GET",
+      "path": "/organizations",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/organizations.ts",
+      "line": 53
+    },
+    {
+      "method": "POST",
+      "path": "/organizations",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/organizations.ts",
+      "line": 7
+    },
+    {
+      "method": "GET",
+      "path": "/organizations/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/organizations.ts",
+      "line": 71
+    },
+    {
+      "method": "POST",
+      "path": "/organizations/:id/members",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/organizations.ts",
+      "line": 108
+    },
+    {
+      "method": "DELETE",
+      "path": "/organizations/:id/members/:userId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/organizations.ts",
+      "line": 164
+    },
+    {
+      "method": "GET",
+      "path": "/principals/users/:userId/",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/webdav/server.ts",
+      "line": 36
+    },
+    {
+      "method": "POST",
+      "path": "/public/inboxes",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/public.ts",
+      "line": 14
+    },
+    {
+      "method": "DELETE",
+      "path": "/push/subscribe",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/push.ts",
+      "line": 63
+    },
+    {
+      "method": "POST",
+      "path": "/push/subscribe",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/push.ts",
+      "line": 25
+    },
+    {
+      "method": "GET",
+      "path": "/push/subscriptions",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/push.ts",
+      "line": 84
+    },
+    {
+      "method": "GET",
+      "path": "/push/vapid-key",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/push.ts",
+      "line": 16
+    },
+    {
+      "method": "GET",
+      "path": "/ready",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/health.ts",
+      "line": 23
+    },
+    {
+      "method": "POST",
+      "path": "/scim/v2/:providerId/Users",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/scim.ts",
+      "line": 38
+    },
+    {
+      "method": "DELETE",
+      "path": "/scim/v2/:providerId/Users/:id",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/scim.ts",
+      "line": 124
+    },
+    {
+      "method": "GET",
+      "path": "/scim/v2/:providerId/Users/:id",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/scim.ts",
+      "line": 73
+    },
+    {
+      "method": "PATCH",
+      "path": "/scim/v2/:providerId/Users/:id",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/scim.ts",
+      "line": 96
+    },
+    {
+      "method": "POST",
+      "path": "/sepay/webhook",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/sepay.ts",
+      "line": 88
+    },
+    {
+      "method": "GET",
+      "path": "/sso/oidc/:providerId/callback",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/sso.ts",
+      "line": 75
+    },
+    {
+      "method": "GET",
+      "path": "/sso/oidc/:providerId/login",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/sso.ts",
+      "line": 63
+    },
+    {
+      "method": "POST",
+      "path": "/sso/saml/:providerId/acs",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/sso.ts",
+      "line": 24
+    },
+    {
+      "method": "GET",
+      "path": "/sso/saml/:providerId/login",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/sso.ts",
+      "line": 11
+    },
+    {
+      "method": "POST",
+      "path": "/subscription/redeem",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/subscription.ts",
+      "line": 139
+    },
+    {
+      "method": "GET",
+      "path": "/support/tickets",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 56
+    },
+    {
+      "method": "POST",
+      "path": "/support/tickets",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 19
+    },
+    {
+      "method": "GET",
+      "path": "/support/tickets/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 75
+    },
+    {
+      "method": "POST",
+      "path": "/support/tickets/:id/messages",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/support.ts",
+      "line": 94
+    },
+    {
+      "method": "GET",
+      "path": "/teams",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 48
+    },
+    {
+      "method": "POST",
+      "path": "/teams",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 8
+    },
+    {
+      "method": "DELETE",
+      "path": "/teams/:teamId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 151
+    },
+    {
+      "method": "GET",
+      "path": "/teams/:teamId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 83
+    },
+    {
+      "method": "PATCH",
+      "path": "/teams/:teamId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 120
+    },
+    {
+      "method": "GET",
+      "path": "/teams/:teamId/inboxes",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 369
+    },
+    {
+      "method": "POST",
+      "path": "/teams/:teamId/inboxes",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 275
+    },
+    {
+      "method": "DELETE",
+      "path": "/teams/:teamId/inboxes/:inboxId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 336
+    },
+    {
+      "method": "POST",
+      "path": "/teams/:teamId/members",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 169
+    },
+    {
+      "method": "DELETE",
+      "path": "/teams/:teamId/members/:memberId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/teams.ts",
+      "line": 240
+    },
+    {
+      "method": "GET",
+      "path": "/telegram/inbox-links",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram.ts",
+      "line": 69
+    },
+    {
+      "method": "DELETE",
+      "path": "/telegram/inbox-links/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram.ts",
+      "line": 76
+    },
+    {
+      "method": "POST",
+      "path": "/telegram/link-token",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram.ts",
+      "line": 28
+    },
+    {
+      "method": "PATCH",
+      "path": "/telegram/preferences",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram.ts",
+      "line": 49
+    },
+    {
+      "method": "GET",
+      "path": "/telegram/status",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram.ts",
+      "line": 21
+    },
+    {
+      "method": "DELETE",
+      "path": "/telegram/unlink",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/telegram.ts",
+      "line": 42
+    },
+    {
+      "method": "POST",
+      "path": "/telegram/webhook",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/telegram.ts",
+      "line": 94
+    },
+    {
+      "method": "POST",
+      "path": "/uploads/upload",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/upload.ts",
+      "line": 24
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/jobs/usage-snapshot",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 175
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/providers",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 40
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/providers",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 91
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/providers/:id",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 120
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/providers/:id/regenerate-key",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 187
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/admin/providers/:id/status",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 218
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/providers/:id/tenants",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 259
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/providers/:id/usage",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 134
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/providers/:id/usage/history",
+      "auth": "ADMIN",
+      "registered": true,
+      "file": "services/api/src/routes/admin-providers.ts",
+      "line": 153
+    },
+    {
+      "method": "POST",
+      "path": "/v1/inboxes",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 17
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/inboxes/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 111
+    },
+    {
+      "method": "GET",
+      "path": "/v1/inboxes/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 83
+    },
+    {
+      "method": "GET",
+      "path": "/v1/inboxes/:id/messages",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 135
+    },
+    {
+      "method": "GET",
+      "path": "/v1/messages/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 180
+    },
+    {
+      "method": "GET",
+      "path": "/v1/messages/:id/analysis",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 237
+    },
+    {
+      "method": "GET",
+      "path": "/v1/messages/:id/otp",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 217
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/api-key",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 70
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/me",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 61
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/tenants",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 109
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/tenants",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 81
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/provider/tenants/:id",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 195
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/tenants/:id",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 119
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/provider/tenants/:id",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 130
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/tenants/:id/domains",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 243
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/tenants/:id/domains",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 215
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/provider/tenants/:id/domains/:domain",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 296
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/tenants/:id/domains/:domain/dns",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 256
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/tenants/:id/domains/:domain/verify",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 273
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/tenants/:id/mailboxes",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 349
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/tenants/:id/mailboxes",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 321
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/provider/tenants/:id/mailboxes/:email",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 362
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/provider/tenants/:id/mailboxes/:email",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 385
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/tenants/:id/mailboxes/:email/sso",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 416
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/tenants/:id/suspend",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 159
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/tenants/:id/unsuspend",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 177
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/tenants/:id/usage",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 453
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/usage",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 447
+    },
+    {
+      "method": "GET",
+      "path": "/v1/provider/webhooks/events",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 473
+    },
+    {
+      "method": "POST",
+      "path": "/v1/provider/webhooks/test",
+      "auth": "PROVIDER",
+      "registered": true,
+      "file": "services/api/src/routes/provider.ts",
+      "line": 462
+    },
+    {
+      "method": "GET",
+      "path": "/v1/usage",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/v1/index.ts",
+      "line": 266
+    },
+    {
+      "method": "DELETE",
+      "path": "/visibility-rules/:id",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 218
+    },
+    {
+      "method": "PATCH",
+      "path": "/visibility-rules/:id",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 168
+    },
+    {
+      "method": "GET",
+      "path": "/visibility-templates",
+      "auth": "AUTH",
+      "registered": false,
+      "file": "services/api/src/routes/visibility-rules.ts",
+      "line": 282
+    },
+    {
+      "method": "POST",
+      "path": "/webhook-test/create",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhook-test-receiver.ts",
+      "line": 46
+    },
+    {
+      "method": "DELETE",
+      "path": "/webhook-test/payloads/:receiverId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhook-test-receiver.ts",
+      "line": 159
+    },
+    {
+      "method": "GET",
+      "path": "/webhook-test/payloads/:receiverId",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/webhook-test-receiver.ts",
+      "line": 113
+    },
+    {
+      "method": "POST",
+      "path": "/webhook-test/receive/:receiverId",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/webhook-test-receiver.ts",
+      "line": 63
+    },
+    {
+      "method": "DELETE",
+      "path": "/webhook-test/receiver/:receiverId",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhook-test-receiver.ts",
+      "line": 171
+    },
+    {
+      "method": "POST",
+      "path": "/webhook-test/verify",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/webhook-test-receiver.ts",
+      "line": 130
+    },
+    {
+      "method": "GET",
+      "path": "/webhooks",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 42
+    },
+    {
+      "method": "POST",
+      "path": "/webhooks",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 52
+    },
+    {
+      "method": "DELETE",
+      "path": "/webhooks/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 86
+    },
+    {
+      "method": "PUT",
+      "path": "/webhooks/:id",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 106
+    },
+    {
+      "method": "GET",
+      "path": "/webhooks/:id/logs",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 147
+    },
+    {
+      "method": "POST",
+      "path": "/webhooks/:id/logs/:logId/retry",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 190
+    },
+    {
+      "method": "POST",
+      "path": "/webhooks/:id/test",
+      "auth": "AUTH",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 169
+    },
+    {
+      "method": "GET",
+      "path": "/webhooks/events",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 11
+    },
+    {
+      "method": "POST",
+      "path": "/webhooks/verify-signature",
+      "auth": "PUBLIC",
+      "registered": true,
+      "file": "services/api/src/routes/webhooks.ts",
+      "line": 18
+    },
+    {
+      "method": "GET",
+      "path": "/ws/events",
+      "auth": "PUBLIC",
+      "registered": false,
+      "file": "services/api/src/routes/realtime-ws.ts",
+      "line": 14
+    }
+  ]
+}

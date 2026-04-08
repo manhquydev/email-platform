@@ -8,12 +8,26 @@ on:
     paths:
       - 'services/api/openapi/**'
       - 'services/api/src/openapi/**'
+      - 'services/api/src/plugins/swagger.ts'
+      - 'services/api/src/server.ts'
+      - 'services/api/src/routes/**'
+      - 'services/api/src/test/openapi-contract.test.ts'
+      - 'services/api/scripts/generate-openapi.ts'
+      - 'services/api/scripts/generate-route-map.ts'
+      - 'services/api/openapi/route-map.json'
       - 'packages/sdk-*/**'
     branches: [main, develop]
   pull_request:
     paths:
       - 'services/api/openapi/**'
       - 'services/api/src/openapi/**'
+      - 'services/api/src/plugins/swagger.ts'
+      - 'services/api/src/server.ts'
+      - 'services/api/src/routes/**'
+      - 'services/api/src/test/openapi-contract.test.ts'
+      - 'services/api/scripts/generate-openapi.ts'
+      - 'services/api/scripts/generate-route-map.ts'
+      - 'services/api/openapi/route-map.json'
       - 'packages/sdk-*/**'
 
 jobs:
@@ -44,6 +58,16 @@ jobs:
           npx @openapitools/openapi-generator-cli validate \
             -i services/api/openapi/openapi.yaml
 
+      - name: Route map drift gate
+        run: |
+          cd services/api
+          npx ts-node scripts/generate-route-map.ts --check
+
+      - name: Run OpenAPI contract gate
+        run: |
+          cd services/api
+          npx vitest run src/test/openapi-contract.test.ts
+
       - name: Upload OpenAPI artifact
         uses: actions/upload-artifact@v4
         with:
@@ -51,6 +75,7 @@ jobs:
           path: |
             services/api/openapi/openapi.yaml
             services/api/openapi/openapi.json
+            services/api/openapi/route-map.json
 
   sdk-core:
     runs-on: ubuntu-latest

@@ -74,7 +74,14 @@ UI flows: login → manage domains (add/verify) → create inboxes → view inbo
 - Messages: `GET /inboxes/:id/messages` (filters + pagination), `GET /messages/search`, `GET /messages/:id`, `DELETE /messages/:id`, `GET /attachments/:id/download`
 - Abuse/rules: `GET/POST/DELETE /abuse/rules` (admin), `GET/POST /abuse/reports`
 
-All except `/health` require `Authorization: Bearer <token>`.
+Auth policy:
+- `/health` is always public.
+- `/ready` and `/metrics` are public in development, protected in production by default.
+- Most business endpoints require `Authorization: Bearer <token>`.
+
+API base URLs:
+- Canonical backend base: `https://api.<domain>`
+- Official gateway alias: `https://app.<domain>/api/*` (proxied and prefix-stripped to backend routes)
 
 ## Sending a test email
 With `ALLOW_AUTO_DOMAIN_CREATION=true` (default in compose):

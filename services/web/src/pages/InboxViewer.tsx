@@ -98,7 +98,7 @@ export function InboxViewer() {
                 ) : !email ? (
                     <InboxHeroSection onSearch={handleSearch} loading={loading} />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-[40%_60%] lg:grid-cols-[33%_67%] gap-0 md:gap-4 h-[calc(100vh-180px)]">
+                    <div className="grid grid-cols-1 md:grid-cols-[40%_60%] lg:grid-cols-[33%_67%] gap-0 md:gap-4 h-[calc(100dvh-180px)] md:h-[calc(100vh-180px)]">
                         <MessageListPane
                             email={email}
                             messages={messages}
@@ -140,6 +140,8 @@ export function InboxViewer() {
             <MobileBottomSheet
                 isOpen={!!selectedMessage}
                 onClose={handleKeyboardEscape}
+                title={selectedMessage?.subject || "(không có tiêu đề)"}
+                subtitle={selectedMessage?.fromAddress || undefined}
             >
                 <MessageDetail
                     message={selectedMessage}

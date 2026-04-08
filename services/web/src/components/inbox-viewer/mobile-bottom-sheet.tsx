@@ -1,47 +1,19 @@
 /**
- * MobileBottomSheet - Swipe-to-dismiss bottom sheet for mobile message detail
- * Touch-optimized with drag handle and backdrop
- * WCAG 2.2 AA compliant with aria labels and focus management
+ * MobileBottomSheet - Full-screen mobile message detail overlay
+ * Focus-managed, keyboard accessible, and optimized for narrow viewports
  */
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect } from "react";
 
 interface MobileBottomSheetProps {
     isOpen: boolean;
     onClose: () => void;
+    title?: string;
+    subtitle?: string;
     children: React.ReactNode;
 }
 
-export function MobileBottomSheet({ isOpen, onClose, children }: MobileBottomSheetProps) {
-    const sheetRef = useRef<HTMLDivElement>(null);
+export function MobileBottomSheet({ isOpen, onClose, title, subtitle, children }: MobileBottomSheetProps) {
     const closeButtonRef = useRef<HTMLButtonElement>(null);
-    const startY = useRef(0);
-    const currentY = useRef(0);
-
-    // Handle touch start
-    const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        startY.current = e.touches[0].clientY;
-        currentY.current = 0;
-    }, []);
-
-    // Handle touch move - drag sheet down
-    const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        const deltaY = e.touches[0].clientY - startY.current;
-        if (deltaY > 0 && sheetRef.current) {
-            currentY.current = deltaY;
-            sheetRef.current.style.transform = `translateY(${deltaY}px)`;
-        }
-    }, []);
-
-    // Handle touch end - dismiss if dragged far enough
-    const handleTouchEnd = useCallback(() => {
-        if (currentY.current > 100) {
-            onClose();
-        }
-        if (sheetRef.current) {
-            sheetRef.current.style.transform = "";
-        }
-        currentY.current = 0;
-    }, [onClose]);
 
     // Lock body scroll when open + handle Escape key + focus management
     useEffect(() => {
@@ -75,40 +47,34 @@ export function MobileBottomSheet({ isOpen, onClose, children }: MobileBottomShe
 
     return (
         <div
-            className="fixed inset-0 z-50 md:hidden"
+            className="fixed inset-0 z-[120] md:hidden"
             role="dialog"
             aria-modal="true"
             aria-label="Message detail"
         >
-            {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/60 transition-opacity duration-200"
-                onClick={onClose}
-                aria-hidden="true"
-            />
-
-            {/* Sheet */}
-            <div
-                ref={sheetRef}
-                className="absolute bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 rounded-t-xl max-h-[95vh] overflow-hidden transition-transform duration-200"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                className="absolute inset-0 bg-zinc-950 flex flex-col"
             >
-                {/* Drag Handle - accessible close button with 44px touch target */}
-                <div className="flex justify-center py-3">
+                <div className="flex items-center gap-3 px-3 py-3 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-md">
                     <button
                         ref={closeButtonRef}
                         onClick={onClose}
-                        className="w-10 h-8 flex items-center justify-center rounded-md hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500"
-                        aria-label="Close message detail (swipe down or tap)"
+                        className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                        aria-label="Close message detail"
                     >
-                        <div className="w-10 h-1 bg-zinc-600 rounded-full" />
+                        <span className="material-symbols-outlined text-zinc-100">arrow_back</span>
                     </button>
+                    <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-zinc-100 truncate">
+                            {title || "Chi tiết email"}
+                        </p>
+                        {subtitle && (
+                            <p className="text-xs text-zinc-400 truncate">{subtitle}</p>
+                        )}
+                    </div>
                 </div>
 
-                {/* Content */}
-                <div className="overflow-y-auto max-h-[calc(95vh-48px)]">
+                <div className="flex-1 overflow-y-auto min-h-0">
                     {children}
                 </div>
             </div>

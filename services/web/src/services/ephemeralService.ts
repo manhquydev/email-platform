@@ -28,8 +28,9 @@ export interface EphemeralMessage {
     textBody?: string;
     receivedAt: string;
     attachments?: Array<{
+        id: string;
         filename: string;
-        contentType: string;
+        mimeType: string | null;
         size: number;
     }>;
 }

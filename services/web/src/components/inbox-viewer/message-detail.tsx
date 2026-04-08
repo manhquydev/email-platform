@@ -26,6 +26,17 @@ interface MessageDetailProps {
   apiUrl: string;
 }
 
+function formatAttachmentSize(bytes: number | null): string {
+  if (!bytes) return "Không rõ";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function buildPublicAttachmentUrl(apiUrl: string, attachmentId: string, disposition: "inline" | "attachment") {
+  return `${apiUrl}/api/public/attachments/${encodeURIComponent(attachmentId)}/download?disposition=${disposition}`;
+}
+
 export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) {
   const [sanitizedHtml, setSanitizedHtml] = useState("");
 
@@ -34,7 +45,7 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
       // Sanitize HTML to prevent XSS
       const clean = DOMPurify.sanitize(message.htmlBody, {
         USE_PROFILES: { html: true },
-        ADD_ATTR: ["target"],
+        ADD_ATTR: ["target", "rel"],
       });
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSanitizedHtml(clean);
@@ -64,19 +75,12 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
     );
   }
 
-  const formatSize = (bytes: number | null) => {
-    if (!bytes) return "Không rõ";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
   return (
     <div className="flex flex-col h-full overflow-auto">
       {/* Header */}
-      <div className="p-4 border-b border-zinc-800">
-        <h2 className="text-xl font-bold text-white mb-2">{message.subject || "(không có tiêu đề)"}</h2>
-        <div className="text-sm text-zinc-500 space-y-1">
+      <div className="p-4 md:p-5 border-b border-zinc-800">
+        <h2 className="text-lg md:text-xl font-bold text-white mb-2 break-words">{message.subject || "(không có tiêu đề)"}</h2>
+        <div className="text-xs md:text-sm text-zinc-500 space-y-1 break-words">
           <div><strong className="text-zinc-400">Từ:</strong> {message.fromAddress || "(không rõ)"}</div>
           <div><strong className="text-zinc-400">Đến:</strong> {message.toAddress || "(không rõ)"}</div>
           <div>
@@ -87,35 +91,50 @@ export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) 
 
       {/* Attachments */}
       {message.attachments.length > 0 && (
-        <div className="p-4 border-b border-zinc-800 bg-zinc-950">
+        <div className="p-4 md:p-5 border-b border-zinc-800 bg-zinc-950">
           <div className="text-sm font-medium text-zinc-300 mb-2">
             Tệp đính kèm ({message.attachments.length})
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2">
             {message.attachments.map((att) => (
-              <a
+              <div
                 key={att.id}
-                href={`${apiUrl}/api/public/attachments/${att.id}/download`}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors duration-100"
-                download
+                className="flex flex-wrap items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-md text-sm text-zinc-300"
               >
-                <span className="truncate max-w-[150px]">{att.filename}</span>
-                <span className="text-xs text-zinc-500">({formatSize(att.size)})</span>
-              </a>
+                <span className="truncate max-w-[240px]">{att.filename}</span>
+                <span className="text-xs text-zinc-500">({formatAttachmentSize(att.size)})</span>
+                <button
+                  type="button"
+                  onClick={() => window.open(buildPublicAttachmentUrl(apiUrl, att.id, "inline"), "_blank", "noopener,noreferrer")}
+                  className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors duration-100"
+                >
+                  Mở
+                </button>
+                <a
+                  href={buildPublicAttachmentUrl(apiUrl, att.id, "attachment")}
+                  className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-zinc-100 text-zinc-950 hover:bg-white transition-colors duration-100"
+                  download
+                >
+                  Tải
+                </a>
+              </div>
             ))}
           </div>
         </div>
       )}
 
       {/* Body - White container for HTML emails per validated decision */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-4 md:p-5">
         {sanitizedHtml ? (
           <div
-            className="prose max-w-none bg-white text-black p-4 rounded-lg"
+            className="prose max-w-none bg-white text-black p-4 rounded-lg overflow-x-auto
+              [&_*]:max-w-full [&_table]:block [&_table]:overflow-x-auto
+              [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:break-words
+              [&_code]:break-all [&_a]:break-all"
             dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         ) : message.textBody ? (
-          <pre className="whitespace-pre-wrap font-sans text-sm text-zinc-300">{message.textBody}</pre>
+          <pre className="whitespace-pre-wrap break-words overflow-x-auto font-sans text-sm text-zinc-300 leading-relaxed">{message.textBody}</pre>
         ) : (
           <div className="text-zinc-500 italic">(không có nội dung)</div>
         )}

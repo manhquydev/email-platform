@@ -283,12 +283,59 @@ export const ephemeralInboxService = {
           extractedOtp: true,
           htmlBody: true,
           textBody: true,
+          attachments: {
+            where: { deletedAt: null },
+            select: {
+              id: true,
+              filename: true,
+              mimeType: true,
+              size: true,
+            },
+          },
         },
       }),
       prisma.message.count({ where: { inboxId: inbox.id } }),
     ]);
 
     return { data: messages, total };
+  },
+
+  /**
+   * Resolve an attachment by token-scoped inbox ownership
+   */
+  async getAttachmentByToken(token: string, attachmentId: string) {
+    const inbox = await prisma.inbox.findFirst({
+      where: {
+        flags: { path: ['token'], equals: token },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        expiresAt: true,
+      },
+    });
+
+    if (!inbox || (inbox.expiresAt && inbox.expiresAt < new Date())) {
+      return null;
+    }
+
+    return prisma.attachment.findFirst({
+      where: {
+        id: attachmentId,
+        deletedAt: null,
+        message: {
+          inboxId: inbox.id,
+          deletedAt: null,
+        },
+      },
+      select: {
+        id: true,
+        filename: true,
+        mimeType: true,
+        size: true,
+        storageKey: true,
+      },
+    });
   },
 
   /**

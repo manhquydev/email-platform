@@ -8,6 +8,8 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { ephemeralInboxService } from "../services/ephemeral-inbox.service";
+import { storageService } from "../services/storage";
+import { sanitizeHeaderFilename } from "./messages/utilities";
 
 const createSchema = z.object({
   expiryHours: z.number().min(1).max(24).optional(),
@@ -22,6 +24,15 @@ const checkAliasSchema = z.object({
 
 const tokenParamsSchema = z.object({
   token: z.string().min(1),
+});
+
+const attachmentParamsSchema = z.object({
+  token: z.string().min(1),
+  id: z.string().uuid(),
+});
+
+const attachmentQuerySchema = z.object({
+  disposition: z.enum(["inline", "attachment"]).optional().default("attachment"),
 });
 
 const messagesQuerySchema = z.object({
@@ -168,6 +179,39 @@ export async function ephemeralInboxRoutes(app: FastifyInstance) {
       };
     }
   );
+
+  // Download attachment for token-scoped ephemeral inbox
+  app.get<{ Params: { token: string; id: string }; Querystring: { disposition?: "inline" | "attachment" } }>("/ephemeral/inbox/:token/attachments/:id/download", {
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+        keyGenerator: (request: any) => {
+          const token = request.params?.token || 'unknown';
+          return `ephemeral-att:${token}`;
+        },
+      },
+    },
+  }, async (request, reply) => {
+    const { token, id } = attachmentParamsSchema.parse(request.params);
+    const { disposition } = attachmentQuerySchema.parse(request.query || {});
+    const attachment = await ephemeralInboxService.getAttachmentByToken(token, id);
+
+    if (!attachment) {
+      return reply.status(404).send({ error: "Attachment not found" });
+    }
+
+    try {
+      const stream = await storageService.getReadStream(attachment.storageKey);
+      const safeFilename = sanitizeHeaderFilename(attachment.filename);
+      reply.header("Content-Type", attachment.mimeType || "application/octet-stream");
+      reply.header("Content-Disposition", `${disposition}; filename="${safeFilename}"`);
+      return reply.send(stream);
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(404).send({ error: "File not found" });
+    }
+  });
 
   // Get available public domains for ephemeral inboxes
   app.get("/ephemeral/domains", async () => {

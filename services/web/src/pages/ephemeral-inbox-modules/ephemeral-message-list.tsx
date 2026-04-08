@@ -5,11 +5,13 @@
 import { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import type { EphemeralMessage } from '../../services/ephemeralService';
+import { API_BASE } from '../../utils/api';
 
 interface EphemeralMessageListProps {
     messages: EphemeralMessage[];
     isLoading: boolean;
     lastRefresh: Date | null;
+    inboxToken: string | null;
 }
 
 function sanitizeEmailHtml(html: string): string {
@@ -19,12 +21,13 @@ function sanitizeEmailHtml(html: string): string {
     });
 }
 
-export function EphemeralMessageList({ messages, isLoading, lastRefresh }: EphemeralMessageListProps) {
+export function EphemeralMessageList({ messages, isLoading, lastRefresh, inboxToken }: EphemeralMessageListProps) {
     const [selectedMessage, setSelectedMessage] = useState<EphemeralMessage | null>(null);
 
     // Auto-select first message when messages load
     useEffect(() => {
         if (messages.length > 0 && !selectedMessage) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedMessage(messages[0]);
         }
     }, [messages, selectedMessage]);
@@ -33,6 +36,7 @@ export function EphemeralMessageList({ messages, isLoading, lastRefresh }: Ephem
     useEffect(() => {
         if (selectedMessage) {
             const updated = messages.find(m => m.id === selectedMessage.id);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             if (updated) setSelectedMessage(updated);
         }
     }, [messages, selectedMessage]);
@@ -42,7 +46,7 @@ export function EphemeralMessageList({ messages, isLoading, lastRefresh }: Ephem
     }
 
     return (
-        <div className="neo-glass rounded-2xl overflow-hidden h-[600px] lg:h-[700px]">
+        <div className="neo-glass rounded-2xl overflow-hidden h-full min-h-[420px]">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/[0.02]">
                 <h2 className="font-semibold text-white flex items-center gap-2">
@@ -89,7 +93,7 @@ export function EphemeralMessageList({ messages, isLoading, lastRefresh }: Ephem
                 {/* Right Panel - Message Content */}
                 <div className="hidden lg:flex flex-1 flex-col overflow-hidden bg-black/20">
                     {selectedMessage ? (
-                        <MessageContent message={selectedMessage} />
+                        <MessageContent message={selectedMessage} inboxToken={inboxToken} />
                     ) : (
                         <NoMessageSelected />
                     )}
@@ -101,6 +105,7 @@ export function EphemeralMessageList({ messages, isLoading, lastRefresh }: Ephem
                 <div className="lg:hidden fixed inset-0 z-[120] bg-[var(--nebula-void)]">
                     <MobileMessageView
                         message={selectedMessage}
+                        inboxToken={inboxToken}
                         onBack={() => setSelectedMessage(null)}
                     />
                 </div>
@@ -159,7 +164,7 @@ function MessageRow({
                         {message.subject || '(Không có tiêu đề)'}
                     </p>
                     <p className="text-xs text-[var(--nebula-text-secondary)] truncate mt-1 leading-relaxed">
-                        {message.textBody?.substring(0, 80) || '(Không có nội dung)'}
+                        {extractMessagePreview(message)}
                     </p>
                 </div>
 
@@ -177,7 +182,7 @@ function MessageRow({
 }
 
 /** Message content panel (desktop) */
-function MessageContent({ message }: { message: EphemeralMessage }) {
+function MessageContent({ message, inboxToken }: { message: EphemeralMessage; inboxToken: string | null }) {
     const receivedDate = new Date(message.receivedAt);
 
     return (
@@ -236,17 +241,36 @@ function MessageContent({ message }: { message: EphemeralMessage }) {
                         Tệp đính kèm ({message.attachments.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
-                        {message.attachments.map((att, i) => (
-                            <span
-                                key={i}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm text-white transition-colors cursor-default"
+                        {message.attachments.map((att) => (
+                            <div
+                                key={att.id}
+                                className="inline-flex items-center gap-3 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm text-white transition-colors"
                             >
                                 <span className="material-symbols-outlined !text-[18px] text-[var(--nebula-violet)]">description</span>
-                                <span className="truncate max-w-[200px]">{att.filename}</span>
+                                <span className="truncate max-w-[220px]">{att.filename}</span>
                                 <span className="text-xs text-[var(--nebula-text-secondary)]">
                                     {formatFileSize(att.size)}
                                 </span>
-                            </span>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => openAttachmentInNewTab(inboxToken, att.id)}
+                                        disabled={!inboxToken}
+                                        className="inline-flex items-center justify-center px-2 py-1 rounded-md text-xs bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                        title="Mở tệp ở tab mới"
+                                    >
+                                        Mở
+                                    </button>
+                                    <a
+                                        href={buildEphemeralAttachmentUrl(inboxToken, att.id, 'attachment')}
+                                        className="inline-flex items-center justify-center px-2 py-1 rounded-md text-xs bg-[var(--nebula-violet)]/20 hover:bg-[var(--nebula-violet)]/30 text-[var(--nebula-violet)] transition-colors"
+                                        download
+                                        aria-disabled={!inboxToken}
+                                    >
+                                        Tải
+                                    </a>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -258,15 +282,18 @@ function MessageContent({ message }: { message: EphemeralMessage }) {
 /** Mobile full screen message view */
 function MobileMessageView({
     message,
+    inboxToken,
     onBack
 }: {
     message: EphemeralMessage;
+    inboxToken: string | null;
     onBack: () => void;
 }) {
     const receivedDate = new Date(message.receivedAt);
     const [viewMode, setViewMode] = useState<'html' | 'text'>(message.htmlBody ? 'html' : 'text');
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setViewMode(message.htmlBody ? 'html' : 'text');
     }, [message.id, message.htmlBody]);
 
@@ -344,11 +371,27 @@ function MobileMessageView({
             {message.attachments && message.attachments.length > 0 && (
                 <div className="px-4 py-3 border-t border-white/10">
                     <div className="flex flex-wrap gap-2">
-                        {message.attachments.map((att, i) => (
-                            <span key={i} className="inline-flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg text-sm text-white max-w-full">
+                        {message.attachments.map((att) => (
+                            <div key={att.id} className="inline-flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg text-sm text-white max-w-full">
                                 <span className="material-symbols-outlined !text-[16px]">attach_file</span>
-                                <span className="truncate max-w-[200px]">{att.filename}</span>
-                            </span>
+                                <span className="truncate max-w-[180px]">{att.filename}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => openAttachmentInNewTab(inboxToken, att.id)}
+                                    disabled={!inboxToken}
+                                    className="inline-flex items-center justify-center px-2 py-1 rounded-md text-xs bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Mở
+                                </button>
+                                <a
+                                    href={buildEphemeralAttachmentUrl(inboxToken, att.id, 'attachment')}
+                                    className="inline-flex items-center justify-center px-2 py-1 rounded-md text-xs bg-[var(--nebula-violet)]/20 hover:bg-[var(--nebula-violet)]/30 text-[var(--nebula-violet)] transition-colors"
+                                    download
+                                    aria-disabled={!inboxToken}
+                                >
+                                    Tải
+                                </a>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -412,6 +455,46 @@ function extractSenderName(fromAddress: string): string {
 function extractEmail(fromAddress: string): string {
     const match = fromAddress.match(/<([^>]+)>/);
     return match ? match[1] : fromAddress;
+}
+
+/** Helper: Build attachment download URL for ephemeral inbox token */
+function buildEphemeralAttachmentUrl(
+    inboxToken: string | null,
+    attachmentId: string,
+    disposition: 'inline' | 'attachment'
+): string {
+    if (!inboxToken) return '#';
+    const encodedToken = encodeURIComponent(inboxToken);
+    const encodedAttachmentId = encodeURIComponent(attachmentId);
+    return `${API_BASE}/ephemeral/inbox/${encodedToken}/attachments/${encodedAttachmentId}/download?disposition=${disposition}`;
+}
+
+/** Helper: Open attachment in a new tab */
+function openAttachmentInNewTab(inboxToken: string | null, attachmentId: string) {
+    const url = buildEphemeralAttachmentUrl(inboxToken, attachmentId, 'inline');
+    if (url === '#') return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+/** Helper: Strip html tags for compact preview text */
+function stripHtmlTags(value: string): string {
+    return value
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/** Helper: Build a fallback preview line for message row */
+function extractMessagePreview(message: EphemeralMessage): string {
+    if (message.textBody && message.textBody.trim().length > 0) {
+        return message.textBody.replace(/\s+/g, ' ').trim().slice(0, 120);
+    }
+    if (message.htmlBody && message.htmlBody.trim().length > 0) {
+        return stripHtmlTags(message.htmlBody).slice(0, 120);
+    }
+    return '(Không có nội dung)';
 }
 
 /** Helper: Format file size */

@@ -6,6 +6,7 @@ import { storageService } from "../services/storage";
 import { generateSessionId } from "../utils/session";
 import { evaluateMessage, logVisibilityAudit, redactMessage, type EmailData } from "../services/visibility-engine";
 import { getPublicInboxSettings, getDateCutoff } from "../utils/system-settings";
+import { sanitizeHeaderFilename } from "./messages/utilities";
 
 /**
  * Public inbox viewer routes - no authentication required
@@ -387,8 +388,11 @@ export async function publicInboxRoutes(app: FastifyInstance) {
     config: { rateLimit: publicRateLimit }
   }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
+    const query = z.object({
+      disposition: z.enum(["inline", "attachment"]).optional().default("attachment"),
+    }).safeParse(request.query);
 
-    if (!params.success) {
+    if (!params.success || !query.success) {
       return reply.status(400).send({ error: "Invalid attachment ID" });
     }
 
@@ -453,7 +457,7 @@ export async function publicInboxRoutes(app: FastifyInstance) {
     });
 
     reply.header("Content-Type", attachment.mimeType || "application/octet-stream");
-    reply.header("Content-Disposition", `attachment; filename="${attachment.filename}"`);
+    reply.header("Content-Disposition", `${query.data.disposition}; filename="${sanitizeHeaderFilename(attachment.filename)}"`);
 
     return reply.send(stream);
   });

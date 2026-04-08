@@ -110,7 +110,12 @@ export function EphemeralInbox() {
 
                 <div className="flex-1 overflow-hidden">
                     <div className="h-full w-full px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
-                        <EphemeralMessageList messages={messages} isLoading={isLoading} lastRefresh={lastRefresh} />
+                        <EphemeralMessageList
+                            messages={messages}
+                            isLoading={isLoading}
+                            lastRefresh={lastRefresh}
+                            inboxToken={token}
+                        />
                     </div>
                 </div>
 

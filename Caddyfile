@@ -31,8 +31,7 @@ api.{$DOMAIN} {
 # Web Frontend - app.yourdomain.com
 app.{$DOMAIN} {
 	# Proxy /api/* requests to API backend
-	@api path /api/*
-	handle_path @api {
+	handle_path /api/* {
 		reverse_proxy api:3001
 	}
 

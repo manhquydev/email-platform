@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "totalRoutes": 16,
+  "routes": [
+    {
+      "path": "/auth/2fa/verify",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/auth/login",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/auth/me",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/auth/register",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/inboxes",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "path": "/inboxes/{id}",
+      "methods": [
+        "DELETE",
+        "GET"
+      ]
+    },
+    {
+      "path": "/inboxes/bulk",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/messages",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/messages/{id}",
+      "methods": [
+        "DELETE",
+        "GET"
+      ]
+    },
+    {
+      "path": "/messages/{id}/read",
+      "methods": [
+        "PATCH"
+      ]
+    },
+    {
+      "path": "/messages/search",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/webhooks",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "path": "/webhooks/{id}",
+      "methods": [
+        "DELETE",
+        "PUT"
+      ]
+    },
+    {
+      "path": "/webhooks/{id}/test",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/webhooks/events",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/webhooks/verify-signature",
+      "methods": [
+        "POST"
+      ]
+    }
+  ]
+}

@@ -1,126 +1,209 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
-import { LegalHoldManager } from "../../compliance/legal-hold";
-import { EDiscovery } from "../../compliance/ediscovery";
-import { AuditLogger } from "../../compliance/audit-logger";
+import { recordAuditFromRequest } from "../../utils/audit";
+
+const ediscoverySchema = z.object({
+  organizationId: z.string().uuid(),
+  keywords: z.array(z.string().min(1)).optional(),
+  senders: z.array(z.string().email()).optional(),
+  recipients: z.array(z.string().email()).optional(),
+  custodians: z.array(z.string().uuid()).optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  limit: z.coerce.number().min(1).max(1000).default(200),
+});
+
+const exportParamsSchema = z.object({
+  userId: z.string().uuid(),
+});
 
 export async function complianceRoutes(app: FastifyInstance) {
-  // Middleware to ensure user is Compliance Admin or Org Owner
-  // app.addHook("preHandler", app.requireComplianceRole);
-
-  // === LEGAL HOLD ===
-
-  // Create Hold
-  app.post("/compliance/holds", { preHandler: app.requireAuth }, async (req, reply) => {
-    const schema = z.object({
-      organizationId: z.string(),
-      name: z.string(),
-      description: z.string().optional(),
-      custodians: z.array(z.string()),
-      keywords: z.array(z.string()).default([]),
-    });
-
-    const data = schema.parse(req.body);
-    // Verify user permissions for this org...
-
-    const hold = await LegalHoldManager.createHold({
-      ...data,
-      createdBy: (req as any).user.id,
-    });
-
-    await AuditLogger.log({
-      action: "CREATE_LEGAL_HOLD",
-      actorId: (req as any).user.id,
-      resource: "LegalHold",
-      resourceId: hold.id,
-      organizationId: data.organizationId,
-      metadata: { name: data.name }
-    });
-
-    return hold;
+  app.get("/compliance/status", { preHandler: app.requireAdmin }, async () => {
+    return {
+      module: "compliance",
+      enabled: true,
+      capabilities: {
+        ediscoverySearch: true,
+        gdprExport: true,
+        legalHold: false,
+      },
+      notes: [
+        "Legal hold endpoints are reserved for the next phase and currently return 501.",
+      ],
+    };
   });
 
-  // Release Hold
-  app.delete("/compliance/holds/:id", { preHandler: app.requireAuth }, async (req, reply) => {
-    const { id } = req.params as { id: string };
-    const hold = await LegalHoldManager.releaseHold(id, (req as any).user.id);
-
-    await AuditLogger.log({
-      action: "RELEASE_LEGAL_HOLD",
-      actorId: (req as any).user.id,
-      resource: "LegalHold",
-      resourceId: hold.id,
-      metadata: { name: hold.name }
+  // Legal hold APIs are part of roadmap but not available until schema/tables are added.
+  app.post("/compliance/holds", { preHandler: app.requireAdmin }, async (request, reply) => {
+    await recordAuditFromRequest(
+      request,
+      "COMPLIANCE_LEGAL_HOLD_CREATE_NOT_IMPLEMENTED",
+      {},
+      false
+    );
+    return reply.status(501).send({
+      error: "Legal hold is not implemented yet",
     });
-
-    return hold;
   });
 
-  // === EDISCOVERY ===
-
-  // Search
-  app.post("/compliance/ediscovery/search", { preHandler: app.requireAuth }, async (req, reply) => {
-    const schema = z.object({
-      organizationId: z.string(),
-      keywords: z.array(z.string()).optional(),
-      custodians: z.array(z.string()).optional(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
+  app.delete("/compliance/holds/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
+    await recordAuditFromRequest(
+      request,
+      "COMPLIANCE_LEGAL_HOLD_RELEASE_NOT_IMPLEMENTED",
+      { holdId: (request.params as { id?: string }).id ?? null },
+      false
+    );
+    return reply.status(501).send({
+      error: "Legal hold is not implemented yet",
     });
+  });
 
-    const query = schema.parse(req.body);
+  app.post("/compliance/ediscovery/search", { preHandler: app.requireAdmin }, async (request, reply) => {
+    const parsed = ediscoverySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
+    }
 
-    // Convert dates
-    const searchParams = {
-      ...query,
-      startDate: query.startDate ? new Date(query.startDate) : undefined,
-      endDate: query.endDate ? new Date(query.endDate) : undefined,
+    const data = parsed.data;
+    const where: any = {
+      inbox: {
+        organizationId: data.organizationId,
+      },
     };
 
-    const results = await EDiscovery.search(query.organizationId, searchParams);
+    if (data.custodians && data.custodians.length > 0) {
+      where.inbox.ownerId = { in: data.custodians };
+    }
 
-    await AuditLogger.log({
-      action: "EDISCOVERY_SEARCH",
-      actorId: (req as any).user.id,
-      organizationId: query.organizationId,
-      metadata: { query }
+    if (data.senders && data.senders.length > 0) {
+      where.fromAddress = { in: data.senders };
+    }
+
+    if (data.recipients && data.recipients.length > 0) {
+      where.toAddress = { in: data.recipients };
+    }
+
+    if (data.startDate || data.endDate) {
+      where.receivedAt = {};
+      if (data.startDate) where.receivedAt.gte = new Date(data.startDate);
+      if (data.endDate) where.receivedAt.lte = new Date(data.endDate);
+    }
+
+    const messages = await prisma.message.findMany({
+      where,
+      select: {
+        id: true,
+        subject: true,
+        fromAddress: true,
+        toAddress: true,
+        receivedAt: true,
+        textBody: true,
+        inbox: {
+          select: {
+            id: true,
+            localPart: true,
+            domain: { select: { name: true } },
+            owner: { select: { id: true, email: true } },
+          },
+        },
+      },
+      orderBy: { receivedAt: "desc" },
+      take: data.limit,
     });
 
-    return results;
+    let filtered = messages;
+    if (data.keywords && data.keywords.length > 0) {
+      const keywords = data.keywords.map((k) => k.toLowerCase());
+      filtered = messages.filter((m) => {
+        const haystack = `${m.subject ?? ""} ${m.textBody ?? ""}`.toLowerCase();
+        return keywords.some((keyword) => haystack.includes(keyword));
+      });
+    }
+
+    await recordAuditFromRequest(request, "COMPLIANCE_EDISCOVERY_SEARCH", {
+      organizationId: data.organizationId,
+      limit: data.limit,
+      resultCount: filtered.length,
+    });
+
+    return { data: filtered, meta: { count: filtered.length } };
   });
 
-  // === GDPR EXPORT ===
+  app.post("/compliance/export/:userId", { preHandler: app.requireAdmin }, async (request, reply) => {
+    const params = exportParamsSchema.safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ error: "Invalid user id" });
+    }
 
-  app.post("/compliance/export/:userId", { preHandler: app.requireAuth }, async (req, reply) => {
-    const { userId } = req.params as { userId: string };
-    const requesterId = (req as any).user.id;
-
-    // Verify permission...
-
-    // Fetch user data
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
+      where: { id: params.data.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        tier: true,
+        createdAt: true,
+        emailVerified: true,
         inboxes: {
-          include: {
-            messages: { take: 100 } // Limit for now
-          }
+          where: { deletedAt: null },
+          select: {
+            id: true,
+            localPart: true,
+            createdAt: true,
+            domain: { select: { name: true } },
+            messages: {
+              where: { deletedAt: null },
+              orderBy: { receivedAt: "desc" },
+              take: 100,
+              select: {
+                id: true,
+                subject: true,
+                fromAddress: true,
+                toAddress: true,
+                receivedAt: true,
+              },
+            },
+          },
         },
-        auditLogs: { take: 50 }
-      }
+        auditLogs: {
+          orderBy: { createdAt: "desc" },
+          take: 200,
+          select: {
+            id: true,
+            action: true,
+            createdAt: true,
+            success: true,
+            outcome: true,
+            ip: true,
+            userAgent: true,
+            requestId: true,
+            meta: true,
+          },
+        },
+      },
     });
 
-    if (!user) return reply.status(404).send({ error: "User not found" });
+    if (!user) {
+      await recordAuditFromRequest(
+        request,
+        "COMPLIANCE_GDPR_EXPORT_FAILED",
+        { targetUserId: params.data.userId, reason: "USER_NOT_FOUND" },
+        false
+      );
+      return reply.status(404).send({ error: "User not found" });
+    }
 
-    await AuditLogger.log({
-      action: "GDPR_EXPORT",
-      actorId: requesterId,
-      resource: "User",
-      resourceId: userId
+    await recordAuditFromRequest(request, "COMPLIANCE_GDPR_EXPORT", {
+      targetUserId: params.data.userId,
+      inboxCount: user.inboxes.length,
+      auditCount: user.auditLogs.length,
     });
 
-    // Return as JSON for simplicity, ideally ZIP of EMLs + JSON
-    return user;
+    return {
+      generatedAt: new Date().toISOString(),
+      user,
+    };
   });
 }

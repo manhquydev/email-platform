@@ -1,10 +1,11 @@
 import '../env-setup';
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import nodemailer from 'nodemailer';
 import { startSubmissionServer } from '../../smtp/submission-server';
 import { prisma } from '../setup';
 import { hashPassword } from '../../utils/password';
 import { SMTPServer } from 'smtp-server';
+import { SmtpAuthHandler } from '../../smtp/auth-handler';
 
 describe('Enterprise Protocol Tests: SMTP Submission', () => {
   let server: SMTPServer;
@@ -35,26 +36,51 @@ describe('Enterprise Protocol Tests: SMTP Submission', () => {
   });
 
   beforeEach(async () => {
-    // Setup User
+    // Setup user + owned verified mailbox that matches sender@example.com
+    await prisma.inbox.deleteMany({ where: { localPart: 'sender' } });
+    await prisma.domain.deleteMany({ where: { name: 'example.com' } });
     await prisma.user.deleteMany({ where: { email: testUser.email } });
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email: testUser.email,
         passwordHash: await hashPassword(testUser.password),
         role: 'USER',
-        inboxes: {
-          create: {
-            emailAddress: testUser.email,
-            domain: {
-              create: {
-                domain: 'example.com',
-                userId: 'owner-id'
-              }
-            }
-          }
-        }
       }
     });
+
+    const domain = await prisma.domain.create({
+      data: {
+        name: 'example.com',
+        status: 'VERIFIED',
+        verificationToken: 'smtp-submission-test-token',
+        ownerId: user.id,
+      },
+    });
+
+    await prisma.inbox.create({
+      data: {
+        domainId: domain.id,
+        localPart: 'sender',
+        ownerId: user.id,
+      },
+    });
+
+    // Keep protocol suite focused on SMTP command-path behavior.
+    vi.spyOn(SmtpAuthHandler, 'validateCredentials').mockResolvedValue({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    } as any);
+
+    vi.spyOn(SmtpAuthHandler, 'canSendAs').mockImplementation(async (_userId, from) => {
+      return from.toLowerCase() === testUser.email;
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should authenticate and accept valid email', async () => {

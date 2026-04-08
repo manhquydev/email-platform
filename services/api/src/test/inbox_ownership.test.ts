@@ -25,6 +25,9 @@ const prismaMock = {
     user: {
         findUnique: vi.fn(),
     },
+    teamInbox: {
+        findMany: vi.fn(),
+    },
     $transaction: vi.fn((callback) => callback(prismaMock)),
 };
 
@@ -38,6 +41,19 @@ vi.mock("../utils/audit", () => ({
 
 vi.mock("../utils/token", () => ({
     generateToken: () => "mock-token",
+}));
+
+vi.mock("../services/tier-enforcement.service", () => ({
+    createTierEnforceHandler: () => async () => undefined,
+    enforceApiAccess: async () => undefined,
+    enforceDailyEmailLimit: async () => undefined,
+}));
+
+vi.mock("../services/team.service", () => ({
+    TeamService: {
+        getAccessibleInboxIds: vi.fn().mockResolvedValue([]),
+        hasTeamRole: vi.fn().mockResolvedValue(false),
+    },
 }));
 
 describe("Inbox Ownership Tests (Mocked)", () => {
@@ -55,6 +71,7 @@ describe("Inbox Ownership Tests (Mocked)", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        (prismaMock.teamInbox.findMany as any).mockResolvedValue([]);
     });
 
     const userA = { userId: "user-a-id", role: "USER", email: "a@test.com" };
@@ -128,7 +145,9 @@ describe("Inbox Ownership Tests (Mocked)", () => {
         expect(prismaMock.inbox.findMany).toHaveBeenCalledWith(
             expect.objectContaining({
                 where: expect.objectContaining({
-                    ownerId: userA.userId
+                    OR: expect.arrayContaining([
+                        expect.objectContaining({ ownerId: userA.userId }),
+                    ])
                 })
             })
         );

@@ -117,7 +117,7 @@ describe("Subscription Routes Integration", () => {
             }));
         });
 
-        it("should successfully redeem a USAGE_BASED code (Credits)", async () => {
+        it("should redeem legacy USAGE_BASED code with time-based entitlement update", async () => {
             const mockCode = {
                 id: "code-2",
                 code: "CREDIT-100",
@@ -127,8 +127,7 @@ describe("Subscription Routes Integration", () => {
                 package: {
                     id: "pkg-2",
                     name: "100 Credits",
-                    type: "USAGE_BASED",
-                    creditAmount: 100
+                    type: "USAGE_BASED"
                 }
             };
 
@@ -136,7 +135,8 @@ describe("Subscription Routes Integration", () => {
             (prisma.redemptionCode.update as any).mockResolvedValue({ ...mockCode, usedCount: 1 });
             (prisma.codeRedemption.findFirst as any).mockResolvedValue(null);
             (prisma.codeRedemption.create as any).mockResolvedValue({});
-            (prisma.user.findUnique as any).mockResolvedValue({ id: "user-123", credits: 0 });
+            (prisma.user.findUnique as any).mockResolvedValue({ id: "user-123", tier: "FREE", subscriptionEndsAt: null });
+            (prisma.user.findUniqueOrThrow as any).mockResolvedValue({ id: "user-123", tier: "FREE", subscriptionEndsAt: null });
             (prisma.user.update as any).mockResolvedValue({});
 
             const response = await app.inject({
@@ -147,7 +147,12 @@ describe("Subscription Routes Integration", () => {
 
             expect(response.statusCode).toBe(200);
             expect(prisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
-                data: { credits: { increment: 100 } }
+                where: { id: "user-123" },
+                data: expect.objectContaining({
+                    tier: "FREE",
+                    subscriptionStatus: "ACTIVE",
+                    subscriptionEndsAt: expect.any(Date)
+                })
             }));
         });
 

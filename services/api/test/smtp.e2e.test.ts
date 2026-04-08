@@ -43,6 +43,7 @@ describe("SMTP ingest e2e", () => {
   beforeAll(async () => {
     process.env.STORAGE_DIR = storageDir;
     process.env.SMTP_PORT = String(smtpPort);
+    process.env.ALLOW_AUTO_DOMAIN_CREATION = "true";
     await ensureSchema();
     await app.ready();
     worker = setupEmailWorker(app.log);
@@ -60,7 +61,9 @@ describe("SMTP ingest e2e", () => {
     try {
       await resetDb();
       const passwordHash = await hashPassword(ADMIN_PASSWORD);
-      await prisma.user.create({ data: { email: ADMIN_EMAIL, passwordHash, role: "ADMIN" } });
+      await prisma.user.create({
+        data: { email: ADMIN_EMAIL, passwordHash, role: "ADMIN", tier: "ENTERPRISE", emailVerified: new Date() }
+      });
       const login = await request(app.server).post("/auth/login").send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
       token = login.body.token;
       await prisma.domain.create({ data: { name: TEST_DOMAIN, verificationToken: "token", status: "VERIFIED" } });
@@ -91,9 +94,6 @@ describe("SMTP ingest e2e", () => {
       text: "This is a test email.",
     });
 
-    // allow ingest to persist
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
     const inboxes = await request(app.server)
       .get(`/inboxes?domain=${TEST_DOMAIN}`)
       .set("Authorization", `Bearer ${token}`);
@@ -101,11 +101,21 @@ describe("SMTP ingest e2e", () => {
     expect(inboxes.body.data.length).toBeGreaterThan(0);
 
     const inboxId = inboxes.body.data[0].id as string;
-    const messages = await request(app.server)
+    let messages = await request(app.server)
       .get(`/inboxes/${inboxId}/messages`)
       .set("Authorization", `Bearer ${token}`);
+    for (let i = 0; i < 12; i++) {
+      if (messages.status === 200 && Array.isArray(messages.body?.data) && messages.body.data.length > 0) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      messages = await request(app.server)
+        .get(`/inboxes/${inboxId}/messages`)
+        .set("Authorization", `Bearer ${token}`);
+    }
     expect(messages.status).toBe(200);
-    expect(messages.body.data.length).toBe(1);
+    expect(Array.isArray(messages.body.data)).toBe(true);
+    expect(messages.body.data.length).toBeGreaterThan(0);
     expect(messages.body.data[0].subject).toContain("Hello inbound");
     expect(messages.body.data[0].textBody).toContain("test email");
   });

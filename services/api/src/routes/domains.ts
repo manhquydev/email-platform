@@ -6,9 +6,99 @@ import { recordAudit } from "../utils/audit";
 import { addDomainToPostfix, removeDomainFromPostfix } from "../utils/postfix-sync";
 import { isValidDomainFormat } from "../utils/email-validation";
 import { ensureDefaultInboxesForVerifiedDomain } from "../services/domain-verification.service";
+import { sharedErrorResponseSchema } from "../plugins/swagger";
+
+const domainsErrorResponseSchema = {
+  ...sharedErrorResponseSchema,
+};
+
+const domainsCollectionResponseSchema = {
+  type: "object",
+  properties: {
+    data: { type: "array", items: { type: "object", additionalProperties: true } },
+    meta: {
+      type: "object",
+      properties: {
+        total: { type: "number" },
+      },
+      required: ["total"],
+    },
+  },
+  required: ["data", "meta"],
+};
+
+const domainEnvelopeResponseSchema = {
+  type: "object",
+  properties: {
+    domain: { type: "object", additionalProperties: true },
+  },
+  required: ["domain"],
+};
+
+const domainDnsCheckResponseSchema = {
+  type: "object",
+  properties: {
+    domain: { type: "string" },
+    verificationToken: { type: "string" },
+    status: { type: "string" },
+    dns: { type: "object", additionalProperties: true },
+  },
+  required: ["domain", "verificationToken", "status", "dns"],
+};
+
+const domainVerifyResponseSchema = {
+  type: "object",
+  properties: {
+    domain: { type: "object", additionalProperties: true },
+  },
+  required: ["domain"],
+};
+
+const domainDeleteResponseSchema = {
+  type: "object",
+  properties: {
+    success: { type: "boolean" },
+  },
+  required: ["success"],
+};
+
+const sanitizeDomainForAnonymous = (domain: any) => {
+  const {
+    verificationToken,
+    ownerId,
+    owner,
+    ...safeDomain
+  } = domain ?? {};
+
+  return safeDomain;
+};
 
 export async function domainRoutes(app: FastifyInstance) {
-  app.get("/domains", { preHandler: app.authenticate }, async (request, reply) => {
+  app.get("/domains", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["domains"],
+      summary: "List accessible domains",
+      querystring: {
+        type: "object",
+        properties: {
+          search: { type: "string" },
+          limit: { type: "number", minimum: 1, maximum: 200 },
+          offset: { type: "number", minimum: 0 },
+          contributionStatus: {
+            type: "string",
+            enum: ["NONE", "PENDING_REVIEW", "APPROVED", "REJECTED"],
+          },
+        },
+      },
+      response: {
+        200: domainsCollectionResponseSchema,
+        400: domainsErrorResponseSchema,
+        401: domainsErrorResponseSchema,
+        500: domainsErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const query = z
       .object({
         search: z.string().optional(),
@@ -21,8 +111,9 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid query" });
     }
 
-    const user = request.user as { userId: string; role: string };
+    const user = request.user as { userId?: string; role?: string; anonymousId?: string };
     const isAdmin = user.role === "ADMIN";
+    const isAnonymous = Boolean(user.anonymousId) || !user.userId;
 
     const baseWhere = isAdmin
       ? {}
@@ -60,18 +151,47 @@ export async function domainRoutes(app: FastifyInstance) {
       }),
       prisma.domain.count({ where }),
     ]);
+    if (isAnonymous) {
+      return {
+        data: domains.map(sanitizeDomainForAnonymous),
+        meta: { total },
+      };
+    }
+
     return { data: domains, meta: { total } };
   });
 
   // Get single domain by ID
-  app.get("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {
+  app.get("/domains/:id", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["domains"],
+      summary: "Get domain by id",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        200: domainEnvelopeResponseSchema,
+        400: domainsErrorResponseSchema,
+        401: domainsErrorResponseSchema,
+        403: domainsErrorResponseSchema,
+        404: domainsErrorResponseSchema,
+        500: domainsErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid ID" });
     }
 
-    const user = request.user as { userId: string; role: string };
+    const user = request.user as { userId?: string; role?: string; anonymousId?: string };
     const isAdmin = user.role === "ADMIN";
+    const isAnonymous = Boolean(user.anonymousId) || !user.userId;
 
     const domain = await prisma.domain.findUnique({
       where: { id: params.data.id },
@@ -87,11 +207,36 @@ export async function domainRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: "Not authorized to view this domain" });
     }
 
+    if (isAnonymous) {
+      return { domain: sanitizeDomainForAnonymous(domain) };
+    }
+
     return { domain };
   });
 
   // Check DNS records for a domain
-  app.get("/domains/:id/dns-check", { preHandler: app.authenticate }, async (request, reply) => {
+  app.get("/domains/:id/dns-check", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["domains"],
+      summary: "Check DNS records for a domain",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        200: domainDnsCheckResponseSchema,
+        400: domainsErrorResponseSchema,
+        401: domainsErrorResponseSchema,
+        403: domainsErrorResponseSchema,
+        404: domainsErrorResponseSchema,
+        500: domainsErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid ID" });
@@ -125,7 +270,27 @@ export async function domainRoutes(app: FastifyInstance) {
     }
   });
 
-  app.post("/domains", { preHandler: app.authenticate }, async (request, reply) => {
+  app.post("/domains", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["domains"],
+      summary: "Create domain",
+      body: {
+        type: "object",
+        required: ["name"],
+        properties: {
+          name: { type: "string", minLength: 3 },
+        },
+      },
+      response: {
+        201: domainEnvelopeResponseSchema,
+        400: domainsErrorResponseSchema,
+        401: domainsErrorResponseSchema,
+        409: domainsErrorResponseSchema,
+        500: domainsErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const bodySchema = z.object({
       name: z.string().min(3),
     });
@@ -169,7 +334,35 @@ export async function domainRoutes(app: FastifyInstance) {
     return reply.status(201).send({ domain });
   });
 
-  app.post("/domains/:id/verify", { preHandler: app.authenticate }, async (request, reply) => {
+  app.post("/domains/:id/verify", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["domains"],
+      summary: "Verify domain ownership",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      body: {
+        type: "object",
+        properties: {
+          token: { type: "string", minLength: 6 },
+        },
+      },
+      response: {
+        200: domainVerifyResponseSchema,
+        400: domainsErrorResponseSchema,
+        401: domainsErrorResponseSchema,
+        403: domainsErrorResponseSchema,
+        404: domainsErrorResponseSchema,
+        500: domainsErrorResponseSchema,
+        503: domainsErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     const body = z.object({ token: z.string().min(6).optional() }).safeParse(request.body ?? {});
     if (!params.success || !body.success) {
@@ -386,7 +579,28 @@ export async function domainRoutes(app: FastifyInstance) {
     }
   });
 
-  app.delete("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {
+  app.delete("/domains/:id", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["domains"],
+      summary: "Delete domain",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        200: domainDeleteResponseSchema,
+        400: domainsErrorResponseSchema,
+        401: domainsErrorResponseSchema,
+        403: domainsErrorResponseSchema,
+        404: domainsErrorResponseSchema,
+        500: domainsErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid ID" });
@@ -418,7 +632,38 @@ export async function domainRoutes(app: FastifyInstance) {
   });
 
   // PATCH domain - update isPublic (admin only for isPublic)
-  app.patch("/domains/:id", { preHandler: app.authenticate }, async (request, reply) => {
+  app.patch("/domains/:id", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["domains"],
+      summary: "Update domain visibility and contribution status",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      body: {
+        type: "object",
+        properties: {
+          isPublic: { type: "boolean" },
+          contributionStatus: {
+            type: "string",
+            enum: ["NONE", "PENDING_REVIEW", "APPROVED", "REJECTED"],
+          },
+        },
+      },
+      response: {
+        200: domainEnvelopeResponseSchema,
+        400: domainsErrorResponseSchema,
+        401: domainsErrorResponseSchema,
+        403: domainsErrorResponseSchema,
+        404: domainsErrorResponseSchema,
+        500: domainsErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     const body = z
       .object({

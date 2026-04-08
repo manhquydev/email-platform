@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildServer } from "../server";
-import * as telegramBot from "../services/telegram";
+import * as telegramNotifications from "../services/telegram/notifications";
 
 // Mock Telegram service
-vi.mock("../services/telegram", async () => {
+vi.mock("../services/telegram/notifications", async () => {
     return {
-        sendTelegramMessage: vi.fn().mockResolvedValue(true),
         sendNotificationToUser: vi.fn().mockResolvedValue(true),
-        setupBotCommands: vi.fn().mockResolvedValue(true),
     };
 });
 
@@ -23,6 +21,9 @@ const prismaMock = vi.hoisted(() => ({
         create: vi.fn(),
         createMany: vi.fn(),
         deleteMany: vi.fn(),
+    },
+    notificationLog: {
+        create: vi.fn(),
     },
     user: {
         findUnique: vi.fn(),
@@ -46,6 +47,7 @@ describe("Notification System Integration (Mocked)", () => {
 
     beforeEach(async () => {
         vi.clearAllMocks();
+        prismaMock.notificationLog.create.mockResolvedValue({ id: "log-1" });
 
         // Setup App
         // Setup App
@@ -68,8 +70,6 @@ describe("Notification System Integration (Mocked)", () => {
     });
 
     it("should allow admin to send a notification to a specific user", async () => {
-        const spy = vi.spyOn(telegramBot, 'sendTelegramMessage');
-
         // Mock create return
         prismaMock.notification.create.mockResolvedValue({
             id: "notif-1",
@@ -177,7 +177,7 @@ describe("Notification System Integration (Mocked)", () => {
         expect(response.statusCode).toBe(403);
     });
     it("should pass imageUrl to telegram service when provided", async () => {
-        const spy = vi.spyOn(telegramBot, 'sendNotificationToUser');
+        const spy = vi.spyOn(telegramNotifications, 'sendNotificationToUser');
 
         prismaMock.notification.create.mockResolvedValue({ id: "notif-img", userId, title: "T", message: "M", type: "INFO" });
 
@@ -195,12 +195,16 @@ describe("Notification System Integration (Mocked)", () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(telegramBot.sendNotificationToUser).toHaveBeenCalledWith(
+        expect(spy).toHaveBeenCalledWith(
             userId,
             "Image Notif",
             "Look at this",
             "INFO",
-            "http://example.com/image.png"
+            "http://example.com/image.png",
+            expect.objectContaining({
+                notificationId: "notif-img",
+                showAcknowledge: true,
+            })
         );
     });
 
@@ -228,6 +232,6 @@ describe("Notification System Integration (Mocked)", () => {
         expect(response.json()).toEqual({ success: true, count: 2 });
         // Called for each user
         expect(prismaMock.notification.create).toHaveBeenCalledTimes(2);
-        expect(telegramBot.sendNotificationToUser).toHaveBeenCalledTimes(2);
+        expect(telegramNotifications.sendNotificationToUser).toHaveBeenCalledTimes(2);
     });
 });

@@ -5,12 +5,12 @@ const prisma = new PrismaClient();
 
 export default async function adminHealthRoutes(fastify: FastifyInstance) {
   // Public health check for LB
-  fastify.get('/', async () => {
+  fastify.get('/', { preHandler: fastify.requireAdmin }, async () => {
     return { status: 'ok', timestamp: new Date() };
   });
 
   // Deep health check for Admin Dashboard
-  fastify.get('/detailed', async (req, reply) => {
+  fastify.get('/detailed', { preHandler: fastify.requireAdmin }, async (req, reply) => {
     try {
       // Check DB
       await prisma.$queryRaw`SELECT 1`;

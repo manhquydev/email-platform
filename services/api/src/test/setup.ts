@@ -16,14 +16,53 @@ import { beforeAll, afterAll, beforeEach } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import { buildServer } from "../server";
 import { FastifyInstance } from "fastify";
+import { execSync } from "node:child_process";
+import path from "node:path";
 
 export const prisma = new PrismaClient({
     datasources: { db: { url: TEST_DB_URL } },
 });
 
 export let app: FastifyInstance;
+let migrationsApplied = false;
+
+function applyTestDbMigrationsOnce() {
+    if (migrationsApplied) return;
+    if (process.env.SKIP_TEST_MIGRATIONS === "true") return;
+
+    const apiRoot = path.resolve(__dirname, "../..");
+
+    try {
+        execSync("npx prisma migrate deploy", {
+            cwd: apiRoot,
+            env: { ...process.env, DATABASE_URL: TEST_DB_URL },
+            stdio: "pipe",
+        });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const stderr = typeof error === "object" && error && "stderr" in error
+            ? String((error as { stderr?: Buffer | string }).stderr ?? "")
+            : "";
+        const fullMessage = `${message}\n${stderr}`;
+
+        if (!fullMessage.includes("P3005")) {
+            throw error;
+        }
+
+        // Existing test DB wasn't baselined for migrate history: sync schema directly.
+        execSync("npx prisma db push", {
+            cwd: apiRoot,
+            env: { ...process.env, DATABASE_URL: TEST_DB_URL },
+            stdio: "pipe",
+        });
+    }
+
+    migrationsApplied = true;
+}
 
 beforeAll(async () => {
+    applyTestDbMigrationsOnce();
+
     // Override process env for the app
     process.env.DATABASE_URL = TEST_DB_URL;
     process.env.JWT_SECRET = "test-secret";
@@ -34,34 +73,29 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await prisma.$disconnect();
-    await app.close();
+    if (app) {
+        await app.close();
+    }
 });
 
 beforeEach(async () => {
     // Clear data between tests
     // We use $transaction to ensure order if foreign keys exist, or just delete from tables
     // Order matters: delete child "Message" before "Inbox", "Inbox" before "Domain"
-    try {
-        await prisma.$transaction([
-            prisma.passkeyCredential.deleteMany(),
-            prisma.magicLinkToken.deleteMany(),
-            prisma.abuseReport.deleteMany(),
-            prisma.webhookLog.deleteMany(),
-            prisma.webhook.deleteMany(),
-            prisma.message.deleteMany(),
-            prisma.inbox.deleteMany(),
-            prisma.domain.deleteMany(),
-            prisma.rule.deleteMany(),
-            prisma.telegramLinkToken.deleteMany(),
-            prisma.codeRedemption.deleteMany(),
-            prisma.redemptionCode.deleteMany(),
-            prisma.servicePackage.deleteMany(),
-            prisma.user.deleteMany(),
-        ]);
-    } catch (err) {
-        // Only log if not in a CI environment to reduce noise
-        if (process.env.NODE_ENV !== "test" || process.env.DEBUG) {
-            console.warn("Could not clear test database. This is expected if you are running mocked tests and Docker is down.");
-        }
-    }
+    await prisma.$transaction([
+        prisma.passkeyCredential.deleteMany(),
+        prisma.magicLinkToken.deleteMany(),
+        prisma.abuseReport.deleteMany(),
+        prisma.webhookLog.deleteMany(),
+        prisma.webhook.deleteMany(),
+        prisma.message.deleteMany(),
+        prisma.inbox.deleteMany(),
+        prisma.domain.deleteMany(),
+        prisma.rule.deleteMany(),
+        prisma.telegramLinkToken.deleteMany(),
+        prisma.codeRedemption.deleteMany(),
+        prisma.redemptionCode.deleteMany(),
+        prisma.servicePackage.deleteMany(),
+        prisma.user.deleteMany(),
+    ]);
 });

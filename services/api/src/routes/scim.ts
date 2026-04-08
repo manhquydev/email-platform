@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { provisionUser } from "../_wip/identity/jit-provisioning";
+import { sendApiError } from "../utils/errorHandler";
 
 export async function scimRoutes(app: FastifyInstance) {
   // Middleware to validate SCIM token
@@ -10,12 +11,12 @@ export async function scimRoutes(app: FastifyInstance) {
 
     const { providerId } = request.params as { providerId: string };
     if (!providerId) {
-      return reply.status(400).send({ error: "Missing providerId" });
+      return sendApiError(reply, 400, "Missing providerId", { code: "BAD_REQUEST" });
     }
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return reply.status(401).send({ error: "Missing authentication" });
+      return sendApiError(reply, 401, "Missing authentication", { code: "UNAUTHORIZED" });
     }
 
     const token = authHeader.substring(7);
@@ -24,13 +25,13 @@ export async function scimRoutes(app: FastifyInstance) {
     });
 
     if (!provider || !provider.enabled) {
-      return reply.status(404).send({ error: "Provider not found" });
+      return sendApiError(reply, 404, "Provider not found", { code: "NOT_FOUND" });
     }
 
     // Check token from config
     const config = provider.config as any;
     if (config.scimSecret && config.scimSecret !== token) {
-      return reply.status(401).send({ error: "Invalid token" });
+      return sendApiError(reply, 401, "Invalid token", { code: "UNAUTHORIZED" });
     }
   });
 
@@ -65,7 +66,7 @@ export async function scimRoutes(app: FastifyInstance) {
       };
     } catch (err) {
       request.log.error(err);
-      return reply.status(409).send({ error: "User conflict or creation failed" });
+      return sendApiError(reply, 409, "User conflict or creation failed", { code: "CONFLICT" });
     }
   });
 
@@ -76,7 +77,7 @@ export async function scimRoutes(app: FastifyInstance) {
     // ID here might be internal ID or external ID depending on client.
     // Usually SCIM clients use the ID returned by Create.
     const user = await prisma.user.findUnique({ where: { id } });
-    if (!user) return reply.status(404).send({ error: "User not found" });
+    if (!user) return sendApiError(reply, 404, "User not found", { code: "NOT_FOUND" });
 
     return {
       schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],

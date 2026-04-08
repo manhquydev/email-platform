@@ -86,7 +86,7 @@ export async function handleStart(chatId: string, args: string[], message: Teleg
                 parseMode: 'HTML',
                 replyMarkup: {
                     inline_keyboard: [
-                        [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }],
+                        [{ text: '🔗 Mở Cài đặt', url: `${webUrl}/settings?tab=notifications` }],
                         [{ text: '❓ Trợ giúp', callback_data: 'show_help' }]
                     ]
                 }
@@ -171,7 +171,7 @@ export async function handleSettings(chatId: string): Promise<void> {
             {
                 parseMode: 'HTML',
                 replyMarkup: {
-                    inline_keyboard: [[{ text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }]]
+                    inline_keyboard: [[{ text: '🔗 Mở Cài đặt', url: `${webUrl}/settings?tab=notifications` }]]
                 }
             }
         );

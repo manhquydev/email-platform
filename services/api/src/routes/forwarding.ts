@@ -15,6 +15,7 @@ import {
 } from "../services/emailForwarder";
 import { getForwardingStats } from "../services/forwarding";
 import { createTierEnforceHandler } from "../services/tier-enforcement.service";
+import { sendApiError } from "../utils/errorHandler";
 
 // Schema for conditions
 const conditionSchema = z.object({
@@ -60,12 +61,12 @@ export async function forwardingRoutes(app: FastifyInstance) {
 
         const parsed = bodySchema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Email không hợp lệ" });
+            return sendApiError(reply, 400, "Email không hợp lệ", { code: "BAD_REQUEST" });
         }
 
         const result = await sendForwardVerification(user.userId, parsed.data.email);
         if (!result.success) {
-            return reply.status(400).send({ error: result.error });
+            return sendApiError(reply, 400, result.error ?? "Verification email could not be sent", { code: "BAD_REQUEST" });
         }
 
         return { success: true, message: "Mã xác minh đã được gửi" };
@@ -82,12 +83,12 @@ export async function forwardingRoutes(app: FastifyInstance) {
 
         const parsed = bodySchema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Dữ liệu không hợp lệ" });
+            return sendApiError(reply, 400, "Dữ liệu không hợp lệ", { code: "BAD_REQUEST" });
         }
 
         const result = await confirmForwardVerification(user.userId, parsed.data.email, parsed.data.code);
         if (!result.success) {
-            return reply.status(400).send({ error: result.error });
+            return sendApiError(reply, 400, result.error ?? "Verification code is invalid", { code: "BAD_REQUEST" });
         }
 
         return { success: true, message: "Email đã được xác minh" };
@@ -124,23 +125,23 @@ export async function forwardingRoutes(app: FastifyInstance) {
 
         const parsed = ruleBodySchema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Invalid data", details: parsed.error.issues });
+            return sendApiError(reply, 400, "Invalid data", { code: "BAD_REQUEST", details: parsed.error.issues });
         }
 
         const data = parsed.data;
 
         // Validate destination based on type
         if (data.destinationType === 'EMAIL' && !data.forwardTo) {
-            return reply.status(400).send({ error: "Email destination required" });
+            return sendApiError(reply, 400, "Email destination required", { code: "BAD_REQUEST" });
         }
         if (data.destinationType === 'TELEGRAM' && !data.telegramChatId) {
-            return reply.status(400).send({ error: "Telegram chat ID required" });
+            return sendApiError(reply, 400, "Telegram chat ID required", { code: "BAD_REQUEST" });
         }
         if (data.destinationType === 'DISCORD' && !data.discordWebhookUrl) {
-            return reply.status(400).send({ error: "Discord webhook URL required" });
+            return sendApiError(reply, 400, "Discord webhook URL required", { code: "BAD_REQUEST" });
         }
         if (data.destinationType === 'WEBHOOK' && !data.webhookUrl) {
-            return reply.status(400).send({ error: "Webhook URL required" });
+            return sendApiError(reply, 400, "Webhook URL required", { code: "BAD_REQUEST" });
         }
 
         // Verify inbox ownership if specified
@@ -149,7 +150,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
                 where: { id: data.inboxId, ownerId: user.userId }
             });
             if (!inbox) {
-                return reply.status(400).send({ error: "Inbox not found or not owned" });
+                return sendApiError(reply, 400, "Inbox not found or not owned", { code: "BAD_REQUEST" });
             }
         }
 
@@ -182,7 +183,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
         const updateSchema = ruleBodySchema.partial();
         const parsed = updateSchema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Invalid data" });
+            return sendApiError(reply, 400, "Invalid data", { code: "BAD_REQUEST" });
         }
 
         const rule = await prisma.forwardingRule.findFirst({
@@ -190,7 +191,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
         });
 
         if (!rule) {
-            return reply.status(404).send({ error: "Rule not found" });
+            return sendApiError(reply, 404, "Rule not found", { code: "NOT_FOUND" });
         }
 
         await prisma.forwardingRule.update({
@@ -211,7 +212,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
         });
 
         if (!rule) {
-            return reply.status(404).send({ error: "Rule not found" });
+            return sendApiError(reply, 404, "Rule not found", { code: "NOT_FOUND" });
         }
 
         await prisma.forwardingRule.delete({ where: { id } });
@@ -228,7 +229,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
         });
 
         if (!rule) {
-            return reply.status(404).send({ error: "Rule not found" });
+            return sendApiError(reply, 404, "Rule not found", { code: "NOT_FOUND" });
         }
 
         const logs = await prisma.forwardingLog.findMany({
@@ -256,7 +257,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
         });
 
         if (!rule) {
-            return reply.status(404).send({ error: "Rule not found" });
+            return sendApiError(reply, 404, "Rule not found", { code: "NOT_FOUND" });
         }
 
         // Create test message data (not persisted)

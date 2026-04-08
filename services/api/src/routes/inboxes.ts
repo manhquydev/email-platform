@@ -5,9 +5,74 @@ import { recordAudit } from "../utils/audit";
 import { realtimeEvents } from "../services/realtime-events";
 import { TeamService } from "../services/team.service";
 import { createTierEnforceHandler } from "../services/tier-enforcement.service";
+import { sharedErrorResponseSchema } from "../plugins/swagger";
+
+const inboxesErrorResponseSchema = {
+  ...sharedErrorResponseSchema,
+  properties: {
+    ...sharedErrorResponseSchema.properties,
+    message: { type: "string" },
+    maxAllowed: { type: "number" },
+  },
+};
+
+const inboxesCollectionResponseSchema = {
+  type: "object",
+  properties: {
+    data: { type: "array", items: { type: "object", additionalProperties: true } },
+    meta: {
+      type: "object",
+      properties: {
+        total: { type: "number" },
+      },
+      required: ["total"],
+    },
+  },
+  required: ["data", "meta"],
+};
+
+const inboxEnvelopeResponseSchema = {
+  type: "object",
+  properties: {
+    inbox: { type: "object", additionalProperties: true },
+  },
+  required: ["inbox"],
+};
+
+const inboxDeleteResponseSchema = {
+  type: "object",
+  properties: {
+    success: { type: "boolean" },
+  },
+  required: ["success"],
+};
 
 export async function inboxRoutes(app: FastifyInstance) {
-  app.get("/inboxes", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
+  app.get("/inboxes", {
+    preHandler: [app.authenticate, createTierEnforceHandler("inboxes")],
+    schema: {
+      tags: ["inboxes"],
+      summary: "List accessible inboxes",
+      querystring: {
+        type: "object",
+        properties: {
+          domain: { type: "string" },
+          search: { type: "string" },
+          teamId: { type: "string", format: "uuid" },
+          limit: { type: "number", minimum: 1, maximum: 200 },
+          offset: { type: "number", minimum: 0 },
+          personal: { type: "string", enum: ["true", "false"] },
+        },
+      },
+      response: {
+        200: inboxesCollectionResponseSchema,
+        400: inboxesErrorResponseSchema,
+        401: inboxesErrorResponseSchema,
+        403: inboxesErrorResponseSchema,
+        500: inboxesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const query = z
       .object({
         domain: z.string().optional(),
@@ -73,7 +138,31 @@ export async function inboxRoutes(app: FastifyInstance) {
     return { data: inboxes, meta: { total } };
   });
 
-  app.post("/inboxes", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
+  app.post("/inboxes", {
+    preHandler: [app.authenticate, createTierEnforceHandler("inboxes")],
+    schema: {
+      tags: ["inboxes"],
+      summary: "Create inbox",
+      body: {
+        type: "object",
+        required: ["domainId", "localPart"],
+        properties: {
+          domainId: { type: "string", format: "uuid" },
+          localPart: { type: "string", minLength: 1 },
+          expiresAt: { type: "string", format: "date-time", nullable: true },
+        },
+      },
+      response: {
+        201: inboxEnvelopeResponseSchema,
+        400: inboxesErrorResponseSchema,
+        401: inboxesErrorResponseSchema,
+        403: inboxesErrorResponseSchema,
+        404: inboxesErrorResponseSchema,
+        409: inboxesErrorResponseSchema,
+        500: inboxesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const bodySchema = z.object({
       domainId: z.string().uuid(),
       localPart: z.string().min(1),
@@ -145,7 +234,28 @@ export async function inboxRoutes(app: FastifyInstance) {
   });
 
   // DELETE inbox (soft delete)
-  app.delete("/inboxes/:id", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
+  app.delete("/inboxes/:id", {
+    preHandler: [app.authenticate, createTierEnforceHandler("inboxes")],
+    schema: {
+      tags: ["inboxes"],
+      summary: "Delete inbox",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        200: inboxDeleteResponseSchema,
+        400: inboxesErrorResponseSchema,
+        401: inboxesErrorResponseSchema,
+        403: inboxesErrorResponseSchema,
+        404: inboxesErrorResponseSchema,
+        500: inboxesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid ID" });
@@ -201,7 +311,38 @@ export async function inboxRoutes(app: FastifyInstance) {
   });
 
   // PATCH inbox - Admin update (transfer ownership)
-  app.patch("/inboxes/:id", { preHandler: [app.authenticate, createTierEnforceHandler("inboxes")] }, async (request, reply) => {
+  app.patch("/inboxes/:id", {
+    preHandler: [app.authenticate, createTierEnforceHandler("inboxes")],
+    schema: {
+      tags: ["inboxes"],
+      summary: "Update inbox settings and ownership",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      body: {
+        type: "object",
+        properties: {
+          ownerId: { type: "string", format: "uuid" },
+          ownerEmail: { type: "string", format: "email" },
+          expiresAt: { type: "string", format: "date-time", nullable: true },
+          retentionDays: { type: "number", minimum: 1, maximum: 365, nullable: true },
+          shareMode: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
+        },
+      },
+      response: {
+        200: inboxEnvelopeResponseSchema,
+        400: inboxesErrorResponseSchema,
+        401: inboxesErrorResponseSchema,
+        403: inboxesErrorResponseSchema,
+        404: inboxesErrorResponseSchema,
+        500: inboxesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     const body = z.object({
       ownerId: z.string().uuid().optional(),

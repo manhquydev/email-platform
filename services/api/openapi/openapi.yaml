@@ -1,0 +1,1814 @@
+openapi: 3.1.0
+info:
+  title: Ephemera API
+  version: 1.0.0
+  description: Temporary email platform API for developers. Create disposable
+    inboxes, receive emails, extract OTP codes, and integrate with webhooks.
+  contact:
+    name: Ephemera Support
+    url: https://manhquy.click
+    email: support@manhquy.click
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://api.manhquy.click/v1
+    description: Production
+  - url: http://localhost:3001/v1
+    description: Development
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Domains
+    description: Domain management
+  - name: Inboxes
+    description: Inbox operations
+  - name: Messages
+    description: Email message operations
+  - name: Webhooks
+    description: Webhook configuration
+  - name: API Keys
+    description: API key management
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+      description: API key authentication
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+        totalPages:
+          type: number
+      required:
+        - total
+        - page
+        - limit
+        - totalPages
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details: {}
+      required:
+        - error
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+      required:
+        - email
+        - password
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+            role:
+              type: string
+              enum:
+                - USER
+                - ADMIN
+            tier:
+              type: string
+          required:
+            - id
+            - email
+            - role
+            - tier
+        requires2FA:
+          type: boolean
+        tempToken:
+          type: string
+      required:
+        - token
+        - user
+    Domain:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        isVerified:
+          type: boolean
+        isPublic:
+          type: boolean
+        verificationToken:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - isVerified
+        - isPublic
+        - createdAt
+        - updatedAt
+    CreateDomainRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+      required:
+        - name
+    Inbox:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        localPart:
+          type: string
+        address:
+          type: string
+          format: email
+        domainId:
+          type: string
+          format: uuid
+        ownerId:
+          type:
+            - string
+            - "null"
+          format: uuid
+        expiresAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - localPart
+        - address
+        - domainId
+        - ownerId
+        - expiresAt
+        - isActive
+        - createdAt
+    CreateInboxRequest:
+      type: object
+      properties:
+        localPart:
+          type: string
+        domainId:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: number
+      required:
+        - id
+        - filename
+        - contentType
+        - size
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        inboxId:
+          type: string
+          format: uuid
+        fromAddress:
+          type:
+            - string
+            - "null"
+        toAddress:
+          type:
+            - string
+            - "null"
+        subject:
+          type:
+            - string
+            - "null"
+        textBody:
+          type:
+            - string
+            - "null"
+        htmlBody:
+          type:
+            - string
+            - "null"
+        isRead:
+          type: boolean
+        receivedAt:
+          type: string
+          format: date-time
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              filename:
+                type: string
+              contentType:
+                type: string
+              size:
+                type: number
+            required:
+              - id
+              - filename
+              - contentType
+              - size
+      required:
+        - id
+        - inboxId
+        - fromAddress
+        - toAddress
+        - subject
+        - textBody
+        - htmlBody
+        - isRead
+        - receivedAt
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        secret:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - url
+        - secret
+        - events
+        - isActive
+        - createdAt
+    CreateWebhookRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+          default:
+            - email.received
+      required:
+        - name
+        - url
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        prefix:
+          type: string
+        lastUsedAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+        expiresAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - prefix
+        - lastUsedAt
+        - expiresAt
+        - createdAt
+    CreateApiKeyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - name
+    CreateApiKeyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        prefix:
+          type: string
+        lastUsedAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+        expiresAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        key:
+          type: string
+          description: Full API key - only shown once
+      required:
+        - id
+        - name
+        - prefix
+        - lastUsedAt
+        - expiresAt
+        - createdAt
+        - key
+  parameters: {}
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login with email and password
+      description: Authenticate user and receive JWT token. If 2FA is enabled, returns
+        tempToken for verification.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+                        enum:
+                          - USER
+                          - ADMIN
+                      tier:
+                        type: string
+                    required:
+                      - id
+                      - email
+                      - role
+                      - tier
+                  requires2FA:
+                    type: boolean
+                  tempToken:
+                    type: string
+                required:
+                  - token
+                  - user
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register new account
+      description: Create a new user account. Email verification may be required.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+              required:
+                - email
+                - password
+      responses:
+        "201":
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                    required:
+                      - id
+                      - email
+                  message:
+                    type: string
+                required:
+                  - user
+                  - message
+        "400":
+          description: Validation error or email already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /auth/2fa/verify:
+    post:
+      tags:
+        - Auth
+      summary: Verify 2FA code
+      description: Complete login by verifying TOTP code when 2FA is enabled.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tempToken:
+                  type: string
+                code:
+                  type: string
+                  minLength: 6
+                  maxLength: 6
+              required:
+                - tempToken
+                - code
+      responses:
+        "200":
+          description: 2FA verification successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+                        enum:
+                          - USER
+                          - ADMIN
+                      tier:
+                        type: string
+                    required:
+                      - id
+                      - email
+                      - role
+                      - tier
+                  requires2FA:
+                    type: boolean
+                  tempToken:
+                    type: string
+                required:
+                  - token
+                  - user
+        "401":
+          description: Invalid code or token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Get current user profile
+      description: Retrieve the authenticated user profile.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                    enum:
+                      - USER
+                      - ADMIN
+                  tier:
+                    type: string
+                  has2FA:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                required:
+                  - id
+                  - email
+                  - role
+                  - tier
+                  - has2FA
+                  - createdAt
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /inboxes:
+    get:
+      tags:
+        - Inboxes
+      summary: List all inboxes
+      description: Retrieve all inboxes for the authenticated user with pagination.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type:
+              - number
+              - "null"
+            default: 1
+          required: false
+          name: page
+          in: query
+        - schema:
+            type:
+              - number
+              - "null"
+            default: 20
+          required: false
+          name: limit
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: domain
+          in: query
+        - schema:
+            type:
+              - boolean
+              - "null"
+          required: false
+          name: personal
+          in: query
+      responses:
+        "200":
+          description: List of inboxes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        localPart:
+                          type: string
+                        address:
+                          type: string
+                          format: email
+                        domainId:
+                          type: string
+                          format: uuid
+                        ownerId:
+                          type:
+                            - string
+                            - "null"
+                          format: uuid
+                        expiresAt:
+                          type:
+                            - string
+                            - "null"
+                          format: date-time
+                        isActive:
+                          type: boolean
+                        createdAt:
+                          type: string
+                          format: date-time
+                      required:
+                        - id
+                        - localPart
+                        - address
+                        - domainId
+                        - ownerId
+                        - expiresAt
+                        - isActive
+                        - createdAt
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: number
+                      page:
+                        type: number
+                      limit:
+                        type: number
+                      totalPages:
+                        type: number
+                    required:
+                      - total
+                      - page
+                      - limit
+                      - totalPages
+                required:
+                  - data
+                  - meta
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+    post:
+      tags:
+        - Inboxes
+      summary: Create a new inbox
+      description: Create a temporary email inbox. If no localPart is provided, a
+        random one will be generated.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                localPart:
+                  type: string
+                domainId:
+                  type: string
+                  format: uuid
+                expiresAt:
+                  type: string
+                  format: date-time
+      responses:
+        "201":
+          description: Inbox created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  localPart:
+                    type: string
+                  address:
+                    type: string
+                    format: email
+                  domainId:
+                    type: string
+                    format: uuid
+                  ownerId:
+                    type:
+                      - string
+                      - "null"
+                    format: uuid
+                  expiresAt:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  isActive:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                required:
+                  - id
+                  - localPart
+                  - address
+                  - domainId
+                  - ownerId
+                  - expiresAt
+                  - isActive
+                  - createdAt
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /inboxes/{id}:
+    get:
+      tags:
+        - Inboxes
+      summary: Get inbox by ID
+      description: Retrieve a specific inbox by its ID.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Inbox details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  localPart:
+                    type: string
+                  address:
+                    type: string
+                    format: email
+                  domainId:
+                    type: string
+                    format: uuid
+                  ownerId:
+                    type:
+                      - string
+                      - "null"
+                    format: uuid
+                  expiresAt:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  isActive:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                required:
+                  - id
+                  - localPart
+                  - address
+                  - domainId
+                  - ownerId
+                  - expiresAt
+                  - isActive
+                  - createdAt
+        "404":
+          description: Inbox not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+    delete:
+      tags:
+        - Inboxes
+      summary: Delete an inbox
+      description: Delete an inbox and all its messages.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Inbox deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+        "404":
+          description: Inbox not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /inboxes/bulk:
+    post:
+      tags:
+        - Inboxes
+      summary: Bulk create inboxes
+      description: Create multiple inboxes at once. Maximum 10 per request.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count:
+                  type: number
+                  minimum: 1
+                  maximum: 10
+                domainId:
+                  type: string
+                  format: uuid
+              required:
+                - count
+      responses:
+        "201":
+          description: Inboxes created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        localPart:
+                          type: string
+                        address:
+                          type: string
+                          format: email
+                        domainId:
+                          type: string
+                          format: uuid
+                        ownerId:
+                          type:
+                            - string
+                            - "null"
+                          format: uuid
+                        expiresAt:
+                          type:
+                            - string
+                            - "null"
+                          format: date-time
+                        isActive:
+                          type: boolean
+                        createdAt:
+                          type: string
+                          format: date-time
+                      required:
+                        - id
+                        - localPart
+                        - address
+                        - domainId
+                        - ownerId
+                        - expiresAt
+                        - isActive
+                        - createdAt
+                  failed:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        error:
+                          type: string
+                      required:
+                        - error
+                required:
+                  - created
+                  - failed
+  /messages:
+    get:
+      tags:
+        - Messages
+      summary: List messages
+      description: List messages with optional filtering by inbox, search query, and
+        read status.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: false
+          name: inboxId
+          in: query
+        - schema:
+            type: string
+            description: Search in subject and body
+          required: false
+          description: Search in subject and body
+          name: q
+          in: query
+        - schema:
+            type: string
+            description: Filter by sender
+          required: false
+          description: Filter by sender
+          name: from
+          in: query
+        - schema:
+            type:
+              - boolean
+              - "null"
+          required: false
+          name: isRead
+          in: query
+        - schema:
+            type:
+              - number
+              - "null"
+            default: 1
+          required: false
+          name: page
+          in: query
+        - schema:
+            type:
+              - number
+              - "null"
+            default: 20
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        inboxId:
+                          type: string
+                          format: uuid
+                        fromAddress:
+                          type:
+                            - string
+                            - "null"
+                        toAddress:
+                          type:
+                            - string
+                            - "null"
+                        subject:
+                          type:
+                            - string
+                            - "null"
+                        textBody:
+                          type:
+                            - string
+                            - "null"
+                        htmlBody:
+                          type:
+                            - string
+                            - "null"
+                        isRead:
+                          type: boolean
+                        receivedAt:
+                          type: string
+                          format: date-time
+                        attachments:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                format: uuid
+                              filename:
+                                type: string
+                              contentType:
+                                type: string
+                              size:
+                                type: number
+                            required:
+                              - id
+                              - filename
+                              - contentType
+                              - size
+                      required:
+                        - id
+                        - inboxId
+                        - fromAddress
+                        - toAddress
+                        - subject
+                        - textBody
+                        - htmlBody
+                        - isRead
+                        - receivedAt
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: number
+                      page:
+                        type: number
+                      limit:
+                        type: number
+                      totalPages:
+                        type: number
+                    required:
+                      - total
+                      - page
+                      - limit
+                      - totalPages
+                required:
+                  - data
+                  - meta
+  /messages/{id}:
+    get:
+      tags:
+        - Messages
+      summary: Get message by ID
+      description: Retrieve a specific message with full content and attachments.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Message details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  inboxId:
+                    type: string
+                    format: uuid
+                  fromAddress:
+                    type:
+                      - string
+                      - "null"
+                  toAddress:
+                    type:
+                      - string
+                      - "null"
+                  subject:
+                    type:
+                      - string
+                      - "null"
+                  textBody:
+                    type:
+                      - string
+                      - "null"
+                  htmlBody:
+                    type:
+                      - string
+                      - "null"
+                  isRead:
+                    type: boolean
+                  receivedAt:
+                    type: string
+                    format: date-time
+                  attachments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        filename:
+                          type: string
+                        contentType:
+                          type: string
+                        size:
+                          type: number
+                      required:
+                        - id
+                        - filename
+                        - contentType
+                        - size
+                required:
+                  - id
+                  - inboxId
+                  - fromAddress
+                  - toAddress
+                  - subject
+                  - textBody
+                  - htmlBody
+                  - isRead
+                  - receivedAt
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+    delete:
+      tags:
+        - Messages
+      summary: Delete a message
+      description: Delete a message and its attachments.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Message deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /messages/{id}/read:
+    patch:
+      tags:
+        - Messages
+      summary: Mark message as read/unread
+      description: Update the read status of a message.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isRead:
+                  type: boolean
+              required:
+                - isRead
+      responses:
+        "200":
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+  /messages/search:
+    get:
+      tags:
+        - Messages
+      summary: Search messages
+      description: Full-text search across all messages in user inboxes.
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Search query
+          required: true
+          description: Search query
+          name: q
+          in: query
+        - schema:
+            type:
+              - number
+              - "null"
+            default: 50
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        inboxId:
+                          type: string
+                          format: uuid
+                        fromAddress:
+                          type:
+                            - string
+                            - "null"
+                        toAddress:
+                          type:
+                            - string
+                            - "null"
+                        subject:
+                          type:
+                            - string
+                            - "null"
+                        textBody:
+                          type:
+                            - string
+                            - "null"
+                        htmlBody:
+                          type:
+                            - string
+                            - "null"
+                        isRead:
+                          type: boolean
+                        receivedAt:
+                          type: string
+                          format: date-time
+                        attachments:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                format: uuid
+                              filename:
+                                type: string
+                              contentType:
+                                type: string
+                              size:
+                                type: number
+                            required:
+                              - id
+                              - filename
+                              - contentType
+                              - size
+                      required:
+                        - id
+                        - inboxId
+                        - fromAddress
+                        - toAddress
+                        - subject
+                        - textBody
+                        - htmlBody
+                        - isRead
+                        - receivedAt
+                  total:
+                    type: number
+                required:
+                  - data
+                  - total
+  /webhooks:
+    get:
+      tags:
+        - Webhooks
+      summary: List all webhooks
+      description: Retrieve all webhooks configured for the authenticated user.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    name:
+                      type: string
+                    url:
+                      type: string
+                      format: uri
+                    secret:
+                      type: string
+                    events:
+                      type: array
+                      items:
+                        type: string
+                    isActive:
+                      type: boolean
+                    createdAt:
+                      type: string
+                      format: date-time
+                  required:
+                    - id
+                    - name
+                    - url
+                    - secret
+                    - events
+                    - isActive
+                    - createdAt
+    post:
+      tags:
+        - Webhooks
+      summary: Create a webhook
+      description: Create a new webhook endpoint. A secret will be generated for
+        signature verification.
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                url:
+                  type: string
+                  format: uri
+                events:
+                  type: array
+                  items:
+                    type: string
+                  default:
+                    - email.received
+              required:
+                - name
+                - url
+      responses:
+        "201":
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+                  secret:
+                    type: string
+                  events:
+                    type: array
+                    items:
+                      type: string
+                  isActive:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                required:
+                  - id
+                  - name
+                  - url
+                  - secret
+                  - events
+                  - isActive
+                  - createdAt
+        "400":
+          description: Validation error or SSRF blocked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+  /webhooks/{id}:
+    delete:
+      tags:
+        - Webhooks
+      summary: Delete a webhook
+      description: Delete a webhook configuration.
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Webhook deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+        "404":
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  details: {}
+                required:
+                  - error
+    put:
+      tags:
+        - Webhooks
+      summary: Update a webhook
+      description: Update webhook configuration.
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                url:
+                  type: string
+                  format: uri
+                events:
+                  type: array
+                  items:
+                    type: string
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Webhook updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+                  secret:
+                    type: string
+                  events:
+                    type: array
+                    items:
+                      type: string
+                  isActive:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                required:
+                  - id
+                  - name
+                  - url
+                  - secret
+                  - events
+                  - isActive
+                  - createdAt
+  /webhooks/{id}/test:
+    post:
+      tags:
+        - Webhooks
+      summary: Test a webhook
+      description: Send a test payload to the webhook endpoint.
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Test queued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                required:
+                  - success
+                  - message
+  /webhooks/events:
+    get:
+      tags:
+        - Webhooks
+      summary: List available webhook events
+      description: Get all available webhook event types that can be subscribed to.
+      responses:
+        "200":
+          description: Available events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        event:
+                          type: string
+                        description:
+                          type: string
+                        default:
+                          type: boolean
+                      required:
+                        - event
+                        - description
+                        - default
+                required:
+                  - events
+  /webhooks/verify-signature:
+    post:
+      tags:
+        - Webhooks
+      summary: Verify webhook signature
+      description: Utility endpoint to verify a webhook signature. Useful for debugging.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: string
+                signature:
+                  type: string
+                secret:
+                  type: string
+              required:
+                - payload
+                - signature
+                - secret
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                required:
+                  - valid
+webhooks: {}

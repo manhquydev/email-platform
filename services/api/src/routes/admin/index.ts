@@ -17,6 +17,11 @@ import { adminTelegramRoutes } from "./telegram";
 import { adminBackupRoutes } from "./backup";
 import { notificationTemplateRoutes } from "./notification-templates";
 import { notificationLogRoutes } from "./notification-logs";
+import adminTenantsRoutes from "./tenants";
+import adminMigrationRoutes from "./migration";
+import adminMonitoringRoutes from "./monitoring";
+import adminHealthRoutes from "./health";
+import { complianceRoutes } from "./compliance";
 
 export async function adminRoutes(app: FastifyInstance) {
     // Register all admin route modules
@@ -31,6 +36,13 @@ export async function adminRoutes(app: FastifyInstance) {
     await adminAnalyticsRoutes(app);
     await adminTelegramRoutes(app);
     await adminBackupRoutes(app);
+
+    // Roadmap admin modules (now enabled under admin prefixes)
+    app.register(adminHealthRoutes, { prefix: "/admin/health" });
+    app.register(adminMonitoringRoutes, { prefix: "/admin/monitoring" });
+    app.register(adminMigrationRoutes, { prefix: "/admin/migration" });
+    app.register(adminTenantsRoutes, { prefix: "/admin/tenants" });
+    app.register(complianceRoutes, { prefix: "/admin" });
 
     // Notification management routes
     app.register(notificationTemplateRoutes, { prefix: '/notifications/templates' });

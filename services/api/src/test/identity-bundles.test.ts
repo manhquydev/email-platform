@@ -73,7 +73,7 @@ describe("Identity Bundles Integration", () => {
       .post("/domains")
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "example.com" });
-    expect(domainResp.status).toBe(200);
+    expect(domainResp.status).toBe(201);
     const domainId = domainResp.body.domain.id;
 
     // 2. Create Alias

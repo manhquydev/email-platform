@@ -37,6 +37,12 @@ vi.mock("../utils/token", () => ({
     generateToken: () => "mock-token",
 }));
 
+vi.mock("../services/tier-enforcement.service", () => ({
+    createTierEnforceHandler: () => async () => undefined,
+    enforceApiAccess: async () => undefined,
+    enforceDailyEmailLimit: async () => undefined,
+}));
+
 describe("Shared Domain Workflow (Mocked)", () => {
     let app: FastifyInstance;
     let buildServer: any;

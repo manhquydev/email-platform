@@ -24,6 +24,19 @@ export interface ReferralStats {
   totalReferrals: number;
   pendingRewards: number;
   claimedRewards: number;
+  bonusAliases: number;
+  recentReferrals?: Array<{
+    id: string;
+    date: Date;
+    status: "pending" | "claimed";
+  }>;
+}
+
+export interface ClaimRewardsResult {
+  success: boolean;
+  claimedRewards: number;
+  aliasesAwarded: number;
+  newTotal: number;
 }
 
 /**
@@ -65,6 +78,9 @@ export const referralService = {
       where: {
         userId,
         action: 'REFERRAL_CODE_CREATED',
+      },
+      select: {
+        createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -119,6 +135,9 @@ export const referralService = {
         userId: newUserId,
         action: 'REFERRAL_APPLIED',
       },
+      select: {
+        id: true,
+      },
     });
 
     if (alreadyUsed) {
@@ -130,6 +149,9 @@ export const referralService = {
       where: {
         action: 'REFERRAL_CODE_CREATED',
         meta: { path: ['referralCode'], equals: referralCode },
+      },
+      select: {
+        userId: true,
       },
     });
 
@@ -182,40 +204,55 @@ export const referralService = {
   async getStats(userId: string): Promise<ReferralStats> {
     const code = generateReferralCode(userId);
 
-    const [totalReferrals, claimedRewards] = await Promise.all([
+    const [totalReferrals, claimLogs] = await Promise.all([
       prisma.auditLog.count({
         where: {
           action: 'REFERRAL_USED',
           meta: { path: ['referralCode'], equals: code },
         },
       }),
-      prisma.auditLog.count({
+      prisma.auditLog.findMany({
         where: {
           userId,
           action: 'REFERRAL_REWARD_CLAIMED',
         },
+        select: {
+          meta: true,
+        },
       }),
     ]);
 
+    const claimedRewards = claimLogs.reduce((sum, log) => {
+      const count = Number((log.meta as { count?: unknown } | null)?.count);
+      return sum + (Number.isFinite(count) ? count : 0);
+    }, 0);
+    const safeClaimedRewards = Math.min(totalReferrals, claimedRewards);
+    const pendingRewards = Math.max(0, totalReferrals - safeClaimedRewards);
+
     return {
       totalReferrals,
-      pendingRewards: Math.max(0, totalReferrals - claimedRewards),
-      claimedRewards,
+      pendingRewards,
+      claimedRewards: safeClaimedRewards,
+      bonusAliases: safeClaimedRewards * REFERRAL_REWARDS.ALIASES,
     };
   },
 
   /**
    * Claim pending referral rewards
    */
-  async claimRewards(userId: string): Promise<{
-    claimed: number;
-    aliasesAdded: number;
-  }> {
+  async claimRewards(userId: string): Promise<ClaimRewardsResult> {
     const stats = await this.getStats(userId);
 
     if (stats.pendingRewards === 0) {
-      return { claimed: 0, aliasesAdded: 0 };
+      return {
+        success: true,
+        claimedRewards: 0,
+        aliasesAwarded: 0,
+        newTotal: stats.bonusAliases,
+      };
     }
+
+    const aliasesAwarded = stats.pendingRewards * REFERRAL_REWARDS.ALIASES;
 
     // Record claim
     await prisma.auditLog.create({
@@ -224,14 +261,16 @@ export const referralService = {
         action: 'REFERRAL_REWARD_CLAIMED',
         meta: {
           count: stats.pendingRewards,
-          aliasesAdded: stats.pendingRewards * REFERRAL_REWARDS.ALIASES,
+          aliasesAdded: aliasesAwarded,
         },
       },
     });
 
     return {
-      claimed: stats.pendingRewards,
-      aliasesAdded: stats.pendingRewards * REFERRAL_REWARDS.ALIASES,
+      success: true,
+      claimedRewards: stats.pendingRewards,
+      aliasesAwarded,
+      newTotal: stats.bonusAliases + aliasesAwarded,
     };
   },
 };

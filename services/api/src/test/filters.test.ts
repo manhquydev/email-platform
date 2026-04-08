@@ -35,6 +35,11 @@ vi.mock("../lib/prisma", () => ({
     prisma: prismaMock,
 }));
 
+// Bypass tier gate in route unit tests; tier enforcement has dedicated test coverage.
+vi.mock("../services/tier-enforcement.service", () => ({
+    createTierEnforceHandler: () => async () => {},
+}));
+
 import { filterRoutes } from "../routes/filters";
 
 const mockUser = { userId: "user-123", role: "USER" };

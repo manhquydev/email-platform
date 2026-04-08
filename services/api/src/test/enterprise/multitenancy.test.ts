@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { prisma } from '../../setup';
+import { prisma } from '../setup';
 import { prismaWithTenant } from '../../lib/prisma';
 import { OrganizationRole, UserRole } from '@prisma/client';
 

@@ -10,10 +10,10 @@ import multipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import path from "path";
 import { appConfig } from "./config";
-import { errorHandler } from "./utils/errorHandler";
+import { errorHandler, normalizeApiErrorPayload, sendApiError } from "./utils/errorHandler";
 import { authRoutes } from "./routes/auth";
 import { anonymousAuthRoutes } from "./routes/anonymous-auth";
-import { domainRoutes } from "./routes/domains";
+import { domainRoutes, emailValidationRoutes } from "./routes/domains";
 import { inboxRoutes } from "./routes/inboxes";
 import { messageRoutes } from "./routes/messages";
 import { healthRoutes } from "./routes/health";
@@ -86,6 +86,10 @@ declare module "fastify" {
 
 export const buildServer = () => {
   const isProduction = process.env.NODE_ENV === "production";
+  const isAdminEndpointPath = (url: string): boolean => {
+    const pathname = url.split("?")[0];
+    return /^\/(admin|v1\/admin|notifications\/admin)(\/|$)/.test(pathname);
+  };
 
   const app = Fastify({
     trustProxy: appConfig.trustProxy,
@@ -125,6 +129,45 @@ export const buildServer = () => {
   });
 
   app.setErrorHandler(errorHandler);
+  app.setNotFoundHandler((request, reply) => {
+    return sendApiError(reply, 404, "Route not found", { code: "NOT_FOUND" });
+  });
+  app.addHook("onSend", async (request, reply, payload) => {
+    if (reply.statusCode < 400) {
+      return payload;
+    }
+
+    const parsePayload = (): unknown => {
+      if (typeof payload === "string") {
+        try {
+          return JSON.parse(payload);
+        } catch {
+          return null;
+        }
+      }
+      if (Buffer.isBuffer(payload)) {
+        try {
+          return JSON.parse(payload.toString("utf8"));
+        } catch {
+          return null;
+        }
+      }
+      return payload;
+    };
+
+    const parsedPayload = parsePayload();
+    const normalizedPayload = normalizeApiErrorPayload(reply.statusCode, parsedPayload);
+    if (!normalizedPayload) {
+      return payload;
+    }
+
+    if (typeof payload === "string" || Buffer.isBuffer(payload)) {
+      reply.header("content-type", "application/json; charset=utf-8");
+      return JSON.stringify(normalizedPayload);
+    }
+
+    return normalizedPayload;
+  });
 
   // Raw body needed for Stripe/SePay webhook signature verification
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -318,6 +361,10 @@ export const buildServer = () => {
     // Check API Key
     const apiKey = request.headers['x-api-key'];
     if (typeof apiKey === 'string') {
+      if (isAdminEndpointPath(request.url)) {
+        return sendApiError(reply, 403, "API keys are not allowed for admin endpoints", { code: "FORBIDDEN" });
+      }
+
       const hash = crypto.createHash('sha256').update(apiKey).digest('hex');
 
       const keyRecord = await prisma.apiKey.findUnique({
@@ -328,7 +375,7 @@ export const buildServer = () => {
       if (keyRecord) {
         // Check if API key has expired
         if (keyRecord.expiresAt && keyRecord.expiresAt < new Date()) {
-          return reply.status(401).send({ error: "API Key has expired" });
+          return sendApiError(reply, 401, "API Key has expired", { code: "UNAUTHORIZED" });
         }
 
         // API keys are still subject to rate limiting (per-key, not per-IP)
@@ -347,7 +394,7 @@ export const buildServer = () => {
         prisma.apiKey.update({ where: { id: keyRecord.id }, data: { lastUsedAt: new Date() } }).catch(() => { });
         return;
       }
-      return reply.status(401).send({ error: "Invalid API Key" });
+      return sendApiError(reply, 401, "Invalid API Key", { code: "UNAUTHORIZED" });
     }
 
     try {
@@ -359,7 +406,7 @@ export const buildServer = () => {
         const isRevoked = await tokenRevocationService.isRevoked(decoded.jti);
         if (isRevoked) {
           request.log.warn({ jti: decoded.jti?.slice(0, 8) }, "Revoked token used");
-          return reply.status(401).send({ error: "Token has been revoked" });
+          return sendApiError(reply, 401, "Token has been revoked", { code: "UNAUTHORIZED" });
         }
       }
 
@@ -368,7 +415,7 @@ export const buildServer = () => {
         const isUserRevoked = await tokenRevocationService.isUserTokenRevoked(decoded.userId, decoded.iat);
         if (isUserRevoked) {
           request.log.warn({ userId: decoded.userId?.slice(0, 8) }, "User tokens revoked");
-          return reply.status(401).send({ error: "Session expired, please login again" });
+          return sendApiError(reply, 401, "Session expired, please login again", { code: "UNAUTHORIZED" });
         }
       }
     } catch (err) {
@@ -378,7 +425,7 @@ export const buildServer = () => {
         url: request.url,
         method: request.method
       }, "unauthorized request");
-      return reply.status(401).send({ error: "Unauthorized", details: (err as any).message });
+      return sendApiError(reply, 401, "Unauthorized", { code: "UNAUTHORIZED", details: (err as any).message });
     }
   });
 
@@ -396,7 +443,7 @@ export const buildServer = () => {
 
     const user = (request as any).user;
     if (!user || user.role !== "ADMIN") {
-      return reply.status(403).send({ error: "Admin access required" });
+      return sendApiError(reply, 403, "Admin access required", { code: "FORBIDDEN" });
     }
   });
 
@@ -409,6 +456,7 @@ export const buildServer = () => {
   app.register(publicInboxRoutes, { prefix: "/api" });
   app.register(publicTelegramRoutes, { prefix: "/api" });
   app.register(domainRoutes);
+  app.register(emailValidationRoutes);
   app.register(inboxRoutes);
   app.register(messageRoutes);
   app.register(healthRoutes);

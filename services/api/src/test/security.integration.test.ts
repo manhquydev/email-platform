@@ -66,13 +66,14 @@ describe("Security Integration Tests", () => {
 
         expect(res.status).toBe(401);
 
-        const logs = await prisma.auditLog.findMany({
-            where: { action: "LOGIN_FAILED" }
+        const log = await prisma.auditLog.findFirst({
+            where: { action: "auth.login.failed" },
+            orderBy: { createdAt: "desc" }
         });
 
-        expect(logs.length).toBeGreaterThan(0);
-        expect(logs[0].action).toBe("LOGIN_FAILED");
-        const meta = logs[0].meta as any;
+        expect(log).toBeDefined();
+        expect(log?.action).toBe("auth.login.failed");
+        const meta = log?.meta as any;
         expect(meta.email).toBe(email);
         expect(meta.reason).toBe("invalid_password");
     });

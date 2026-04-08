@@ -1,5 +1,16 @@
 import { prisma } from "../lib/prisma";
 import { FastifyRequest } from "fastify";
+import { randomUUID } from "crypto";
+
+export type AuditOutcome = "SUCCESS" | "FAILURE";
+
+type AuditContext = {
+  ip?: string;
+  userAgent?: string;
+  requestId?: string;
+  success?: boolean;
+  outcome?: AuditOutcome;
+};
 
 /**
  * Audit action types for consistent logging
@@ -40,17 +51,52 @@ export enum AuditAction {
 export const recordAudit = async (
   userId: string | null,
   action: string,
-  meta?: Record<string, unknown>
+  meta?: Record<string, unknown>,
+  context?: AuditContext
 ): Promise<void> => {
+  const success = context?.success ?? (context?.outcome ? context.outcome === "SUCCESS" : true);
+  const outcome: AuditOutcome = context?.outcome ?? (success ? "SUCCESS" : "FAILURE");
+
   try {
     await prisma.auditLog.create({
       data: {
         userId: userId ?? undefined,
         action,
         meta: meta as any,
+        ip: context?.ip,
+        userAgent: context?.userAgent,
+        requestId: context?.requestId,
+        success,
+        outcome,
       },
     });
   } catch (error) {
+    // Backward compatibility: environments not migrated yet may miss `outcome` column.
+    const maybeCode = (error as { code?: string })?.code;
+    if (maybeCode === "P2022") {
+      try {
+        const serializedMeta = meta ? JSON.stringify(meta) : null;
+        await prisma.$executeRaw`
+          INSERT INTO "AuditLog" ("id", "userId", "action", "meta", "ip", "userAgent", "requestId", "success", "createdAt")
+          VALUES (
+            ${randomUUID()},
+            ${userId},
+            ${action},
+            CAST(${serializedMeta} AS jsonb),
+            ${context?.ip ?? null},
+            ${context?.userAgent ?? null},
+            ${context?.requestId ?? null},
+            ${success},
+            NOW()
+          )
+        `;
+        return;
+      } catch (fallbackError) {
+        console.error("Failed to record audit log (fallback):", fallbackError);
+        return;
+      }
+    }
+
     console.error('Failed to record audit log:', error);
   }
 };
@@ -69,15 +115,11 @@ export const recordAuditFromRequest = async (
   const userAgent = request.headers['user-agent'] ?? undefined;
   const requestId = request.id;
 
-  try {
-    await prisma.auditLog.create({
-      data: {
-        userId: userId ?? undefined,
-        action,
-        meta: { ...meta, ip, userAgent, requestId, success } as any,
-      },
-    });
-  } catch (error) {
-    console.error('Failed to record audit log:', error);
-  }
+  await recordAudit(userId, action, meta, {
+    ip,
+    userAgent: typeof userAgent === "string" ? userAgent : undefined,
+    requestId,
+    success,
+    outcome: success ? "SUCCESS" : "FAILURE",
+  });
 };

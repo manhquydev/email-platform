@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { createTierEnforceHandler, TierEnforcementService } from "../services/tier-enforcement.service";
+import { sendApiError } from "../utils/errorHandler";
 
 export async function teamRoutes(app: FastifyInstance) {
     // Create a new team
@@ -15,7 +16,7 @@ export async function teamRoutes(app: FastifyInstance) {
 
         const parsed = schema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Invalid payload", details: parsed.error.flatten() });
+            return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST", details: parsed.error.flatten() });
         }
 
         const { name, description } = parsed.data;
@@ -110,7 +111,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!team) {
-            return reply.status(404).send({ error: "Team not found" });
+            return sendApiError(reply, 404, "Team not found", { code: "NOT_FOUND" });
         }
 
         return { team };
@@ -126,7 +127,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!team) {
-            return reply.status(404).send({ error: "Team not found or not owner" });
+            return sendApiError(reply, 404, "Team not found or not owner", { code: "NOT_FOUND" });
         }
 
         const schema = z.object({
@@ -136,7 +137,7 @@ export async function teamRoutes(app: FastifyInstance) {
 
         const parsed = schema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Invalid payload" });
+            return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST" });
         }
 
         const updated = await prisma.team.update({
@@ -157,7 +158,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!team) {
-            return reply.status(404).send({ error: "Team not found or not owner" });
+            return sendApiError(reply, 404, "Team not found or not owner", { code: "NOT_FOUND" });
         }
 
         await prisma.team.delete({ where: { id: teamId } });
@@ -173,12 +174,14 @@ export async function teamRoutes(app: FastifyInstance) {
         // Check tier limit for team members
         const memberCheck = await TierEnforcementService.canAddTeamMember(userId, teamId);
         if (!memberCheck.allowed) {
-            return reply.status(403).send({
-                error: 'TIER_LIMIT_EXCEEDED',
-                message: memberCheck.message,
-                currentCount: memberCheck.currentCount,
-                limit: memberCheck.limit,
-                upgradeRequired: memberCheck.upgradeRequired
+            return sendApiError(reply, 403, "TIER_LIMIT_EXCEEDED", {
+                code: "TIER_LIMIT_EXCEEDED",
+                details: {
+                    message: memberCheck.message,
+                    currentCount: memberCheck.currentCount,
+                    limit: memberCheck.limit,
+                    upgradeRequired: memberCheck.upgradeRequired,
+                },
             });
         }
 
@@ -192,7 +195,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!membership) {
-            return reply.status(403).send({ error: "Not authorized to add members" });
+            return sendApiError(reply, 403, "Not authorized to add members", { code: "FORBIDDEN" });
         }
 
         const schema = z.object({
@@ -202,7 +205,7 @@ export async function teamRoutes(app: FastifyInstance) {
 
         const parsed = schema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Invalid payload" });
+            return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST" });
         }
 
         const { email, role } = parsed.data;
@@ -210,7 +213,7 @@ export async function teamRoutes(app: FastifyInstance) {
         // Find user by email
         const targetUser = await prisma.user.findUnique({ where: { email } });
         if (!targetUser) {
-            return reply.status(404).send({ error: "User not found" });
+            return sendApiError(reply, 404, "User not found", { code: "NOT_FOUND" });
         }
 
         // Check if already a member
@@ -219,7 +222,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (existing) {
-            return reply.status(409).send({ error: "User is already a member" });
+            return sendApiError(reply, 409, "User is already a member", { code: "CONFLICT" });
         }
 
         const member = await prisma.teamMember.create({
@@ -251,7 +254,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!membership) {
-            return reply.status(403).send({ error: "Not authorized to remove members" });
+            return sendApiError(reply, 403, "Not authorized to remove members", { code: "FORBIDDEN" });
         }
 
         const targetMember = await prisma.teamMember.findUnique({
@@ -259,11 +262,11 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!targetMember || targetMember.teamId !== teamId) {
-            return reply.status(404).send({ error: "Member not found" });
+            return sendApiError(reply, 404, "Member not found", { code: "NOT_FOUND" });
         }
 
         if (targetMember.role === "OWNER") {
-            return reply.status(403).send({ error: "Cannot remove team owner" });
+            return sendApiError(reply, 403, "Cannot remove team owner", { code: "FORBIDDEN" });
         }
 
         await prisma.teamMember.delete({ where: { id: memberId } });
@@ -286,7 +289,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!membership) {
-            return reply.status(403).send({ error: "Not authorized to share inboxes" });
+            return sendApiError(reply, 403, "Not authorized to share inboxes", { code: "FORBIDDEN" });
         }
 
         const schema = z.object({
@@ -295,7 +298,7 @@ export async function teamRoutes(app: FastifyInstance) {
 
         const parsed = schema.safeParse(request.body);
         if (!parsed.success) {
-            return reply.status(400).send({ error: "Invalid payload" });
+            return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST" });
         }
 
         const { inboxId } = parsed.data;
@@ -306,7 +309,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!inbox) {
-            return reply.status(404).send({ error: "Inbox not found or not owned by you" });
+            return sendApiError(reply, 404, "Inbox not found or not owned by you", { code: "NOT_FOUND" });
         }
 
         // Check if already shared
@@ -315,7 +318,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (existing) {
-            return reply.status(409).send({ error: "Inbox already shared with this team" });
+            return sendApiError(reply, 409, "Inbox already shared with this team", { code: "CONFLICT" });
         }
 
         const teamInbox = await prisma.teamInbox.create({
@@ -347,7 +350,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!membership) {
-            return reply.status(403).send({ error: "Not authorized" });
+            return sendApiError(reply, 403, "Not authorized", { code: "FORBIDDEN" });
         }
 
         const teamInbox = await prisma.teamInbox.findUnique({
@@ -355,7 +358,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!teamInbox) {
-            return reply.status(404).send({ error: "Shared inbox not found" });
+            return sendApiError(reply, 404, "Shared inbox not found", { code: "NOT_FOUND" });
         }
 
         await prisma.teamInbox.delete({
@@ -376,7 +379,7 @@ export async function teamRoutes(app: FastifyInstance) {
         });
 
         if (!membership) {
-            return reply.status(403).send({ error: "Not a team member" });
+            return sendApiError(reply, 403, "Not a team member", { code: "FORBIDDEN" });
         }
 
         const sharedInboxes = await prisma.teamInbox.findMany({

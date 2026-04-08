@@ -30,9 +30,69 @@ import {
   buildTempOutboundMessageId,
   sanitizeHeaderFilename,
 } from "./messages/utilities";
+import { sharedErrorResponseSchema } from "../plugins/swagger";
+
+const messagesErrorResponseSchema = {
+  ...sharedErrorResponseSchema,
+};
+
+const messagesCollectionResponseSchema = {
+  type: "object",
+  properties: {
+    data: { type: "array", items: { type: "object", additionalProperties: true } },
+    meta: {
+      type: "object",
+      properties: {
+        total: { type: "number" },
+      },
+      required: ["total"],
+    },
+  },
+  required: ["data", "meta"],
+};
+
+const messageEnvelopeResponseSchema = {
+  type: "object",
+  properties: {
+    message: { type: "object", additionalProperties: true },
+  },
+  required: ["message"],
+};
+
+const messageDeleteResponseSchema = {
+  type: "object",
+  properties: {
+    ok: { type: "boolean" },
+  },
+  required: ["ok"],
+};
 
 export const messageRoutes = async (app: FastifyInstance) => {
-  app.get("/messages", { preHandler: app.authenticate }, async (request, reply) => {
+  app.get("/messages", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["messages"],
+      summary: "List messages in an inbox",
+      querystring: {
+        type: "object",
+        properties: {
+          inboxId: { type: "string", format: "uuid" },
+          limit: { type: "number", minimum: 1, maximum: 200 },
+          offset: { type: "number", minimum: 0 },
+          q: { type: "string" },
+          hasAttachments: { type: "boolean" },
+        },
+        required: ["inboxId"],
+      },
+      response: {
+        200: messagesCollectionResponseSchema,
+        400: messagesErrorResponseSchema,
+        401: messagesErrorResponseSchema,
+        403: messagesErrorResponseSchema,
+        500: messagesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const query = listMessagesQuerySchema.safeParse(request.query);
     if (!query.success) {
       return reply.status(400).send({ error: "Invalid request" });
@@ -82,7 +142,42 @@ export const messageRoutes = async (app: FastifyInstance) => {
     return { data: messages, meta: { total } };
   });
 
-  app.get("/inboxes/:id/messages", { preHandler: app.authenticate }, async (request, reply) => {
+  app.get("/inboxes/:id/messages", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["messages"],
+      summary: "List messages by inbox id",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      querystring: {
+        type: "object",
+        properties: {
+          limit: { type: "number", minimum: 1, maximum: 200 },
+          offset: { type: "number", minimum: 0 },
+          q: { type: "string" },
+          from: { type: "string" },
+          subject: { type: "string" },
+          start: { type: "string", format: "date-time" },
+          end: { type: "string", format: "date-time" },
+          hasAttachments: { type: "boolean" },
+          isRead: { type: "boolean" },
+        },
+      },
+      response: {
+        200: messagesCollectionResponseSchema,
+        400: messagesErrorResponseSchema,
+        401: messagesErrorResponseSchema,
+        403: messagesErrorResponseSchema,
+        404: messagesErrorResponseSchema,
+        500: messagesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = messageIdParamsSchema.safeParse(request.params);
     const query = inboxMessagesQuerySchema.safeParse(request.query);
     if (!params.success || !query.success) {
@@ -268,7 +363,28 @@ export const messageRoutes = async (app: FastifyInstance) => {
     return { data: messages, meta: { query: q, threshold } };
   });
 
-  app.get("/messages/:id", { preHandler: app.authenticate }, async (request, reply) => {
+  app.get("/messages/:id", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["messages"],
+      summary: "Get message details by id",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        200: messageEnvelopeResponseSchema,
+        400: messagesErrorResponseSchema,
+        401: messagesErrorResponseSchema,
+        403: messagesErrorResponseSchema,
+        404: messagesErrorResponseSchema,
+        500: messagesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid request" });
@@ -291,7 +407,28 @@ export const messageRoutes = async (app: FastifyInstance) => {
     return { message };
   });
 
-  app.delete("/messages/:id", { preHandler: app.authenticate }, async (request, reply) => {
+  app.delete("/messages/:id", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["messages"],
+      summary: "Delete message",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        200: messageDeleteResponseSchema,
+        400: messagesErrorResponseSchema,
+        401: messagesErrorResponseSchema,
+        403: messagesErrorResponseSchema,
+        404: messagesErrorResponseSchema,
+        500: messagesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = messageIdParamsSchema.safeParse(request.params);
     if (!params.success) {
       return reply.status(400).send({ error: "Invalid request" });
@@ -325,7 +462,35 @@ export const messageRoutes = async (app: FastifyInstance) => {
     return { ok: true };
   });
 
-  app.patch("/messages/:id/read", { preHandler: app.authenticate }, async (request, reply) => {
+  app.patch("/messages/:id/read", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["messages"],
+      summary: "Mark message as read/unread",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      body: {
+        type: "object",
+        required: ["isRead"],
+        properties: {
+          isRead: { type: "boolean" },
+        },
+      },
+      response: {
+        200: messageEnvelopeResponseSchema,
+        400: messagesErrorResponseSchema,
+        401: messagesErrorResponseSchema,
+        403: messagesErrorResponseSchema,
+        404: messagesErrorResponseSchema,
+        500: messagesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = messageIdParamsSchema.safeParse(request.params);
     const body = readBodySchema.safeParse(request.body);
 
@@ -364,7 +529,35 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   // Pin/unpin message
-  app.patch("/messages/:id/pin", { preHandler: app.authenticate }, async (request, reply) => {
+  app.patch("/messages/:id/pin", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["messages"],
+      summary: "Pin or unpin message",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      body: {
+        type: "object",
+        required: ["isPinned"],
+        properties: {
+          isPinned: { type: "boolean" },
+        },
+      },
+      response: {
+        200: messageEnvelopeResponseSchema,
+        400: messagesErrorResponseSchema,
+        401: messagesErrorResponseSchema,
+        403: messagesErrorResponseSchema,
+        404: messagesErrorResponseSchema,
+        500: messagesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = messageIdParamsSchema.safeParse(request.params);
     const body = pinBodySchema.safeParse(request.body);
 
@@ -396,7 +589,35 @@ export const messageRoutes = async (app: FastifyInstance) => {
   });
 
   // Snooze message
-  app.patch("/messages/:id/snooze", { preHandler: app.authenticate }, async (request, reply) => {
+  app.patch("/messages/:id/snooze", {
+    preHandler: app.authenticate,
+    schema: {
+      tags: ["messages"],
+      summary: "Snooze or unsnooze message",
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+        },
+      },
+      body: {
+        type: "object",
+        required: ["snoozedUntil"],
+        properties: {
+          snoozedUntil: { type: "string", format: "date-time", nullable: true },
+        },
+      },
+      response: {
+        200: messageEnvelopeResponseSchema,
+        400: messagesErrorResponseSchema,
+        401: messagesErrorResponseSchema,
+        403: messagesErrorResponseSchema,
+        404: messagesErrorResponseSchema,
+        500: messagesErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     const params = messageIdParamsSchema.safeParse(request.params);
     const body = snoozeBodySchema.safeParse(request.body);
 

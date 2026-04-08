@@ -13,7 +13,7 @@ const verifyCaptcha = (token?: string) => {
 export async function publicRoutes(app: FastifyInstance) {
   app.post("/public/inboxes", async (request, reply) => {
     if (!appConfig.publicInboxEnabled) {
-      return reply.status(404).send({ error: "Public inbox creation disabled" });
+      return reply.status(403).send({ error: "Public inbox creation is disabled by policy" });
     }
 
     const body = z

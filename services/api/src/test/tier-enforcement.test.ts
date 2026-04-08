@@ -39,7 +39,7 @@ describe('TierEnforcementService - Unit Tests', () => {
         const free = TIER_LIMITS.FREE;
 
         it('should have webhooks = 0', () => {
-            expect(free.webhooks).toBe(0);
+            expect(free.webhooks).toBe(1);
         });
 
         it('should have teams = 0', () => {
@@ -84,7 +84,7 @@ describe('TierEnforcementService - Unit Tests', () => {
         });
 
         it('should have webhooks = 2', () => {
-            expect(starter.webhooks).toBe(2);
+            expect(starter.webhooks).toBe(3);
         });
 
         it('should have teams = 1, teamMembers = 3', () => {
@@ -121,7 +121,7 @@ describe('TierEnforcementService - Unit Tests', () => {
         });
 
         it('should have webhooks = 30', () => {
-            expect(business.webhooks).toBe(30);
+            expect(business.webhooks).toBe(25);
         });
 
         it('should have 180 days retention', () => {

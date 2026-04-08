@@ -104,7 +104,7 @@ describe('Webhook Comprehensive E2E', () => {
         // 4. Verify Signature
         const signature = receivedHeaders['x-ephemera-signature'];
         expect(signature).toBeDefined();
-        const expectedSignature = signPayload(JSON.stringify(receivedPayload), webhook.secret);
+        const expectedSignature = `sha256=${signPayload(JSON.stringify(receivedPayload), webhook.secret)}`;
         expect(signature).toBe(expectedSignature);
 
         // 5. Verify Database Logs

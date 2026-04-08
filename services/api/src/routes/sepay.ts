@@ -8,6 +8,7 @@ import { z } from "zod";
 import { appConfig } from "../config";
 import { SepayService, SepayWebhookPayload } from "../services/sepay.service";
 import { recordAudit } from "../utils/audit";
+import { sendApiError } from "../utils/errorHandler";
 
 const createCheckoutSchema = z.object({
   packageId: z.string().uuid(),
@@ -23,16 +24,16 @@ export const sepayRoutes: FastifyPluginAsync = async (app) => {
   // Create SePay checkout (VietQR)
   app.post("/billing/sepay/checkout", { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
     if (!sepayEnabled) {
-      return reply.status(503).send({
-        error: "SePay payment not configured",
-        message: "VietQR payment is currently unavailable",
+      return sendApiError(reply, 503, "SePay payment not configured", {
+        code: "SEPAY_UNAVAILABLE",
+        details: { message: "VietQR payment is currently unavailable" },
       });
     }
 
     const user = req.user as { userId: string };
     const result = createCheckoutSchema.safeParse(req.body);
     if (!result.success) {
-      return reply.status(400).send({ error: "Invalid payload", details: result.error.flatten() });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST", details: result.error.flatten() });
     }
 
     try {
@@ -50,7 +51,7 @@ export const sepayRoutes: FastifyPluginAsync = async (app) => {
         expiresAt: checkout.expiresAt.toISOString(),
       };
     } catch (error: any) {
-      return reply.status(400).send({ error: error.message });
+      return sendApiError(reply, 400, error.message || "Unable to create checkout", { code: "BAD_REQUEST" });
     }
   });
 
@@ -58,7 +59,7 @@ export const sepayRoutes: FastifyPluginAsync = async (app) => {
   app.get("/billing/sepay/status/:orderCode", { preHandler: app.authenticate }, async (req: FastifyRequest, reply: FastifyReply) => {
     const params = checkStatusSchema.safeParse(req.params);
     if (!params.success) {
-      return reply.status(400).send({ error: "Invalid order code" });
+      return sendApiError(reply, 400, "Invalid order code", { code: "BAD_REQUEST" });
     }
 
     const status = await SepayService.checkPaymentStatus(params.data.orderCode);
@@ -99,14 +100,14 @@ export const sepayRoutes: FastifyPluginAsync = async (app) => {
     // Verify webhook authentication
     if (!SepayService.verifyWebhook(req.headers, rawBody)) {
       console.warn("SePay webhook: Invalid authorization");
-      return reply.status(401).send({ error: "Unauthorized" });
+      return sendApiError(reply, 401, "Unauthorized", { code: "UNAUTHORIZED" });
     }
 
     const payload = req.body as SepayWebhookPayload;
 
     // Validate required fields
     if (!payload.id || !payload.transferType || payload.transferAmount === undefined) {
-      return reply.status(400).send({ error: "Invalid payload structure" });
+      return sendApiError(reply, 400, "Invalid payload structure", { code: "BAD_REQUEST" });
     }
 
     try {
@@ -121,7 +122,7 @@ export const sepayRoutes: FastifyPluginAsync = async (app) => {
       }
     } catch (error: any) {
       console.error("SePay webhook error:", error);
-      return reply.status(500).send({ error: "Internal server error" });
+      return sendApiError(reply, 500, "Internal server error", { code: "INTERNAL_ERROR" });
     }
   });
 };

@@ -5,17 +5,86 @@ import { generateWebhookSecret, triggerWebhook, getAvailableEvents, WEBHOOK_EVEN
 import { createTierEnforceHandler } from '../services/tier-enforcement.service';
 import { validateWebhookUrl } from '../utils/input-sanitizer';
 import crypto from 'crypto';
+import { sharedErrorResponseSchema } from '../plugins/swagger';
+
+const webhooksErrorResponseSchema = {
+    ...sharedErrorResponseSchema,
+};
+
+const webhookEntitySchema = {
+    type: "object",
+    additionalProperties: true,
+};
+
+const webhookActionSuccessSchema = {
+    type: "object",
+    properties: {
+        success: { type: "boolean" },
+        message: { type: "string" },
+    },
+    required: ["success"],
+};
+
+const webhookLogEntitySchema = {
+    type: "object",
+    additionalProperties: true,
+};
+
+const webhookLogsListSchema = {
+    type: "array",
+    items: webhookLogEntitySchema,
+};
 
 export async function webhookRoutes(app: FastifyInstance) {
     // List available webhook events
-    app.get('/webhooks/events', async () => {
+    app.get('/webhooks/events', {
+        schema: {
+            tags: ["webhooks"],
+            summary: "List available webhook events",
+            response: {
+                200: {
+                    type: "object",
+                    properties: {
+                        events: { type: "array", items: { type: "string" } },
+                    },
+                    required: ["events"],
+                },
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async () => {
         return {
             events: getAvailableEvents(),
         };
     });
 
     // Verify webhook signature (utility endpoint)
-    app.post('/webhooks/verify-signature', async (request, reply) => {
+    app.post('/webhooks/verify-signature', {
+        schema: {
+            tags: ["webhooks"],
+            summary: "Verify webhook signature",
+            body: {
+                type: "object",
+                required: ["payload", "signature", "secret"],
+                properties: {
+                    payload: { type: "string" },
+                    signature: { type: "string" },
+                    secret: { type: "string" },
+                },
+            },
+            response: {
+                200: {
+                    type: "object",
+                    properties: {
+                        valid: { type: "boolean" },
+                    },
+                    required: ["valid"],
+                },
+                400: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request, reply) => {
         const bodySchema = z.object({
             payload: z.string(),
             signature: z.string(),
@@ -29,17 +98,34 @@ export async function webhookRoutes(app: FastifyInstance) {
 
         const { payload, signature, secret } = parsed.data;
         const expectedSignature = `sha256=${signPayload(payload, secret)}`;
+        const actualBuffer = Buffer.from(signature, 'utf8');
+        const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+
+        if (actualBuffer.length !== expectedBuffer.length) {
+            return reply.status(400).send({ error: 'Invalid signature format' });
+        }
 
         const isValid = crypto.timingSafeEqual(
-            Buffer.from(signature),
-            Buffer.from(expectedSignature)
+            actualBuffer,
+            expectedBuffer
         );
 
         return { valid: isValid };
     });
 
     // List all webhooks for the user
-    app.get('/webhooks', { preHandler: app.authenticate }, async (request) => {
+    app.get('/webhooks', {
+        preHandler: app.authenticate,
+        schema: {
+            tags: ["webhooks"],
+            summary: "List user webhooks",
+            response: {
+                200: { type: "array", items: webhookEntitySchema },
+                401: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request) => {
         const user = request.user as { userId: string };
         const webhooks = await prisma.webhook.findMany({
             where: { userId: user.userId },
@@ -49,7 +135,29 @@ export async function webhookRoutes(app: FastifyInstance) {
     });
 
     // Create a new webhook
-    app.post('/webhooks', { preHandler: [app.authenticate, createTierEnforceHandler('webhooks')] }, async (request, reply) => {
+    app.post('/webhooks', {
+        preHandler: [app.authenticate, createTierEnforceHandler('webhooks')],
+        schema: {
+            tags: ["webhooks"],
+            summary: "Create webhook",
+            body: {
+                type: "object",
+                required: ["name", "url"],
+                properties: {
+                    name: { type: "string", minLength: 1, maxLength: 100 },
+                    url: { type: "string", format: "uri" },
+                    events: { type: "array", items: { type: "string" } },
+                },
+            },
+            response: {
+                201: webhookEntitySchema,
+                400: webhooksErrorResponseSchema,
+                401: webhooksErrorResponseSchema,
+                403: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request, reply) => {
         const user = request.user as { userId: string };
 
         const bodySchema = z.object({
@@ -83,7 +191,27 @@ export async function webhookRoutes(app: FastifyInstance) {
     });
 
     // Delete a webhook
-    app.delete('/webhooks/:id', { preHandler: app.authenticate }, async (request, reply) => {
+    app.delete('/webhooks/:id', {
+        preHandler: app.authenticate,
+        schema: {
+            tags: ["webhooks"],
+            summary: "Delete webhook",
+            params: {
+                type: "object",
+                required: ["id"],
+                properties: {
+                    id: { type: "string", format: "uuid" },
+                },
+            },
+            response: {
+                200: webhookActionSuccessSchema,
+                400: webhooksErrorResponseSchema,
+                401: webhooksErrorResponseSchema,
+                404: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request, reply) => {
         const user = request.user as { userId: string };
         const { id } = request.params as { id: string };
 
@@ -103,7 +231,36 @@ export async function webhookRoutes(app: FastifyInstance) {
     });
 
     // Update a webhook
-    app.put('/webhooks/:id', { preHandler: app.authenticate }, async (request, reply) => {
+    app.put('/webhooks/:id', {
+        preHandler: app.authenticate,
+        schema: {
+            tags: ["webhooks"],
+            summary: "Update webhook",
+            params: {
+                type: "object",
+                required: ["id"],
+                properties: {
+                    id: { type: "string", format: "uuid" },
+                },
+            },
+            body: {
+                type: "object",
+                properties: {
+                    name: { type: "string", minLength: 1, maxLength: 100 },
+                    url: { type: "string", format: "uri" },
+                    events: { type: "array", items: { type: "string" } },
+                    isActive: { type: "boolean" },
+                },
+            },
+            response: {
+                200: webhookEntitySchema,
+                400: webhooksErrorResponseSchema,
+                401: webhooksErrorResponseSchema,
+                404: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request, reply) => {
         const user = request.user as { userId: string };
         const { id } = request.params as { id: string };
 
@@ -144,7 +301,27 @@ export async function webhookRoutes(app: FastifyInstance) {
     });
 
     // Get logs for a webhook
-    app.get('/webhooks/:id/logs', { preHandler: app.authenticate }, async (request, reply) => {
+    app.get('/webhooks/:id/logs', {
+        preHandler: app.authenticate,
+        schema: {
+            tags: ["webhooks"],
+            summary: "Get webhook delivery logs",
+            params: {
+                type: "object",
+                required: ["id"],
+                properties: {
+                    id: { type: "string", format: "uuid" },
+                },
+            },
+            response: {
+                200: webhookLogsListSchema,
+                400: webhooksErrorResponseSchema,
+                401: webhooksErrorResponseSchema,
+                404: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request, reply) => {
         const user = request.user as { userId: string };
         const { id } = request.params as { id: string };
 
@@ -166,7 +343,27 @@ export async function webhookRoutes(app: FastifyInstance) {
     });
 
     // Test a webhook
-    app.post('/webhooks/:id/test', { preHandler: app.authenticate }, async (request, reply) => {
+    app.post('/webhooks/:id/test', {
+        preHandler: app.authenticate,
+        schema: {
+            tags: ["webhooks"],
+            summary: "Queue webhook test event",
+            params: {
+                type: "object",
+                required: ["id"],
+                properties: {
+                    id: { type: "string", format: "uuid" },
+                },
+            },
+            response: {
+                200: webhookActionSuccessSchema,
+                400: webhooksErrorResponseSchema,
+                401: webhooksErrorResponseSchema,
+                404: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request, reply) => {
         const user = request.user as { userId: string };
         const { id } = request.params as { id: string };
 
@@ -187,7 +384,28 @@ export async function webhookRoutes(app: FastifyInstance) {
     });
 
     // Retry a failed webhook log
-    app.post('/webhooks/:id/logs/:logId/retry', { preHandler: app.authenticate }, async (request, reply) => {
+    app.post('/webhooks/:id/logs/:logId/retry', {
+        preHandler: app.authenticate,
+        schema: {
+            tags: ["webhooks"],
+            summary: "Retry a failed webhook delivery",
+            params: {
+                type: "object",
+                required: ["id", "logId"],
+                properties: {
+                    id: { type: "string", format: "uuid" },
+                    logId: { type: "string", format: "uuid" },
+                },
+            },
+            response: {
+                200: webhookActionSuccessSchema,
+                400: webhooksErrorResponseSchema,
+                401: webhooksErrorResponseSchema,
+                404: webhooksErrorResponseSchema,
+                500: webhooksErrorResponseSchema,
+            },
+        },
+    }, async (request, reply) => {
         const user = request.user as { userId: string };
         const { id, logId } = request.params as { id: string; logId: string };
 

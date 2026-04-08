@@ -1,8 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { app, prisma } from './setup';
 import { outboundService } from '../services/outbound';
-import { DkimService } from '../services/dkim.service';
 import { encrypt } from '../utils/encryption';
+
+function attachMockProvider() {
+  const mockProvider = {
+    sendEmail: vi.fn().mockResolvedValue({ messageId: 'test-msg-id', provider: 'smtp' }),
+    verifyConnection: vi.fn().mockResolvedValue(true),
+  };
+
+  (outboundService as any).provider = mockProvider;
+  return mockProvider;
+}
 
 describe('DKIM Signing Integration', () => {
   beforeEach(async () => {
@@ -33,10 +42,8 @@ describe('DKIM Signing Integration', () => {
       },
     });
 
-    // 2. Mock Transporter.sendMail
-    // Accessing private transporter for testing purposes
-    const sendMailSpy = vi.spyOn((outboundService as any).transporter, 'sendMail');
-    sendMailSpy.mockResolvedValue({ messageId: 'test-msg-id' });
+    // 2. Replace provider with deterministic mock
+    const mockProvider = attachMockProvider();
 
     // 3. Trigger Send
     await outboundService.sendEmail(
@@ -47,15 +54,13 @@ describe('DKIM Signing Integration', () => {
     );
 
     // 4. Verify DKIM Options
-    expect(sendMailSpy).toHaveBeenCalled();
-    const callArgs = sendMailSpy.mock.calls[0][0] as any;
+    expect(mockProvider.sendEmail).toHaveBeenCalled();
+    const callArgs = mockProvider.sendEmail.mock.calls[0][0] as any;
 
     expect(callArgs.dkim).toBeDefined();
     expect(callArgs.dkim.domainName).toBe(domainName);
     expect(callArgs.dkim.keySelector).toBe(selector);
     expect(callArgs.dkim.privateKey).toBe(privateKey);
-
-    sendMailSpy.mockRestore();
   });
 
   it('should NOT apply DKIM options for domains without DKIM config', async () => {
@@ -68,8 +73,7 @@ describe('DKIM Signing Integration', () => {
       },
     });
 
-    const sendMailSpy = vi.spyOn((outboundService as any).transporter, 'sendMail');
-    sendMailSpy.mockResolvedValue({ messageId: 'test-msg-id' });
+    const mockProvider = attachMockProvider();
 
     await outboundService.sendEmail(
       'sender@' + domainName,
@@ -78,9 +82,7 @@ describe('DKIM Signing Integration', () => {
       'Body text'
     );
 
-    const callArgs = sendMailSpy.mock.calls[0][0] as any;
+    const callArgs = mockProvider.sendEmail.mock.calls[0][0] as any;
     expect(callArgs.dkim).toBeUndefined();
-
-    sendMailSpy.mockRestore();
   });
 });

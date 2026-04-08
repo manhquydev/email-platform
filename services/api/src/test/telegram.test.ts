@@ -3,13 +3,31 @@
  * Tests for Telegram bot linking, preferences, and webhook handling
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { app, prisma } from "./setup";
 import bcrypt from "bcryptjs";
 
 // Mock fetch for Telegram API calls
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+const originalFetch = global.fetch;
+
+function getInlineKeyboardUrlsFromFetchCalls(): string[] {
+    return mockFetch.mock.calls.flatMap(([, options]) => {
+        const body = (options as { body?: unknown } | undefined)?.body;
+        if (typeof body !== "string") return [];
+
+        try {
+            const payload = JSON.parse(body) as {
+                reply_markup?: { inline_keyboard?: Array<Array<{ url?: string }>> };
+            };
+            const rows = payload.reply_markup?.inline_keyboard;
+            if (!rows) return [];
+            return rows.flatMap((row) => row.map((button) => button.url).filter((url): url is string => typeof url === "string"));
+        } catch {
+            return [];
+        }
+    });
+}
 
 describe("Telegram Integration", () => {
     let userToken: string;
@@ -18,6 +36,7 @@ describe("Telegram Integration", () => {
     beforeEach(async () => {
         // Reset mocks
         vi.clearAllMocks();
+        global.fetch = mockFetch as typeof fetch;
         mockFetch.mockResolvedValue({
             ok: true,
             json: () => Promise.resolve({ ok: true, result: {} }),
@@ -37,6 +56,10 @@ describe("Telegram Integration", () => {
             payload: { email: "telegram-test@example.com", password: "password123" },
         });
         userToken = loginRes.json().token;
+    });
+
+    afterAll(() => {
+        global.fetch = originalFetch;
     });
 
     describe("GET /telegram/status", () => {
@@ -199,6 +222,8 @@ describe("Telegram Integration", () => {
 
             // Should still succeed but not change anything
             expect(res.statusCode).toBe(200);
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+            expect(user?.notifyOnEmail).toBe(true);
         });
     });
 
@@ -275,6 +300,53 @@ describe("Telegram Integration", () => {
 
             expect(res.statusCode).toBe(200);
             expect(res.json().ok).toBe(true);
+        });
+
+        it("should include notifications settings deep-link in /start welcome message", async () => {
+            const res = await app.inject({
+                method: "POST",
+                url: "/telegram/webhook",
+                headers: { "Content-Type": "application/json" },
+                payload: {
+                    update_id: 123450,
+                    message: {
+                        message_id: 10,
+                        chat: { id: 123456, type: "private" },
+                        text: "/start",
+                        date: Math.floor(Date.now() / 1000),
+                    },
+                },
+            });
+
+            expect(res.statusCode).toBe(200);
+
+            const urls = getInlineKeyboardUrlsFromFetchCalls();
+            expect(urls.some((url) => url.includes("/settings?tab=notifications"))).toBe(true);
+            expect(urls.some((url) => url.includes("/app?tab=settings&section=notifications"))).toBe(false);
+        });
+
+        it("should include notifications settings deep-link in /settings response for unlinked user", async () => {
+            const res = await app.inject({
+                method: "POST",
+                url: "/telegram/webhook",
+                headers: { "Content-Type": "application/json" },
+                payload: {
+                    update_id: 123451,
+                    message: {
+                        message_id: 11,
+                        from: { id: 222333444, first_name: "Guest", is_bot: false },
+                        chat: { id: 222333444, type: "private" },
+                        text: "/settings",
+                        date: Math.floor(Date.now() / 1000),
+                    },
+                },
+            });
+
+            expect(res.statusCode).toBe(200);
+
+            const urls = getInlineKeyboardUrlsFromFetchCalls();
+            expect(urls.some((url) => url.includes("/settings?tab=notifications"))).toBe(true);
+            expect(urls.some((url) => url.includes("/app?tab=settings&section=notifications"))).toBe(false);
         });
 
         it("should handle /start with link token", async () => {

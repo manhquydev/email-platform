@@ -3,7 +3,10 @@
  * Evaluates email filters and executes actions on incoming messages
  */
 
+import { appConfig } from '../config';
 import { prisma } from '../lib/prisma';
+import { buildTempOutboundMessageId } from '../routes/messages/utilities';
+import { outboundService } from './outbound';
 
 export interface FilterCondition {
     field: 'FROM' | 'TO' | 'SUBJECT' | 'BODY' | 'HAS_ATTACHMENT';
@@ -23,6 +26,149 @@ export interface EmailData {
     textBody?: string | null;
     htmlBody?: string | null;
     hasAttachment: boolean;
+}
+
+type MessageContext = {
+    id: string;
+    inboxId: string;
+    messageId: string | null;
+    fromAddress: string | null;
+    toAddress: string | null;
+    subject: string | null;
+    textBody: string | null;
+    htmlBody: string | null;
+    receivedAt: Date;
+    inbox: {
+        localPart: string;
+        domain: {
+            id: string;
+            name: string;
+            ownerId: string;
+            status: string;
+        };
+    };
+};
+
+const SPECIAL_FOLDER_CONFIG: Record<string, { name: string; specialUse: string; sortOrder: number }> = {
+    inbox: { name: 'Inbox', specialUse: '\\Inbox', sortOrder: 0 },
+    drafts: { name: 'Drafts', specialUse: '\\Drafts', sortOrder: 1 },
+    sent: { name: 'Sent', specialUse: '\\Sent', sortOrder: 2 },
+    spam: { name: 'Spam', specialUse: '\\Junk', sortOrder: 3 },
+    junk: { name: 'Spam', specialUse: '\\Junk', sortOrder: 3 },
+    trash: { name: 'Trash', specialUse: '\\Trash', sortOrder: 4 },
+    archive: { name: 'Archive', specialUse: '\\Archive', sortOrder: 5 },
+};
+
+function normalizeActionValue(value?: string | null): string | null {
+    const normalized = value?.trim();
+    return normalized ? normalized : null;
+}
+
+function buildForwardSubject(subject?: string | null): string {
+    const baseSubject = subject?.trim() || '(no subject)';
+    return baseSubject.toLowerCase().startsWith('fwd:') ? baseSubject : `Fwd: ${baseSubject}`;
+}
+
+function buildForwardText(message: MessageContext): string {
+    const header = [
+        'Forwarded message',
+        `From: ${message.fromAddress || '(unknown sender)'}`,
+        `To: ${message.toAddress || '(unknown recipient)'}`,
+        `Subject: ${message.subject || '(no subject)'}`,
+        `Received: ${message.receivedAt.toISOString()}`,
+    ].join('\n');
+
+    const originalBody = message.textBody || message.htmlBody || '(no body)';
+    return `${header}\n\n${originalBody}`;
+}
+
+function buildForwardHtml(message: MessageContext): string | undefined {
+    if (!message.htmlBody && !message.textBody) {
+        return undefined;
+    }
+
+    const originalBody = message.htmlBody || `<pre>${message.textBody}</pre>`;
+    return [
+        '<div>',
+        '<p><strong>Forwarded message</strong></p>',
+        `<p><strong>From:</strong> ${message.fromAddress || '(unknown sender)'}<br/>`,
+        `<strong>To:</strong> ${message.toAddress || '(unknown recipient)'}<br/>`,
+        `<strong>Subject:</strong> ${message.subject || '(no subject)'}<br/>`,
+        `<strong>Received:</strong> ${message.receivedAt.toISOString()}</p>`,
+        '<hr/>',
+        originalBody,
+        '</div>',
+    ].join('');
+}
+
+async function getMessageContext(messageId: string): Promise<MessageContext | null> {
+    return prisma.message.findUnique({
+        where: { id: messageId },
+        select: {
+            id: true,
+            inboxId: true,
+            messageId: true,
+            fromAddress: true,
+            toAddress: true,
+            subject: true,
+            textBody: true,
+            htmlBody: true,
+            receivedAt: true,
+            inbox: {
+                select: {
+                    localPart: true,
+                    domain: {
+                        select: {
+                            id: true,
+                            name: true,
+                            ownerId: true,
+                            status: true,
+                        },
+                    },
+                },
+            },
+        },
+    }) as Promise<MessageContext | null>;
+}
+
+async function resolveFolder(inboxId: string, folderValue: string) {
+    const normalizedValue = folderValue.trim();
+    const specialFolder = SPECIAL_FOLDER_CONFIG[normalizedValue.toLowerCase()];
+    const folder = await prisma.folder.findFirst({
+        where: {
+            inboxId,
+            OR: [
+                { id: normalizedValue },
+                { name: { equals: normalizedValue, mode: 'insensitive' } },
+                ...(specialFolder ? [{ specialUse: specialFolder.specialUse }] : []),
+            ],
+        },
+    });
+
+    if (folder || !specialFolder) {
+        return folder;
+    }
+
+    try {
+        return await prisma.folder.create({
+            data: {
+                inboxId,
+                name: specialFolder.name,
+                specialUse: specialFolder.specialUse,
+                sortOrder: specialFolder.sortOrder,
+            },
+        });
+    } catch {
+        return prisma.folder.findFirst({
+            where: {
+                inboxId,
+                OR: [
+                    { name: { equals: specialFolder.name, mode: 'insensitive' } },
+                    { specialUse: specialFolder.specialUse },
+                ],
+            },
+        });
+    }
 }
 
 /**
@@ -134,6 +280,14 @@ export async function executeFilterActions(
 ): Promise<{ actionsExecuted: string[]; shouldDelete: boolean }> {
     const actionsExecuted: string[] = [];
     let shouldDelete = false;
+    let cachedMessageContext: Promise<MessageContext | null> | undefined;
+
+    const loadMessageContext = async () => {
+        if (!cachedMessageContext) {
+            cachedMessageContext = getMessageContext(messageId);
+        }
+        return cachedMessageContext;
+    };
 
     for (const action of actions) {
         switch (action.type) {
@@ -205,14 +359,119 @@ export async function executeFilterActions(
                 }
                 break;
 
-            // MOVE_TO_FOLDER and FORWARD could be implemented with additional logic
             case 'MOVE_TO_FOLDER':
-                actionsExecuted.push(`MOVE_TO_FOLDER:${action.value}`);
+                {
+                    const targetFolder = normalizeActionValue(action.value);
+                    if (!targetFolder) {
+                        actionsExecuted.push('MOVE_TO_FOLDER_SKIPPED:MISSING_TARGET');
+                        break;
+                    }
+
+                    const message = await loadMessageContext();
+                    if (!message) {
+                        actionsExecuted.push(`MOVE_TO_FOLDER_SKIPPED:${targetFolder}:MESSAGE_NOT_FOUND`);
+                        break;
+                    }
+
+                    const folder = await resolveFolder(message.inboxId, targetFolder);
+                    if (!folder) {
+                        actionsExecuted.push(`MOVE_TO_FOLDER_SKIPPED:${targetFolder}:FOLDER_NOT_FOUND`);
+                        break;
+                    }
+
+                    await prisma.message.update({
+                        where: { id: messageId },
+                        data: { folderId: folder.id },
+                    });
+                    actionsExecuted.push(`MOVE_TO_FOLDER:${folder.name}`);
+                }
                 break;
 
             case 'FORWARD':
-                // Would require outbound email integration
-                actionsExecuted.push(`FORWARD:${action.value}`);
+                {
+                    const forwardTo = normalizeActionValue(action.value);
+                    if (!forwardTo) {
+                        actionsExecuted.push('FORWARD_SKIPPED:MISSING_TARGET');
+                        break;
+                    }
+
+                    if (!appConfig.outboundEnabled) {
+                        actionsExecuted.push(`FORWARD_SKIPPED:${forwardTo}:OUTBOUND_DISABLED`);
+                        break;
+                    }
+
+                    const message = await loadMessageContext();
+                    if (!message) {
+                        actionsExecuted.push(`FORWARD_SKIPPED:${forwardTo}:MESSAGE_NOT_FOUND`);
+                        break;
+                    }
+
+                    if (message.inbox.domain.status !== 'VERIFIED') {
+                        actionsExecuted.push(`FORWARD_SKIPPED:${forwardTo}:DOMAIN_NOT_VERIFIED`);
+                        break;
+                    }
+
+                    const outboundRecord = await prisma.outboundMessage.create({
+                        data: {
+                            userId: message.inbox.domain.ownerId,
+                            domainId: message.inbox.domain.id,
+                            inboxId: message.inboxId,
+                            fromAddress: `${message.inbox.localPart}@${message.inbox.domain.name}`,
+                            toAddress: forwardTo,
+                            subject: buildForwardSubject(message.subject),
+                            messageId: buildTempOutboundMessageId(),
+                            status: 'SENDING',
+                            replyToMessageId: message.id,
+                            metadata: {
+                                source: 'email-filter',
+                                filterAction: 'FORWARD',
+                                originalMessageId: message.id,
+                            },
+                        },
+                    });
+
+                    try {
+                        const info = await outboundService.sendEmail(
+                            `${message.inbox.localPart}@${message.inbox.domain.name}`,
+                            forwardTo,
+                            buildForwardSubject(message.subject),
+                            buildForwardText(message),
+                            buildForwardHtml(message),
+                            undefined,
+                            {
+                                replyTo: message.fromAddress || undefined,
+                                headers: {
+                                    'X-Ephemera-Filter-Action': 'FORWARD',
+                                    'X-Ephemera-Original-Message-Id': message.messageId || message.id,
+                                },
+                            }
+                        );
+
+                        await prisma.outboundMessage.update({
+                            where: { id: outboundRecord.id },
+                            data: {
+                                messageId: info.messageId,
+                                status: 'SENT',
+                                sentAt: new Date(),
+                                espProvider: info.provider || null,
+                                espMessageId: info.messageId || null,
+                            },
+                        });
+                        actionsExecuted.push(`FORWARD:${forwardTo}`);
+                    } catch (error) {
+                        const messageText = error instanceof Error ? error.message : 'Forwarding failed';
+                        await prisma.outboundMessage.update({
+                            where: { id: outboundRecord.id },
+                            data: {
+                                status: 'FAILED',
+                                bounceMessage: messageText,
+                                lastAttemptAt: new Date(),
+                                attempts: { increment: 1 },
+                            },
+                        }).catch(() => undefined);
+                        actionsExecuted.push(`FORWARD_FAILED:${forwardTo}`);
+                    }
+                }
                 break;
         }
     }

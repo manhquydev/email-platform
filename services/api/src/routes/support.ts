@@ -4,6 +4,7 @@ import { TicketStatus, TicketPriority, TicketCategory } from "@prisma/client";
 import { supportService } from "../services/supportService";
 import { recordAudit } from "../utils/audit";
 import { supportNotificationService } from "../services/support-notification-service";
+import { sendApiError } from "../utils/errorHandler";
 
 /**
  * Support Ticket Routes
@@ -26,7 +27,7 @@ export async function supportRoutes(app: FastifyInstance) {
       .safeParse(request.body);
 
     if (!body.success) {
-      return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST", details: body.error.flatten() });
     }
 
     const userId = (request.user as any).userId;
@@ -75,13 +76,13 @@ export async function supportRoutes(app: FastifyInstance) {
   app.get("/support/tickets/:id", { preHandler: app.authenticate }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
-      return reply.status(400).send({ error: "Invalid ticket ID" });
+      return sendApiError(reply, 400, "Invalid ticket ID", { code: "BAD_REQUEST" });
     }
 
     const userId = (request.user as any).userId;
     const ownsTicket = await supportService.userOwnsTicket(params.data.id, userId);
     if (!ownsTicket) {
-      return reply.status(404).send({ error: "Ticket not found" });
+      return sendApiError(reply, 404, "Ticket not found", { code: "NOT_FOUND" });
     }
 
     const ticket = await supportService.getTicketById(params.data.id, false);
@@ -96,13 +97,13 @@ export async function supportRoutes(app: FastifyInstance) {
     const body = z.object({ content: z.string().min(1).max(5000) }).safeParse(request.body);
 
     if (!params.success || !body.success) {
-      return reply.status(400).send({ error: "Invalid payload" });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST" });
     }
 
     const userId = (request.user as any).userId;
     const ownsTicket = await supportService.userOwnsTicket(params.data.id, userId);
     if (!ownsTicket) {
-      return reply.status(404).send({ error: "Ticket not found" });
+      return sendApiError(reply, 404, "Ticket not found", { code: "NOT_FOUND" });
     }
 
     const message = await supportService.addMessage({
@@ -163,12 +164,12 @@ export async function supportRoutes(app: FastifyInstance) {
   app.get("/admin/support/tickets/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
-      return reply.status(400).send({ error: "Invalid ticket ID" });
+      return sendApiError(reply, 400, "Invalid ticket ID", { code: "BAD_REQUEST" });
     }
 
     const ticket = await supportService.getTicketById(params.data.id, true);
     if (!ticket) {
-      return reply.status(404).send({ error: "Ticket not found" });
+      return sendApiError(reply, 404, "Ticket not found", { code: "NOT_FOUND" });
     }
 
     return { ticket };
@@ -187,7 +188,7 @@ export async function supportRoutes(app: FastifyInstance) {
       .safeParse(request.body);
 
     if (!params.success || !body.success) {
-      return reply.status(400).send({ error: "Invalid payload" });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST" });
     }
 
     const ticket = await supportService.updateTicket(params.data.id, body.data);
@@ -212,7 +213,7 @@ export async function supportRoutes(app: FastifyInstance) {
       .safeParse(request.body);
 
     if (!params.success || !body.success) {
-      return reply.status(400).send({ error: "Invalid payload" });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST" });
     }
 
     const userId = (request.user as any).userId;

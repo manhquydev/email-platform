@@ -17,6 +17,7 @@ describe("Comprehensive System Workflow", () => {
                 email: "user@system.com",
                 passwordHash: hashed,
                 role: "USER",
+                tier: "STARTER",
                 emailVerified: new Date()
             },
         });
@@ -142,7 +143,7 @@ describe("Comprehensive System Workflow", () => {
             headers: { Authorization: `Bearer ${userToken}`, "Content-Type": "application/json" },
             payload: {
                 name: "System Webhook",
-                url: "http://localhost:3001/health", // Just a valid URL for testing
+                url: "https://example.com/webhook-test",
                 events: ["email.received"]
             }
         });

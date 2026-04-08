@@ -10,6 +10,8 @@ const envSchema = z.object({
   TOTP_ENCRYPTION_KEY: z.string().length(64, "TOTP_ENCRYPTION_KEY must be exactly 64 hex characters").regex(/^[0-9a-fA-F]+$/, "TOTP_ENCRYPTION_KEY must be valid hex").optional(),
   HTTP_PORT: z.string().regex(/^\d+$/).optional(),
   SMTP_PORT: z.string().regex(/^\d+$/).optional(),
+  PUBLIC_READY_ENDPOINT: z.enum(["true", "false"]).optional(),
+  PUBLIC_METRICS_ENDPOINT: z.enum(["true", "false"]).optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).optional(),
 });
 
@@ -110,6 +112,10 @@ export const appConfig = {
   webUrl: process.env.WEB_URL ?? "http://localhost:5173",
   apiUrl: process.env.API_URL ?? "http://localhost:3001",
   trustProxy: (process.env.TRUST_PROXY ?? "true").toLowerCase() === "true",
+  publicReadyEndpoint:
+    (process.env.PUBLIC_READY_ENDPOINT ?? (isProduction ? "false" : "true")).toLowerCase() === "true",
+  publicMetricsEndpoint:
+    (process.env.PUBLIC_METRICS_ENDPOINT ?? (isProduction ? "false" : "true")).toLowerCase() === "true",
   // Google API Fallback
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,

@@ -362,6 +362,7 @@ model AuditLog {
   userAgent String?  // Browser/client user agent
   requestId String?  // Request ID for correlation
   success   Boolean  @default(true) // Whether action succeeded
+  outcome   AuditOutcome @default(SUCCESS)
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
 
@@ -370,6 +371,7 @@ model AuditLog {
   @@index([createdAt])
   @@index([ip])
   @@index([success])
+  @@index([outcome])
 }
 
 model Rule {
@@ -587,6 +589,11 @@ enum AbuseReportStatus {
   OPEN
   REVIEWING
   CLOSED
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
 }
 
 enum SubscriptionTier {

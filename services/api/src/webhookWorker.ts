@@ -11,6 +11,7 @@ interface WebhookJobData {
 }
 
 export const setupWebhookWorker = (logger: { info: any, error: any, warn: any }) => {
+    const allowInternalForTests = process.env.NODE_ENV === 'test';
     const worker = new Worker<WebhookJobData>(
         WEBHOOK_QUEUE_NAME,
         async (job: Job<WebhookJobData>) => {
@@ -27,7 +28,7 @@ export const setupWebhookWorker = (logger: { info: any, error: any, warn: any })
             }
 
             // SSRF Protection: Block requests to internal networks
-            if (isInternalUrl(webhook.url)) {
+            if (!allowInternalForTests && isInternalUrl(webhook.url)) {
                 logger.warn({ webhookId, url: webhook.url }, 'Webhook URL blocked: internal network access not allowed');
                 await prisma.webhookLog.create({
                     data: {

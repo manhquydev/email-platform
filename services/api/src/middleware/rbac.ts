@@ -15,15 +15,20 @@ export function requireAdminRole(allowedRoles: AdminRole[]) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
 
-    if (!user.adminRole) {
+    // Backward-compatible bridge: many existing admin tokens only carry role=ADMIN.
+    // Until full AdminRole issuance is completed, treat ADMIN as SUPER_ADMIN.
+    const effectiveRole: AdminRole | undefined = user.adminRole
+      ?? (user.role === 'ADMIN' ? AdminRole.SUPER_ADMIN : undefined);
+
+    if (!effectiveRole) {
       return reply.status(403).send({ error: 'Access denied: No admin role' });
     }
 
-    if (user.adminRole === AdminRole.SUPER_ADMIN) {
+    if (effectiveRole === AdminRole.SUPER_ADMIN) {
       return; // Super admin has access to everything
     }
 
-    if (!allowedRoles.includes(user.adminRole)) {
+    if (!allowedRoles.includes(effectiveRole)) {
       return reply.status(403).send({ error: 'Access denied: Insufficient permissions' });
     }
   };

@@ -4,6 +4,7 @@ import { SamlService } from "../_wip/identity/saml-sp";
 import { OidcService } from "../_wip/identity/oidc-client";
 import { provisionUser } from "../_wip/identity/jit-provisioning";
 import { appConfig } from "../config";
+import { sendApiError } from "../utils/errorHandler";
 import crypto from "crypto";
 
 export async function ssoRoutes(app: FastifyInstance) {
@@ -16,7 +17,7 @@ export async function ssoRoutes(app: FastifyInstance) {
       return reply.redirect(loginUrl);
     } catch (err) {
       request.log.error(err);
-      return reply.status(400).send({ error: "SSO initiation failed" });
+      return sendApiError(reply, 400, "SSO initiation failed", { code: "BAD_REQUEST" });
     }
   });
 
@@ -67,7 +68,7 @@ export async function ssoRoutes(app: FastifyInstance) {
       return reply.redirect(service.getAuthorizationUrl());
     } catch (err) {
       request.log.error(err);
-      return reply.status(400).send({ error: "SSO initiation failed" });
+      return sendApiError(reply, 400, "SSO initiation failed", { code: "BAD_REQUEST" });
     }
   });
 

@@ -26,13 +26,6 @@ vi.mock('../../services/outbound', () => ({
   },
 }));
 
-vi.mock('../../services/credit.service', () => ({
-  CreditService: {
-    deductCredits: vi.fn(),
-    addCredits: vi.fn(),
-  },
-}));
-
 vi.mock('../../services/team.service', () => ({
   TeamService: {
     canAccessInbox: vi.fn(),
@@ -51,7 +44,6 @@ vi.mock('../../services/storage', () => ({
 
 import { prisma } from '../../lib/prisma';
 import { outboundService } from '../../services/outbound';
-import { CreditService } from '../../services/credit.service';
 import { TeamService } from '../../services/team.service';
 
 describe('Reply/Forward Logic Unit Tests', () => {
@@ -177,34 +169,6 @@ To: ${originalMessage.toAddress || 'unknown'}
     it('should set References header', () => {
       const references = mockMessage.messageId;
       expect(references).toBe('<original@example.com>');
-    });
-  });
-
-  describe('Credit validation logic', () => {
-    it('should check credits before sending', async () => {
-      const userId = 'user-123';
-      const CREDIT_COST = 1;
-
-      vi.mocked(CreditService.deductCredits).mockRejectedValueOnce(
-        new Error('Insufficient credits')
-      );
-
-      await expect(
-        CreditService.deductCredits(userId, CREDIT_COST, 'USAGE' as any, 'test', {})
-      ).rejects.toThrow('Insufficient credits');
-    });
-
-    it('should refund credits on send failure', async () => {
-      const userId = 'user-123';
-      const CREDIT_COST = 1;
-
-      vi.mocked(CreditService.addCredits).mockResolvedValueOnce(undefined);
-
-      await CreditService.addCredits(userId, CREDIT_COST, 'REFUND' as any, 'refund test', {});
-
-      expect(CreditService.addCredits).toHaveBeenCalledWith(
-        userId, CREDIT_COST, 'REFUND', 'refund test', {}
-      );
     });
   });
 

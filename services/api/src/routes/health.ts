@@ -3,10 +3,29 @@ import { prisma } from "../lib/prisma";
 import { realtimePubSub } from "../services/realtime-pubsub";
 import { outboundService } from "../services/outbound";
 import { register as promRegister } from "prom-client";
+import { appConfig } from "../config";
+
+const requireAdminAccess = async (app: FastifyInstance, request: any, reply: any, endpointName: string) => {
+  await app.authenticate(request, reply);
+  if (reply.sent) return false;
+
+  const role = request.user?.role;
+  if (role !== "ADMIN") {
+    await reply.status(403).send({ error: `${endpointName} endpoint requires admin access` });
+    return false;
+  }
+
+  return true;
+};
 
 export async function healthRoutes(app: FastifyInstance) {
   // Prometheus metrics endpoint (internal only - block in Caddy)
   app.get("/metrics", async (request, reply) => {
+    if (!appConfig.publicMetricsEndpoint) {
+      const allowed = await requireAdminAccess(app, request, reply, "Metrics");
+      if (!allowed) return;
+    }
+
     reply.header("Content-Type", promRegister.contentType);
     return promRegister.metrics();
   });
@@ -21,6 +40,11 @@ export async function healthRoutes(app: FastifyInstance) {
 
   // Readiness probe: Are all external dependencies available?
   app.get("/ready", async (request, reply) => {
+    if (!appConfig.publicReadyEndpoint) {
+      const allowed = await requireAdminAccess(app, request, reply, "Readiness");
+      if (!allowed) return;
+    }
+
     const status: Record<string, any> = {
       database: "checking",
       redis: "checking",

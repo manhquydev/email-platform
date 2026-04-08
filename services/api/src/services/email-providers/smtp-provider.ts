@@ -12,13 +12,25 @@ export class SmtpProvider implements EmailProvider {
     pass?: string,
     secure?: boolean
   ) {
-    const transportConfig: nodemailer.TransportOptions = {
-      host,
-      port,
-      secure: secure || port === 465,
-    } as any;
+    const shouldUseInMemoryTransport =
+      process.env.VITEST === "true" &&
+      (host === "localhost" || host === "127.0.0.1") &&
+      !user &&
+      !pass;
 
-    if (user && pass) {
+    const transportConfig: nodemailer.TransportOptions = shouldUseInMemoryTransport
+      ? ({
+          streamTransport: true,
+          newline: "unix",
+          buffer: true,
+        } as any)
+      : ({
+          host,
+          port,
+          secure: secure || port === 465,
+        } as any);
+
+    if (!shouldUseInMemoryTransport && user && pass) {
       (transportConfig as any).auth = {
         user,
         pass,
@@ -55,8 +67,12 @@ export class SmtpProvider implements EmailProvider {
 
     try {
       const info = await this.transporter.sendMail(mailOptions);
+      const messageId =
+        typeof info.messageId === "string" && info.messageId.length > 0
+          ? info.messageId
+          : `<stub-${Date.now()}@local>`;
       return {
-        messageId: info.messageId,
+        messageId,
         provider: 'smtp',
         originalResponse: info,
       };

@@ -41,7 +41,9 @@ describe("API integration", () => {
   beforeEach(async () => {
     await resetDb();
     const passwordHash = await hashPassword(ADMIN_PASSWORD);
-    await prisma.user.create({ data: { email: ADMIN_EMAIL, passwordHash, role: "ADMIN", emailVerified: new Date() } });
+    await prisma.user.create({
+      data: { email: ADMIN_EMAIL, passwordHash, role: "ADMIN", tier: "ENTERPRISE", emailVerified: new Date() }
+    });
   });
 
   it("exposes health status", async () => {
@@ -68,15 +70,19 @@ describe("API integration", () => {
       .post("/domains")
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "example.com" });
-    expect(domainResp.status).toBe(200);
+    expect(domainResp.status).toBe(201);
     const domainId = domainResp.body.domain.id as string;
     expect(domainId).toBeTruthy();
+    await prisma.domain.update({
+      where: { id: domainId },
+      data: { status: "VERIFIED" },
+    });
 
     const inboxResp = await request(app.server)
       .post("/inboxes")
       .set("Authorization", `Bearer ${token}`)
       .send({ domainId, localPart: "hello" });
-    expect(inboxResp.status).toBe(200);
+    expect(inboxResp.status).toBe(201);
     expect(inboxResp.body.inbox.localPart).toBe("hello");
 
     const listInboxes = await request(app.server)

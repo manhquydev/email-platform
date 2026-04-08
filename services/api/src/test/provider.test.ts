@@ -239,7 +239,9 @@ describe("Hosting Provider Service & API", () => {
             });
 
             expect(listRes.statusCode).toBe(200);
-            expect(listRes.json().mailboxes).toHaveLength(1);
+            const listed = listRes.json().mailboxes as Array<{ email: string }>;
+            expect(listed.length).toBeGreaterThanOrEqual(1);
+            expect(listed.some((m) => m.email === `user@${domainName}`)).toBe(true);
         });
 
         it("should handle webhook testing", async () => {

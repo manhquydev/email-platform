@@ -16,8 +16,8 @@ export default defineConfig({
       STRIPE_API_KEY: "sk_test_dummy_key_for_testing_only",
       STRIPE_WEBHOOK_SECRET: "whsec_test_dummy_secret",
     },
-    // Ensure we don't treat tests as ESM if we don't want to, or configure extensions
-    include: ['src/test/**/*.test.ts'],
+    // Include both current and legacy API suites.
+    include: ['src/test/**/*.test.ts', 'test/**/*.test.ts'],
     fileParallelism: false,
   },
 });

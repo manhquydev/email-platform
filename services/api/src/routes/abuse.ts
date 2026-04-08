@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
+import { sendApiError } from "../utils/errorHandler";
 import { AbuseReportStatus, RuleScope, RuleType } from "@prisma/client";
 
 export async function abuseRoutes(app: FastifyInstance) {
@@ -21,7 +22,7 @@ export async function abuseRoutes(app: FastifyInstance) {
       })
       .safeParse(request.body);
     if (!body.success) {
-      return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST", details: body.error.flatten() });
     }
 
     const rule = await prisma.rule.create({
@@ -38,12 +39,12 @@ export async function abuseRoutes(app: FastifyInstance) {
   app.delete("/abuse/rules/:id", { preHandler: app.requireAdmin }, async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).safeParse(request.params);
     if (!params.success) {
-      return reply.status(400).send({ error: "Invalid request" });
+      return sendApiError(reply, 400, "Invalid request", { code: "BAD_REQUEST" });
     }
 
     const existing = await prisma.rule.findUnique({ where: { id: params.data.id } });
     if (!existing) {
-      return reply.status(404).send({ error: "Rule not found" });
+      return sendApiError(reply, 404, "Rule not found", { code: "NOT_FOUND" });
     }
     await prisma.rule.delete({ where: { id: params.data.id } });
     await recordAudit((request.user as any)?.userId ?? null, "RULE_DELETED", { ruleId: params.data.id });
@@ -67,14 +68,14 @@ export async function abuseRoutes(app: FastifyInstance) {
       })
       .safeParse(request.body);
     if (!body.success) {
-      return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST", details: body.error.flatten() });
     }
 
     let messageId: string | undefined = body.data.messageId;
     if (messageId) {
       const message = await prisma.message.findUnique({ where: { id: messageId } });
       if (!message) {
-        return reply.status(404).send({ error: "Message not found" });
+        return sendApiError(reply, 404, "Message not found", { code: "NOT_FOUND" });
       }
     }
 
@@ -108,12 +109,12 @@ export async function abuseRoutes(app: FastifyInstance) {
       .safeParse(request.body);
 
     if (!params.success || !body.success) {
-      return reply.status(400).send({ error: "Invalid payload" });
+      return sendApiError(reply, 400, "Invalid payload", { code: "BAD_REQUEST" });
     }
 
     const report = await prisma.abuseReport.findUnique({ where: { id: params.data.id } });
     if (!report) {
-      return reply.status(404).send({ error: "Report not found" });
+      return sendApiError(reply, 404, "Report not found", { code: "NOT_FOUND" });
     }
 
     const updated = await prisma.abuseReport.update({

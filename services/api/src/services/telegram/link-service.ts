@@ -192,7 +192,7 @@ Bạn đã hủy liên kết Telegram khỏi tài khoản email.
             parseMode: 'HTML',
             replyMarkup: {
                 inline_keyboard: [[
-                    { text: '🔗 Mở Cài đặt', url: `${webUrl}/app?tab=settings&section=notifications` }
+                    { text: '🔗 Mở Cài đặt', url: `${webUrl}/settings?tab=notifications` }
                 ]]
             }
         });

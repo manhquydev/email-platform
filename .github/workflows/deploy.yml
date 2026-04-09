@@ -85,6 +85,8 @@ jobs:
             export DOCKER_BUILDKIT=1
             docker compose -f docker-compose.prod.yml build --pull api web postfix dovecot
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            # Ensure Caddy reloads latest Caddyfile changes (bind mount updates need container restart)
+            docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate caddy
 
             # Run database migrations
             echo "Running database migrations..."

@@ -51,12 +51,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
-          timeout 80m ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST << 'ENDSSH'
+          timeout 80m ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'ENDSSH'
             set -euo pipefail
             echo "Starting deployment..."
 
-            # Navigate to project directory
-            cd "${DEPLOY_PATH:-/root/email-platform}"
+            # Resolve deployment directory with backward-compatible fallback
+            if [ -n "${DEPLOY_PATH:-}" ] && [ -d "${DEPLOY_PATH}" ]; then
+              TARGET_PATH="${DEPLOY_PATH}"
+            elif [ -d "/root/email-platform" ]; then
+              TARGET_PATH="/root/email-platform"
+            elif [ -d "/root/email-platform." ]; then
+              TARGET_PATH="/root/email-platform."
+            else
+              echo "Deploy path not found. Checked: DEPLOY_PATH, /root/email-platform, /root/email-platform."
+              exit 1
+            fi
+            cd "${TARGET_PATH}"
+            echo "Deploy path: ${TARGET_PATH}"
 
             # Pull latest code
             echo "Pulling latest code..."
@@ -123,6 +134,7 @@ jobs:
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
-          ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "docker compose -f /root/email-platform/docker-compose.prod.yml ps"
+          ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "if [ -n '${DEPLOY_PATH}' ] && [ -f '${DEPLOY_PATH}/docker-compose.prod.yml' ]; then docker compose -f '${DEPLOY_PATH}/docker-compose.prod.yml' ps; elif [ -f /root/email-platform/docker-compose.prod.yml ]; then docker compose -f /root/email-platform/docker-compose.prod.yml ps; else docker compose -f /root/email-platform./docker-compose.prod.yml ps; fi"

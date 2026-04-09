@@ -50,8 +50,9 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
-          timeout 120m ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'ENDSSH'
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ConnectionAttempts=5 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
+          for deploy_attempt in 1 2 3; do
+            if timeout 120m ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'ENDSSH'
             set -euo pipefail
             echo "Starting deployment..."
 
@@ -154,6 +155,16 @@ jobs:
 
             echo "Deployment completed successfully!"
           ENDSSH
+            then
+              break
+            fi
+            if [ "$deploy_attempt" -eq 3 ]; then
+              echo "Remote deploy command failed after 3 attempts."
+              exit 1
+            fi
+            echo "Remote deploy attempt ${deploy_attempt}/3 failed, retrying in 20s..."
+            sleep 20
+          done
 
       - name: Verify deployment
         env:

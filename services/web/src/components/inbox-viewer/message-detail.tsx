@@ -34,7 +34,7 @@ function formatAttachmentSize(bytes: number | null): string {
 }
 
 function buildPublicAttachmentUrl(apiUrl: string, attachmentId: string, disposition: "inline" | "attachment") {
-  return `${apiUrl}/api/public/attachments/${encodeURIComponent(attachmentId)}/download?disposition=${disposition}`;
+  return `${apiUrl}/public/attachments/${encodeURIComponent(attachmentId)}/download?disposition=${disposition}`;
 }
 
 export function MessageDetail({ message, loading, apiUrl }: MessageDetailProps) {

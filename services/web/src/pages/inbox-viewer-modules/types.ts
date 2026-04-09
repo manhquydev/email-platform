@@ -34,4 +34,12 @@ export interface AccessError {
     suggestion?: string;
 }
 
-export const API_URL = import.meta.env.VITE_API_URL || "";
+const rawApiBase = (
+    window.env?.API_BASE ||
+    import.meta.env.VITE_API_BASE ||
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:3001"
+).replace(/\/$/, "");
+
+// Normalize to API gateway root so viewer routes always resolve to /api/public/*
+export const API_URL = rawApiBase.endsWith("/api") ? rawApiBase : `${rawApiBase}/api`;

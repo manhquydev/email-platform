@@ -39,8 +39,17 @@ export interface UseInboxViewerDataReturn {
 /**
  * Parse API error response into AccessError
  */
-function parseApiError(status: number, data: { error?: string; code?: string }): AccessError {
+function parseApiError(status: number, data: { error?: string; message?: string; code?: string }): AccessError {
+    const errorText = data.message || data.error || "";
+
     if (status === 404) {
+        if (data.code === "NOT_FOUND" || errorText.toLowerCase().includes("route")) {
+            return {
+                type: "error",
+                message: "Dịch vụ hộp thư tạm thời lỗi định tuyến",
+                suggestion: "Vui lòng tải lại trang hoặc thử lại sau ít phút.",
+            };
+        }
         return {
             type: "not_found",
             message: "Không tìm thấy hộp thư",
@@ -105,7 +114,7 @@ export function useInboxViewerData(): UseInboxViewerDataReturn {
         try {
             const offset = (pageNum - 1) * 20;
             const res = await fetch(
-                `${API_URL}/api/public/inbox/${encodeURIComponent(emailAddr)}/messages?limit=20&offset=${offset}`
+                `${API_URL}/public/inbox/${encodeURIComponent(emailAddr)}/messages?limit=20&offset=${offset}`
             );
 
             if (!res.ok) {
@@ -133,7 +142,7 @@ export function useInboxViewerData(): UseInboxViewerDataReturn {
     const handleSearch = useCallback(async (emailAddr: string) => {
         setAccessError(null);
         try {
-            const res = await fetch(`${API_URL}/api/public/inbox/search`, {
+            const res = await fetch(`${API_URL}/public/inbox/search`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: emailAddr }),
@@ -159,7 +168,7 @@ export function useInboxViewerData(): UseInboxViewerDataReturn {
         setDetailLoading(true);
         try {
             const res = await fetch(
-                `${API_URL}/api/public/inbox/${encodeURIComponent(email)}/messages/${messageId}`
+                `${API_URL}/public/inbox/${encodeURIComponent(email)}/messages/${messageId}`
             );
 
             if (!res.ok) {

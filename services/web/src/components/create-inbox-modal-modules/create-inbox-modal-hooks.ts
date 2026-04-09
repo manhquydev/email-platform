@@ -17,27 +17,33 @@ export interface CreateInboxModalProps {
 
 const CREATE_INBOX_PREFERENCES_KEY = 'create_inbox_modal_preferences_v1';
 const DEFAULT_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_BATCH_COUNT = 5;
+const LOCAL_PART_SUFFIX_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
 /** Generate random email name */
 export const generateRandomName = () => {
     const adjectives = [
         'swift', 'silent', 'bright', 'cool', 'neon', 'epic', 'pure', 'rapid', 'solar', 'lunar',
-        'arctic', 'ember', 'nova', 'pixel', 'stellar', 'quantum', 'turbo', 'hyper', 'zen', 'vivid'
+        'arctic', 'ember', 'nova', 'pixel', 'stellar', 'quantum', 'turbo', 'hyper', 'zen', 'vivid',
+        'amber', 'velvet', 'cobalt', 'atomic', 'midnight', 'silver', 'crimson', 'aurora', 'frost', 'delta'
     ];
     const nouns = [
         'fox', 'wolf', 'orbit', 'forge', 'wave', 'node', 'spark', 'byte', 'cloud', 'signal',
-        'nexus', 'pilot', 'pulse', 'rider', 'storm', 'echo', 'matrix', 'drift', 'vault', 'scope'
+        'nexus', 'pilot', 'pulse', 'rider', 'storm', 'echo', 'matrix', 'drift', 'vault', 'scope',
+        'frame', 'circuit', 'beacon', 'thread', 'lab', 'relay', 'vector', 'terminal', 'harbor', 'atlas'
     ];
-    const letters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const letters = LOCAL_PART_SUFFIX_CHARS;
     const pick = (items: string[]) => items[Math.floor(Math.random() * items.length)];
     const randomSuffix = (length: number) =>
         Array.from({ length }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
 
-    const style = Math.floor(Math.random() * 4);
+    const style = Math.floor(Math.random() * 6);
     if (style === 0) return `${pick(adjectives)}-${pick(nouns)}-${Math.floor(100 + Math.random() * 900)}`;
     if (style === 1) return `${pick(nouns)}-${randomSuffix(5)}`;
     if (style === 2) return `${pick(adjectives)}${Math.floor(1000 + Math.random() * 9000)}`;
-    return `${pick(adjectives)}-${pick(nouns)}-${randomSuffix(4)}`;
+    if (style === 3) return `${pick(adjectives)}-${pick(nouns)}-${randomSuffix(4)}`;
+    if (style === 4) return `${pick(adjectives)}-${pick(nouns)}-${pick(nouns)}`;
+    return `${pick(nouns)}-${pick(adjectives)}-${Math.floor(10 + Math.random() * 89)}`;
 };
 
 /** TTL options in milliseconds (null = permanent) */
@@ -103,6 +109,27 @@ function normalizeTtlValue(ttlMs: number | null | undefined) {
     return allowedValues.has(ttlMs) ? ttlMs : DEFAULT_TTL_MS;
 }
 
+function randomLocalPartSuffix(length = 4) {
+    return Array.from(
+        { length },
+        () => LOCAL_PART_SUFFIX_CHARS[Math.floor(Math.random() * LOCAL_PART_SUFFIX_CHARS.length)]
+    ).join('');
+}
+
+export function buildBatchLocalParts(baseLocalPart: string, count: number) {
+    const normalizedBase = baseLocalPart.trim().toLowerCase();
+    if (count <= 1) return [normalizedBase];
+
+    const results = new Set<string>();
+    results.add(normalizedBase);
+
+    while (results.size < count) {
+        results.add(`${normalizedBase}-${randomLocalPartSuffix()}`);
+    }
+
+    return Array.from(results);
+}
+
 /** Hook to manage create inbox form state and submission */
 export function useCreateInboxForm(props: CreateInboxModalProps) {
     const { domains, token, onClose, onInboxCreated } = props;
@@ -110,7 +137,7 @@ export function useCreateInboxForm(props: CreateInboxModalProps) {
     const verifiedDomains = useMemo(() => domains.filter(d => d.status === 'VERIFIED'), [domains]);
     const preferredDomainId = savedPreferences?.selectedDomainId || domains.find(d => d.isPublic)?.id || domains[0]?.id || '';
 
-    const [loading, setLoading] = useState(false);
+    const [loadingAction, setLoadingAction] = useState<'create' | 'keep' | 'batch-5' | 'batch-10' | null>(null);
     // Lazy state initialization to avoid calling generateRandomName() on every render
     const [localPart, setLocalPart] = useState(() => generateRandomName());
     const [selectedDomainId, setSelectedDomainId] = useState<string>(preferredDomainId);
@@ -121,7 +148,7 @@ export function useCreateInboxForm(props: CreateInboxModalProps) {
     const { modalRef, modalProps } = useModalAccessibility({
         isOpen: true,
         onClose,
-        closeOnEsc: !loading,
+        closeOnEsc: loadingAction === null,
     });
 
     useEffect(() => {
@@ -182,6 +209,7 @@ export function useCreateInboxForm(props: CreateInboxModalProps) {
         });
     };
 
+    const loading = loadingAction !== null;
     const canCreate = Boolean(token && localPart.trim() && candidateDomains.length > 0);
     const previewEmail = useMemo(() => {
         if (!localPart.trim()) return '';
@@ -193,40 +221,105 @@ export function useCreateInboxForm(props: CreateInboxModalProps) {
         }
         return activeDomain ? `${localPart}@${activeDomain.name}` : '';
     }, [activeDomain, localPart, randomDomainPool, useRandomDomainPool]);
+    const selectedTtlLabel = useMemo(
+        () => TTL_OPTIONS.find((option) => option.value === ttlMs)?.label || '10 phút',
+        [ttlMs]
+    );
+    const presetSummary = useMemo(() => {
+        const domainSummary = useRandomDomainPool
+            ? `${Math.max(randomDomainPool.length, 0)} domain random`
+            : activeDomain
+                ? `1 domain: @${activeDomain.name}`
+                : 'Chưa chọn domain';
+
+        return `Preset hiện tại: ${selectedTtlLabel} • ${domainSummary}`;
+    }, [activeDomain, randomDomainPool.length, selectedTtlLabel, useRandomDomainPool]);
 
     const handleRandomize = () => setLocalPart(generateRandomName());
 
-    const handleCreate = async () => {
-        if (!localPart.trim() || !token || candidateDomains.length === 0) return;
+    const createInbox = async (nextLocalPart: string) => {
         const selectedDomain = candidateDomains[Math.floor(Math.random() * candidateDomains.length)];
-        if (!selectedDomain) return;
+        if (!selectedDomain || !token) {
+            throw new Error('Không có domain hợp lệ để tạo hộp thư');
+        }
 
-        setLoading(true);
+        const res = await api<{ inbox: Inbox }>('/inboxes', {
+            method: 'POST',
+            token,
+            body: {
+                domainId: selectedDomain.id,
+                localPart: nextLocalPart,
+                expiresAt: ttlMs ? new Date(Date.now() + ttlMs).toISOString() : null
+            }
+        });
+
+        const newInbox = { ...res.inbox, domain: selectedDomain };
+        clarityTrack("inbox_created");
+        onInboxCreated?.(newInbox);
+        return newInbox;
+    };
+
+    const handleCreate = async () => {
+        if (!canCreate || loading) return;
+        setLoadingAction('create');
         try {
-            const res = await api<{ inbox: Inbox }>('/inboxes', {
-                method: 'POST',
-                token,
-                body: {
-                    domainId: selectedDomain.id,
-                    localPart: localPart.trim(),
-                    expiresAt: ttlMs ? new Date(Date.now() + ttlMs).toISOString() : null
-                }
-            });
-
-            const newInbox = { ...res.inbox, domain: selectedDomain };
-            clarityTrack("inbox_created");
-            toast.success('Đã tạo hộp thư mới!');
-            onInboxCreated?.(newInbox);
+            await createInbox(localPart.trim());
+            toast.success('Đã tạo hộp thư mới');
             onClose();
         } catch (e) {
-            toast.error('Lỗi: ' + (e as Error).message);
+            toast.error((e as Error).message || 'Không thể tạo hộp thư');
         } finally {
-            setLoading(false);
+            setLoadingAction(null);
         }
+    };
+
+    const handleCreateAndKeepSetup = async () => {
+        if (!canCreate || loading) return;
+        setLoadingAction('keep');
+        try {
+            await createInbox(localPart.trim());
+            setLocalPart(generateRandomName());
+            toast.success('Đã tạo và giữ nguyên preset');
+        } catch (e) {
+            toast.error((e as Error).message || 'Không thể tạo hộp thư');
+        } finally {
+            setLoadingAction(null);
+        }
+    };
+
+    const handleCreateBatch = async (count = DEFAULT_BATCH_COUNT) => {
+        if (!canCreate || loading) return;
+        const normalizedCount = count === 10 ? 10 : DEFAULT_BATCH_COUNT;
+        setLoadingAction(normalizedCount === 10 ? 'batch-10' : 'batch-5');
+
+        let successCount = 0;
+        const localParts = buildBatchLocalParts(localPart, normalizedCount);
+
+        try {
+            for (const itemLocalPart of localParts) {
+                await createInbox(itemLocalPart);
+                successCount += 1;
+            }
+            setLocalPart(generateRandomName());
+            toast.success(`Đã tạo ${successCount} hộp thư`);
+        } catch (e) {
+            const message = successCount > 0
+                ? `Đã tạo ${successCount}/${normalizedCount} hộp thư`
+                : ((e as Error).message || 'Không thể tạo hộp thư');
+            toast.error(message);
+        } finally {
+            setLoadingAction(null);
+        }
+    };
+
+    const handleRequestClose = () => {
+        if (loading) return;
+        onClose();
     };
 
     return {
         loading,
+        loadingAction,
         localPart, setLocalPart,
         selectedDomainId, setSelectedDomainId,
         ttlMs, setTtlMs,
@@ -239,8 +332,11 @@ export function useCreateInboxForm(props: CreateInboxModalProps) {
         activeDomain,
         canCreate,
         previewEmail,
+        presetSummary,
         handleRandomize,
         handleCreate,
-        onClose
+        handleCreateAndKeepSetup,
+        handleCreateBatch,
+        handleRequestClose
     };
 }

@@ -54,7 +54,7 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
 
     // Command Actions
     const handleSelectInbox = (inbox: Inbox) => {
-        navigate(`/app/manager?inboxId=${inbox.id}`);
+        navigate(`/app/inbox/${inbox.id}`);
         setShowCommandPalette(false);
     };
 

@@ -40,6 +40,7 @@ const SsoCallback = lazy(() => import("./pages/auth/SsoCallback").then(m => ({ d
 const InboxManager = lazy(() => import("./pages/InboxManager").then(m => ({ default: m.InboxManager })));
 const FocusDashboard = lazy(() => import("./pages/FocusDashboard").then(m => ({ default: m.FocusDashboard })));
 const Dashboard = lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
+const InboxWorkspace = lazy(() => import("./pages/InboxWorkspace").then(m => ({ default: m.InboxWorkspace })));
 const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
 const Authenticator = lazy(() => import("./pages/Authenticator").then(m => ({ default: m.Authenticator })));
 const Settings = lazy(() => import("./pages/Settings").then(m => ({ default: m.Settings })));
@@ -115,6 +116,7 @@ function App() {
 
                   {/* Classic mail reading views */}
                   <Route path="/app/inbox" element={<Dashboard />} />
+                  <Route path="/app/inbox/:inboxId" element={<InboxWorkspace />} />
                   <Route path="/app/sent" element={<Dashboard />} />
 
                   {/* Inbox Manager */}

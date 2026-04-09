@@ -19,6 +19,7 @@ import {
 export function CreateInboxModal(props: CreateInboxModalProps) {
     const {
         loading,
+        loadingAction,
         localPart, setLocalPart,
         selectedDomainId, setSelectedDomainId,
         ttlMs, setTtlMs,
@@ -31,9 +32,12 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
         activeDomain,
         canCreate,
         previewEmail,
+        presetSummary,
         handleRandomize,
         handleCreate,
-        onClose
+        handleCreateAndKeepSetup,
+        handleCreateBatch,
+        handleRequestClose
     } = useCreateInboxForm(props);
 
     return (
@@ -43,7 +47,7 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={onClose}
+                onClick={handleRequestClose}
             >
                 <motion.div
                     ref={modalRef}
@@ -56,14 +60,14 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                     className="w-full max-w-md"
                 >
                     <GlassCard variant="elevated" className="p-6 sm:p-8 relative overflow-hidden h-full">
-                        <ModalHeader onClose={onClose} />
+                        <ModalHeader onClose={handleRequestClose} />
 
                         <div className="space-y-6">
                             {verifiedDomains.length === 0 ? (
                                 <NoDomainState />
                             ) : (
                                 <>
-                                    <EmailPreview previewEmail={previewEmail} />
+                                    <EmailPreview previewEmail={previewEmail} presetSummary={presetSummary} />
                                     <div className="space-y-4">
                                         <LocalPartInput
                                             value={localPart}
@@ -88,9 +92,12 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                         {verifiedDomains.length > 0 && (
                         <ModalFooter
                             loading={loading}
+                            loadingAction={loadingAction}
                             canCreate={canCreate && !!activeDomain && !!localPart.trim()}
-                            onClose={onClose}
+                            onClose={handleRequestClose}
                             onCreate={handleCreate}
+                            onCreateAndKeepSetup={handleCreateAndKeepSetup}
+                            onCreateBatch={handleCreateBatch}
                         />
                     )}
                     </GlassCard>

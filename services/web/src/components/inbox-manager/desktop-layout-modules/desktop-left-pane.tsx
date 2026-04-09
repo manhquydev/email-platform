@@ -3,6 +3,7 @@
  * Inbox list with filters and header actions
  */
 import { InboxSidebar } from "../../split-pane/InboxSidebar";
+import { useNavigate } from "react-router-dom";
 import type { Inbox, ShareMode } from "../../../types";
 import type { FilterOption, SortOption } from "../hooks/use-inbox-filters";
 
@@ -26,16 +27,16 @@ export interface LeftPaneProps {
     onFilterChange: (filter: FilterOption) => void;
     onSortChange: (sort: SortOption) => void;
     onInboxSearchChange: (value: string) => void;
-    loadMessages: (inboxId: string) => void;
-    navigate: (path: string) => void;
 }
 
 export function LeftPane({
     filteredInboxes, inboxes, activeInbox, busy, filterBy, sortBy, inboxSearch,
     onSelectInbox, onDeleteInbox, onTransferInbox, onExtendInbox,
     onTogglePermanent, onShareModeChange, onVisibilityRules, onCopyPublicLink,
-    onCreateInbox, onFilterChange, onSortChange, onInboxSearchChange, loadMessages, navigate
+    onCreateInbox, onFilterChange, onSortChange, onInboxSearchChange
 }: LeftPaneProps) {
+    const navigate = useNavigate();
+
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
@@ -120,7 +121,6 @@ export function LeftPane({
                         const inbox = inboxes.find(i => i.id === id);
                         if (inbox) {
                             onSelectInbox(inbox);
-                            loadMessages(inbox.id);
                         }
                     }}
                     onCopyPublicLink={onCopyPublicLink}

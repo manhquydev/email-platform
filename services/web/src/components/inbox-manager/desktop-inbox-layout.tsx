@@ -1,33 +1,20 @@
 /**
- * Desktop layout for InboxManager - 3-pane split view
- * Extracted from InboxManager.tsx for modularity
+ * Desktop layout for InboxManager - 2-pane management view
+ * Left: inbox list + filters
+ * Right: manager workspace summary and actions
  */
-import { useNavigate } from "react-router-dom";
-import { SplitPaneLayout } from "../split-pane/SplitPaneLayout";
-import { MessageViewer } from "../email-viewer/MessageViewer";
-import { LeftPane, MiddlePane } from "./desktop-layout-modules";
-import type { Inbox, Message, ShareMode } from "../../types";
+import { LeftPane, ManagerWorkspacePane } from "./desktop-layout-modules";
+import type { Inbox, ShareMode } from "../../types";
 import type { FilterOption, SortOption } from "./hooks/use-inbox-filters";
 
 export interface DesktopInboxLayoutProps {
-    // Data
     filteredInboxes: Inbox[];
     inboxes: Inbox[];
-    messages: Message[];
-    searchResults: Message[];
     activeInbox: Inbox | null;
-    selectedMessage: Message | null;
-
-    // State
     busy: boolean;
-    isSearchMode: boolean;
-    isSearching: boolean;
-    searchQuery: string;
     filterBy: FilterOption;
     sortBy: SortOption;
     inboxSearch: string;
-
-    // Handlers
     onSelectInbox: (inbox: Inbox) => void;
     onDeleteInbox: (inbox: Inbox) => void;
     onTransferInbox: (inbox: Inbox) => void;
@@ -36,29 +23,17 @@ export interface DesktopInboxLayoutProps {
     onShareModeChange: (inboxId: string, mode: ShareMode) => void;
     onVisibilityRules: (inbox: Inbox) => void;
     onCopyPublicLink: (email: string) => void;
-    onSelectMessage: (msg: Message) => void;
-    onSearch: (query: string) => void;
-    onClearSearch: () => void;
     onCreateInbox: () => void;
     onFilterChange: (filter: FilterOption) => void;
     onSortChange: (sort: SortOption) => void;
     onInboxSearchChange: (value: string) => void;
-    loadMessages: (inboxId: string) => void;
-    setSelectedMessage: (msg: Message | null) => void;
-    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
 export function DesktopInboxLayout({
     filteredInboxes,
     inboxes,
-    messages,
-    searchResults,
     activeInbox,
-    selectedMessage,
     busy,
-    isSearchMode,
-    isSearching,
-    searchQuery,
     filterBy,
     sortBy,
     inboxSearch,
@@ -70,81 +45,44 @@ export function DesktopInboxLayout({
     onShareModeChange,
     onVisibilityRules,
     onCopyPublicLink,
-    onSelectMessage,
-    onSearch,
-    onClearSearch,
     onCreateInbox,
     onFilterChange,
     onSortChange,
     onInboxSearchChange,
-    loadMessages,
-    setSelectedMessage,
-    setMessages
 }: DesktopInboxLayoutProps) {
-    const navigate = useNavigate();
-
     return (
-        <div className="h-[calc(100vh-64px)]">
-            <SplitPaneLayout
-                breakpoint="desktop"
-                leftPane={
-                    <LeftPane
-                        filteredInboxes={filteredInboxes}
-                        inboxes={inboxes}
-                        activeInbox={activeInbox}
-                        busy={busy}
-                        filterBy={filterBy}
-                        sortBy={sortBy}
-                        inboxSearch={inboxSearch}
-                        onSelectInbox={onSelectInbox}
-                        onDeleteInbox={onDeleteInbox}
-                        onTransferInbox={onTransferInbox}
-                        onExtendInbox={onExtendInbox}
-                        onTogglePermanent={onTogglePermanent}
-                        onShareModeChange={onShareModeChange}
-                        onVisibilityRules={onVisibilityRules}
-                        onCopyPublicLink={onCopyPublicLink}
-                        onCreateInbox={onCreateInbox}
-                        onFilterChange={onFilterChange}
-                        onSortChange={onSortChange}
-                        onInboxSearchChange={onInboxSearchChange}
-                        loadMessages={loadMessages}
-                        navigate={navigate}
-                    />
-                }
-                middlePane={
-                    <MiddlePane
-                        activeInbox={activeInbox}
-                        messages={messages}
-                        searchResults={searchResults}
-                        selectedMessage={selectedMessage}
-                        busy={busy}
-                        isSearchMode={isSearchMode}
-                        isSearching={isSearching}
-                        searchQuery={searchQuery}
-                        onSelectMessage={onSelectMessage}
-                        onSearch={onSearch}
-                        onClearSearch={onClearSearch}
-                        onDeleteInbox={onDeleteInbox}
-                        loadMessages={loadMessages}
-                    />
-                }
-                rightPane={
-                    selectedMessage ? (
-                        <MessageViewer
-                            message={selectedMessage}
-                            onDelete={() => setSelectedMessage(null)}
-                            onPin={(isPinned) => {
-                                setMessages(prev => prev.map(m =>
-                                    m.id === selectedMessage.id ? { ...m, isPinned } : m
-                                ));
-                            }}
-                            variant="pane"
-                        />
-                    ) : undefined
-                }
-                showRightPane={!!selectedMessage}
-            />
+        <div className="h-[calc(100vh-64px)] grid grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
+            <div className="border-r border-white/5 bg-[var(--nebula-void)]/50 overflow-hidden">
+                <LeftPane
+                    filteredInboxes={filteredInboxes}
+                    inboxes={inboxes}
+                    activeInbox={activeInbox}
+                    busy={busy}
+                    filterBy={filterBy}
+                    sortBy={sortBy}
+                    inboxSearch={inboxSearch}
+                    onSelectInbox={onSelectInbox}
+                    onDeleteInbox={onDeleteInbox}
+                    onTransferInbox={onTransferInbox}
+                    onExtendInbox={onExtendInbox}
+                    onTogglePermanent={onTogglePermanent}
+                    onShareModeChange={onShareModeChange}
+                    onVisibilityRules={onVisibilityRules}
+                    onCopyPublicLink={onCopyPublicLink}
+                    onCreateInbox={onCreateInbox}
+                    onFilterChange={onFilterChange}
+                    onSortChange={onSortChange}
+                    onInboxSearchChange={onInboxSearchChange}
+                />
+            </div>
+
+            <div className="bg-gradient-to-br from-[var(--nebula-void)] to-[var(--nebula-surface)]/20">
+                <ManagerWorkspacePane
+                    activeInbox={activeInbox}
+                    filteredCount={filteredInboxes.length}
+                    onCreateInbox={onCreateInbox}
+                />
+            </div>
         </div>
     );
 }

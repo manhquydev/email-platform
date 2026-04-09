@@ -26,13 +26,24 @@ export function ModalHeader({ onClose }: { onClose: () => void }) {
 }
 
 /** Email preview */
-export function EmailPreview({ previewEmail }: { previewEmail: string }) {
+export function EmailPreview({
+    previewEmail,
+    presetSummary
+}: {
+    previewEmail: string;
+    presetSummary?: string;
+}) {
     return (
         <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center text-center">
             <span className="text-xs font-medium text-primary/80 uppercase tracking-widest mb-1">Địa chỉ email của bạn</span>
             <span className="text-lg sm:text-xl font-bold text-nebula-text break-all">
                 {previewEmail || 'chọn domain...'}
             </span>
+            {presetSummary && (
+                <span className="mt-2 text-xs text-text-secondary">
+                    {presetSummary}
+                </span>
+            )}
         </div>
     );
 }
@@ -226,32 +237,72 @@ export function TTLSelect({ value, onChange }: TTLSelectProps) {
 /** Footer buttons */
 interface ModalFooterProps {
     loading: boolean;
+    loadingAction: 'create' | 'keep' | 'batch-5' | 'batch-10' | null;
     canCreate: boolean;
     onClose: () => void;
     onCreate: () => void;
+    onCreateAndKeepSetup: () => void;
+    onCreateBatch: (count: number) => void;
 }
 
-export function ModalFooter({ loading, canCreate, onClose, onCreate }: ModalFooterProps) {
+export function ModalFooter({
+    loading,
+    loadingAction,
+    canCreate,
+    onClose,
+    onCreate,
+    onCreateAndKeepSetup,
+    onCreateBatch
+}: ModalFooterProps) {
     return (
-        <div className="flex gap-3 justify-end mt-8">
-            <Button variant="ghost" onClick={onClose} disabled={loading}>
-                Hủy
-            </Button>
-            <Button
-                variant="primary"
-                onClick={onCreate}
-                disabled={loading || !canCreate}
-                isLoading={loading}
-                icon={
-                    !loading && (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                    )
-                }
-            >
-                Tạo Email
-            </Button>
+        <div className="mt-8 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <Button
+                    variant="secondary"
+                    onClick={onCreateAndKeepSetup}
+                    disabled={loading || !canCreate}
+                    isLoading={loadingAction === 'keep'}
+                >
+                    Tạo & giữ setup
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={() => onCreateBatch(5)}
+                    disabled={loading || !canCreate}
+                    isLoading={loadingAction === 'batch-5'}
+                >
+                    Tạo 5
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={() => onCreateBatch(10)}
+                    disabled={loading || !canCreate}
+                    isLoading={loadingAction === 'batch-10'}
+                >
+                    Tạo 10
+                </Button>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+                <Button variant="ghost" onClick={onClose} disabled={loading}>
+                    Hủy
+                </Button>
+                <Button
+                    variant="primary"
+                    onClick={onCreate}
+                    disabled={loading || !canCreate}
+                    isLoading={loadingAction === 'create'}
+                    icon={
+                        loadingAction !== 'create' && (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        )
+                    }
+                >
+                    Tạo Email
+                </Button>
+            </div>
         </div>
     );
 }

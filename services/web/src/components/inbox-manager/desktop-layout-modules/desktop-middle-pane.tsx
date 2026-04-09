@@ -22,12 +22,14 @@ export interface MiddlePaneProps {
     onClearSearch: () => void;
     onDeleteInbox: (inbox: Inbox) => void;
     loadMessages: (inboxId: string) => void;
+    disableInboxDelete?: boolean;
 }
 
 export function MiddlePane({
     activeInbox, messages, searchResults, selectedMessage, busy,
     isSearchMode, isSearching, searchQuery,
-    onSelectMessage, onSearch, onClearSearch, onDeleteInbox, loadMessages
+    onSelectMessage, onSearch, onClearSearch, onDeleteInbox, loadMessages,
+    disableInboxDelete = false
 }: MiddlePaneProps) {
     return (
         <div className="h-full flex flex-col">
@@ -74,15 +76,17 @@ export function MiddlePane({
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
                                 </button>
-                                <button
-                                    className="p-1.5 hover:bg-red-500/10 rounded-lg text-text-secondary hover:text-red-400 transition-all"
-                                    onClick={() => onDeleteInbox(activeInbox)}
-                                    title="Xóa inbox"
-                                >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
+                                {!disableInboxDelete && (
+                                    <button
+                                        className="p-1.5 hover:bg-red-500/10 rounded-lg text-text-secondary hover:text-red-400 transition-all"
+                                        onClick={() => onDeleteInbox(activeInbox)}
+                                        title="Xóa inbox"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                )}
                             </>
                         )}
                         {isSearchMode && (

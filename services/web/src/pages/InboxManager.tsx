@@ -3,7 +3,7 @@
  * Refactored to use modular hooks and layout components
  */
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
 import { useBreakpoint } from "../hooks/useBreakpoint";
@@ -22,6 +22,7 @@ import {
 export function InboxManager() {
     const { token } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
     const breakpoint = useBreakpoint();
     const isDesktop = breakpoint === 'desktop';
 
@@ -72,7 +73,6 @@ export function InboxManager() {
         setShowBatchDeleteConfirm,
         setInboxForActionSheet,
         setShowDetail,
-        setSelectedMessage,
         handleSelectInbox,
         handleViewMessages,
         handleToggleSelect,
@@ -136,9 +136,9 @@ export function InboxManager() {
         if (!inboxId) return;
         const targetInbox = inboxes.find((inbox) => inbox.id === inboxId);
         if (targetInbox) {
-            handleSelectInbox(targetInbox);
+            navigate(`/app/inbox/${targetInbox.id}`, { replace: true });
         }
-    }, [location.search, inboxes, handleSelectInbox, setInboxSearch]);
+    }, [location.search, inboxes, navigate, setInboxSearch]);
 
     return (
         <FocusStreamLayout
@@ -149,7 +149,9 @@ export function InboxManager() {
             onSelectDomain={setSelectedDomain}
             onSelectInbox={(id) => {
                 const inbox = inboxes.find(i => i.id === id);
-                if (inbox) handleSelectInbox(inbox);
+                if (inbox) {
+                    navigate(`/app/inbox/${inbox.id}`);
+                }
             }}
             onCreateInbox={handleCreateInboxFromSelector}
             onDeleteInbox={handleDeleteInbox}
@@ -160,14 +162,8 @@ export function InboxManager() {
                 <DesktopInboxLayout
                     filteredInboxes={filteredInboxes}
                     inboxes={inboxes}
-                    messages={messages}
-                    searchResults={searchResults}
                     activeInbox={activeInbox}
-                    selectedMessage={selectedMessage}
                     busy={busy}
-                    isSearchMode={isSearchMode}
-                    isSearching={isSearching}
-                    searchQuery={searchQuery}
                     filterBy={filterBy}
                     sortBy={sortBy}
                     inboxSearch={inboxSearch}
@@ -179,16 +175,10 @@ export function InboxManager() {
                     onShareModeChange={handleShareModeChange}
                     onVisibilityRules={(inbox) => setInboxForVisibilityRules(inbox)}
                     onCopyPublicLink={handleCopyPublicLink}
-                    onSelectMessage={handleSelectMessage}
-                    onSearch={handleSearch}
-                    onClearSearch={clearSearch}
                     onCreateInbox={() => setShowCreateModal(true)}
                     onFilterChange={setFilterBy}
                     onSortChange={setSortBy}
                     onInboxSearchChange={setInboxSearch}
-                    loadMessages={loadMessages}
-                    setSelectedMessage={setSelectedMessage}
-                    setMessages={setMessages}
                 />
             ) : (
                 <MobileInboxLayout
@@ -254,7 +244,6 @@ export function InboxManager() {
                 onCloseCreateModal={() => setShowCreateModal(false)}
                 onInboxCreated={(newInbox) => {
                     setInboxes(prev => [newInbox, ...prev]);
-                    setShowCreateModal(false);
                 }}
                 onCloseDeleteModal={() => setInboxToDelete(null)}
                 onConfirmDelete={confirmDeleteInbox}

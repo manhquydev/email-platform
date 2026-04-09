@@ -5,10 +5,15 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -45,17 +50,18 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 $SERVER_USER@$SERVER_HOST << 'ENDSSH'
-            set -e
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
+          timeout 80m ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST << 'ENDSSH'
+            set -euo pipefail
             echo "Starting deployment..."
 
             # Navigate to project directory
-            cd ${DEPLOY_PATH:-/root/email-platform.}
+            cd "${DEPLOY_PATH:-/root/email-platform}"
 
             # Pull latest code
             echo "Pulling latest code..."
-            git reset --hard
-            git pull origin main
+            git fetch --prune origin main
+            git reset --hard origin/main
 
             # CRITICAL: Remove orphaned migration folders that cause Prisma P3015 errors
             echo "Cleaning orphaned migration folders..."
@@ -64,12 +70,14 @@ jobs:
 
             # Rebuild and restart Docker containers (api, web, postfix, dovecot)
             echo "Rebuilding Docker containers..."
-            docker compose -f docker-compose.prod.yml build api web postfix dovecot
+            export COMPOSE_PROGRESS=plain
+            export DOCKER_BUILDKIT=1
+            docker compose -f docker-compose.prod.yml build --pull api web postfix dovecot
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
             # Run database migrations
             echo "Running database migrations..."
-            docker exec email-platform-api-1 npx prisma migrate deploy || echo "Migration warning: check logs"
+            docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy || echo "Migration warning: check logs"
 
             # Wait for services to be healthy
             echo "Waiting for services to start..."
@@ -77,7 +85,7 @@ jobs:
 
             # Trigger Postfix relay domains sync from API
             echo "Syncing Postfix relay domains..."
-            docker exec email-platform-api-1 node -e "
+            docker compose -f docker-compose.prod.yml exec -T api node -e "
               const { PrismaClient } = require('@prisma/client');
               const fs = require('fs');
               const prisma = new PrismaClient();
@@ -97,9 +105,16 @@ jobs:
             echo "Container status:"
             docker compose -f docker-compose.prod.yml ps
 
-            # Quick health check
+            # Quick health check with retry
             echo "Health check..."
-            curl -sf http://localhost:3001/health || echo "API health check pending..."
+            for i in 1 2 3 4 5; do
+              if curl -sf http://localhost:3001/health >/dev/null; then
+                echo "API health check passed"
+                break
+              fi
+              echo "Health check retry $i/5..."
+              sleep 5
+            done
 
             echo "Deployment completed successfully!"
           ENDSSH
@@ -109,4 +124,5 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 $SERVER_USER@$SERVER_HOST "docker compose -f /root/email-platform./docker-compose.prod.yml ps"
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
+          ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "docker compose -f /root/email-platform/docker-compose.prod.yml ps"

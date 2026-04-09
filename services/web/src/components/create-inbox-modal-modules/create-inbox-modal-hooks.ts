@@ -16,6 +16,10 @@ export interface CreateInboxModalProps {
 }
 
 const CREATE_INBOX_PREFERENCES_KEY = 'create_inbox_modal_preferences_v1';
+const LEGACY_CREATE_INBOX_PREFERENCES_KEYS = [
+    'create_inbox_modal_preferences',
+    'createInboxModalPreferences'
+] as const;
 const DEFAULT_TTL_MS = 10 * 60 * 1000;
 const DEFAULT_BATCH_COUNT = 5;
 const LOCAL_PART_SUFFIX_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -63,32 +67,94 @@ type CreateInboxPreferences = {
     randomDomainIds: string[];
 };
 
-function readCreateInboxPreferences(): CreateInboxPreferences | null {
-    if (typeof window === 'undefined') return null;
-    try {
-        const raw = window.localStorage.getItem(CREATE_INBOX_PREFERENCES_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as Partial<CreateInboxPreferences>;
-        if (!parsed || typeof parsed !== 'object') return null;
-        const parsedTtl = parsed.ttlMs;
-        return {
-            ttlMs: parsedTtl === null
-                ? null
-                : typeof parsedTtl === 'number'
-                    ? parsedTtl
-                    : DEFAULT_TTL_MS,
-            selectedDomainId: typeof parsed.selectedDomainId === 'string' ? parsed.selectedDomainId : '',
-            useRandomDomainPool: Boolean(parsed.useRandomDomainPool),
-            randomDomainIds: Array.isArray(parsed.randomDomainIds)
-                ? parsed.randomDomainIds.filter((id): id is string => typeof id === 'string')
-                : [],
-        };
-    } catch {
-        return null;
+let inMemoryCreateInboxPreferences: CreateInboxPreferences | null = null;
+
+function parseTtlFromPreference(raw: unknown): number | null | undefined {
+    if (raw === null) return null;
+    if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+    if (typeof raw === 'string') {
+        const normalized = raw.trim().toLowerCase();
+        if (normalized === 'null' || normalized === 'permanent') return null;
+        const numeric = Number(normalized);
+        if (Number.isFinite(numeric)) return numeric;
     }
+    return undefined;
+}
+
+function parseCreateInboxPreferences(raw: string): CreateInboxPreferences | null {
+    const parsed = JSON.parse(raw) as Partial<CreateInboxPreferences> & {
+        ttl?: number | string | null;
+        ttlMinutes?: number;
+        ttlHours?: number;
+        randomDomains?: string[];
+        domainId?: string;
+    };
+
+    if (!parsed || typeof parsed !== 'object') return null;
+
+    let parsedTtl = parseTtlFromPreference(parsed.ttlMs);
+    if (parsedTtl === undefined) parsedTtl = parseTtlFromPreference(parsed.ttl);
+    if (parsedTtl === undefined && typeof parsed.ttlMinutes === 'number') {
+        parsedTtl = parsed.ttlMinutes * 60 * 1000;
+    }
+    if (parsedTtl === undefined && typeof parsed.ttlHours === 'number') {
+        parsedTtl = parsed.ttlHours * 60 * 60 * 1000;
+    }
+
+    const randomDomainIds = Array.isArray(parsed.randomDomainIds)
+        ? parsed.randomDomainIds
+        : Array.isArray(parsed.randomDomains)
+            ? parsed.randomDomains
+            : [];
+
+    return {
+        ttlMs: parsedTtl === null
+            ? null
+            : typeof parsedTtl === 'number'
+                ? parsedTtl
+                : DEFAULT_TTL_MS,
+        selectedDomainId: typeof parsed.selectedDomainId === 'string'
+            ? parsed.selectedDomainId
+            : typeof parsed.domainId === 'string'
+                ? parsed.domainId
+                : '',
+        useRandomDomainPool: Boolean(parsed.useRandomDomainPool),
+        randomDomainIds: randomDomainIds.filter((id): id is string => typeof id === 'string'),
+    };
+}
+
+function readCreateInboxPreferences(): CreateInboxPreferences | null {
+    if (inMemoryCreateInboxPreferences) return inMemoryCreateInboxPreferences;
+    if (typeof window === 'undefined') return null;
+
+    const keysToCheck = [CREATE_INBOX_PREFERENCES_KEY, ...LEGACY_CREATE_INBOX_PREFERENCES_KEYS];
+
+    try {
+        for (const key of keysToCheck) {
+            const raw = window.localStorage.getItem(key);
+            if (!raw) continue;
+            try {
+                const parsed = parseCreateInboxPreferences(raw);
+                if (!parsed) continue;
+
+                inMemoryCreateInboxPreferences = parsed;
+                if (key !== CREATE_INBOX_PREFERENCES_KEY) {
+                    window.localStorage.setItem(CREATE_INBOX_PREFERENCES_KEY, JSON.stringify(parsed));
+                }
+                return parsed;
+            } catch {
+                // Ignore invalid legacy payload and continue.
+            }
+        }
+    } catch {
+        // Ignore localStorage read errors and fallback to in-memory state.
+    }
+
+    return inMemoryCreateInboxPreferences;
 }
 
 function writeCreateInboxPreferences(preferences: CreateInboxPreferences) {
+    inMemoryCreateInboxPreferences = preferences;
     if (typeof window === 'undefined') return;
     try {
         window.localStorage.setItem(CREATE_INBOX_PREFERENCES_KEY, JSON.stringify(preferences));

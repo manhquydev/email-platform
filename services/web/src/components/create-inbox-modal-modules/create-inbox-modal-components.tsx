@@ -10,7 +10,7 @@ import { TTL_OPTIONS } from './create-inbox-modal-hooks';
 /** Modal header */
 export function ModalHeader({ onClose }: { onClose: () => void }) {
     return (
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-4 flex items-center justify-between">
             <h2 id="create-inbox-modal-title" className="text-xl font-bold text-nebula-text">Tạo email mới</h2>
             <button
                 onClick={onClose}
@@ -34,7 +34,7 @@ export function EmailPreview({
     presetSummary?: string;
 }) {
     return (
-        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center text-center">
+        <div className="flex flex-col items-center rounded-xl border border-primary/20 bg-primary/10 p-3.5 text-center sm:p-4">
             <span className="text-xs font-medium text-primary/80 uppercase tracking-widest mb-1">Địa chỉ email của bạn</span>
             <span className="text-lg sm:text-xl font-bold text-nebula-text break-all">
                 {previewEmail || 'chọn domain...'}
@@ -161,7 +161,7 @@ export function DomainSelect({
                     <p className="text-xs text-text-secondary">
                         Chọn domain để hệ thống random khi tạo email ({randomDomainIds.length}/{domains.length} đã chọn)
                     </p>
-                    <div className="space-y-1.5 max-h-36 overflow-auto pr-1">
+                    <div className="max-h-32 space-y-1.5 overflow-auto pr-1">
                         {domains.map(domain => {
                             const checked = randomDomainIds.includes(domain.id);
                             return (
@@ -255,7 +255,7 @@ export function ModalFooter({
     onCreateBatch
 }: ModalFooterProps) {
     return (
-        <div className="mt-8 space-y-3">
+        <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <Button
                     variant="secondary"

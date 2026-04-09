@@ -2,7 +2,6 @@
  * Mobile/Tablet layout for InboxManager - Tab-based view
  * Refactored to use modular components for maintainability
  */
-import { Fragment } from "react";
 import { TabNavigation, InboxTabIcon, MessagesTabIcon } from "../TabNavigation";
 import { MobileInboxesTab, MobileMessagesTab } from "./mobile-layout-modules";
 import type { Inbox, Message, ShareMode } from "../../types";
@@ -24,6 +23,7 @@ export interface MobileInboxLayoutProps {
     searchQuery: string;
     filterBy: FilterOption;
     sortBy: SortOption;
+    inboxSearch: string;
     activeTab: 'inboxes' | 'messages';
     focusedIndex: number;
     selectedInboxIds: Set<string>;
@@ -44,6 +44,7 @@ export interface MobileInboxLayoutProps {
     onCreateInbox: () => void;
     onFilterChange: (filter: FilterOption) => void;
     onSortChange: (sort: SortOption) => void;
+    onInboxSearchChange: (value: string) => void;
     onToggleSelect: (inboxId: string) => void;
     onSelectAll: () => void;
     onBatchDelete: () => void;
@@ -67,6 +68,7 @@ export function MobileInboxLayout({
     searchQuery,
     filterBy,
     sortBy,
+    inboxSearch,
     activeTab,
     focusedIndex,
     selectedInboxIds,
@@ -84,6 +86,7 @@ export function MobileInboxLayout({
     onCreateInbox,
     onFilterChange,
     onSortChange,
+    onInboxSearchChange,
     onToggleSelect,
     onSelectAll,
     onBatchDelete,
@@ -100,7 +103,7 @@ export function MobileInboxLayout({
     ];
 
     return (
-        <Fragment>
+        <div className="flex flex-col min-h-[calc(100vh-11rem)] md:min-h-[calc(100vh-10rem)]">
             {/* Tab Navigation */}
             <div className="sticky top-0 z-30">
                 <TabNavigation
@@ -111,7 +114,7 @@ export function MobileInboxLayout({
             </div>
 
             {/* Tab Content */}
-            <div className="p-4 md:p-6 w-full max-w-7xl mx-auto">
+            <div className="flex-1 min-h-0 p-3 sm:p-4 pb-28 md:p-6 w-full max-w-7xl mx-auto">
                 {activeTab === 'inboxes' ? (
                     <MobileInboxesTab
                         filteredInboxes={filteredInboxes}
@@ -119,6 +122,7 @@ export function MobileInboxLayout({
                         busy={busy}
                         filterBy={filterBy}
                         sortBy={sortBy}
+                        inboxSearch={inboxSearch}
                         focusedIndex={focusedIndex}
                         selectedInboxIds={selectedInboxIds}
                         isRefreshing={isRefreshing}
@@ -132,6 +136,7 @@ export function MobileInboxLayout({
                         onCreateInbox={onCreateInbox}
                         onFilterChange={onFilterChange}
                         onSortChange={onSortChange}
+                        onInboxSearchChange={onInboxSearchChange}
                         onToggleSelect={onToggleSelect}
                         onSelectAll={onSelectAll}
                         onBatchDelete={onBatchDelete}
@@ -157,6 +162,6 @@ export function MobileInboxLayout({
                     />
                 )}
             </div>
-        </Fragment>
+        </div>
     );
 }

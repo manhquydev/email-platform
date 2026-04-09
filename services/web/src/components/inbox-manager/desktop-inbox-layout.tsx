@@ -25,6 +25,7 @@ export interface DesktopInboxLayoutProps {
     searchQuery: string;
     filterBy: FilterOption;
     sortBy: SortOption;
+    inboxSearch: string;
 
     // Handlers
     onSelectInbox: (inbox: Inbox) => void;
@@ -41,6 +42,7 @@ export interface DesktopInboxLayoutProps {
     onCreateInbox: () => void;
     onFilterChange: (filter: FilterOption) => void;
     onSortChange: (sort: SortOption) => void;
+    onInboxSearchChange: (value: string) => void;
     loadMessages: (inboxId: string) => void;
     setSelectedMessage: (msg: Message | null) => void;
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -59,6 +61,7 @@ export function DesktopInboxLayout({
     searchQuery,
     filterBy,
     sortBy,
+    inboxSearch,
     onSelectInbox,
     onDeleteInbox,
     onTransferInbox,
@@ -73,6 +76,7 @@ export function DesktopInboxLayout({
     onCreateInbox,
     onFilterChange,
     onSortChange,
+    onInboxSearchChange,
     loadMessages,
     setSelectedMessage,
     setMessages
@@ -91,6 +95,7 @@ export function DesktopInboxLayout({
                         busy={busy}
                         filterBy={filterBy}
                         sortBy={sortBy}
+                        inboxSearch={inboxSearch}
                         onSelectInbox={onSelectInbox}
                         onDeleteInbox={onDeleteInbox}
                         onTransferInbox={onTransferInbox}
@@ -102,6 +107,7 @@ export function DesktopInboxLayout({
                         onCreateInbox={onCreateInbox}
                         onFilterChange={onFilterChange}
                         onSortChange={onSortChange}
+                        onInboxSearchChange={onInboxSearchChange}
                         loadMessages={loadMessages}
                         navigate={navigate}
                     />

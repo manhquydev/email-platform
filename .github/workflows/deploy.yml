@@ -74,6 +74,10 @@ jobs:
             git fetch --prune origin main
             git reset --hard origin/main
 
+            # Remove temporary check scripts left from hotfix/debug sessions
+            echo "Cleaning tmp-check scripts..."
+            find . -type f \( -name "tmp-check-*.js" -o -name "tmp-check-*.cjs" \) -print -delete || true
+
             # CRITICAL: Remove orphaned migration folders that cause Prisma P3015 errors
             echo "Cleaning orphaned migration folders..."
             rm -rf services/api/prisma/migrations/manual 2>/dev/null || true

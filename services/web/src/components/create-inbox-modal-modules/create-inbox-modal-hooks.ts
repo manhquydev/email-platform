@@ -64,8 +64,13 @@ function readCreateInboxPreferences(): CreateInboxPreferences | null {
         if (!raw) return null;
         const parsed = JSON.parse(raw) as Partial<CreateInboxPreferences>;
         if (!parsed || typeof parsed !== 'object') return null;
+        const parsedTtl = parsed.ttlMs;
         return {
-            ttlMs: parsed.ttlMs ?? DEFAULT_TTL_MS,
+            ttlMs: parsedTtl === null
+                ? null
+                : typeof parsedTtl === 'number'
+                    ? parsedTtl
+                    : DEFAULT_TTL_MS,
             selectedDomainId: typeof parsed.selectedDomainId === 'string' ? parsed.selectedDomainId : '',
             useRandomDomainPool: Boolean(parsed.useRandomDomainPool),
             randomDomainIds: Array.isArray(parsed.randomDomainIds)

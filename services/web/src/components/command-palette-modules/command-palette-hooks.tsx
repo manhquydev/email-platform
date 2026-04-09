@@ -30,7 +30,7 @@ export function useCommands({ inboxes, onSelectInbox, onCreateInbox, onClose, cu
             label: 'Đi đến Hộp thư',
             icon: <InboxIcon />,
             shortcut: 'G I',
-            action: () => { navigate('/app/inbox'); onClose(); },
+            action: () => { navigate('/app/manager'); onClose(); },
             category: 'navigation'
         },
         // Admin navigation

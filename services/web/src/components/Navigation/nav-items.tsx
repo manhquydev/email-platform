@@ -16,8 +16,7 @@ export interface NavItem {
 // User navigation items
 export const userNavItems: NavItem[] = [
     { id: "dashboard", label: "Tổng quan", path: "/app", icon: "dashboard", end: true },
-    { id: "inbox", label: "Hộp thư", path: "/app/inbox", icon: "inbox" },
-    { id: "manager", label: "Quản lý", path: "/app/manager", icon: "folder_managed" },
+    { id: "inbox", label: "Hộp thư", path: "/app/manager", icon: "inbox" },
     { id: "domains", label: "Tên miền", path: "/my-domains", icon: "language" },
     { id: "settings", label: "Cài đặt", path: "/settings", icon: "settings" },
     { id: "admin", label: "Quản trị", path: "/admin", icon: "admin_panel_settings", adminOnly: true },

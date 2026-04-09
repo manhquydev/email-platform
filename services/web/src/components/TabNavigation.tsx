@@ -23,7 +23,7 @@ export function TabNavigation({ tabs, activeTab, onTabChange }: TabNavigationPro
                         <button
                             key={tab.id}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium relative whitespace-nowrap min-w-[120px] justify-center md:min-w-0 md:justify-start",
+                                "flex items-center gap-2 px-3 sm:px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium relative whitespace-nowrap min-w-[96px] sm:min-w-[120px] justify-center md:min-w-0 md:justify-start",
                                 isActive
                                     ? "bg-primary/10 text-primary"
                                     : "text-text-secondary hover:text-text-main hover:bg-white/5",

@@ -2,7 +2,8 @@
  * InboxManager - Main page component for managing email inboxes
  * Refactored to use modular hooks and layout components
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FocusStreamLayout } from "../layouts/FocusStreamLayout";
 import { useBreakpoint } from "../hooks/useBreakpoint";
@@ -20,6 +21,7 @@ import {
 
 export function InboxManager() {
     const { token } = useAuth();
+    const location = useLocation();
     const breakpoint = useBreakpoint();
     const isDesktop = breakpoint === 'desktop';
 
@@ -41,7 +43,15 @@ export function InboxManager() {
     } = useInboxManagerData();
 
     // Use modular filter/search hooks
-    const { sortBy, filterBy, setSortBy, setFilterBy, getFilteredInboxes } = useInboxFilters();
+    const {
+        sortBy,
+        filterBy,
+        inboxSearch,
+        setSortBy,
+        setFilterBy,
+        setInboxSearch,
+        getFilteredInboxes
+    } = useInboxFilters();
     const filteredInboxes = getFilteredInboxes(inboxes);
     const { searchQuery, searchResults, isSearching, isSearchMode, handleSearch, clearSearch } = useInboxSearch();
 
@@ -114,6 +124,22 @@ export function InboxManager() {
 
     const unreadCount = messages.filter(m => !m.isRead).length;
 
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const inboxId = params.get("inboxId");
+        const query = params.get("q");
+
+        if (query !== null) {
+            setInboxSearch(query);
+        }
+
+        if (!inboxId) return;
+        const targetInbox = inboxes.find((inbox) => inbox.id === inboxId);
+        if (targetInbox) {
+            handleSelectInbox(targetInbox);
+        }
+    }, [location.search, inboxes, handleSelectInbox, setInboxSearch]);
+
     return (
         <FocusStreamLayout
             domains={domains}
@@ -144,6 +170,7 @@ export function InboxManager() {
                     searchQuery={searchQuery}
                     filterBy={filterBy}
                     sortBy={sortBy}
+                    inboxSearch={inboxSearch}
                     onSelectInbox={handleSelectInbox}
                     onDeleteInbox={handleDeleteInbox}
                     onTransferInbox={(inbox) => setInboxToTransfer(inbox)}
@@ -158,6 +185,7 @@ export function InboxManager() {
                     onCreateInbox={() => setShowCreateModal(true)}
                     onFilterChange={setFilterBy}
                     onSortChange={setSortBy}
+                    onInboxSearchChange={setInboxSearch}
                     loadMessages={loadMessages}
                     setSelectedMessage={setSelectedMessage}
                     setMessages={setMessages}
@@ -176,6 +204,7 @@ export function InboxManager() {
                     searchQuery={searchQuery}
                     filterBy={filterBy}
                     sortBy={sortBy}
+                    inboxSearch={inboxSearch}
                     activeTab={activeTab}
                     focusedIndex={focusedIndex}
                     selectedInboxIds={selectedInboxIds}
@@ -194,6 +223,7 @@ export function InboxManager() {
                     onCreateInbox={() => setShowCreateModal(true)}
                     onFilterChange={setFilterBy}
                     onSortChange={setSortBy}
+                    onInboxSearchChange={setInboxSearch}
                     onToggleSelect={handleToggleSelect}
                     onSelectAll={handleSelectAll}
                     onBatchDelete={handleBatchDelete}

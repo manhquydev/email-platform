@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
 import { Dashboard } from "./Dashboard";
 import { vi, describe, it, expect } from "vitest";
@@ -53,22 +53,18 @@ vi.mock("../components/EmailStream", () => ({
 }));
 
 describe("Dashboard Page", () => {
-    it("renders dashboard layout correctly", async () => {
+    it("redirects legacy /app/inbox route to /app/manager", () => {
         render(
-            <MemoryRouter>
+            <MemoryRouter initialEntries={["/app/inbox"]}>
                 <ThemeProvider>
-                    <Dashboard />
+                    <Routes>
+                        <Route path="/app/inbox" element={<Dashboard />} />
+                        <Route path="/app/manager" element={<div data-testid="manager-page">Manager</div>} />
+                    </Routes>
                 </ThemeProvider>
             </MemoryRouter>
         );
 
-        // Verify main layout components
-        expect(screen.getByTestId("app-shell")).toBeInTheDocument();
-        expect(screen.getByTestId("app-header")).toBeInTheDocument();
-
-        // Wait for Dashboard to render (no sidebar in new read-only design)
-        await waitFor(() => {
-            expect(screen.getByTestId("app-shell")).toBeInTheDocument();
-        });
+        expect(screen.getByTestId("manager-page")).toBeInTheDocument();
     });
 });

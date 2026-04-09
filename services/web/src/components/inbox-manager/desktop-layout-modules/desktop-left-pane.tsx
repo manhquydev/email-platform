@@ -13,6 +13,7 @@ export interface LeftPaneProps {
     busy: boolean;
     filterBy: FilterOption;
     sortBy: SortOption;
+    inboxSearch: string;
     onSelectInbox: (inbox: Inbox) => void;
     onDeleteInbox: (inbox: Inbox) => void;
     onTransferInbox: (inbox: Inbox) => void;
@@ -24,15 +25,16 @@ export interface LeftPaneProps {
     onCreateInbox: () => void;
     onFilterChange: (filter: FilterOption) => void;
     onSortChange: (sort: SortOption) => void;
+    onInboxSearchChange: (value: string) => void;
     loadMessages: (inboxId: string) => void;
     navigate: (path: string) => void;
 }
 
 export function LeftPane({
-    filteredInboxes, inboxes, activeInbox, busy, filterBy, sortBy,
+    filteredInboxes, inboxes, activeInbox, busy, filterBy, sortBy, inboxSearch,
     onSelectInbox, onDeleteInbox, onTransferInbox, onExtendInbox,
     onTogglePermanent, onShareModeChange, onVisibilityRules, onCopyPublicLink,
-    onCreateInbox, onFilterChange, onSortChange, loadMessages, navigate
+    onCreateInbox, onFilterChange, onSortChange, onInboxSearchChange, loadMessages, navigate
 }: LeftPaneProps) {
     return (
         <div className="h-full flex flex-col">
@@ -49,8 +51,8 @@ export function LeftPane({
                     <div className="flex items-center gap-1">
                         <button
                             className="p-2 hover:bg-white/5 rounded-xl text-text-secondary hover:text-primary transition-all"
-                            onClick={() => navigate('/app/inbox')}
-                            title="Đọc email"
+                            onClick={() => navigate('/app')}
+                            title="Xem dashboard"
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -76,6 +78,15 @@ export function LeftPane({
                             </svg>
                         </button>
                     </div>
+                </div>
+                <div className="mb-2.5">
+                    <input
+                        type="text"
+                        value={inboxSearch}
+                        onChange={(event) => onInboxSearchChange(event.target.value)}
+                        placeholder="Tìm email hoặc domain..."
+                        className="w-full text-xs px-3 py-2 rounded-lg bg-white/[0.03] border border-white/10 text-text-main placeholder:text-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/30"
+                    />
                 </div>
                 {/* Filters */}
                 <div className="flex items-center gap-1.5 flex-wrap">

@@ -54,12 +54,12 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
 
     // Command Actions
     const handleSelectInbox = (inbox: Inbox) => {
-        navigate(`/app/inbox?inboxId=${inbox.id}`);
+        navigate(`/app/manager?inboxId=${inbox.id}`);
         setShowCommandPalette(false);
     };
 
     const handleSearch = (query: string) => {
-        navigate(`/app/inbox?q=${encodeURIComponent(query)}`);
+        navigate(`/app/manager?q=${encodeURIComponent(query)}`);
         setShowCommandPalette(false);
         setShowSearch(false);
     };
@@ -107,7 +107,7 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
                     {/* Mobile Bottom Nav */}
                     <MobileNav
                         context="user"
-                        onCompose={() => navigate('/app/inbox?action=compose')}
+                        onCompose={() => navigate('/app/manager')}
                         unreadCount={0}
                     />
                 </div>

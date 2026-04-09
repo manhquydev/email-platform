@@ -20,6 +20,7 @@ export interface MobileInboxesTabProps {
     busy: boolean;
     filterBy: FilterOption;
     sortBy: SortOption;
+    inboxSearch: string;
     focusedIndex: number;
     selectedInboxIds: Set<string>;
     isRefreshing: boolean;
@@ -33,6 +34,7 @@ export interface MobileInboxesTabProps {
     onCreateInbox: () => void;
     onFilterChange: (filter: FilterOption) => void;
     onSortChange: (sort: SortOption) => void;
+    onInboxSearchChange: (value: string) => void;
     onToggleSelect: (inboxId: string) => void;
     onSelectAll: () => void;
     onBatchDelete: () => void;
@@ -43,17 +45,26 @@ export interface MobileInboxesTabProps {
 }
 
 export function MobileInboxesTab({
-    filteredInboxes, inboxes, busy, filterBy, sortBy, focusedIndex,
+    filteredInboxes, inboxes, busy, filterBy, sortBy, inboxSearch, focusedIndex,
     selectedInboxIds, isRefreshing, onViewMessages, onDeleteInbox,
     onTransferInbox, onExtendInbox, onTogglePermanent, onShareModeChange,
     onVisibilityRules, onCreateInbox, onFilterChange, onSortChange,
-    onToggleSelect, onSelectAll, onBatchDelete, onCopyAll, onLongPress,
+    onInboxSearchChange, onToggleSelect, onSelectAll, onBatchDelete, onCopyAll, onLongPress,
     onPullRefresh, onSetFocusedIndex
 }: MobileInboxesTabProps) {
     const [isActionsOpen, setIsActionsOpen] = useState(false);
 
     return (
         <div className="flex flex-col h-full">
+            <div className="px-4 pt-3 pb-2 bg-v3-bg-elevated border-b border-v3-border-default">
+                <input
+                    type="text"
+                    value={inboxSearch}
+                    onChange={(event) => onInboxSearchChange(event.target.value)}
+                    placeholder="Tìm email hoặc domain..."
+                    className="w-full min-h-[40px] rounded-lg border border-v3-border-default bg-v3-bg-surface px-3 py-2 text-sm text-text-main placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-v3-accent-primary"
+                />
+            </div>
             {/* Compact Toolbar */}
             <CompactToolbar
                 selectedCount={selectedInboxIds.size}

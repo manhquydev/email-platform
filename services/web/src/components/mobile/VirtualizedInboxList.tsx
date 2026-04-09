@@ -73,7 +73,7 @@ export function VirtualizedInboxList({
     return (
         <div
             ref={parentRef}
-            className="h-full overflow-auto"
+            className="h-full min-h-[320px] overflow-auto"
             style={{ contain: 'strict' }}
         >
             <div

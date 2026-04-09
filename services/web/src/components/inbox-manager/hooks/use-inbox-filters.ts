@@ -13,16 +13,28 @@ export interface UseInboxFiltersReturn {
     setSortBy: React.Dispatch<React.SetStateAction<SortOption>>;
     filterBy: FilterOption;
     setFilterBy: React.Dispatch<React.SetStateAction<FilterOption>>;
+    inboxSearch: string;
+    setInboxSearch: React.Dispatch<React.SetStateAction<string>>;
     getFilteredInboxes: (inboxes: Inbox[]) => Inbox[];
 }
 
 export function useInboxFilters(): UseInboxFiltersReturn {
     const [sortBy, setSortBy] = useState<SortOption>('created');
     const [filterBy, setFilterBy] = useState<FilterOption>('all');
+    const [inboxSearch, setInboxSearch] = useState('');
 
     const getFilteredInboxes = useCallback((inboxes: Inbox[]) => {
         let filtered = [...inboxes];
         const now = new Date();
+        const searchText = inboxSearch.trim().toLowerCase();
+
+        if (searchText) {
+            filtered = filtered.filter((inbox) => {
+                const domainName = inbox.domain?.name ?? '';
+                const fullEmail = `${inbox.localPart}@${domainName}`.toLowerCase();
+                return fullEmail.includes(searchText) || domainName.toLowerCase().includes(searchText);
+            });
+        }
 
         // Apply filter
         if (filterBy === 'active') {
@@ -53,13 +65,15 @@ export function useInboxFilters(): UseInboxFiltersReturn {
         });
 
         return filtered;
-    }, [sortBy, filterBy]);
+    }, [sortBy, filterBy, inboxSearch]);
 
     return {
         sortBy,
         setSortBy,
         filterBy,
         setFilterBy,
+        inboxSearch,
+        setInboxSearch,
         getFilteredInboxes
     };
 }
@@ -68,7 +82,7 @@ export function useInboxFilters(): UseInboxFiltersReturn {
  * Hook that combines filter logic with inbox data
  */
 export function useFilteredInboxes(inboxes: Inbox[]) {
-    const { sortBy, setSortBy, filterBy, setFilterBy, getFilteredInboxes } = useInboxFilters();
+    const { sortBy, setSortBy, filterBy, setFilterBy, inboxSearch, setInboxSearch, getFilteredInboxes } = useInboxFilters();
 
     const filteredInboxes = useMemo(
         () => getFilteredInboxes(inboxes),
@@ -80,6 +94,8 @@ export function useFilteredInboxes(inboxes: Inbox[]) {
         sortBy,
         setSortBy,
         filterBy,
-        setFilterBy
+        setFilterBy,
+        inboxSearch,
+        setInboxSearch
     };
 }

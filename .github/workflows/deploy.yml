@@ -88,19 +88,25 @@ jobs:
             export COMPOSE_PROGRESS=plain
             # Build sequentially for stability on constrained production hosts.
             export DOCKER_BUILDKIT=0
-            docker compose -f docker-compose.prod.yml build --pull postfix dovecot
-            docker compose -f docker-compose.prod.yml build --pull api
-            for attempt in 1 2; do
-              if docker compose -f docker-compose.prod.yml build --pull web; then
-                break
-              fi
-              if [ "$attempt" -eq 2 ]; then
-                echo "Web image build failed after retries."
-                exit 1
-              fi
-              echo "Web image build failed on attempt $attempt, retrying in 15s..."
-              sleep 15
-            done
+
+            retry() {
+              local max_attempts="$1"
+              shift
+              local attempt=1
+              until "$@"; do
+                if [ "$attempt" -ge "$max_attempts" ]; then
+                  echo "Command failed after ${max_attempts} attempts: $*"
+                  return 1
+                fi
+                echo "Command failed (attempt ${attempt}/${max_attempts}): $*"
+                attempt=$((attempt + 1))
+                sleep 15
+              done
+            }
+
+            retry 3 docker compose -f docker-compose.prod.yml build --pull postfix dovecot
+            retry 3 docker compose -f docker-compose.prod.yml build --pull api
+            retry 3 docker compose -f docker-compose.prod.yml build --pull web
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             # Ensure Caddy reloads latest Caddyfile changes (bind mount updates need container restart)
             docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate caddy

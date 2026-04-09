@@ -49,7 +49,7 @@ export function LeftPane({
                     <div className="flex items-center gap-1">
                         <button
                             className="p-2 hover:bg-white/5 rounded-xl text-text-secondary hover:text-primary transition-all"
-                            onClick={() => navigate('/app')}
+                            onClick={() => navigate('/app/inbox')}
                             title="Đọc email"
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

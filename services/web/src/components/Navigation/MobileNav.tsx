@@ -52,17 +52,22 @@ export function MobileNav({ context = "user", onCompose, unreadCount = 0 }: Mobi
     const displayItems: (NavItem | { id: string; type: "compose" } | { id: string; type: "more" })[] = [];
 
     if (context === "user") {
-        // User: Inbox, Domains, [Compose], Settings, (Admin if admin)
+        // User: Dashboard, Inbox, [Compose], Settings, (Admin or Domains fallback)
+        const dashboard = navItems.find((i) => i.id === "dashboard");
         const inbox = navItems.find((i) => i.id === "inbox");
         const domains = navItems.find((i) => i.id === "domains");
         const settings = navItems.find((i) => i.id === "settings");
         const admin = navItems.find((i) => i.id === "admin");
 
+        if (dashboard) displayItems.push(dashboard);
         if (inbox) displayItems.push(inbox);
-        if (domains) displayItems.push(domains);
         displayItems.push({ id: "compose", type: "compose" });
         if (settings) displayItems.push(settings);
-        if (admin) displayItems.push(admin);
+        if (admin) {
+            displayItems.push(admin);
+        } else if (domains) {
+            displayItems.push(domains);
+        }
     } else {
         // Admin: Dashboard, Users, Inboxes, Reports, More
         navItems.forEach((item) => displayItems.push(item));

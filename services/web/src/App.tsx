@@ -110,15 +110,18 @@ function App() {
                     <Route path="/auth/sso" element={<SsoCallback />} />
                   </Route>
 
-                  {/* Classic Dashboard (Wireframe Implementation) */}
-                  <Route path="/app" element={<Dashboard />} />
+                  {/* User Dashboard (new default landing after login) */}
+                  <Route path="/app" element={<FocusDashboard />} />
+
+                  {/* Classic mail reading views */}
+                  <Route path="/app/inbox" element={<Dashboard />} />
                   <Route path="/app/sent" element={<Dashboard />} />
 
                   {/* Inbox Manager */}
                   <Route path="/app/manager" element={<InboxManager />} />
 
-                  {/* Legacy Focus Stream Dashboard */}
-                  <Route path="/app/stream" element={<FocusDashboard />} />
+                  {/* Legacy route */}
+                  <Route path="/app/stream" element={<Navigate to="/app" replace />} />
 
                   {/* Public Ephemeral Inbox - No auth required */}
                   <Route path="/e/:token?" element={<EphemeralInbox />} />

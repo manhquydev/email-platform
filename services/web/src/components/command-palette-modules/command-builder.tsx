@@ -28,7 +28,7 @@ export function buildCommands({
             label: 'Đi đến Hộp thư',
             icon: <InboxIcon />,
             shortcut: 'G I',
-            action: () => { navigate('/app'); onClose(); },
+            action: () => { navigate('/app/inbox'); onClose(); },
             category: 'navigation'
         },
         // Admin navigation - only show for admins

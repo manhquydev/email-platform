@@ -104,7 +104,7 @@ export function FocusStreamLayout({
                     {/* Mobile Bottom Nav */}
                     <MobileNav
                         context="user"
-                        onCompose={() => navigate('/app?action=new_inbox')}
+                        onCompose={() => navigate('/app/manager')}
                         unreadCount={unreadCount}
                     />
                 </div>
@@ -131,7 +131,7 @@ export function FocusStreamLayout({
                     onSelectInbox={(inbox: Inbox) => onSelectInbox(inbox.id)}
                     onCreateInbox={() => {
                         if (domains.length > 0) {
-                            navigate('/app?action=new_inbox');
+                            navigate('/app/manager');
                         }
                     }}
                     onSearch={handleSearch}

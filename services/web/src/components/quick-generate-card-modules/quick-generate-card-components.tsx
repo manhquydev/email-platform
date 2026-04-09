@@ -21,7 +21,7 @@ export function NoDomainState() {
             <Button
                 variant="primary"
                 size="sm"
-                onClick={() => window.location.href = '/app?tab=domains'}
+                onClick={() => window.location.href = '/my-domains'}
             >
                 + Quản lý tên miền
             </Button>

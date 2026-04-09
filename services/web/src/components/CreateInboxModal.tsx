@@ -22,9 +22,14 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
         localPart, setLocalPart,
         selectedDomainId, setSelectedDomainId,
         ttlMs, setTtlMs,
+        useRandomDomainPool,
+        randomDomainIds,
+        handleRandomPoolToggle,
+        handleRandomDomainSelection,
         modalRef, modalProps,
         verifiedDomains,
         activeDomain,
+        canCreate,
         previewEmail,
         handleRandomize,
         handleCreate,
@@ -69,6 +74,10 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                                             domains={verifiedDomains}
                                             value={selectedDomainId}
                                             onChange={setSelectedDomainId}
+                                            useRandomDomainPool={useRandomDomainPool}
+                                            randomDomainIds={randomDomainIds}
+                                            onRandomPoolToggle={handleRandomPoolToggle}
+                                            onRandomDomainSelection={handleRandomDomainSelection}
                                         />
                                         <TTLSelect value={ttlMs} onChange={setTtlMs} />
                                     </div>
@@ -77,13 +86,13 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                         </div>
 
                         {verifiedDomains.length > 0 && (
-                            <ModalFooter
-                                loading={loading}
-                                canCreate={!!activeDomain && !!localPart.trim()}
-                                onClose={onClose}
-                                onCreate={handleCreate}
-                            />
-                        )}
+                        <ModalFooter
+                            loading={loading}
+                            canCreate={canCreate && !!activeDomain && !!localPart.trim()}
+                            onClose={onClose}
+                            onCreate={handleCreate}
+                        />
+                    )}
                     </GlassCard>
                 </motion.div>
             </motion.div>

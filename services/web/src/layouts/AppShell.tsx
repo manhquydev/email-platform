@@ -54,12 +54,12 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
 
     // Command Actions
     const handleSelectInbox = (inbox: Inbox) => {
-        navigate(`/app?inboxId=${inbox.id}`);
+        navigate(`/app/inbox?inboxId=${inbox.id}`);
         setShowCommandPalette(false);
     };
 
     const handleSearch = (query: string) => {
-        navigate(`/app?q=${encodeURIComponent(query)}`);
+        navigate(`/app/inbox?q=${encodeURIComponent(query)}`);
         setShowCommandPalette(false);
         setShowSearch(false);
     };
@@ -107,7 +107,7 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
                     {/* Mobile Bottom Nav */}
                     <MobileNav
                         context="user"
-                        onCompose={() => navigate('/app?action=compose')}
+                        onCompose={() => navigate('/app/inbox?action=compose')}
                         unreadCount={0}
                     />
                 </div>
@@ -139,7 +139,7 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
                         domains={domains}
                         inboxes={inboxes}
                         onSelectInbox={handleSelectInbox}
-                        onCreateInbox={() => { navigate('/app?action=new_inbox'); setShowCommandPalette(false); }}
+                        onCreateInbox={() => { navigate('/app/manager'); setShowCommandPalette(false); }}
                         onSearch={handleSearch}
                     />
                 )}

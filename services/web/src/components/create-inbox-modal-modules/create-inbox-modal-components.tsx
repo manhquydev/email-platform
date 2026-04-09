@@ -44,7 +44,7 @@ export function NoDomainState() {
             <div className="text-4xl mb-4">📧</div>
             <h4 className="text-lg font-medium text-nebula-text mb-2">Chưa có domain khả dụng</h4>
             <p className="mb-6">Tài khoản của bạn chưa có domain nào được xác thực.</p>
-            <Button variant="primary" onClick={() => window.location.href = '/app?tab=domains'}>
+            <Button variant="primary" onClick={() => window.location.href = '/my-domains'}>
                 + Quản lý Domain
             </Button>
         </div>
@@ -91,9 +91,21 @@ interface DomainSelectProps {
     domains: Domain[];
     value: string;
     onChange: (value: string) => void;
+    useRandomDomainPool: boolean;
+    randomDomainIds: string[];
+    onRandomPoolToggle: (enabled: boolean) => void;
+    onRandomDomainSelection: (domainId: string, selected: boolean) => void;
 }
 
-export function DomainSelect({ domains, value, onChange }: DomainSelectProps) {
+export function DomainSelect({
+    domains,
+    value,
+    onChange,
+    useRandomDomainPool,
+    randomDomainIds,
+    onRandomPoolToggle,
+    onRandomDomainSelection
+}: DomainSelectProps) {
     return (
         <div className="space-y-2">
             <label htmlFor="domain" className="text-sm font-medium text-text-secondary ml-1">Domain</label>
@@ -102,11 +114,12 @@ export function DomainSelect({ domains, value, onChange }: DomainSelectProps) {
                     id="domain"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
+                    disabled={useRandomDomainPool}
                     className={cn(
                         "w-full h-[46px] px-4 bg-nebula-elevated border border-nebula-border rounded-xl",
                         "text-nebula-text outline-none transition-all duration-200",
                         "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
-                        "appearance-none cursor-pointer"
+                        "appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     )}
                 >
                     {domains.map(d => (
@@ -121,6 +134,53 @@ export function DomainSelect({ domains, value, onChange }: DomainSelectProps) {
                     </svg>
                 </div>
             </div>
+
+            <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
+                <input
+                    type="checkbox"
+                    checked={useRandomDomainPool}
+                    onChange={(event) => onRandomPoolToggle(event.target.checked)}
+                    className="h-4 w-4 rounded border-nebula-border bg-nebula-elevated accent-primary"
+                />
+                Random domain từ nhóm đã chọn
+            </label>
+
+            {useRandomDomainPool && (
+                <div className="rounded-xl border border-nebula-border bg-nebula-elevated/40 p-3 space-y-2">
+                    <p className="text-xs text-text-secondary">
+                        Chọn domain để hệ thống random khi tạo email ({randomDomainIds.length}/{domains.length} đã chọn)
+                    </p>
+                    <div className="space-y-1.5 max-h-36 overflow-auto pr-1">
+                        {domains.map(domain => {
+                            const checked = randomDomainIds.includes(domain.id);
+                            return (
+                                <label
+                                    key={domain.id}
+                                    className={cn(
+                                        "flex items-center gap-2 rounded-lg px-2.5 py-2 border transition-colors cursor-pointer",
+                                        checked
+                                            ? "border-primary/50 bg-primary/10"
+                                            : "border-nebula-border hover:border-primary/30"
+                                    )}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={checked}
+                                        onChange={(event) => onRandomDomainSelection(domain.id, event.target.checked)}
+                                        className="h-4 w-4 rounded border-nebula-border bg-nebula-elevated accent-primary"
+                                    />
+                                    <span className="text-sm text-nebula-text">
+                                        @{domain.name} {domain.isPublic ? '(Shared)' : '(Private)'}
+                                    </span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                    {randomDomainIds.length === 0 && (
+                        <p className="text-xs text-amber-300">Vui lòng chọn ít nhất 1 domain để random.</p>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

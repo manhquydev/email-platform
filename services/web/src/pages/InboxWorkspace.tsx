@@ -198,13 +198,23 @@ export function InboxWorkspace() {
                         {messages.length} email • {unreadCount} chưa đọc
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => navigate("/app/manager")}
-                    className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
-                >
-                    Manager
-                </button>
+                <div className="flex min-w-0 items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={handleCopyResolvedEmail}
+                        className="max-w-[260px] truncate rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                        title="Sao chép địa chỉ email hiện tại"
+                    >
+                        {inboxResolved.localPart}@{inboxResolved.domain?.name}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => navigate("/app/manager")}
+                        className="rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                    >
+                        Manager
+                    </button>
+                </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -220,7 +230,7 @@ export function InboxWorkspace() {
                         }
                     }}
                     placeholder="Tìm inbox để chuyển nhanh..."
-                    className="flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main placeholder:text-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/30"
+                    className="flex-1 rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main placeholder:text-text-secondary/80 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/30"
                 />
                 <datalist id="workspace-inbox-options">
                     {inboxOptions.map((option) => (
@@ -230,10 +240,32 @@ export function InboxWorkspace() {
                 <button
                     type="button"
                     onClick={handleQuickSwitchInbox}
-                    className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                    className="rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
                 >
                     Mở
                 </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] uppercase tracking-[0.15em] text-text-secondary">Chọn nhanh</span>
+                <select
+                    value={inboxId}
+                    onChange={(event) => {
+                        const nextInboxId = event.target.value;
+                        if (!nextInboxId || nextInboxId === inboxId) return;
+                        navigate(`/app/inbox/${nextInboxId}`);
+                    }}
+                    className="min-w-[240px] max-w-full rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main focus:border-primary/40 focus:outline-none"
+                >
+                    <option value={inboxId}>{inboxResolved.localPart}@{inboxResolved.domain?.name}</option>
+                    {inboxOptions
+                        .filter((option) => option.id !== inboxId)
+                        .map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.email}
+                            </option>
+                        ))}
+                </select>
             </div>
 
             {recentInboxOptions.length > 0 && (

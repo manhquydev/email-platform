@@ -62,6 +62,7 @@ export async function inboxRoutes(app: FastifyInstance) {
           limit: { type: "number", minimum: 1, maximum: 200 },
           offset: { type: "number", minimum: 0 },
           personal: { type: "string", enum: ["true", "false"] },
+          shared: { type: "string", enum: ["true", "false"] },
         },
       },
       response: {
@@ -81,6 +82,7 @@ export async function inboxRoutes(app: FastifyInstance) {
         limit: z.coerce.number().min(1).max(200).optional(),
         offset: z.coerce.number().min(0).optional(),
         personal: z.enum(["true", "false"]).optional(),
+        shared: z.enum(["true", "false"]).optional(),
       })
       .safeParse(request.query);
     if (!query.success) {
@@ -90,13 +92,19 @@ export async function inboxRoutes(app: FastifyInstance) {
     const user = request.user as { userId: string; role: string };
     const isAdmin = user.role === "ADMIN";
     const isPersonal = query.data.personal === "true";
+    const isShared = query.data.shared === "true";
     const teamId = query.data.teamId;
 
     const domainFilter = query.data.domain;
+    const searchFilter = query.data.search?.trim();
+
+    if (isPersonal && isShared) {
+      return reply.status(400).send({ error: "personal and shared filters cannot be used together" });
+    }
 
     let where: any = { deletedAt: null };
 
-    if (isAdmin && !isPersonal && !teamId) {
+    if (isAdmin && !isPersonal && !isShared && !teamId) {
       // Admins seeing everything
     } else if (teamId) {
       // Filter by specific team access
@@ -110,9 +118,24 @@ export async function inboxRoutes(app: FastifyInstance) {
         select: { inboxId: true }
       });
       where.id = { in: teamInboxes.map(ti => ti.inboxId) };
+      if (isShared) {
+        where.ownerId = { not: user.userId };
+      } else if (isPersonal) {
+        where.ownerId = user.userId;
+      }
     } else if (isPersonal) {
       // Explicitly only personal inboxes
       where.ownerId = user.userId;
+    } else if (isShared) {
+      if (isAdmin) {
+        where.ownerId = { not: user.userId };
+      } else {
+        const accessibleInboxIds = await TeamService.getAccessibleInboxIds(user.userId);
+        where.AND = [
+          { id: { in: accessibleInboxIds } },
+          { ownerId: { not: user.userId } },
+        ];
+      }
     } else {
       // Normal view: personal + shared via teams
       const accessibleInboxIds = await TeamService.getAccessibleInboxIds(user.userId);
@@ -121,6 +144,36 @@ export async function inboxRoutes(app: FastifyInstance) {
         { id: { in: accessibleInboxIds } }
       ];
     }
+
+    if (domainFilter) {
+      where.domainId = domainFilter;
+    }
+
+    if (searchFilter) {
+      const andFilters = Array.isArray(where.AND) ? where.AND : [];
+      const [localTerm, domainTerm] = searchFilter.split("@");
+
+      if (searchFilter.includes("@") && domainTerm !== undefined) {
+        const local = localTerm.trim();
+        const domain = domainTerm.trim();
+        if (local) {
+          andFilters.push({ localPart: { contains: local, mode: "insensitive" } });
+        }
+        if (domain) {
+          andFilters.push({ domain: { name: { contains: domain, mode: "insensitive" } } });
+        }
+      } else {
+        andFilters.push({
+          OR: [
+            { localPart: { contains: searchFilter, mode: "insensitive" } },
+            { domain: { name: { contains: searchFilter, mode: "insensitive" } } },
+          ],
+        });
+      }
+
+      where.AND = andFilters;
+    }
+
     const [inboxes, total] = await Promise.all([
       prisma.inbox.findMany({
         where,

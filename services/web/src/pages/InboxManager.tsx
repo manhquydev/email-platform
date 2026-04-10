@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { CreateInboxModal } from "../components/CreateInboxModal";
@@ -8,7 +8,9 @@ import { AppShell } from "../layouts/AppShell";
 import { api } from "../utils/api";
 import type { Domain, Inbox, PaginatedResponse } from "../types";
 
-const PAGE_SIZE = 120;
+const PAGE_SIZE_OPTIONS = [10, 15] as const;
+const MAX_PAGE_TABS = 7;
+const SEARCH_DEBOUNCE_MS = 300;
 const RECENT_STORAGE_KEY = "manager_recent_inboxes_v1";
 const SCOPE_OPTIONS = [
     { value: "all", label: "Tất cả" },
@@ -27,12 +29,10 @@ type RecentInboxItem = {
     openedAt: string;
 };
 
+type PageTabToken = number | "ellipsis";
+
 function toInboxEmail(inbox: Inbox) {
     return `${inbox.localPart}@${inbox.domain?.name ?? "unknown.local"}`;
-}
-
-function mergeUniqueInboxes(items: Inbox[]) {
-    return Array.from(items.reduce((map, inbox) => map.set(inbox.id, inbox), new Map<string, Inbox>()).values());
 }
 
 function readRecentInboxes() {
@@ -46,11 +46,33 @@ function readRecentInboxes() {
     }
 }
 
+function buildPageTabs(currentPage: number, totalPages: number): PageTabToken[] {
+    if (totalPages <= MAX_PAGE_TABS) {
+        return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const tabs: PageTabToken[] = [1];
+    const nearStart = currentPage <= 4;
+    const nearEnd = currentPage >= totalPages - 3;
+
+    if (!nearStart) tabs.push("ellipsis");
+
+    const windowStart = nearStart ? 2 : Math.max(2, currentPage - 1);
+    const windowEnd = nearEnd ? totalPages - 1 : Math.min(totalPages - 1, currentPage + 1);
+
+    for (let page = windowStart; page <= windowEnd; page += 1) {
+        tabs.push(page);
+    }
+
+    if (!nearEnd) tabs.push("ellipsis");
+    tabs.push(totalPages);
+    return tabs;
+}
+
 export function InboxManager() {
     const { token, user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
-    const offsetRef = useRef(0);
 
     const [domains, setDomains] = useState<Domain[]>([]);
     const [inboxes, setInboxes] = useState<Inbox[]>([]);
@@ -58,9 +80,10 @@ export function InboxManager() {
     const [selectedDomain, setSelectedDomain] = useState("");
     const [selectedScope, setSelectedScope] = useState<(typeof SCOPE_OPTIONS)[number]["value"]>("all");
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [rowsPerPage, setRowsPerPage] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(15);
+    const [currentPage, setCurrentPage] = useState(1);
     const [busy, setBusy] = useState(false);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [deletingInboxId, setDeletingInboxId] = useState("");
     const [recentInboxes, setRecentInboxes] = useState<RecentInboxItem[]>(() => readRecentInboxes());
@@ -71,53 +94,54 @@ export function InboxManager() {
         setDomains(response?.data ?? []);
     }, [token]);
 
-    const loadInboxes = useCallback(async (reset = false) => {
+    const loadInboxes = useCallback(async () => {
         if (!token) return;
-        const nextOffset = reset ? 0 : offsetRef.current;
-
-        if (reset) {
-            setBusy(true);
-        } else {
-            setLoadingMore(true);
-        }
+        setBusy(true);
 
         try {
             const params = new URLSearchParams({
-                limit: String(PAGE_SIZE),
-                offset: String(nextOffset),
+                limit: String(rowsPerPage),
+                offset: String((currentPage - 1) * rowsPerPage),
             });
 
             if (selectedScope === "personal") {
                 params.set("personal", "true");
+            } else if (selectedScope === "shared") {
+                params.set("shared", "true");
             }
 
             if (selectedDomain) {
                 params.set("domain", selectedDomain);
             }
 
+            if (debouncedSearch) {
+                params.set("search", debouncedSearch);
+            }
+
             const response = await api<InboxListResponse>(`/inboxes?${params.toString()}`, { token });
             const pageData = Array.isArray(response?.data) ? response.data : [];
             const responseTotal = response?.meta?.total ?? response?.total ?? 0;
-            offsetRef.current = nextOffset + pageData.length;
-            setInboxes((prev) => (reset ? pageData : mergeUniqueInboxes([...prev, ...pageData])));
+            setInboxes(pageData);
             setTotal(responseTotal);
-            setHasMore(responseTotal > offsetRef.current);
         } catch (error) {
             console.error("[InboxManager] Failed to load inboxes", error);
             toast.error("Không thể tải danh sách inbox");
         } finally {
-            if (reset) {
-                setBusy(false);
-            } else {
-                setLoadingMore(false);
-            }
+            setBusy(false);
         }
-    }, [selectedDomain, selectedScope, token]);
+    }, [currentPage, debouncedSearch, rowsPerPage, selectedDomain, selectedScope, token]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         setSearch(params.get("q") ?? "");
     }, [location.search]);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setDebouncedSearch(search.trim());
+        }, SEARCH_DEBOUNCE_MS);
+        return () => window.clearTimeout(timer);
+    }, [search]);
 
     useEffect(() => {
         if (!token) return;
@@ -134,24 +158,23 @@ export function InboxManager() {
     }, [loadDomains, token]);
 
     useEffect(() => {
-        if (!token) return;
-        offsetRef.current = 0;
-        setHasMore(true);
-        setInboxes([]);
-        void loadInboxes(true);
-    }, [selectedDomain, selectedScope, token, loadInboxes]);
+        setCurrentPage(1);
+    }, [selectedDomain, selectedScope, debouncedSearch, rowsPerPage]);
 
-    const filteredInboxes = useMemo(() => {
-        const keyword = search.trim().toLowerCase();
-        return inboxes.filter((inbox) => {
-            if (selectedDomain && inbox.domainId !== selectedDomain) return false;
-            if (selectedScope === "shared" && user?.id && inbox.ownerId === user.id) return false;
-            const email = toInboxEmail(inbox).toLowerCase();
-            const domainName = inbox.domain?.name?.toLowerCase() ?? "";
-            if (!keyword) return true;
-            return email.includes(keyword) || domainName.includes(keyword);
-        });
-    }, [inboxes, search, selectedDomain, selectedScope, user?.id]);
+    useEffect(() => {
+        if (!token) return;
+        void loadInboxes();
+    }, [loadInboxes, token]);
+
+    const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+    const activePage = Math.min(currentPage, totalPages);
+    const pageTabs = useMemo(() => buildPageTabs(activePage, totalPages), [activePage, totalPages]);
+
+    useEffect(() => {
+        if (currentPage !== activePage) {
+            setCurrentPage(activePage);
+        }
+    }, [activePage, currentPage]);
 
     const openInbox = useCallback((inbox: Inbox) => {
         const nextRecent = [
@@ -175,16 +198,20 @@ export function InboxManager() {
         setDeletingInboxId(inbox.id);
         try {
             await api(`/inboxes/${inbox.id}`, { method: "DELETE", token });
-            setInboxes((prev) => prev.filter((item) => item.id !== inbox.id));
-            setTotal((prev) => Math.max(0, prev - 1));
             toast.success("Đã xóa inbox");
+
+            if (currentPage > 1 && inboxes.length === 1) {
+                setCurrentPage((previous) => Math.max(1, previous - 1));
+            } else {
+                void loadInboxes();
+            }
         } catch (error) {
             console.error("[InboxManager] Failed to delete inbox", error);
             toast.error("Xóa inbox thất bại");
         } finally {
             setDeletingInboxId("");
         }
-    }, [token]);
+    }, [currentPage, inboxes.length, loadInboxes, token]);
 
     return (
         <AppShell>
@@ -193,9 +220,11 @@ export function InboxManager() {
                     <h1 className="text-2xl font-bold text-white">Inbox Manager 2.0</h1>
                     <p className="mt-1 text-sm text-text-secondary">Tối ưu thao tác nhanh: tạo inbox, tìm inbox, mở inbox trong 1 click.</p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs text-text-secondary">
-                        <span className="rounded-full border border-white/10 px-3 py-1">Đã tải {inboxes.length}/{total.toLocaleString("vi-VN")} inbox</span>
-                        <span className="rounded-full border border-white/10 px-3 py-1">Hiển thị {filteredInboxes.length.toLocaleString("vi-VN")} inbox</span>
+                        <span className="rounded-full border border-white/10 px-3 py-1">Hiển thị {inboxes.length}/{total.toLocaleString("vi-VN")} inbox</span>
                         <span className="rounded-full border border-white/10 px-3 py-1">Đang xem: {SCOPE_OPTIONS.find((item) => item.value === selectedScope)?.label}</span>
+                        {debouncedSearch ? (
+                            <span className="rounded-full border border-nebula-cyan/30 px-3 py-1 text-nebula-cyan">Search server-side: "{debouncedSearch}"</span>
+                        ) : null}
                     </div>
                 </section>
 
@@ -221,12 +250,12 @@ export function InboxManager() {
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Tìm email nhanh..."
-                            className="h-11 flex-1 rounded-xl border border-white/10 bg-surface/40 px-4 text-sm text-white placeholder:text-text-secondary focus:border-nebula-cyan focus:outline-none"
+                            className="h-11 flex-1 rounded-xl border border-white/20 bg-white/[0.08] px-4 text-sm text-white placeholder:text-text-secondary/80 focus:border-nebula-cyan focus:outline-none"
                         />
                         <select
                             value={selectedDomain}
                             onChange={(event) => setSelectedDomain(event.target.value)}
-                            className="h-11 rounded-xl border border-white/10 bg-surface/40 px-4 text-sm text-white focus:border-nebula-cyan focus:outline-none"
+                            className="h-11 rounded-xl border border-white/20 bg-white/[0.08] px-4 text-sm text-white focus:border-nebula-cyan focus:outline-none"
                         >
                             <option value="">Tất cả domain</option>
                             {domains.map((domain) => (
@@ -242,29 +271,47 @@ export function InboxManager() {
                             Tạo email mới
                         </button>
                         <button
-                            onClick={() => void loadInboxes(true)}
+                            onClick={() => void loadInboxes()}
                             className="h-11 rounded-xl border border-white/10 px-4 text-sm text-text-secondary hover:text-white"
                         >
                             Làm mới
                         </button>
                     </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-text-secondary">
+                        <span className="uppercase tracking-[0.14em]">Mỗi trang</span>
+                        {PAGE_SIZE_OPTIONS.map((size) => (
+                            <button
+                                key={size}
+                                type="button"
+                                onClick={() => setRowsPerPage(size)}
+                                className={`rounded-md border px-2 py-1 transition ${
+                                    rowsPerPage === size
+                                        ? "border-nebula-cyan bg-nebula-cyan/20 text-white"
+                                        : "border-white/15 bg-white/[0.03] hover:text-white"
+                                }`}
+                            >
+                                {size}
+                            </button>
+                        ))}
+                    </div>
                 </section>
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
                     <section className="rounded-2xl border border-white/10 bg-surface/30 p-4">
-                        {busy && inboxes.length === 0 ? (
+                        {busy ? (
                             <div className="flex justify-center py-12">
                                 <Loading />
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                {filteredInboxes.length === 0 ? (
+                                {inboxes.length === 0 ? (
                                     <p className="rounded-xl border border-dashed border-white/15 p-8 text-center text-sm text-text-secondary">
                                         Không có inbox phù hợp với bộ lọc hiện tại.
                                     </p>
                                 ) : (
-                                    filteredInboxes.map((inbox) => (
-                                        <div key={inbox.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
+                                    inboxes.map((inbox) => (
+                                        <div key={inbox.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
                                             <button onClick={() => openInbox(inbox)} className="w-full text-left">
                                                 <div className="flex items-center gap-2">
                                                     <p className="truncate text-sm font-semibold text-white">{toInboxEmail(inbox)}</p>
@@ -279,7 +326,7 @@ export function InboxManager() {
                                             <div className="mt-3 flex flex-wrap gap-2">
                                                 <button
                                                     onClick={() => openInbox(inbox)}
-                                                    className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/20"
+                                                    className="rounded-lg border border-white/20 bg-white/[0.08] px-3 py-1.5 text-xs text-white hover:bg-white/20"
                                                 >
                                                     Mở inbox
                                                 </button>
@@ -305,14 +352,50 @@ export function InboxManager() {
                                     ))
                                 )}
 
-                                {hasMore && !search && (
-                                    <button
-                                        onClick={() => void loadInboxes(false)}
-                                        disabled={loadingMore}
-                                        className="mt-2 w-full rounded-xl border border-white/10 py-2 text-sm text-text-secondary hover:text-white disabled:opacity-50"
-                                    >
-                                        {loadingMore ? "Đang tải thêm..." : "Tải thêm inbox"}
-                                    </button>
+                                {total > rowsPerPage && (
+                                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2">
+                                        <p className="text-xs text-text-secondary">
+                                            Trang {activePage}/{totalPages}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
+                                                disabled={activePage === 1}
+                                                className="rounded-md border border-white/10 px-2 py-1 text-xs text-text-secondary hover:text-white disabled:opacity-50"
+                                            >
+                                                Trước
+                                            </button>
+                                            {pageTabs.map((token, index) => (
+                                                token === "ellipsis" ? (
+                                                    <span key={`dots-${index}`} className="px-1 text-xs text-text-secondary">
+                                                        ...
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        key={token}
+                                                        type="button"
+                                                        onClick={() => setCurrentPage(token)}
+                                                        className={`rounded-md border px-2 py-1 text-xs transition ${
+                                                            token === activePage
+                                                                ? "border-nebula-cyan bg-nebula-cyan/20 text-white"
+                                                                : "border-white/10 text-text-secondary hover:text-white"
+                                                        }`}
+                                                    >
+                                                        {token}
+                                                    </button>
+                                                )
+                                            ))}
+                                            <button
+                                                type="button"
+                                                onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
+                                                disabled={activePage === totalPages}
+                                                className="rounded-md border border-white/10 px-2 py-1 text-xs text-text-secondary hover:text-white disabled:opacity-50"
+                                            >
+                                                Sau
+                                            </button>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -344,7 +427,7 @@ export function InboxManager() {
                     token={token}
                     onClose={() => setShowCreateModal(false)}
                     onInboxCreated={() => {
-                        void loadInboxes(true);
+                        void loadInboxes();
                     }}
                 />
             )}

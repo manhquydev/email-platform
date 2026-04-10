@@ -53,6 +53,10 @@ export function MobileInboxesTab({
     onPullRefresh, onSetFocusedIndex
 }: MobileInboxesTabProps) {
     const [isActionsOpen, setIsActionsOpen] = useState(false);
+    const hasActiveFilter = filteredInboxes.length !== inboxes.length;
+    const inboxCountLabel = hasActiveFilter
+        ? `${filteredInboxes.length}/${inboxes.length} inboxes`
+        : `${inboxes.length} inboxes`;
 
     return (
         <div className="flex flex-col h-full">
@@ -123,7 +127,7 @@ export function MobileInboxesTab({
             {/* Footer stats */}
             {filteredInboxes.length > 0 && (
                 <div className="flex items-center justify-center text-xs text-text-secondary py-3 border-t border-white/5">
-                    <span>{filteredInboxes.length} inboxes</span>
+                    <span>{inboxCountLabel}</span>
                     {selectedInboxIds.size > 0 && (
                         <span className="ml-1">• {selectedInboxIds.size} selected</span>
                     )}

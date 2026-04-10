@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,6 +52,36 @@ export function FocusStreamLayout({
         }
     }, [onSearch, recentSearches]);
 
+    useEffect(() => {
+        const isEditableElement = (target: EventTarget | null) => {
+            if (!(target instanceof HTMLElement)) return false;
+            if (target.isContentEditable) return true;
+            const tagName = target.tagName;
+            return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
+        };
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            const key = event.key.toLowerCase();
+            const hasModifier = event.metaKey || event.ctrlKey;
+            if (!hasModifier) return;
+            if (isEditableElement(event.target)) return;
+
+            if (key === "k") {
+                event.preventDefault();
+                setShowCommandPalette(true);
+                return;
+            }
+
+            if (key === "/") {
+                event.preventDefault();
+                setShowSearchBar(true);
+            }
+        };
+
+        document.addEventListener("keydown", onKeyDown);
+        return () => document.removeEventListener("keydown", onKeyDown);
+    }, []);
+
     return (
         <NavigationProvider>
             <div className="flex flex-row h-screen w-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans relative">
@@ -66,6 +96,16 @@ export function FocusStreamLayout({
                             Ephemera
                         </div>
                         <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowCommandPalette(true)}
+                                className="h-9 w-9 rounded-lg border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                                title="Mở lệnh nhanh"
+                            >
+                                <svg className="mx-auto h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
+                                </svg>
+                            </button>
                             <NotificationCenter />
                         </div>
                     </header>
@@ -84,6 +124,15 @@ export function FocusStreamLayout({
                             user={user}
                             token={localStorage.getItem('token')}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowCommandPalette(true)}
+                            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-text-secondary hover:text-text-main hover:border-primary/30 transition-colors"
+                            title="Lệnh nhanh (Ctrl/Cmd+K)"
+                        >
+                            Lệnh nhanh
+                            <span className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] text-text-secondary">Ctrl K</span>
+                        </button>
                     </header>
 
                     <main id="main-content" className="flex-1 relative overflow-hidden flex flex-col">

@@ -11,6 +11,14 @@ import { api } from "../utils/api";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
 import type { Domain, Inbox, PaginatedResponse } from "../types";
 
+const NAV_INBOX_PAGE_SIZE = 200;
+const NAV_MAX_INBOX_PAGES = 50;
+
+type InboxListResponse = PaginatedResponse<Inbox> & {
+    total?: number;
+    meta?: { total?: number };
+};
+
 interface AppShellProps {
     children: React.ReactNode;
     /** Enable page transition animations (default: true) */
@@ -42,15 +50,74 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
                 const dRes = await api<PaginatedResponse<Domain>>("/domains?limit=100", { token });
                 setDomains(dRes.data);
 
-                // Fetch user's inboxes (limit 100)
-                const iRes = await api<PaginatedResponse<Inbox>>("/inboxes?limit=100&personal=true", { token });
-                setInboxes(iRes.data);
+                // Fetch all personal inboxes for accurate command palette/search.
+                const allInboxes: Inbox[] = [];
+                let offset = 0;
+                let total: number | null = null;
+
+                for (let page = 0; page < NAV_MAX_INBOX_PAGES; page += 1) {
+                    const iRes = await api<InboxListResponse>(
+                        `/inboxes?limit=${NAV_INBOX_PAGE_SIZE}&offset=${offset}&personal=true`,
+                        { token }
+                    );
+                    const pageData = Array.isArray(iRes?.data) ? iRes.data : [];
+                    allInboxes.push(...pageData);
+
+                    const metaTotal = iRes?.meta?.total;
+                    const directTotal = typeof iRes?.total === "number" ? iRes.total : undefined;
+                    if (typeof metaTotal === "number") {
+                        total = metaTotal;
+                    } else if (typeof directTotal === "number") {
+                        total = directTotal;
+                    }
+
+                    if (pageData.length === 0) break;
+                    offset += pageData.length;
+                    if (total !== null && offset >= total) break;
+                }
+
+                const uniqueInboxes = Array.from(
+                    allInboxes.reduce((map, inbox) => map.set(inbox.id, inbox), new Map<string, Inbox>()).values()
+                );
+                setInboxes(total !== null ? uniqueInboxes.slice(0, total) : uniqueInboxes);
             } catch (e) {
                 console.error("Failed to load nav data", e);
             }
         };
         loadNavData();
     }, [token]);
+
+    // Global shortcuts for quick actions.
+    useEffect(() => {
+        const isEditableElement = (target: EventTarget | null) => {
+            if (!(target instanceof HTMLElement)) return false;
+            if (target.isContentEditable) return true;
+            const tagName = target.tagName;
+            return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
+        };
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            const key = event.key.toLowerCase();
+            const hasModifier = event.metaKey || event.ctrlKey;
+            if (!hasModifier) return;
+
+            if (key === "k") {
+                if (isEditableElement(event.target)) return;
+                event.preventDefault();
+                setShowCommandPalette(true);
+                return;
+            }
+
+            if (key === "/") {
+                if (isEditableElement(event.target)) return;
+                event.preventDefault();
+                setShowSearch(true);
+            }
+        };
+
+        document.addEventListener("keydown", onKeyDown);
+        return () => document.removeEventListener("keydown", onKeyDown);
+    }, []);
 
     // Command Actions
     const handleSelectInbox = (inbox: Inbox) => {

@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { InboxWorkspace } from "./InboxWorkspace";
 
+const mockNavigate = vi.fn();
 const mockSetBusy = vi.fn();
 const mockSetActiveInbox = vi.fn();
 const mockSetMessages = vi.fn();
@@ -16,6 +17,14 @@ let mockInboxes = [
         _count: { messages: 2 },
     },
 ];
+
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+    };
+});
 
 vi.mock("../context/AuthContext", () => ({
     useAuth: () => ({ token: "test-token" }),
@@ -95,6 +104,7 @@ describe("InboxWorkspace", () => {
         expect(screen.getByText("Inbox Workspace")).toBeInTheDocument();
         expect(screen.getByText("Manager")).toBeInTheDocument();
         expect(screen.getByTestId("middle-pane")).toBeInTheDocument();
+        expect(screen.getByPlaceholderText("Tìm inbox để chuyển nhanh...")).toBeInTheDocument();
     });
 
     it("shows not-found state for unknown inbox route", () => {

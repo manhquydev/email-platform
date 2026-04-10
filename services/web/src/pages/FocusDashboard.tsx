@@ -20,9 +20,48 @@ import { api } from "../utils/api";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../types";
 
 const CHART_COLORS = ["#8b5cf6", "#06b6d4", "#22c55e", "#f59e0b", "#ef4444", "#3b82f6"];
+const DASHBOARD_INBOX_PAGE_SIZE = 200;
+const DASHBOARD_MAX_INBOX_PAGES = 50;
+
+type InboxListResponse = PaginatedResponse<Inbox> & {
+    total?: number;
+    meta?: { total?: number };
+};
 
 function toDayKey(value: string) {
     return new Date(value).toISOString().slice(5, 10);
+}
+
+async function loadAllPersonalInboxes(token: string): Promise<Inbox[]> {
+    const allInboxes: Inbox[] = [];
+    let offset = 0;
+    let total: number | null = null;
+
+    for (let page = 0; page < DASHBOARD_MAX_INBOX_PAGES; page += 1) {
+        const response = await api<InboxListResponse>(
+            `/inboxes?limit=${DASHBOARD_INBOX_PAGE_SIZE}&offset=${offset}&personal=true`,
+            { token }
+        );
+        const pageData = Array.isArray(response?.data) ? response.data : [];
+        allInboxes.push(...pageData);
+
+        const metaTotal = response?.meta?.total;
+        const directTotal = typeof response?.total === "number" ? response.total : undefined;
+        if (typeof metaTotal === "number") {
+            total = metaTotal;
+        } else if (typeof directTotal === "number") {
+            total = directTotal;
+        }
+
+        if (pageData.length === 0) break;
+        offset += pageData.length;
+        if (total !== null && offset >= total) break;
+    }
+
+    const uniqueInboxes = Array.from(
+        allInboxes.reduce((map, inbox) => map.set(inbox.id, inbox), new Map<string, Inbox>()).values()
+    );
+    return total !== null ? uniqueInboxes.slice(0, total) : uniqueInboxes;
 }
 
 export function FocusDashboard() {
@@ -39,15 +78,15 @@ export function FocusDashboard() {
         const loadDashboard = async () => {
             setLoading(true);
             try {
-                const [domainRes, inboxRes, messageRes] = await Promise.all([
+                const [domainRes, loadedInboxes, messageRes] = await Promise.all([
                     api<PaginatedResponse<Domain>>("/domains?limit=200", { token }),
-                    api<PaginatedResponse<Inbox>>("/inboxes?limit=200&personal=true", { token }),
+                    loadAllPersonalInboxes(token),
                     api<PaginatedResponse<Message>>("/messages/search?limit=200", { token }),
                 ]);
 
                 if (!isMounted) return;
                 setDomains(domainRes?.data || []);
-                setInboxes(inboxRes?.data || []);
+                setInboxes(loadedInboxes);
                 setRecentMessages(messageRes?.data || []);
             } catch (error) {
                 console.error("[FocusDashboard] Failed to load metrics", error);

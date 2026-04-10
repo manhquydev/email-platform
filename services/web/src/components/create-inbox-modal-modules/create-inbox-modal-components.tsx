@@ -10,7 +10,7 @@ import { TTL_OPTIONS } from './create-inbox-modal-hooks';
 /** Modal header */
 export function ModalHeader({ onClose }: { onClose: () => void }) {
     return (
-        <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center justify-between">
             <h2 id="create-inbox-modal-title" className="text-xl font-bold text-nebula-text">Tạo email mới</h2>
             <button
                 onClick={onClose}
@@ -87,7 +87,7 @@ export function LocalPartInput({ value, onChange, onRandomize }: LocalPartInputP
                 size="icon"
                 onClick={onRandomize}
                 title="Tạo ngẫu nhiên"
-                className="mb-[2px] h-[46px] w-[46px]"
+                className="mb-[2px] h-11 w-11 sm:h-[46px] sm:w-[46px]"
             >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -127,7 +127,7 @@ export function DomainSelect({
                     onChange={(e) => onChange(e.target.value)}
                     disabled={useRandomDomainPool}
                     className={cn(
-                        "w-full h-[46px] px-4 bg-nebula-elevated border border-nebula-border rounded-xl",
+                        "w-full h-11 px-4 bg-nebula-elevated border border-nebula-border rounded-xl sm:h-[46px]",
                         "text-nebula-text outline-none transition-all duration-200",
                         "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
                         "appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
@@ -161,7 +161,7 @@ export function DomainSelect({
                     <p className="text-xs text-text-secondary">
                         Chọn domain để hệ thống random khi tạo email ({randomDomainIds.length}/{domains.length} đã chọn)
                     </p>
-                    <div className="max-h-32 space-y-1.5 overflow-auto pr-1">
+                    <div className="max-h-28 space-y-1.5 overflow-auto pr-1 sm:max-h-32">
                         {domains.map(domain => {
                             const checked = randomDomainIds.includes(domain.id);
                             return (
@@ -212,7 +212,7 @@ export function TTLSelect({ value, onChange }: TTLSelectProps) {
                     value={value === null ? 'null' : String(value)}
                     onChange={(e) => onChange(e.target.value === 'null' ? null : Number(e.target.value))}
                     className={cn(
-                        "w-full h-[46px] px-4 bg-nebula-elevated border border-nebula-border rounded-xl",
+                        "w-full h-11 px-4 bg-nebula-elevated border border-nebula-border rounded-xl sm:h-[46px]",
                         "text-nebula-text outline-none transition-all duration-200",
                         "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
                         "appearance-none cursor-pointer"
@@ -256,12 +256,13 @@ export function ModalFooter({
 }: ModalFooterProps) {
     return (
         <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
                 <Button
                     variant="secondary"
                     onClick={onCreateAndKeepSetup}
                     disabled={loading || !canCreate}
                     isLoading={loadingAction === 'keep'}
+                    className="shrink-0"
                 >
                     Tạo & giữ setup
                 </Button>
@@ -270,6 +271,7 @@ export function ModalFooter({
                     onClick={() => onCreateBatch(5)}
                     disabled={loading || !canCreate}
                     isLoading={loadingAction === 'batch-5'}
+                    className="shrink-0"
                 >
                     Tạo 5
                 </Button>
@@ -278,13 +280,14 @@ export function ModalFooter({
                     onClick={() => onCreateBatch(10)}
                     disabled={loading || !canCreate}
                     isLoading={loadingAction === 'batch-10'}
+                    className="shrink-0"
                 >
                     Tạo 10
                 </Button>
             </div>
 
-            <div className="flex gap-3 justify-end">
-                <Button variant="ghost" onClick={onClose} disabled={loading}>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <Button variant="ghost" onClick={onClose} disabled={loading} className="sm:w-auto w-full">
                     Hủy
                 </Button>
                 <Button
@@ -292,6 +295,7 @@ export function ModalFooter({
                     onClick={onCreate}
                     disabled={loading || !canCreate}
                     isLoading={loadingAction === 'create'}
+                    className="sm:w-auto w-full"
                     icon={
                         loadingAction !== 'create' && (
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">

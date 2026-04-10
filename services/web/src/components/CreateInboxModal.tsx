@@ -43,11 +43,12 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
     return (
         <AnimatePresence>
             <motion.div
-                className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm sm:items-center sm:p-4"
+                className="fixed inset-0 z-50 flex h-[100dvh] items-end justify-center overflow-hidden bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={handleRequestClose}
+                style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
             >
                 <motion.div
                     ref={modalRef}
@@ -57,16 +58,18 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                    className="my-3 w-full max-w-xl sm:my-6"
+                    className="w-full max-w-xl sm:my-6"
                 >
                     <GlassCard
                         variant="elevated"
-                        className="relative flex max-h-[min(92dvh,48rem)] flex-col overflow-hidden p-4 sm:p-6"
+                        className="relative flex h-[min(100dvh-0.5rem,48rem)] w-full flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl"
                     >
-                        <ModalHeader onClose={handleRequestClose} />
+                        <div className="sticky top-0 z-20 border-b border-nebula-border/60 bg-nebula-surface/95 px-4 py-3 backdrop-blur sm:px-6">
+                            <ModalHeader onClose={handleRequestClose} />
+                        </div>
 
-                        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-                            <div className="space-y-5 pb-2">
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-6 sm:py-4">
+                            <div className="space-y-3 pb-2 sm:space-y-5">
                                 {verifiedDomains.length === 0 ? (
                                     <NoDomainState />
                                 ) : (
@@ -95,7 +98,7 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                         </div>
 
                         {verifiedDomains.length > 0 && (
-                            <div className="mt-4 border-t border-nebula-border/60 pt-4">
+                            <div className="sticky bottom-0 z-20 border-t border-nebula-border/60 bg-nebula-surface/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:px-6">
                                 <ModalFooter
                                     loading={loading}
                                     loadingAction={loadingAction}

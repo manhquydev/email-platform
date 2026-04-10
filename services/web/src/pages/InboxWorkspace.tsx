@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { MessageViewer } from "../components/email-viewer/MessageViewer";
 import { MiddlePane } from "../components/inbox-manager/desktop-layout-modules";
 import { useInboxManagerData } from "../components/inbox-manager/hooks/use-inbox-manager-data";
@@ -9,6 +10,31 @@ import { useAuth } from "../context/AuthContext";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { useMessageActions } from "../hooks/useMessageActions";
 import { AppShell } from "../layouts/AppShell";
+
+const RECENT_INBOXES_KEY = "inbox_workspace_recent_v1";
+const MAX_RECENT_INBOXES = 5;
+
+function readRecentInboxIds() {
+    if (typeof window === "undefined") return [];
+    try {
+        const raw = window.localStorage.getItem(RECENT_INBOXES_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter((id): id is string => typeof id === "string");
+    } catch {
+        return [];
+    }
+}
+
+function writeRecentInboxIds(ids: string[]) {
+    if (typeof window === "undefined") return;
+    try {
+        window.localStorage.setItem(RECENT_INBOXES_KEY, JSON.stringify(ids));
+    } catch {
+        // Ignore storage failures.
+    }
+}
 
 export function InboxWorkspace() {
     const navigate = useNavigate();
@@ -29,6 +55,8 @@ export function InboxWorkspace() {
     } = useInboxManagerData();
     const { searchQuery, searchResults, isSearching, isSearchMode, handleSearch, clearSearch } = useInboxSearch();
     const [selectedMessage, setSelectedMessage] = useState<typeof messages[number] | null>(null);
+    const [quickSwitchValue, setQuickSwitchValue] = useState("");
+    const [recentInboxIds, setRecentInboxIds] = useState<string[]>(() => readRecentInboxIds());
 
     const {
         handleSelectMessage,
@@ -48,6 +76,25 @@ export function InboxWorkspace() {
     );
     const unreadCount = messages.filter((message) => !message.isRead).length;
     const visibleMessages = isSearchMode ? searchResults : messages;
+    const inboxOptions = useMemo(
+        () => inboxes.map((inbox) => ({
+                id: inbox.id,
+                email: `${inbox.localPart}@${inbox.domain?.name}`,
+            })),
+        [inboxes]
+    );
+    const recentInboxOptions = useMemo(() => {
+        const byId = new Map(inboxes.map((inbox) => [inbox.id, inbox]));
+        return recentInboxIds
+            .map((id) => byId.get(id))
+            .filter((inbox): inbox is NonNullable<typeof inbox> => Boolean(inbox))
+            .filter((inbox) => inbox.id !== inboxId)
+            .slice(0, MAX_RECENT_INBOXES)
+            .map((inbox) => ({
+                id: inbox.id,
+                email: `${inbox.localPart}@${inbox.domain?.name}`,
+            }));
+    }, [inboxes, recentInboxIds, inboxId]);
 
     useEffect(() => {
         if (!inboxId || inboxes.length === 0) return;
@@ -56,6 +103,7 @@ export function InboxWorkspace() {
     }, [inboxId, inboxResolved, inboxes.length, setActiveInbox]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedMessage(null);
     }, [inboxId, setSelectedMessage]);
 
@@ -63,9 +111,49 @@ export function InboxWorkspace() {
         if (!selectedMessage) return;
         const messageStillVisible = visibleMessages.some((message) => message.id === selectedMessage.id);
         if (!messageStillVisible) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedMessage(null);
         }
     }, [selectedMessage, setSelectedMessage, visibleMessages]);
+
+    useEffect(() => {
+        if (!inboxResolved?.id) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRecentInboxIds((previous) => {
+            const next = [inboxResolved.id, ...previous.filter((id) => id !== inboxResolved.id)]
+                .slice(0, MAX_RECENT_INBOXES);
+            writeRecentInboxIds(next);
+            return next;
+        });
+    }, [inboxResolved?.id]);
+
+    const handleQuickSwitchInbox = () => {
+        const value = quickSwitchValue.trim();
+        if (!value) return;
+
+        const normalized = value.toLowerCase();
+        const matchedInbox = inboxOptions.find((option) =>
+            option.id === value || option.email.toLowerCase() === normalized
+        ) ?? inboxOptions.find((option) => option.email.toLowerCase().includes(normalized));
+
+        if (!matchedInbox) {
+            toast.error("Không tìm thấy inbox phù hợp");
+            return;
+        }
+        if (matchedInbox.id === inboxId) {
+            setQuickSwitchValue("");
+            return;
+        }
+        navigate(`/app/inbox/${matchedInbox.id}`);
+        setQuickSwitchValue("");
+    };
+
+    const handleCopyResolvedEmail = () => {
+        if (!inboxResolved) return;
+        const inboxEmail = `${inboxResolved.localPart}@${inboxResolved.domain?.name}`;
+        navigator.clipboard.writeText(inboxEmail);
+        toast.success("Đã sao chép địa chỉ email");
+    };
 
     if (busy && inboxes.length === 0) {
         return (
@@ -102,24 +190,14 @@ export function InboxWorkspace() {
     }
 
     const shellHeader = (
-        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-6">
-            <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Inbox Workspace</p>
-                <h1 className="truncate text-lg font-semibold text-text-main">
-                    {inboxResolved.localPart}@{inboxResolved.domain?.name}
-                </h1>
-                <p className="text-xs text-text-secondary">
-                    {messages.length} email • {unreadCount} chưa đọc
-                </p>
-            </div>
-            <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => loadMessages(inboxResolved.id)}
-                    className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
-                >
-                    Làm mới
-                </button>
+        <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-4 sm:px-6">
+            <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Inbox Workspace</p>
+                    <p className="text-xs text-text-secondary">
+                        {messages.length} email • {unreadCount} chưa đọc
+                    </p>
+                </div>
                 <button
                     type="button"
                     onClick={() => navigate("/app/manager")}
@@ -128,6 +206,51 @@ export function InboxWorkspace() {
                     Manager
                 </button>
             </div>
+
+            <div className="flex items-center gap-2">
+                <input
+                    type="text"
+                    list="workspace-inbox-options"
+                    value={quickSwitchValue}
+                    onChange={(event) => setQuickSwitchValue(event.target.value)}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            handleQuickSwitchInbox();
+                        }
+                    }}
+                    placeholder="Tìm inbox để chuyển nhanh..."
+                    className="flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main placeholder:text-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/30"
+                />
+                <datalist id="workspace-inbox-options">
+                    {inboxOptions.map((option) => (
+                        <option key={option.id} value={option.email} />
+                    ))}
+                </datalist>
+                <button
+                    type="button"
+                    onClick={handleQuickSwitchInbox}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                >
+                    Mở
+                </button>
+            </div>
+
+            {recentInboxOptions.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] uppercase tracking-[0.15em] text-text-secondary">Gần đây</span>
+                    {recentInboxOptions.map((option) => (
+                        <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => navigate(`/app/inbox/${option.id}`)}
+                            className="rounded-lg border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-xs text-text-secondary transition hover:border-primary/30 hover:bg-primary/10 hover:text-text-main"
+                        >
+                            {option.email}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 
@@ -192,7 +315,14 @@ export function InboxWorkspace() {
                             >
                                 Danh sách email
                             </button>
-                            <span className="truncate text-sm text-text-secondary">{inboxResolved.localPart}@{inboxResolved.domain?.name}</span>
+                            <button
+                                type="button"
+                                onClick={handleCopyResolvedEmail}
+                                className="truncate rounded-lg px-2 py-1 text-sm text-text-secondary transition hover:bg-white/[0.05] hover:text-text-main"
+                                title="Sao chép địa chỉ email"
+                            >
+                                {inboxResolved.localPart}@{inboxResolved.domain?.name}
+                            </button>
                         </div>
                         <MessageViewer
                             message={selectedMessage}

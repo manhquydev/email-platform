@@ -10,6 +10,16 @@ import { useRealtimeSubscription } from "../../../hooks/useRealtimeContext";
 import type { RealtimeEvent } from "../../../types/realtime";
 import type { Domain, Inbox, Message, PaginatedResponse } from "../../../types";
 
+const INBOX_PAGE_SIZE = 200;
+const MAX_INBOX_PAGES = 50;
+
+type InboxListResponse = PaginatedResponse<Inbox> & {
+    total?: number;
+    meta?: {
+        total?: number;
+    };
+};
+
 export interface UseInboxManagerDataReturn {
     // Data
     domains: Domain[];
@@ -59,8 +69,33 @@ export function useInboxManagerData(): UseInboxManagerDataReturn {
         if (!token) return;
         setBusy(true);
         try {
-            const res = await api<PaginatedResponse<Inbox>>(`/inboxes?limit=100`, { token });
-            setInboxes(res?.data || []);
+            const allInboxes: Inbox[] = [];
+            let offset = 0;
+            let total: number | null = null;
+
+            for (let page = 0; page < MAX_INBOX_PAGES; page += 1) {
+                const res = await api<InboxListResponse>(`/inboxes?limit=${INBOX_PAGE_SIZE}&offset=${offset}`, { token });
+                const pageData = Array.isArray(res?.data) ? res.data : [];
+                allInboxes.push(...pageData);
+
+                const metaTotal = res?.meta?.total;
+                const directTotal = typeof res?.total === "number" ? res.total : undefined;
+                if (typeof metaTotal === "number") {
+                    total = metaTotal;
+                } else if (typeof directTotal === "number") {
+                    total = directTotal;
+                }
+
+                if (pageData.length === 0) break;
+                offset += pageData.length;
+
+                if (total !== null && offset >= total) break;
+            }
+
+            const uniqueInboxes = Array.from(
+                allInboxes.reduce((map, inbox) => map.set(inbox.id, inbox), new Map<string, Inbox>()).values()
+            );
+            setInboxes(total !== null ? uniqueInboxes.slice(0, total) : uniqueInboxes);
         } catch (err) {
             console.error('[InboxManager] Load inboxes failed:', err);
             toast.error("Lỗi tải danh sách inbox");

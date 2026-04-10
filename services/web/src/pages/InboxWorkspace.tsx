@@ -255,13 +255,16 @@ export function InboxWorkspace() {
                         if (!nextInboxId || nextInboxId === inboxId) return;
                         navigate(`/app/inbox/${nextInboxId}`);
                     }}
-                    className="min-w-[240px] max-w-full rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main focus:border-primary/40 focus:outline-none"
+                    className="min-w-[240px] max-w-full rounded-xl border border-white/25 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/30"
+                    style={{ colorScheme: "dark" }}
                 >
-                    <option value={inboxId}>{inboxResolved.localPart}@{inboxResolved.domain?.name}</option>
+                    <option className="bg-slate-900 text-slate-100" value={inboxId}>
+                        {inboxResolved.localPart}@{inboxResolved.domain?.name}
+                    </option>
                     {inboxOptions
                         .filter((option) => option.id !== inboxId)
                         .map((option) => (
-                            <option key={option.id} value={option.id}>
+                            <option className="bg-slate-900 text-slate-100" key={option.id} value={option.id}>
                                 {option.email}
                             </option>
                         ))}

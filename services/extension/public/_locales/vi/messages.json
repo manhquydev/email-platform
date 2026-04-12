@@ -141,5 +141,305 @@
   },
   "errorBoundary_message": {
     "message": "Có lỗi xảy ra. Vui lòng thử lại."
+  },
+  "appTagline": {
+    "message": "Trợ lý hộp thư tạm thời"
+  },
+  "appCompose": {
+    "message": "Soạn thư"
+  },
+  "appOpenSidePanel": {
+    "message": "Mở trong thanh bên"
+  },
+  "sidepanelContextTitle": {
+    "message": "Ngữ cảnh trang"
+  },
+  "sidepanelGenerateFor": {
+    "message": "Tạo cho $1"
+  },
+  "login2faPrompt": {
+    "message": "Nhập mã xác minh từ ứng dụng xác thực của bạn"
+  },
+  "login2faFailed": {
+    "message": "Xác minh thất bại"
+  },
+  "loginAnonymousFailed": {
+    "message": "Tạo hộp thư ẩn danh thất bại"
+  },
+  "createInboxTitle": {
+    "message": "Tạo hộp thư mới"
+  },
+  "closeModal": {
+    "message": "Đóng hộp thoại"
+  },
+  "createInboxModeRandom": {
+    "message": "Ngẫu nhiên"
+  },
+  "createInboxModeCustom": {
+    "message": "Tùy chỉnh"
+  },
+  "createInboxEmailPrefix": {
+    "message": "Tiền tố email"
+  },
+  "createInboxDomain": {
+    "message": "Tên miền"
+  },
+  "createInboxPreview": {
+    "message": "Xem trước"
+  },
+  "createInboxRandomHint": {
+    "message": "Một địa chỉ email ngẫu nhiên sẽ được tạo tự động."
+  },
+  "createInboxCreating": {
+    "message": "Đang tạo..."
+  },
+  "createInboxButtonRandom": {
+    "message": "Tạo hộp thư ngẫu nhiên"
+  },
+  "createInboxButtonCustom": {
+    "message": "Tạo hộp thư tùy chỉnh"
+  },
+  "composeRecipientPlaceholder": {
+    "message": "nguoinhan@example.com"
+  },
+  "composeSubjectPlaceholder": {
+    "message": "Tiêu đề email"
+  },
+  "composeOriginalMessage": {
+    "message": "Tin nhắn gốc:"
+  },
+  "composeFromPrefix": {
+    "message": "Từ:"
+  },
+  "composeBodyPlaceholder": {
+    "message": "Nhập nội dung tin nhắn..."
+  },
+  "composeCancel": {
+    "message": "Hủy"
+  },
+  "messageListLoadFailed": {
+    "message": "Tải tin nhắn thất bại"
+  },
+  "goBackToMessageList": {
+    "message": "Quay lại danh sách tin nhắn"
+  },
+  "messageListNoSubject": {
+    "message": "(Không tiêu đề)"
+  },
+  "messageListUnknownSender": {
+    "message": "Người gửi không xác định"
+  },
+  "messageListOffline": {
+    "message": "MẤT MẠNG"
+  },
+  "messageListCached": {
+    "message": "bộ nhớ tạm"
+  },
+  "messageListCountFiltered": {
+    "message": "$1 / $2 tin nhắn"
+  },
+  "messageListCountAll": {
+    "message": "$1 tin nhắn"
+  },
+  "messageListSearchPlaceholder": {
+    "message": "Tìm kiếm tin nhắn..."
+  },
+  "messageListEmptyTitle": {
+    "message": "Hộp thư của bạn đang trống"
+  },
+  "messageListEmptyHint": {
+    "message": "Tin nhắn sẽ xuất hiện ở đây khi được nhận"
+  },
+  "messageListCheckMessages": {
+    "message": "Kiểm tra tin nhắn"
+  },
+  "messageListNoMatching": {
+    "message": "Không có tin nhắn phù hợp"
+  },
+  "messageListNoMatchingHint": {
+    "message": "Hãy thử từ khóa khác"
+  },
+  "messageListEllipsis": {
+    "message": "..."
+  },
+  "goBackToInboxList": {
+    "message": "Quay lại danh sách hộp thư"
+  },
+  "settingsShareTitle": {
+    "message": "Ephemera - Email dùng một lần"
+  },
+  "settingsShareText": {
+    "message": "Thử Ephemera để tạo địa chỉ email dùng một lần!"
+  },
+  "settingsRoleUser": {
+    "message": "Người dùng"
+  },
+  "settingsManageAccount": {
+    "message": "Quản lý tài khoản"
+  },
+  "settingsAppearance": {
+    "message": "Giao diện"
+  },
+  "settingsThemeLight": {
+    "message": "Sáng"
+  },
+  "settingsThemeDark": {
+    "message": "Tối"
+  },
+  "settingsThemeSystem": {
+    "message": "Hệ thống"
+  },
+  "settingsPreferences": {
+    "message": "Tùy chọn"
+  },
+  "settingsPushNotifications": {
+    "message": "Thông báo đẩy"
+  },
+  "settingsPushNotificationsHint": {
+    "message": "Nhận cảnh báo khi có thư mới"
+  },
+  "settingsAutoCopyAddress": {
+    "message": "Tự sao chép địa chỉ"
+  },
+  "settingsAutoCopyHint": {
+    "message": "Sao chép khi tạo mới"
+  },
+  "settingsShareInvite": {
+    "message": "Chia sẻ & Mời bạn bè"
+  },
+  "settingsShareEphemera": {
+    "message": "Chia sẻ Ephemera"
+  },
+  "settingsLinkCopied": {
+    "message": "Đã sao chép liên kết!"
+  },
+  "settingsInviteFriends": {
+    "message": "Mời bạn bè dùng thử Ephemera"
+  },
+  "settingsSupportLegal": {
+    "message": "Hỗ trợ & Pháp lý"
+  },
+  "settingsMainDashboard": {
+    "message": "Bảng điều khiển chính"
+  },
+  "settingsPrivacyTerms": {
+    "message": "Quyền riêng tư & Điều khoản"
+  },
+  "settingsSignOut": {
+    "message": "Đăng xuất"
+  },
+  "inboxListLoadFailed": {
+    "message": "Tải hộp thư thất bại"
+  },
+  "inboxListCreateFailed": {
+    "message": "Tạo hộp thư thất bại"
+  },
+  "inboxListUpdateFailed": {
+    "message": "Cập nhật hộp thư thất bại"
+  },
+  "inboxListExtendFailed": {
+    "message": "Gia hạn hộp thư thất bại"
+  },
+  "inboxListDeleteConfirm": {
+    "message": "Bạn có chắc muốn xóa hộp thư này?"
+  },
+  "inboxListDeleteFailed": {
+    "message": "Xóa hộp thư thất bại"
+  },
+  "inboxListLoadingAria": {
+    "message": "Đang tải hộp thư"
+  },
+  "inboxListLoadingSrOnly": {
+    "message": "Đang tải hộp thư của bạn, vui lòng đợi..."
+  },
+  "inboxListUsage": {
+    "message": "Đang dùng:"
+  },
+  "inboxListRefreshAria": {
+    "message": "Làm mới danh sách hộp thư"
+  },
+  "inboxListExpiresIn": {
+    "message": "Hết hạn sau $1"
+  },
+  "inboxListCopyAddress": {
+    "message": "Sao chép địa chỉ"
+  },
+  "inboxListCopyAddressAria": {
+    "message": "Sao chép địa chỉ email vào bộ nhớ tạm"
+  },
+  "inboxListShowQr": {
+    "message": "Hiện mã QR"
+  },
+  "inboxListShowQrAria": {
+    "message": "Hiện mã QR cho email này"
+  },
+  "inboxListUnpinAria": {
+    "message": "Bỏ ghim hộp thư"
+  },
+  "inboxListPinAria": {
+    "message": "Ghim hộp thư"
+  },
+  "inboxListSwitchTemporary": {
+    "message": "Chuyển sang tạm thời (24h)"
+  },
+  "inboxListMakePermanent": {
+    "message": "Đặt vĩnh viễn"
+  },
+  "inboxListSwitchTemporaryAria": {
+    "message": "Chuyển hộp thư sang chế độ tạm thời"
+  },
+  "inboxListMakePermanentAria": {
+    "message": "Đặt hộp thư vĩnh viễn"
+  },
+  "onboardingStep1Title": {
+    "message": "Tạo hộp thư đầu tiên"
+  },
+  "onboardingStep1Desc": {
+    "message": "Nhấn nút phía trên để tạo email tạm thời ngẫu nhiên. Dùng cho đăng ký, dùng thử hoặc bất kỳ nơi nào bạn cần email tạm."
+  },
+  "onboardingStep2Title": {
+    "message": "Tự điền trên mọi website"
+  },
+  "onboardingStep2Desc": {
+    "message": "Khi ở form đăng ký, nhấp chuột phải vào ô email và chọn \"Fill with Ephemera\" để chèn email tạm ngay lập tức."
+  },
+  "onboardingStep3Title": {
+    "message": "Dùng thanh bên để truy cập nhanh"
+  },
+  "onboardingStep3Desc": {
+    "message": "Ghim thanh bên để luôn sẵn sàng. Xem thư khi đang duyệt web mà không cần đổi tab hay mở popup."
+  },
+  "onboardingSkipAria": {
+    "message": "Bỏ qua hướng dẫn"
+  },
+  "onboardingStepCounter": {
+    "message": "Bước $1 / $2"
+  },
+  "onboardingBack": {
+    "message": "Quay lại"
+  },
+  "onboardingNext": {
+    "message": "Tiếp theo"
+  },
+  "onboardingGetStarted": {
+    "message": "Bắt đầu"
+  },
+  "onboardingDontShowAgain": {
+    "message": "Không hiển thị lại"
+  },
+  "bgInboxCreatedTitle": {
+    "message": "Đã tạo hộp thư"
+  },
+  "bgInboxCreatedMessage": {
+    "message": "Đã tạo $1"
+  },
+  "bgLatestInboxTitle": {
+    "message": "Hộp thư mới nhất"
+  },
+  "bgContextParent": {
+    "message": "Ephemera"
+  },
+  "bgNoActiveInboxes": {
+    "message": "Không có hộp thư đang hoạt động"
   }
 }

@@ -2,14 +2,11 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { api } from '../../shared/api';
 import { analytics } from '../../shared/analytics';
 import { Message } from '../../shared/types';
-import { ArrowLeft, Loader2, Calendar, User, FileText, RefreshCw, ChevronRight, Mail, Inbox, Reply, Forward } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, FileText, RefreshCw, ChevronRight } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { cn } from '../../utils/cn';
 import SearchInput from '../shared/SearchInput';
-import { MessageSkeleton } from '../shared/Skeleton';
-import { useCompose } from '../../hooks/useCompose';
-import ComposeModal from '../shared/ComposeModal';
-import { t } from '../../shared/i18n';
+import browser from 'webextension-polyfill';
 
 interface MessageListProps {
   inboxId: string;
@@ -25,8 +22,10 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
   const [searchQuery, setSearchQuery] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [fromCache, setFromCache] = useState(false);
-
-  const compose = useCompose();
+  const tr = (key: string, fallback: string, substitutions?: string[]) => {
+    const value = browser.i18n.getMessage(key, substitutions);
+    return value || fallback;
+  };
 
   // Filter messages based on search query
   const filteredMessages = useMemo(() => {
@@ -34,7 +33,7 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
     const query = searchQuery.toLowerCase();
     return messages.filter((msg) =>
       msg.subject?.toLowerCase().includes(query) ||
-      msg.from.toLowerCase().includes(query) ||
+      (msg.from || '').toLowerCase().includes(query) ||
       msg.textBody?.toLowerCase().includes(query)
     );
   }, [messages, searchQuery]);
@@ -75,7 +74,7 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
       setMessages(response.data);
       setFromCache(response.fromCache);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      setError(err instanceof Error ? err.message : tr('messageListLoadFailed', 'Failed to load messages'));
     } finally {
       setLoading(false);
     }
@@ -90,20 +89,29 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
     });
   };
 
+  const getSender = (value: string | null | undefined) => {
+    const sender = typeof value === 'string' ? value.trim() : '';
+    return sender || tr('messageListUnknownSender', 'Unknown sender');
+  };
+
+  const getSenderInitial = (value: string | null | undefined) => getSender(value).charAt(0).toUpperCase();
+
   if (selectedMessage) {
     return (
       <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
         <div className="glass-morphism sticky top-0 flex items-center gap-3 p-3 z-20 border border-white/20 dark:border-slate-800/50 rounded-2xl mx-1 mt-1">
           <button
             onClick={() => setSelectedMessage(null)}
-            aria-label="Go back to message list"
+            aria-label={tr('goBackToMessageList', 'Go back to message list')}
             className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
           >
             <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           </button>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate uppercase tracking-widest">{selectedMessage.subject || '(No Subject)'}</h3>
-            <p className="text-[10px] text-slate-500 truncate">{selectedMessage.from}</p>
+            <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate uppercase tracking-widest">
+              {selectedMessage.subject || tr('messageListNoSubject', '(No Subject)')}
+            </h3>
+            <p className="text-[10px] text-slate-500 truncate">{getSender(selectedMessage.from)}</p>
           </div>
         </div>
 
@@ -111,11 +119,11 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
           <div className="card-material p-4 space-y-3">
             <div className="flex items-center gap-3 text-xs">
               <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-bold">
-                {selectedMessage.from.charAt(0).toUpperCase()}
+                {getSenderInitial(selectedMessage.from)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-800 dark:text-slate-100 truncate">{selectedMessage.from}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100 truncate">{getSender(selectedMessage.from)}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[10px]">
                   <Calendar className="w-2.5 h-2.5" />
@@ -138,35 +146,8 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
                 </pre>
               )}
             </div>
-
-            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button
-                onClick={() => compose.openReply(selectedMessage)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg transition-all"
-              >
-                <Reply className="w-3.5 h-3.5" />
-                {t('reply')}
-              </button>
-              <button
-                onClick={() => compose.openForward(selectedMessage)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
-              >
-                <Forward className="w-3.5 h-3.5" />
-                {t('forward')}
-              </button>
-            </div>
           </div>
         </div>
-
-        <ComposeModal
-          isOpen={compose.isOpen}
-          onClose={compose.close}
-          mode={compose.mode}
-          originalMessage={compose.originalMessage}
-          onSend={compose.send}
-          sending={compose.sending}
-          error={compose.error}
-        />
       </div>
     );
   }
@@ -184,14 +165,20 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
           <div className="flex items-center gap-2">
             <h2 className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate uppercase tracking-widest">{email}</h2>
             {isOffline && (
-              <span className="text-[9px] font-bold text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">OFFLINE</span>
+              <span className="text-[9px] font-bold text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">
+                {tr('messageListOffline', 'OFFLINE')}
+              </span>
             )}
             {fromCache && !isOffline && (
-              <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">cached</span>
+              <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">
+                {tr('messageListCached', 'cached')}
+              </span>
             )}
           </div>
           <p className="text-[10px] text-slate-500 font-medium">
-            {searchQuery ? `${filteredMessages.length} of ${messages.length}` : messages.length} messages
+            {searchQuery
+              ? tr('messageListCountFiltered', '$1 of $2 messages', [String(filteredMessages.length), String(messages.length)])
+              : tr('messageListCountAll', '$1 messages', [String(messages.length)])}
           </p>
         </div>
         <button
@@ -207,7 +194,7 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
         <SearchInput
           value={searchQuery}
           onChange={handleSearchChange}
-          placeholder="Search messages..."
+          placeholder={tr('messageListSearchPlaceholder', 'Search messages...')}
           className="px-1"
         />
       )}
@@ -224,22 +211,22 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
         ) : messages.length === 0 ? (
           <div className="text-center py-16 bg-white/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 backdrop-blur-xs mx-2">
             <FileText className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-3 opacity-50" />
-            <p className="text-sm text-slate-400 font-medium mb-2">Your inbox is empty</p>
-            <p className="text-xs text-slate-400/70 mb-3">Messages will appear here when received</p>
+            <p className="text-sm text-slate-400 font-medium mb-2">{tr('messageListEmptyTitle', 'Your inbox is empty')}</p>
+            <p className="text-xs text-slate-400/70 mb-3">{tr('messageListEmptyHint', 'Messages will appear here when received')}</p>
             <button
               onClick={fetchMessages}
               disabled={loading}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 bg-slate-50 dark:bg-slate-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all"
             >
               <RefreshCw className={cn("w-3 h-3", loading && "animate-spin")} />
-              Check for messages
+              {tr('messageListCheckMessages', 'Check for messages')}
             </button>
           </div>
         ) : filteredMessages.length === 0 && searchQuery ? (
           <div className="text-center py-12 bg-white/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 backdrop-blur-xs mx-2">
             <FileText className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-700 mb-2 opacity-50" />
-            <p className="text-sm text-slate-400 font-medium">No matching messages</p>
-            <p className="text-xs text-slate-400/70 mt-1">Try a different search term</p>
+            <p className="text-sm text-slate-400 font-medium">{tr('messageListNoMatching', 'No matching messages')}</p>
+            <p className="text-xs text-slate-400/70 mt-1">{tr('messageListNoMatchingHint', 'Try a different search term')}</p>
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -258,7 +245,7 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
                     ? "bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
                 )}>
-                  {msg.from.charAt(0).toUpperCase()}
+                  {getSenderInitial(msg.from)}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -267,7 +254,7 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
                       "text-xs truncate mr-2",
                       !msg.isRead ? "font-bold text-slate-800 dark:text-slate-100" : "font-medium text-slate-600 dark:text-slate-400"
                     )}>
-                      {msg.from}
+                      {getSender(msg.from)}
                     </span>
                     <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase whitespace-nowrap">
                       {formatDate(msg.receivedAt)}
@@ -277,10 +264,10 @@ export default function MessageList({ inboxId, email, onBack }: MessageListProps
                     "text-xs truncate",
                     !msg.isRead ? "font-semibold text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"
                   )}>
-                    {msg.subject || '(No Subject)'}
+                    {msg.subject || tr('messageListNoSubject', '(No Subject)')}
                   </h4>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-1">
-                    {msg.textBody ? msg.textBody.substring(0, 70) : '...'}
+                    {msg.textBody ? msg.textBody.substring(0, 70) : tr('messageListEllipsis', '...')}
                   </p>
                 </div>
 

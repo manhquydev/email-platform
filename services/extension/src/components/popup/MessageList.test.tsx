@@ -133,6 +133,20 @@ describe('MessageList', () => {
       });
     });
 
+    it('should fallback sender label when sender is missing', async () => {
+      const { api } = await import('../../shared/api');
+      (api.getMessagesWithCache as ReturnType<typeof vi.fn>).mockResolvedValue({
+        data: [{ ...mockMessages[0], id: 'msg-missing-sender', from: undefined }],
+        fromCache: false
+      });
+
+      render(<MessageList {...defaultProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Unknown sender')).toBeInTheDocument();
+      });
+    });
+
     it('should show preview text', async () => {
       render(<MessageList {...defaultProps} />);
 

@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { TIER_LIMITS } from "./billing";
 import { sanitizeAlias, validateAlias } from "../lib/alias-validation";
+import { getTierLimits } from "../services/tier-limits.service";
+import { SubscriptionTier } from "../config/unified-tier-limits";
 
 const FRIENDLY_FIRST_NAMES = [
   "an", "bao", "binh", "chi", "duy", "giang", "hao", "khanh", "linh", "mai",
@@ -45,6 +47,21 @@ function generateFriendlyLocalPart(): string {
   }
 
   return `contact.${pickRandom(FRIENDLY_FIRST_NAMES)}${randomDigits(2)}`;
+}
+
+function normalizeTierKey(rawTier?: string): keyof typeof TIER_LIMITS {
+  const tier = (rawTier || "FREE").toUpperCase();
+  if (tier in TIER_LIMITS) {
+    return tier as keyof typeof TIER_LIMITS;
+  }
+  if (tier === "PRO") {
+    return "PROFESSIONAL" as keyof typeof TIER_LIMITS;
+  }
+  return "FREE";
+}
+
+function normalizeSubscriptionTier(rawTier?: string): SubscriptionTier {
+  return normalizeTierKey(rawTier) as SubscriptionTier;
 }
 
 async function getRandomVerifiedPublicDomain() {
@@ -153,24 +170,32 @@ export async function extensionRoutes(app: FastifyInstance) {
     }
   }, async (request, reply) => {
     const user = request.user as { userId: string; role: string; tier: string };
+    const tierKey = normalizeTierKey(user.tier);
+    const subscriptionTier = normalizeSubscriptionTier(user.tier);
+    const tierLimits = await getTierLimits(subscriptionTier);
+    const inboxWhere = {
+      ownerId: user.userId,
+      deletedAt: null
+    };
 
-    // Fetch inboxes with message counts
-    const inboxes = await prisma.inbox.findMany({
-      where: {
-        ownerId: user.userId,
-        deletedAt: null
-      },
-      include: {
-        domain: true,
-        _count: {
-          select: {
-            messages: { where: { deletedAt: null, isRead: false } } // Unread count
+    const [inboxes, totalInboxes] = await Promise.all([
+      prisma.inbox.findMany({
+        where: inboxWhere,
+        include: {
+          domain: true,
+          _count: {
+            select: {
+              messages: { where: { deletedAt: null, isRead: false } } // Unread count
+            }
           }
-        }
-      },
-      orderBy: { createdAt: "desc" },
-      take: 20 // Limit for extension
-    });
+        },
+        orderBy: { createdAt: "desc" },
+        take: 200
+      }),
+      prisma.inbox.count({
+        where: inboxWhere
+      })
+    ]);
 
     // Calculate totals
     const totalUnread = inboxes.reduce((sum, inbox) => sum + (inbox._count?.messages || 0), 0);
@@ -178,11 +203,15 @@ export async function extensionRoutes(app: FastifyInstance) {
     return {
       user: {
         id: user.userId,
-        tier: user.tier,
+        tier: tierKey,
+        limits: {
+          inboxes: tierLimits.inboxes,
+        },
       },
       stats: {
-        totalInboxes: inboxes.length,
+        totalInboxes,
         totalUnread,
+        inboxLimit: tierLimits.inboxes,
       },
       inboxes: inboxes.map(inbox => ({
         id: inbox.id,
@@ -229,13 +258,14 @@ export async function extensionRoutes(app: FastifyInstance) {
     }
 
     // Check limits
-    const tierKey = (user.tier || "FREE") as keyof typeof TIER_LIMITS;
-    const limit = TIER_LIMITS[tierKey] || TIER_LIMITS["FREE"];
+    const tierKey = normalizeTierKey(user.tier);
+    const subscriptionTier = normalizeSubscriptionTier(user.tier);
+    const limit = await getTierLimits(subscriptionTier);
     const currentCount = await prisma.inbox.count({
       where: { ownerId: user.userId, deletedAt: null }
     });
 
-    if (currentCount >= limit.inboxes) {
+    if (limit.inboxes > -1 && currentCount >= limit.inboxes) {
       return reply.status(403).send({
         error: "Inbox limit reached",
         upgradeUrl: "https://manhquy.click/pricing"

@@ -228,13 +228,14 @@ describe('ApiClient', () => {
       mockStorageGet({ auth: { token: 'token', isAuthenticated: true } });
       mockApiResponse({
         data: [
-          { id: 'm1', subject: 'Test Email', from: 'sender@test.com' },
+          { id: 'm1', subject: 'Test Email', fromAddress: 'sender@test.com' },
         ],
       });
 
       const result = await api.getMessages('inbox-123', 5);
 
       expect(result.data).toHaveLength(1);
+      expect(result.data[0].from).toBe('sender@test.com');
       expect(mockFetch).toHaveBeenCalledWith(
         'https://test-api.example.com/inboxes/inbox-123/messages?limit=5',
         expect.any(Object)

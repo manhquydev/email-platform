@@ -57,7 +57,7 @@ import { analytics } from '../../shared/analytics';
 
 const mockDashboardData = {
   user: { id: '1', tier: 'FREE' },
-  stats: { totalInboxes: 2, totalUnread: 5 },
+  stats: { totalInboxes: 2, totalUnread: 5, inboxLimit: 3 },
   inboxes: [
     {
       id: 'inbox-1',
@@ -116,7 +116,7 @@ describe('InboxList', () => {
       render(<InboxList onSelectInbox={mockOnSelectInbox} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/2\/5/)).toBeInTheDocument();
+        expect(screen.getByText(/2\/3/)).toBeInTheDocument();
       });
     });
 
@@ -132,7 +132,7 @@ describe('InboxList', () => {
       (api.getDashboard as ReturnType<typeof vi.fn>).mockResolvedValue({
         ...mockDashboardData,
         inboxes: [],
-        stats: { totalInboxes: 0, totalUnread: 0 },
+        stats: { totalInboxes: 0, totalUnread: 0, inboxLimit: 3 },
       });
 
       render(<InboxList onSelectInbox={mockOnSelectInbox} />);

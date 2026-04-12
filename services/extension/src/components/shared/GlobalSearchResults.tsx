@@ -10,6 +10,14 @@ interface GlobalSearchResultsProps {
 }
 
 export default function GlobalSearchResults({ results, loading, onSelectMessage }: GlobalSearchResultsProps) {
+  const getSender = (value: string | null | undefined) => {
+    if (typeof value !== 'string') return t('messageListUnknownSender');
+    const normalized = value.trim();
+    return normalized || t('messageListUnknownSender');
+  };
+
+  const getSenderInitial = (value: string | null | undefined) => getSender(value).charAt(0).toUpperCase();
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-slate-400">
@@ -52,7 +60,7 @@ export default function GlobalSearchResults({ results, loading, onSelectMessage 
               ? "bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400"
               : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
           )}>
-            {msg.from.charAt(0).toUpperCase()}
+            {getSenderInitial(msg.from)}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -61,7 +69,7 @@ export default function GlobalSearchResults({ results, loading, onSelectMessage 
                 "text-xs truncate mr-2",
                 !msg.isRead ? "font-bold text-slate-800 dark:text-slate-100" : "font-medium text-slate-600 dark:text-slate-400"
               )}>
-                {msg.from}
+                {getSender(msg.from)}
               </span>
               <span className="text-[9px] text-slate-400 shrink-0">
                 {formatDate(msg.receivedAt)}

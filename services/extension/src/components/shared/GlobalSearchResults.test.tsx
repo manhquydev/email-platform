@@ -13,6 +13,7 @@ vi.mock('../../shared/i18n', () => ({
       loading: 'Loading',
       noSearchResults: 'No results found',
       searchResultsCount: 'results',
+      messageListUnknownSender: 'Unknown sender',
     };
     return translations[key] || key;
   }),
@@ -104,6 +105,25 @@ describe('GlobalSearchResults', () => {
 
       expect(screen.getByText('sender1@example.com')).toBeInTheDocument();
       expect(screen.getByText('sender2@example.com')).toBeInTheDocument();
+    });
+
+    it('should fallback sender label when sender is missing', () => {
+      const messagesWithMissingSender: Message[] = [
+        {
+          ...mockMessages[0],
+          from: '',
+        },
+      ];
+
+      render(
+        <GlobalSearchResults
+          results={messagesWithMissingSender}
+          loading={false}
+          onSelectMessage={mockOnSelectMessage}
+        />
+      );
+
+      expect(screen.getByText('Unknown sender')).toBeInTheDocument();
     });
 
     it('should display message subject', () => {

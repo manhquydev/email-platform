@@ -2,17 +2,17 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { storage } from '../../shared/storage';
 import { api } from '../../shared/api';
 import { analytics } from '../../shared/analytics';
-import { AuthState, StorageData, ComposeData } from '../../shared/types';
+import { AuthState, StorageData } from '../../shared/types';
 import Login from '../../components/popup/Login';
 import InboxList from '../../components/popup/InboxList';
 import OnboardingTour from '../../components/shared/OnboardingTour';
-import ComposeModal from '../../components/shared/ComposeModal';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
-import { Loader2, Settings as SettingsIcon, PanelLeftOpen, PenSquare } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, PanelLeftOpen } from 'lucide-react';
 import browser from 'webextension-polyfill';
 import { useGlobalSearch } from '../../hooks/useGlobalSearch';
 import GlobalSearchResults from '../../components/shared/GlobalSearchResults';
 import SearchInput from '../../components/shared/SearchInput';
+import ExtensionBrand from '../../components/shared/ExtensionBrand';
 import { t } from '../../shared/i18n';
 
 // Lazy load heavy components for code splitting
@@ -38,12 +38,13 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<View>({ type: 'home' });
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showCompose, setShowCompose] = useState(false);
-  const [composeSending, setComposeSending] = useState(false);
-  const [composeError, setComposeError] = useState<string | null>(null);
   const [settings, setSettings] = useState<StorageData['settings'] | null>(null);
 
   const globalSearch = useGlobalSearch();
+  const msg = (key: string, fallback: string, substitutions?: string[]) => {
+    const value = browser.i18n.getMessage(key, substitutions);
+    return value || fallback;
+  };
 
   useEffect(() => {
     checkAuth();
@@ -156,25 +157,6 @@ function App() {
     }
   };
 
-  const handleSendNewMessage = async (data: ComposeData) => {
-    if (!data.to || !data.subject) return;
-    setComposeSending(true);
-    setComposeError(null);
-    try {
-      await api.sendNewMessage({
-        to: data.to,
-        subject: data.subject,
-        content: data.content
-      });
-      setShowCompose(false);
-      analytics.track('message_composed');
-    } catch (err) {
-      setComposeError(err instanceof Error ? err.message : 'Failed to send message');
-    } finally {
-      setComposeSending(false);
-    }
-  };
-
   const renderContent = () => {
     if (!auth?.isAuthenticated) {
       return <Login onSuccess={handleLoginSuccess} />;
@@ -241,29 +223,23 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="w-[400px] min-h-[500px] bg-gray-50 dark:bg-slate-950 flex flex-col h-screen transition-colors duration-300">
+      <div className="w-full max-w-[420px] min-h-[500px] bg-gray-50 dark:bg-slate-950 flex flex-col h-full mx-auto transition-colors duration-300">
       {/* Header - Glassmorphism */}
       {currentView.type === 'home' && (
         <header className="glass-morphism sticky top-0 px-4 py-3 flex justify-between items-center z-20 shrink-0 mx-2 mt-2 rounded-2xl border border-white/20 dark:border-slate-800/50 shadow-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary-500/20">E</div>
-            <h1 className="font-bold text-slate-800 dark:text-slate-100 tracking-tight">Ephemera</h1>
+          <div className="min-w-0">
+            <ExtensionBrand />
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate pl-10 mt-0.5">
+              {msg('appTagline', 'Temporary inbox assistant')}
+            </p>
           </div>
           <div className="flex items-center gap-1.5">
             {auth?.isAuthenticated && (
               <button
-                onClick={() => setShowCompose(true)}
-                className="p-2 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
-                title="Compose"
-              >
-                <PenSquare className="w-4 h-4" />
-              </button>
-            )}
-            {auth?.isAuthenticated && (
-              <button
                 onClick={openSidePanel}
                 className="p-2 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
-                title="Open in Side Panel"
+                title={msg('appOpenSidePanel', 'Open in Side Panel')}
+                aria-label={msg('appOpenSidePanel', 'Open in Side Panel')}
               >
                 <PanelLeftOpen className="w-4 h-4" />
               </button>
@@ -272,7 +248,8 @@ function App() {
               <button
                 onClick={() => setCurrentView({ type: 'settings' })}
                 className="p-2 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
-                title="Settings"
+                title={t('settings')}
+                aria-label={t('settings')}
               >
                 <SettingsIcon className="w-4 h-4" />
               </button>
@@ -294,17 +271,6 @@ function App() {
           onSkip={handleOnboardingSkip}
         />
       )}
-
-      {/* Compose New Email Modal */}
-      <ComposeModal
-        isOpen={showCompose}
-        onClose={() => setShowCompose(false)}
-        mode="new"
-        originalMessage={null}
-        onSend={handleSendNewMessage}
-        sending={composeSending}
-        error={composeError}
-      />
       </div>
     </ErrorBoundary>
   );

@@ -8,8 +8,10 @@ import InboxList from '../../components/popup/InboxList';
 import MessageList from '../../components/popup/MessageList';
 import Settings from '../../components/popup/Settings';
 import OtpBanner from '../../components/shared/OtpBanner';
+import ExtensionBrand from '../../components/shared/ExtensionBrand';
 import { Loader2, Settings as SettingsIcon, Zap, Globe, ChevronRight } from 'lucide-react';
 import browser from 'webextension-polyfill';
+import { t } from '../../shared/i18n';
 
 type View =
   | { type: 'home' }
@@ -21,6 +23,10 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<View>({ type: 'home' });
   const [activeTab, setActiveTab] = useState<{ url: string; title: string; domain: string } | null>(null);
+  const msg = (key: string, fallback: string, substitutions?: string[]) => {
+    const value = browser.i18n.getMessage(key, substitutions);
+    return value || fallback;
+  };
 
   useEffect(() => {
     checkAuth();
@@ -158,7 +164,9 @@ function App() {
 
                   <div className="flex items-center gap-2 mb-3 text-primary-600 dark:text-primary-400 relative z-10">
                     <Zap className="w-3.5 h-3.5 fill-current" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Context Intelligence</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                      {msg('sidepanelContextTitle', 'Context Intelligence')}
+                    </span>
                   </div>
 
                   <div className="space-y-2 relative z-10">
@@ -171,7 +179,9 @@ function App() {
                            <Globe className="w-4 h-4 text-slate-400 group-hover:text-primary-500" />
                         </div>
                         <div className="text-left">
-                          <p className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-700 dark:group-hover:text-primary-400">Generate for {activeTab.domain}</p>
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-700 dark:group-hover:text-primary-400">
+                            {msg('sidepanelGenerateFor', 'Generate for $1', [activeTab.domain])}
+                          </p>
                           <p className="text-[10px] text-slate-400 font-medium truncate max-w-[180px]">{activeTab.title}</p>
                         </div>
                       </div>
@@ -221,15 +231,13 @@ function App() {
       {/* Header - Glassmorphism */}
       {currentView.type === 'home' && (
         <header className="glass-morphism sticky top-0 px-4 py-3 flex justify-between items-center z-20 shrink-0 mx-2 mt-2 rounded-2xl border border-white/20 dark:border-slate-800/50 shadow-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md shadow-primary-500/20">E</div>
-            <h1 className="font-black text-slate-800 dark:text-slate-100 tracking-tight text-sm">Ephemera</h1>
-          </div>
+          <ExtensionBrand textClassName="font-black text-sm" />
           {auth?.isAuthenticated && (
             <button
               onClick={() => setCurrentView({ type: 'settings' })}
               className="p-2 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
-              title="Settings"
+              title={t('settings')}
+              aria-label={t('settings')}
             >
               <SettingsIcon className="w-4 h-4" />
             </button>

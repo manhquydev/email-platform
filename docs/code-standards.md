@@ -289,6 +289,7 @@ describe('FeatureName', () => {
 
 ### Sensitive Data
 - Never commit `.env` files
+- Never commit generated extension artifacts (`services/extension/.output/`, `services/extension/.artifacts/`, `*.zip` from extension builds)
 - Use environment variables for secrets
 - Encrypt PII at rest when required
 

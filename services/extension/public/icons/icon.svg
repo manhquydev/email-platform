@@ -1,5 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
-  <rect width="128" height="128" rx="24" fill="#0ea5e9"/>
-  <path d="M96 40H32C27.5817 40 24 43.5817 24 48V80C24 84.4183 27.5817 88 32 88H96C100.418 88 104 84.4183 104 80V48C104 43.5817 100.418 40 96 40Z" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M104 48L64 72L24 48" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ephemera Favicon - Optimized for 32x32 and 16x16 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Background - Void Black -->
+  <rect width="48" height="48" rx="10" fill="#0A0A0B"/>
+  
+  <!-- Simplified Broken Infinity -->
+  <g transform="translate(8, 13)">
+    <!-- Left loop -->
+    <path d="
+      M 16 11
+      C 16 3, 3 3, 3 11
+      C 3 19, 16 19, 16 11
+    " fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    
+    <!-- Right partial loop -->
+    <path d="
+      M 16 11
+      C 16 3, 29 3, 29 11
+    " fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+    
+    <!-- Simple dissolve dots -->
+    <circle cx="30" cy="11" r="1.5" fill="white" opacity="0.4"/>
+    <circle cx="32" cy="8" r="1" fill="white" opacity="0.25"/>
+  </g>
 </svg>

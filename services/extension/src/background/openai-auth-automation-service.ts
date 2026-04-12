@@ -1,5 +1,6 @@
 import { CONFIG } from '../shared/config';
 import { extractOtpFromText } from '../content/openai-auth-automation-utils';
+import { generateRandomLocalPart } from '../content/openai-auth-random-profile';
 
 interface EphemeralInboxResponse {
   id: string;
@@ -40,17 +41,6 @@ export interface LatestOtpResult {
   code: string;
   messageId: string;
   receivedAt: number;
-}
-
-function generateRandomLocalPart(length = 12): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  const head = 'abcdefghijklmnopqrstuvwxyz';
-  const targetLength = Math.max(8, Math.min(length, 24));
-  let value = head[Math.floor(Math.random() * head.length)];
-  for (let i = 1; i < targetLength; i += 1) {
-    value += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return value;
 }
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {

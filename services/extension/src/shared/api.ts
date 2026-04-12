@@ -162,9 +162,10 @@ class ApiClient {
     return this.request<DashboardData>('/extension/dashboard');
   }
 
-  async createQuickInbox() {
+  async createQuickInbox(payload?: { localPart?: string; domainId?: string }) {
     return this.request<{ success: boolean; inbox: any }>('/extension/quick-inbox', {
-      method: 'POST'
+      method: 'POST',
+      ...(payload ? { body: JSON.stringify(payload) } : {}),
     });
   }
 
@@ -202,10 +203,7 @@ class ApiClient {
 
   // Custom inbox creation with prefix and domain
   async createCustomInbox(localPart: string, domainId?: string) {
-    return this.request<{ success: boolean; inbox: any }>('/extension/quick-inbox', {
-      method: 'POST',
-      body: JSON.stringify({ localPart, domainId }),
-    });
+    return this.createQuickInbox({ localPart, domainId });
   }
 
   // Legacy/Full API support

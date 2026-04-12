@@ -79,4 +79,38 @@ describe("Auth Integration", () => {
         });
         expect(verifyRes.statusCode).toBe(200);
     });
+
+    it("should block pending2FA token from accessing protected routes", async () => {
+        const hashed = await bcrypt.hash("password123", 10);
+        await prisma.user.create({
+            data: {
+                email: "pending2fa@example.com",
+                passwordHash: hashed,
+                role: "USER",
+                emailVerified: new Date(),
+                twoFactorEnabled: true,
+            },
+        });
+
+        const loginRes = await app.inject({
+            method: "POST",
+            url: "/auth/login",
+            headers: { "Content-Type": "application/json" },
+            payload: { email: "pending2fa@example.com", password: "password123" },
+        });
+
+        expect(loginRes.statusCode).toBe(200);
+        const loginBody = loginRes.json();
+        expect(loginBody.requires2FA).toBe(true);
+        expect(loginBody.tempToken).toBeDefined();
+
+        const meRes = await app.inject({
+            method: "GET",
+            url: "/auth/me",
+            headers: { Authorization: `Bearer ${loginBody.tempToken}` },
+        });
+
+        expect(meRes.statusCode).toBe(401);
+        expect(meRes.json().code).toBe("TWO_FACTOR_REQUIRED");
+    });
 });

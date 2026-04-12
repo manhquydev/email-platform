@@ -434,6 +434,10 @@ export const buildServer = () => {
 
       // SECURITY: Check if token has been revoked (Phase 2 JWT Security)
       const decoded = request.user as any;
+      if (decoded?.pending2FA) {
+        return sendApiError(reply, 401, "Two-factor verification required", { code: "TWO_FACTOR_REQUIRED" });
+      }
+
       if (decoded?.jti) {
         const isRevoked = await tokenRevocationService.isRevoked(decoded.jti);
         if (isRevoked) {

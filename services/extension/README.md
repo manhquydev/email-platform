@@ -65,6 +65,31 @@ npm run build:safari
 
 Packages are output to the `.output/` directory, organized by target.
 
+### Generated Artifact Policy
+
+- `.output/` and `.artifacts/` are generated build outputs and should not be committed.
+- Use `npm run zip` (plus browser variants) to regenerate release packages when needed.
+
+### ZIP-based Distribution (No Store Push)
+
+This project supports packaging and sharing extension builds as ZIP files:
+
+```bash
+# Generate Chrome ZIP package
+npm run zip
+```
+
+Output example:
+- `.output/ephemera-extension-0.1.0-chrome.zip`
+
+For local browser usage:
+1. Extract the ZIP file.
+2. Open `chrome://extensions`.
+3. Enable **Developer mode**.
+4. Click **Load unpacked** and select the extracted folder.
+
+This workflow avoids publishing to Chrome Web Store when internal/team usage is preferred.
+
 ## 🔒 Permissions
 
 - `storage`: Unified state management and theme persistence.

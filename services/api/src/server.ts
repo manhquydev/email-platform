@@ -11,6 +11,7 @@ import fastifyStatic from "@fastify/static";
 import path from "path";
 import { appConfig } from "./config";
 import { errorHandler, normalizeApiErrorPayload, sendApiError } from "./utils/errorHandler";
+import { handlePendingTwoFactorToken } from "./utils/pending-2fa-guard";
 import { authRoutes } from "./routes/auth";
 import { anonymousAuthRoutes } from "./routes/anonymous-auth";
 import { domainRoutes, emailValidationRoutes } from "./routes/domains";
@@ -434,8 +435,8 @@ export const buildServer = () => {
 
       // SECURITY: Check if token has been revoked (Phase 2 JWT Security)
       const decoded = request.user as any;
-      if (decoded?.pending2FA) {
-        return sendApiError(reply, 401, "Two-factor verification required", { code: "TWO_FACTOR_REQUIRED" });
+      if (handlePendingTwoFactorToken(decoded, reply)) {
+        return;
       }
 
       if (decoded?.jti) {

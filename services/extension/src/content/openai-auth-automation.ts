@@ -9,6 +9,7 @@ import {
 const STATE_KEY = 'openai_auth_automation_state';
 const HOST = 'auth.openai.com';
 const CREATE_INBOX_RETRY_DELAYS_MS = [0, 1200, 2500];
+const EMAIL_VERIFICATION_PATH = '/email-verification';
 
 interface AutomationState {
   latestEmail?: string;
@@ -38,6 +39,10 @@ function setInputValue(input: HTMLInputElement, value: string): void {
   setter?.call(input, value);
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function isEmailVerificationPath(pathname: string): boolean {
+  return pathname === EMAIL_VERIFICATION_PATH;
 }
 
 function findFirstInput(selectors: string[]): HTMLInputElement | null {
@@ -76,6 +81,30 @@ function appendRecentIds(ids: string[] | undefined, messageId: string | undefine
   const next = (ids ?? []).filter((id) => id !== messageId);
   next.push(messageId);
   return next.slice(-limit);
+}
+
+function isLikelyOtpInput(input: HTMLInputElement): boolean {
+  if (input.type === 'number') return false;
+
+  const hintText = [
+    input.name,
+    input.id,
+    input.placeholder,
+    input.getAttribute('aria-label') || '',
+    input.getAttribute('autocomplete') || '',
+  ].join(' ').toLowerCase();
+
+  if (/(age|tuổi|tuoi|birth|dob|year)/i.test(hintText)) return false;
+
+  if (input.getAttribute('autocomplete') === 'one-time-code') return true;
+  if (/(otp|code|verification|mã|ma)/i.test(hintText)) return true;
+
+  const maxLength = Number(input.maxLength);
+  if (input.inputMode === 'numeric' && Number.isFinite(maxLength) && maxLength > 0 && maxLength <= 8) {
+    return true;
+  }
+
+  return false;
 }
 
 function isRateLimitedError(error: string | undefined): boolean {
@@ -197,8 +226,8 @@ async function handlePassword(): Promise<void> {
 
 function fillOtpFields(code: string): boolean {
   const candidates = Array.from(document.querySelectorAll<HTMLInputElement>(
-    'input[autocomplete="one-time-code"], input[name*="code" i], input[id*="code" i], input[inputmode="numeric"]',
-  )).filter((el) => isVisible(el) && !el.disabled && !el.readOnly);
+    'input[autocomplete="one-time-code"], input[name*="code" i], input[id*="code" i], input[aria-label*="code" i], input[inputmode="numeric"][maxlength]',
+  )).filter((el) => isVisible(el) && !el.disabled && !el.readOnly && isLikelyOtpInput(el));
 
   if (candidates.length === 0) return false;
   const singleCharInputs = candidates.filter((el) => Number(el.maxLength) === 1);
@@ -214,6 +243,8 @@ function fillOtpFields(code: string): boolean {
 }
 
 async function handleEmailVerification(): Promise<void> {
+  if (!isEmailVerificationPath(window.location.pathname)) return;
+
   const state = await getState();
   if (!state.latestInboxToken) return;
 
@@ -238,6 +269,10 @@ async function handleEmailVerification(): Promise<void> {
     pollIntervalMs: 2500,
     excludeMessageIds: appendRecentIds(state.usedOtpMessageIds, state.lastOtpMessageId),
   });
+
+  if (!isEmailVerificationPath(window.location.pathname)) {
+    return;
+  }
 
   if (!response?.success || !response.otp) return;
   const filled = fillOtpFields(response.otp);

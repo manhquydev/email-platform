@@ -3,6 +3,20 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { TIER_LIMITS } from "./billing";
 
+async function getRandomVerifiedPublicDomain() {
+  const domains = await prisma.domain.findMany({
+    where: { isPublic: true, status: "VERIFIED" },
+    select: { id: true, name: true },
+  });
+
+  if (domains.length === 0) {
+    return null;
+  }
+
+  const randomIndex = Math.floor(Math.random() * domains.length);
+  return domains[randomIndex]!;
+}
+
 export async function extensionRoutes(app: FastifyInstance) {
   // Apply rate limiting to all extension routes
   // 50/h for authenticated, 10/h for anonymous (by IP)
@@ -109,11 +123,8 @@ export async function extensionRoutes(app: FastifyInstance) {
       });
     }
 
-    // Get a public domain
-    const domain = await prisma.domain.findFirst({
-      where: { isPublic: true, status: "VERIFIED" },
-      orderBy: { createdAt: "asc" }
-    });
+    // Pick a random verified public domain to avoid overloading a single domain.
+    const domain = await getRandomVerifiedPublicDomain();
 
     if (!domain) {
       return reply.status(500).send({ error: "No public domains available" });
@@ -164,11 +175,8 @@ export async function extensionRoutes(app: FastifyInstance) {
 
     const { deviceId } = parsed.data;
 
-    // Get a public domain
-    const domain = await prisma.domain.findFirst({
-      where: { isPublic: true, status: "VERIFIED" },
-      orderBy: { createdAt: "asc" }
-    });
+    // Pick a random verified public domain to avoid overloading a single domain.
+    const domain = await getRandomVerifiedPublicDomain();
 
     if (!domain) {
       return reply.status(500).send({ error: "No public domains available" });

@@ -1,10 +1,20 @@
 import { CONFIG } from '../shared/config';
 import { extractOtpFromText } from '../content/openai-auth-automation-utils';
+import { generateRandomLocalPart } from '../content/openai-auth-random-profile';
 
 interface EphemeralInboxResponse {
   id: string;
   token: string;
   address: string;
+}
+
+interface EphemeralDomain {
+  id: string;
+  name: string;
+}
+
+interface EphemeralDomainsResponse {
+  domains: EphemeralDomain[];
 }
 
 interface EphemeralMessage {
@@ -42,12 +52,52 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function fetchRandomEphemeralDomainId(): Promise<string | undefined> {
+  try {
+    const data = await requestJson<EphemeralDomainsResponse>(`${CONFIG.API_URL}/ephemeral/domains`);
+    if (!Array.isArray(data.domains) || data.domains.length === 0) {
+      return undefined;
+    }
+    const randomIndex = Math.floor(Math.random() * data.domains.length);
+    return data.domains[randomIndex]?.id;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function createAutomationInbox(): Promise<AutomationInbox> {
-  const data = await requestJson<EphemeralInboxResponse>(`${CONFIG.API_URL}/ephemeral/inbox`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ expiryHours: 2 }),
-  });
+  const maxAttempts = 3;
+  let lastError: unknown;
+  let data: EphemeralInboxResponse | null = null;
+  const randomDomainId = await fetchRandomEphemeralDomainId();
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const localPart = generateRandomLocalPart();
+    const payload = {
+      expiryHours: 2,
+      localPart,
+      ...(randomDomainId ? { domainId: randomDomainId } : {}),
+    };
+    try {
+      data = await requestJson<EphemeralInboxResponse>(`${CONFIG.API_URL}/ephemeral/inbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      break;
+    } catch (error) {
+      lastError = error;
+      const message = String((error as Error)?.message || '').toLowerCase();
+      const isLocalPartConflict = /request failed (400|409)/.test(message) && /(alias|localpart|local part|taken|already|exists)/.test(message);
+      if (!isLocalPartConflict || attempt === maxAttempts - 1) {
+        throw error;
+      }
+    }
+  }
+
+  if (!data) {
+    throw (lastError instanceof Error ? lastError : new Error('Failed to create automation inbox'));
+  }
 
   return {
     inboxId: data.id,

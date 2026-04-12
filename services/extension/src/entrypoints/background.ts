@@ -2,12 +2,14 @@ import { storage } from '../shared/storage';
 import { api } from '../shared/api';
 import { analytics } from '../shared/analytics';
 import { handlePushMessage, handleNotificationClick, updateBadge } from '../background/push-handler';
+import { createAutomationInbox, pollLatestOtp } from '../background/openai-auth-automation-service';
 import browser from 'webextension-polyfill';
 
 export default defineBackground(() => {
   // Alarm names
   const ALARM_POLL_MESSAGES = 'poll_messages';
   const STORAGE_KEY_LAST_MESSAGE_ID = 'last_message_id';
+  const STORAGE_KEY_AUTOMATION_STATE = 'openai_auth_automation_state';
 
   // Setup alarms and context menus on install
   browser.runtime.onInstalled.addListener(async () => {
@@ -233,6 +235,46 @@ export default defineBackground(() => {
 
   // Handle messages
   browser.runtime.onMessage.addListener((message: any, _sender: any) => {
+    if (message.type === 'AUTOMATION_CREATE_INBOX') {
+      return createAutomationInbox()
+        .then(async (inbox) => {
+          const existing = await browser.storage.local.get(STORAGE_KEY_AUTOMATION_STATE);
+          const state = existing[STORAGE_KEY_AUTOMATION_STATE] || {};
+          await browser.storage.local.set({
+            [STORAGE_KEY_AUTOMATION_STATE]: {
+              ...state,
+              latestEmail: inbox.email,
+              latestInboxId: inbox.inboxId,
+              latestInboxToken: inbox.inboxToken,
+              emailCreatedAt: inbox.createdAt,
+              updatedAt: Date.now(),
+            },
+          });
+          return { success: true, inbox };
+        })
+        .catch((error) => ({ success: false, error: error.message }));
+    }
+
+    if (message.type === 'AUTOMATION_GET_LATEST_OTP') {
+      const inboxToken = String(message.inboxToken || '');
+      if (!inboxToken) return Promise.resolve({ success: false, error: 'Missing inbox token' });
+
+      return pollLatestOtp({
+        inboxToken,
+        sinceTimestamp: Number(message.sinceTimestamp || 0),
+        timeoutMs: Number(message.timeoutMs || 90000),
+        pollIntervalMs: Number(message.pollIntervalMs || 2500),
+        excludeMessageIds: Array.isArray(message.excludeMessageIds)
+          ? message.excludeMessageIds.map((id: unknown) => String(id))
+          : [],
+      })
+        .then((result) => {
+          if (!result) return { success: false, error: 'OTP not found in time' };
+          return { success: true, otp: result.code, receivedAt: result.receivedAt, messageId: result.messageId };
+        })
+        .catch((error) => ({ success: false, error: error.message }));
+    }
+
     if (message.type === 'CREATE_INBOX') {
       analytics.track('inbox_created_quick', { context: 'content_script_dropdown' });
       return api.createQuickInbox()

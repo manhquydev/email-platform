@@ -215,9 +215,9 @@ export function InboxManager() {
 
     return (
         <AppShell>
-            <div className="space-y-4 p-4 pb-24 sm:p-6 lg:p-8">
-                <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-nebula-violet/20 via-nebula-cyan/10 to-nebula-pink/10 p-5">
-                    <h1 className="text-2xl font-bold text-white">Inbox Manager 2.0</h1>
+            <div className="space-y-3 p-3 pb-24 sm:space-y-4 sm:p-6 lg:p-8">
+                <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-nebula-violet/20 via-nebula-cyan/10 to-nebula-pink/10 p-4 sm:p-5">
+                    <h1 className="text-xl font-bold text-white sm:text-2xl">Inbox Manager 2.0</h1>
                     <p className="mt-1 text-sm text-text-secondary">Tối ưu thao tác nhanh: tạo inbox, tìm inbox, mở inbox trong 1 click.</p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs text-text-secondary">
                         <span className="rounded-full border border-white/10 px-3 py-1">Hiển thị {inboxes.length}/{total.toLocaleString("vi-VN")} inbox</span>
@@ -228,7 +228,7 @@ export function InboxManager() {
                     </div>
                 </section>
 
-                <section className="rounded-2xl border border-white/10 bg-surface/30 p-4">
+                <section className="rounded-2xl border border-white/10 bg-surface/30 p-3 sm:p-4">
                     <div className="mb-3 flex flex-wrap gap-2">
                         {SCOPE_OPTIONS.map((option) => (
                             <button
@@ -245,7 +245,7 @@ export function InboxManager() {
                         ))}
                     </div>
 
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <div className="grid gap-2 sm:gap-3 lg:grid-cols-[minmax(0,1fr)_220px_auto_auto] lg:items-center">
                         <input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
@@ -255,7 +255,7 @@ export function InboxManager() {
                         <select
                             value={selectedDomain}
                             onChange={(event) => setSelectedDomain(event.target.value)}
-                            className="h-11 rounded-xl border border-white/20 bg-white/[0.08] px-4 text-sm text-white focus:border-nebula-cyan focus:outline-none"
+                            className="h-11 w-full rounded-xl border border-white/20 bg-white/[0.08] px-4 text-sm text-white focus:border-nebula-cyan focus:outline-none"
                         >
                             <option value="">Tất cả domain</option>
                             {domains.map((domain) => (
@@ -266,13 +266,13 @@ export function InboxManager() {
                         </select>
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="h-11 rounded-xl bg-nebula-cyan px-4 text-sm font-semibold text-slate-900 hover:bg-nebula-cyan/90"
+                            className="h-11 w-full rounded-xl bg-nebula-cyan px-4 text-sm font-semibold text-slate-900 hover:bg-nebula-cyan/90 lg:w-auto"
                         >
                             Tạo email mới
                         </button>
                         <button
                             onClick={() => void loadInboxes()}
-                            className="h-11 rounded-xl border border-white/10 px-4 text-sm text-text-secondary hover:text-white"
+                            className="h-11 w-full rounded-xl border border-white/10 px-4 text-sm text-text-secondary hover:text-white lg:w-auto"
                         >
                             Làm mới
                         </button>
@@ -311,7 +311,7 @@ export function InboxManager() {
                                     </p>
                                 ) : (
                                     inboxes.map((inbox) => (
-                                        <div key={inbox.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                                        <div key={inbox.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 sm:p-4">
                                             <button onClick={() => openInbox(inbox)} className="w-full text-left">
                                                 <div className="flex items-center gap-2">
                                                     <p className="truncate text-sm font-semibold text-white">{toInboxEmail(inbox)}</p>
@@ -323,10 +323,10 @@ export function InboxManager() {
                                                     {inbox._count?.messages ?? 0} email • Tạo lúc {new Date(inbox.createdAt).toLocaleString("vi-VN")}
                                                 </p>
                                             </button>
-                                            <div className="mt-3 flex flex-wrap gap-2">
+                                            <div className="mt-3 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                                                 <button
                                                     onClick={() => openInbox(inbox)}
-                                                    className="rounded-lg border border-white/20 bg-white/[0.08] px-3 py-1.5 text-xs text-white hover:bg-white/20"
+                                                    className="w-full rounded-lg border border-white/20 bg-white/[0.08] px-3 py-2 text-xs font-semibold text-white hover:bg-white/20 sm:w-auto"
                                                 >
                                                     Mở inbox
                                                 </button>
@@ -336,14 +336,14 @@ export function InboxManager() {
                                                             .writeText(toInboxEmail(inbox))
                                                             .then(() => toast.success("Đã copy email"));
                                                     }}
-                                                    className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-text-secondary hover:text-white"
+                                                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-text-secondary hover:text-white"
                                                 >
                                                     Copy email
                                                 </button>
                                                 <button
                                                     disabled={deletingInboxId === inbox.id}
                                                     onClick={() => void handleDelete(inbox)}
-                                                    className="rounded-lg border border-rose-400/40 px-3 py-1.5 text-xs text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                                                    className="rounded-lg border border-rose-400/40 px-3 py-2 text-xs text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
                                                 >
                                                     {deletingInboxId === inbox.id ? "Đang xóa..." : "Xóa"}
                                                 </button>

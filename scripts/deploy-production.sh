@@ -1,107 +1,107 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # =============================================================
-# COMPLETE DEPLOYMENT SCRIPT - Email Platform
-# Run this script on your DigitalOcean server via SSH or Console
-# =============================================================
-
-set -e  # Exit on error
-
-echo "🚀 Starting deployment of Email Platform..."
-echo "============================================"
-
-# Navigate to project directory
-cd /root/email-platform
-echo "📁 Current directory: $(pwd)"
-
-# =============================================================
-# CONFIGURATION
-# =============================================================
-export DOMAIN="manhquy.click"
-export ACME_EMAIL="admin@manhquy.click"
-export VITE_API_BASE="https://api.manhquy.click"
-
-echo "🌍 Deploying to Domain: $DOMAIN"
-echo "📧 SSL Email: $ACME_EMAIL"
-echo "🔗 API Base: $VITE_API_BASE"
+# Production deploy script - Email Platform
+# Safe defaults for extension usage without manual extension ID.
 # =============================================================
 
-# Step 1: Pull latest code
-echo ""
-echo "📥 Step 1: Pulling latest code from GitHub..."
-git pull https://manhquydev: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@github.com/manhquydev/email-platform.git main
+set -euo pipefail
 
-# Step 2: Rebuild Docker containers
-echo ""
-echo "🐳 Step 2: Rebuilding Docker containers..."
-DOMAIN=$DOMAIN ACME_EMAIL=$ACME_EMAIL docker compose -f docker-compose.prod.yml up -d --build
+PROJECT_DIR="${PROJECT_DIR:-/root/email-platform}"
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+GIT_REMOTE="${GIT_REMOTE:-origin}"
+DOMAIN="${DOMAIN:-manhquy.click}"
+ACME_EMAIL="${ACME_EMAIL:-admin@${DOMAIN}}"
+API_HOST="${API_HOST:-api.${DOMAIN}}"
+WEB_HOST="${WEB_HOST:-app.${DOMAIN}}"
+ENV_FILE="${ENV_FILE:-services/api/.env}"
+BUILD_EXTENSION_ZIP="${BUILD_EXTENSION_ZIP:-false}"
 
-# Wait for containers to start
-echo ""
-echo "⏳ Waiting 30 seconds for services to start..."
-sleep 30
+upsert_env() {
+  local key="$1"
+  local value="$2"
+  local escaped
+  escaped="$(printf '%s' "$value" | sed -e 's/[\/&]/\\&/g')"
 
-# Step 3: Check container status
-echo ""
-echo "📊 Step 3: Checking container status..."
-docker compose -f docker-compose.prod.yml ps
+  if grep -qE "^${key}=" "$ENV_FILE"; then
+    sed -i "s|^${key}=.*|${key}=${escaped}|" "$ENV_FILE"
+  else
+    printf "%s=%s\n" "$key" "$value" >> "$ENV_FILE"
+  fi
+}
 
-# Step 4: Setup Telegram Webhook
-echo ""
-echo "📱 Step 4: Setting up Telegram Webhook..."
+wait_for_url() {
+  local url="$1"
+  local max_attempts="${2:-30}"
+  local sleep_seconds="${3:-3}"
+  local attempt=1
 
-# Read bot token from .env file
-BOT_TOKEN=$(grep TELEGRAM_BOT_TOKEN services/api/.env 2>/dev/null | cut -d'=' -f2 | tr -d '"' | tr -d "'" | head -1)
-WEBHOOK_SECRET=$(grep TELEGRAM_WEBHOOK_SECRET services/api/.env 2>/dev/null | cut -d'=' -f2 | tr -d '"' | tr -d "'" | head -1)
-
-if [ -z "$BOT_TOKEN" ]; then
-    echo "⚠️  TELEGRAM_BOT_TOKEN not found in services/api/.env"
-    echo "   Skipping webhook setup. You can set it up manually later."
-else
-    echo "   Bot Token found: ${BOT_TOKEN:0:15}..."
-    
-    WEBHOOK_URL="https://api.manhquy.click/telegram/webhook"
-    echo "   Webhook URL: $WEBHOOK_URL"
-    
-    # Build payload
-    if [ -n "$WEBHOOK_SECRET" ]; then
-        PAYLOAD="{\"url\": \"$WEBHOOK_URL\", \"allowed_updates\": [\"message\", \"callback_query\"], \"secret_token\": \"$WEBHOOK_SECRET\"}"
-    else
-        PAYLOAD="{\"url\": \"$WEBHOOK_URL\", \"allowed_updates\": [\"message\", \"callback_query\"]}"
+  while [ "$attempt" -le "$max_attempts" ]; do
+    if curl -fsS "$url" >/dev/null 2>&1; then
+      return 0
     fi
-    
-    # Set webhook
-    echo ""
-    echo "   Setting webhook..."
-    RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/setWebhook" \
-        -H "Content-Type: application/json" \
-        -d "$PAYLOAD")
-    
-    echo "   Response: $RESPONSE"
-    
-    # Get webhook info
-    echo ""
-    echo "   Verifying webhook..."
-    curl -s "https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo" | head -c 500
-    echo ""
+    echo "⏳ Waiting for ${url} (${attempt}/${max_attempts})..."
+    sleep "$sleep_seconds"
+    attempt=$((attempt + 1))
+  done
+
+  return 1
+}
+
+echo "🚀 Starting production deployment"
+echo "📁 Project: ${PROJECT_DIR}"
+echo "🌍 Domain: ${DOMAIN}"
+echo "📧 ACME Email: ${ACME_EMAIL}"
+
+cd "$PROJECT_DIR"
+
+if [ ! -f "$ENV_FILE" ]; then
+  echo "❌ Missing ${ENV_FILE}. Create it from services/api/.env.example or .env.production.template first."
+  exit 1
 fi
 
-# Step 5: Verify deployment
-echo ""
-echo "✅ Step 5: Deployment complete!"
-echo ""
-echo "📋 Summary:"
-echo "   - Code: Pulled from main branch"
-echo "   - Docker: Containers rebuilt and running"
-echo "   - Telegram: Webhook configured (if token was set)"
-echo ""
-echo "🔗 URLs:"
-echo "   - Web App: https://app.manhquy.click"
-echo "   - API: https://api.manhquy.click"
-echo ""
-echo "🧪 Test Telegram:"
-echo "   1. Open @EmailForward3CEbot in Telegram"
-echo "   2. Send /start"
-echo "   3. Should see welcome message"
-echo ""
-echo "============================================"
-echo "🎉 Deployment finished at $(date)"
+echo "🔐 Enforcing extension-ready CORS defaults in ${ENV_FILE}"
+upsert_env "CORS_ALLOW_EXTENSION_ORIGINS" "true"
+upsert_env "CORS_REQUIRE_EXTENSION_WHITELIST" "false"
+if [ -n "${CORS_ALLOWED_EXTENSIONS:-}" ]; then
+  upsert_env "CORS_ALLOWED_EXTENSIONS" "${CORS_ALLOWED_EXTENSIONS}"
+else
+  upsert_env "CORS_ALLOWED_EXTENSIONS" ""
+fi
+
+echo "📥 Pulling latest code"
+git pull --ff-only "$GIT_REMOTE" "$DEPLOY_BRANCH"
+
+echo "🐳 Building and starting production stack"
+DOMAIN="$DOMAIN" ACME_EMAIL="$ACME_EMAIL" docker compose -f docker-compose.prod.yml up -d --build
+
+echo "🗄️ Running database migrations"
+docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy
+
+echo "📊 Service status"
+docker compose -f docker-compose.prod.yml ps
+
+echo "🔍 Health checks"
+wait_for_url "https://${API_HOST}/health" 30 3 || {
+  echo "❌ API health check failed: https://${API_HOST}/health"
+  docker compose -f docker-compose.prod.yml logs --tail 150 api
+  exit 1
+}
+wait_for_url "https://${WEB_HOST}" 30 3 || {
+  echo "❌ Web health check failed: https://${WEB_HOST}"
+  docker compose -f docker-compose.prod.yml logs --tail 150 web
+  exit 1
+}
+
+if [ "$BUILD_EXTENSION_ZIP" = "true" ]; then
+  echo "📦 Building extension ZIP artifact"
+  (
+    cd services/extension
+    npm ci
+    npm run zip
+  )
+fi
+
+echo "✅ Deploy complete"
+echo "🔗 Web: https://${WEB_HOST}"
+echo "🔗 API: https://${API_HOST}"
+echo "🧩 Extension CORS: allow by default (no manual ID required)"

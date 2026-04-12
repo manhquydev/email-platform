@@ -240,9 +240,15 @@ export const buildServer = () => {
   // Extension origins whitelist from environment
   const corsAllowedExtensions = (() => {
     const envExtensions = process.env.CORS_ALLOWED_EXTENSIONS;
-    if (!envExtensions) return []; // No extensions allowed by default in production
+    if (!envExtensions) return [];
     return envExtensions.split(',').map(e => e.trim()).filter(Boolean);
   })();
+  const corsAllowExtensionOrigins = (process.env.CORS_ALLOW_EXTENSION_ORIGINS ?? "true").toLowerCase() === "true";
+  const corsAllowAllExtensions = corsAllowedExtensions.includes("*");
+  const corsAllowedExtensionIds = corsAllowedExtensions.filter((id) => id !== "*");
+  const corsRequireExtensionWhitelist = process.env.CORS_REQUIRE_EXTENSION_WHITELIST === "true";
+  let extensionCorsFallbackWarned = false;
+  const extensionCorsMismatchWarned = new Set<string>();
 
   app.register(cors, {
     origin: (origin, cb) => {
@@ -251,18 +257,44 @@ export const buildServer = () => {
 
       // Allow whitelisted browser extensions only
       if (origin.startsWith("chrome-extension://") || origin.startsWith("moz-extension://")) {
-        // In production, only allow explicitly whitelisted extension IDs
-        if (corsAllowedExtensions.length > 0) {
-          const extensionId = origin.split('://')[1];
-          if (corsAllowedExtensions.includes(extensionId)) {
-            return cb(null, true);
-          }
-          return cb(new Error("Extension not whitelisted"), false);
-        }
-        // In development, allow all extensions
-        if (process.env.NODE_ENV !== 'production') {
+        if (!isProduction) {
           return cb(null, true);
         }
+
+        if (!corsAllowExtensionOrigins) {
+          return cb(new Error("Extension origins are disabled"), false);
+        }
+
+        const extensionId = origin.split("://")[1] || "unknown-extension";
+
+        if (corsAllowAllExtensions) {
+          return cb(null, true);
+        }
+
+        if (corsAllowedExtensionIds.length > 0) {
+          if (corsAllowedExtensionIds.includes(extensionId)) {
+            return cb(null, true);
+          }
+
+          if (corsRequireExtensionWhitelist) {
+            return cb(new Error("Extension not whitelisted"), false);
+          }
+
+          if (!extensionCorsMismatchWarned.has(extensionId)) {
+            extensionCorsMismatchWarned.add(extensionId);
+            app.log.warn({ extensionId }, "Extension origin not in CORS_ALLOWED_EXTENSIONS. Allowing because strict mode is disabled.");
+          }
+          return cb(null, true);
+        }
+
+        if (!corsRequireExtensionWhitelist) {
+          if (!extensionCorsFallbackWarned) {
+            extensionCorsFallbackWarned = true;
+            app.log.warn("CORS_ALLOWED_EXTENSIONS is empty in production. Allowing all extension origins for UX.");
+          }
+          return cb(null, true);
+        }
+
         return cb(new Error("Extensions not allowed"), false);
       }
 

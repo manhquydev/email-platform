@@ -66,6 +66,27 @@ npm run dev   # http://localhost:5173
 ```
 UI flows: login → manage domains (add/verify) → create inboxes → view inbound messages.
 
+## Production Deploy (Extension-ready)
+Run production deploy with extension CORS defaults (no manual extension ID required):
+
+```bash
+cd /path/to/email-platform
+chmod +x scripts/deploy-production.sh
+DOMAIN=yourdomain.com ACME_EMAIL=admin@yourdomain.com ./scripts/deploy-production.sh
+```
+
+Extension CORS defaults applied during deploy:
+- `CORS_ALLOW_EXTENSION_ORIGINS=true`
+- `CORS_REQUIRE_EXTENSION_WHITELIST=false`
+- `CORS_ALLOWED_EXTENSIONS=` (empty)
+
+Build extension ZIP for unpacked install:
+```bash
+cd services/extension
+npm ci
+npm run zip
+```
+
 ## Core API routes
 - `/health`, `/ready`, `/metrics`
 - Auth: `POST /auth/login` -> `{ token }`

@@ -510,6 +510,7 @@ export const setupEmailWorker = (logger: Logger) => {
         },
         {
             connection: redisConfig,
+            concurrency: appConfig.inboundWorkerConcurrency,
         }
     );
 

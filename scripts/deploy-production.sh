@@ -68,6 +68,10 @@ else
   upsert_env "CORS_ALLOWED_EXTENSIONS" ""
 fi
 
+echo "📬 Enforcing extension-friendly ephemeral inbox rate limit defaults"
+upsert_env "EPHEMERAL_CREATE_RATE_LIMIT_MAX" "${EPHEMERAL_CREATE_RATE_LIMIT_MAX:-30}"
+upsert_env "EPHEMERAL_CREATE_RATE_LIMIT_WINDOW" "\"${EPHEMERAL_CREATE_RATE_LIMIT_WINDOW:-1 hour}\""
+
 echo "📥 Pulling latest code"
 git pull --ff-only "$GIT_REMOTE" "$DEPLOY_BRANCH"
 

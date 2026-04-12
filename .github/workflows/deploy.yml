@@ -70,6 +70,22 @@ jobs:
             cd "${TARGET_PATH}"
             echo "Deploy path: ${TARGET_PATH}"
 
+            # Keep ephemeral inbox creation usable for extension automation.
+            ENV_FILE="services/api/.env"
+            upsert_env() {
+              local key="$1"
+              local value="$2"
+              if grep -qE "^${key}=" "$ENV_FILE"; then
+                sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
+              else
+                printf "%s=%s\n" "$key" "$value" >> "$ENV_FILE"
+              fi
+            }
+            if [ -f "$ENV_FILE" ]; then
+              upsert_env "EPHEMERAL_CREATE_RATE_LIMIT_MAX" "${EPHEMERAL_CREATE_RATE_LIMIT_MAX:-30}"
+              upsert_env "EPHEMERAL_CREATE_RATE_LIMIT_WINDOW" "\"${EPHEMERAL_CREATE_RATE_LIMIT_WINDOW:-1 hour}\""
+            fi
+
             # Pull latest code
             echo "Pulling latest code..."
             git fetch --prune origin main

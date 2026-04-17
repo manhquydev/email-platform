@@ -289,6 +289,18 @@
   "settingsThemeSystem": {
     "message": "Hệ thống"
   },
+  "settingsThemeAria": {
+    "message": "$1 giao diện$2"
+  },
+  "settingsThemeSelectedSuffix": {
+    "message": " (đang chọn)"
+  },
+  "settingsStateEnabled": {
+    "message": "đang bật"
+  },
+  "settingsStateDisabled": {
+    "message": "đang tắt"
+  },
   "settingsPreferences": {
     "message": "Tùy chọn"
   },
@@ -298,11 +310,77 @@
   "settingsPushNotificationsHint": {
     "message": "Nhận cảnh báo khi có thư mới"
   },
+  "settingsPushNotificationsAria": {
+    "message": "Thông báo đẩy $1. Bấm để chuyển trạng thái."
+  },
   "settingsAutoCopyAddress": {
     "message": "Tự sao chép địa chỉ"
   },
   "settingsAutoCopyHint": {
     "message": "Sao chép khi tạo mới"
+  },
+  "settingsAutoCopyAria": {
+    "message": "Tự sao chép địa chỉ $1. Bấm để chuyển trạng thái."
+  },
+  "settingsDefaultInboxType": {
+    "message": "Loại hộp thư mặc định"
+  },
+  "settingsDefaultInboxTypeHint": {
+    "message": "Áp dụng khi extension tạo hộp thư"
+  },
+  "settingsInboxTypeTemporary": {
+    "message": "Tạm thời (24h)"
+  },
+  "settingsInboxTypePermanent": {
+    "message": "Vĩnh viễn"
+  },
+  "settingsAutomationConfig": {
+    "message": "Tự động OpenAI & Tạo nhanh"
+  },
+  "settingsAutomationConfigHint": {
+    "message": "Tên miền cho phép sẽ áp dụng cho tự động hóa và các thao tác tạo inbox nhanh"
+  },
+  "settingsAutomationExpiry": {
+    "message": "Thời hạn inbox tự động"
+  },
+  "settingsAutomationExpiryAria": {
+    "message": "Chọn thời hạn inbox tự động theo giờ"
+  },
+  "settingsAutomationExpiryDisabledHint": {
+    "message": "Bạn đã chọn Vĩnh viễn nên tùy chọn thời hạn này đã bị tắt"
+  },
+  "settingsAutomationDomains": {
+    "message": "Tên miền được phép"
+  },
+  "settingsAutomationDomainsLoading": {
+    "message": "Đang tải tên miền..."
+  },
+  "settingsAutomationDomainsEmpty": {
+    "message": "Không có tên miền khả dụng"
+  },
+  "settingsAutomationDomainAria": {
+    "message": "Cho phép tên miền $1 cho tự động hóa"
+  },
+  "settingsAutomationDomainsAll": {
+    "message": "Không chọn tên miền = dùng tất cả tên miền"
+  },
+  "settingsAutomationDomainsCount": {
+    "message": "Đã chọn $1 tên miền"
+  },
+  "settingsAutomationExportTitle": {
+    "message": "Dữ liệu phiên OpenAI Flow"
+  },
+  "settingsAutomationExportHint": {
+    "message": "Tải lịch sử email/mật khẩu đã tạo dưới dạng TXT"
+  },
+  "settingsAutomationExportSummary": {
+    "message": "Tổng: $1 • Sẵn sàng: $2 • Đã dùng: $3"
+  },
+  "settingsAutomationExportDownload": {
+    "message": "Tải dữ liệu phiên TXT"
+  },
+  "settingsAutomationExportDownloading": {
+    "message": "Đang chuẩn bị file..."
   },
   "settingsShareInvite": {
     "message": "Chia sẻ & Mời bạn bè"

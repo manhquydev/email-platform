@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createAutomationInbox, pollLatestOtp } from './openai-auth-automation-service';
+import { createAutomationInbox, pollLatestLink, pollLatestOtp } from './openai-auth-automation-service';
 import { mockFetch, resetFetchMock } from '../__tests__/mocks/fetch';
 
 function mockMessagesResponse(messages: Array<{
@@ -62,6 +62,71 @@ describe('openai-auth-automation-service', () => {
     expect(typeof payload.localPart).toBe('string');
     expect(String(payload.localPart)).toMatch(/^[a-z0-9._]{6,24}$/);
     expect(payload.domainId).toBe('domain-1');
+  });
+
+  it('uses configured expiry and allowed domains for automation inbox', async () => {
+    mockDomainsResponse([
+      { id: 'domain-1', name: 'alpha.test' },
+      { id: 'domain-2', name: 'beta.test' },
+    ]);
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({
+        id: 'inbox-opts',
+        token: 'token-opts',
+        address: 'opts@example.com',
+      }),
+      text: () => Promise.resolve(''),
+    });
+
+    const result = await createAutomationInbox({
+      expiryHours: 24,
+      allowedDomainIds: ['domain-2'],
+    });
+    expect(result.inboxId).toBe('inbox-opts');
+
+    const [, options] = mockFetch.mock.calls[1] as [string, RequestInit];
+    const payload = JSON.parse(String(options.body || '{}')) as Record<string, unknown>;
+    expect(payload.expiryHours).toBe(24);
+    expect(payload.domainId).toBe('domain-2');
+  });
+
+  it('clamps invalid expiry values to safe bounds', async () => {
+    mockDomainsResponse([{ id: 'domain-1', name: 'alpha.test' }]);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({
+        id: 'inbox-clamp',
+        token: 'token-clamp',
+        address: 'clamp@example.com',
+      }),
+      text: () => Promise.resolve(''),
+    });
+
+    await createAutomationInbox({ expiryHours: -10 });
+    const [, options] = mockFetch.mock.calls[1] as [string, RequestInit];
+    const payload = JSON.parse(String(options.body || '{}')) as Record<string, unknown>;
+    expect(payload.expiryHours).toBe(1);
+
+    mockDomainsResponse([{ id: 'domain-1', name: 'alpha.test' }]);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({
+        id: 'inbox-clamp-max',
+        token: 'token-clamp-max',
+        address: 'clamp-max@example.com',
+      }),
+      text: () => Promise.resolve(''),
+    });
+
+    await createAutomationInbox({ expiryHours: 168 });
+    const [, optionsMax] = mockFetch.mock.calls[3] as [string, RequestInit];
+    const payloadMax = JSON.parse(String(optionsMax.body || '{}')) as Record<string, unknown>;
+    expect(payloadMax.expiryHours).toBe(24);
   });
 
   it('retries create inbox when localPart conflicts', async () => {
@@ -164,5 +229,87 @@ describe('openai-auth-automation-service', () => {
       receivedAt: Date.parse('2026-01-01T00:00:11.000Z'),
     });
     expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('polls otp from owned inbox by inboxId when access token is provided', async () => {
+    mockMessagesResponse([
+      { id: 'msg-owned', receivedAt: '2026-01-01T00:00:12.000Z', extractedOtp: '777777' },
+    ]);
+
+    const result = await pollLatestOtp({
+      inboxId: 'owned-inbox-1',
+      accessToken: 'access-token-1',
+      sinceTimestamp: Date.parse('2026-01-01T00:00:00.000Z'),
+      timeoutMs: 1000,
+      pollIntervalMs: 100,
+    });
+
+    expect(result).toEqual({
+      code: '777777',
+      messageId: 'msg-owned',
+      receivedAt: Date.parse('2026-01-01T00:00:12.000Z'),
+    });
+
+    const [url, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toContain('/inboxes/owned-inbox-1/messages');
+    expect((options.headers as Record<string, string>).Authorization).toBe('Bearer access-token-1');
+  });
+
+  it('polls latest confirmation link and skips excluded message ids', async () => {
+    mockMessagesResponse([
+      {
+        id: 'msg-new-link',
+        receivedAt: '2026-01-01T00:00:20.000Z',
+        htmlBody: '<a href="https://app.fireworks.ai/signup/confirm?client_id=abc&amp;user_name=u1&amp;confirmation_code=111111">Verify</a>',
+      },
+      {
+        id: 'msg-next-link',
+        receivedAt: '2026-01-01T00:00:19.000Z',
+        textBody: 'Use this link: https://app.fireworks.ai/signup/confirm?client_id=def&user_name=u2&confirmation_code=222222',
+      },
+    ]);
+
+    const result = await pollLatestLink({
+      inboxToken: 'token-link-1',
+      sinceTimestamp: Date.parse('2026-01-01T00:00:00.000Z'),
+      timeoutMs: 1000,
+      pollIntervalMs: 100,
+      excludeMessageIds: ['msg-new-link'],
+      urlPattern: 'https://app\\.fireworks\\.ai/signup/confirm\\?[^\\s\"\'<>]+',
+    });
+
+    expect(result).toEqual({
+      url: 'https://app.fireworks.ai/signup/confirm?client_id=def&user_name=u2&confirmation_code=222222',
+      messageId: 'msg-next-link',
+      receivedAt: Date.parse('2026-01-01T00:00:19.000Z'),
+    });
+  });
+
+  it('polls confirmation link from owned inbox by inboxId with access token', async () => {
+    mockMessagesResponse([
+      {
+        id: 'msg-owned-link',
+        receivedAt: '2026-01-01T00:00:21.000Z',
+        textBody: 'Confirm: https://app.fireworks.ai/signup/confirm?client_id=owned&user_name=owned-user&confirmation_code=333333',
+      },
+    ]);
+
+    const result = await pollLatestLink({
+      inboxId: 'owned-inbox-link-1',
+      accessToken: 'access-token-link-1',
+      sinceTimestamp: Date.parse('2026-01-01T00:00:00.000Z'),
+      timeoutMs: 1000,
+      pollIntervalMs: 100,
+    });
+
+    expect(result).toEqual({
+      url: 'https://app.fireworks.ai/signup/confirm?client_id=owned&user_name=owned-user&confirmation_code=333333',
+      messageId: 'msg-owned-link',
+      receivedAt: Date.parse('2026-01-01T00:00:21.000Z'),
+    });
+
+    const [url, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toContain('/inboxes/owned-inbox-link-1/messages');
+    expect((options.headers as Record<string, string>).Authorization).toBe('Bearer access-token-link-1');
   });
 });

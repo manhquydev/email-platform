@@ -289,6 +289,18 @@
   "settingsThemeSystem": {
     "message": "System"
   },
+  "settingsThemeAria": {
+    "message": "$1 theme$2"
+  },
+  "settingsThemeSelectedSuffix": {
+    "message": " (selected)"
+  },
+  "settingsStateEnabled": {
+    "message": "enabled"
+  },
+  "settingsStateDisabled": {
+    "message": "disabled"
+  },
   "settingsPreferences": {
     "message": "Preferences"
   },
@@ -298,11 +310,77 @@
   "settingsPushNotificationsHint": {
     "message": "Get alerted for new messages"
   },
+  "settingsPushNotificationsAria": {
+    "message": "Push notifications $1. Click to toggle."
+  },
   "settingsAutoCopyAddress": {
     "message": "Auto-copy Address"
   },
   "settingsAutoCopyHint": {
     "message": "Copy on creation"
+  },
+  "settingsAutoCopyAria": {
+    "message": "Auto-copy address $1. Click to toggle."
+  },
+  "settingsDefaultInboxType": {
+    "message": "Default Inbox Type"
+  },
+  "settingsDefaultInboxTypeHint": {
+    "message": "Applied when extension creates inbox"
+  },
+  "settingsInboxTypeTemporary": {
+    "message": "Temporary (24h)"
+  },
+  "settingsInboxTypePermanent": {
+    "message": "Permanent"
+  },
+  "settingsAutomationConfig": {
+    "message": "OpenAI Automation & Quick Create"
+  },
+  "settingsAutomationConfigHint": {
+    "message": "Allowed domains apply to automation and quick inbox actions"
+  },
+  "settingsAutomationExpiry": {
+    "message": "Automation inbox expiry"
+  },
+  "settingsAutomationExpiryAria": {
+    "message": "Select automation inbox expiry in hours"
+  },
+  "settingsAutomationExpiryDisabledHint": {
+    "message": "Set to Permanent so this expiry option is disabled"
+  },
+  "settingsAutomationDomains": {
+    "message": "Allowed Domains"
+  },
+  "settingsAutomationDomainsLoading": {
+    "message": "Loading domains..."
+  },
+  "settingsAutomationDomainsEmpty": {
+    "message": "No domains available"
+  },
+  "settingsAutomationDomainAria": {
+    "message": "Allow domain $1 for automation"
+  },
+  "settingsAutomationDomainsAll": {
+    "message": "No domain selected = use all domains"
+  },
+  "settingsAutomationDomainsCount": {
+    "message": "$1 domain(s) selected"
+  },
+  "settingsAutomationExportTitle": {
+    "message": "OpenAI Flow Session Data"
+  },
+  "settingsAutomationExportHint": {
+    "message": "Download generated email/password history as TXT"
+  },
+  "settingsAutomationExportSummary": {
+    "message": "Total: $1 • Ready: $2 • Used: $3"
+  },
+  "settingsAutomationExportDownload": {
+    "message": "Download TXT Session Data"
+  },
+  "settingsAutomationExportDownloading": {
+    "message": "Preparing file..."
   },
   "settingsShareInvite": {
     "message": "Share & Invite"

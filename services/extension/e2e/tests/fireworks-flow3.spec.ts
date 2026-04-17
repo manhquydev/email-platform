@@ -1,4 +1,4 @@
-import { chromium, test, expect } from '@playwright/test';
+import { chromium, test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -223,7 +223,7 @@ function renderOnboardingProfilePage(): string {
 function renderOnboardingSurveyPage(): string {
   return htmlShell(
     'Survey',
-    '<h1>Want free $5 credit? Answer 2 questions</h1><section data-question="goals"><h2>What are your goals for using Fireworks?</h2><button type="button" class="option" role="checkbox" aria-checked="false">Build products faster</button><button type="button" class="option" role="checkbox" aria-checked="false">Evaluate model quality</button><button type="button" class="option" role="checkbox" aria-checked="false">Other</button></section><section data-question="usecases"><h2>What are your primary use cases?</h2><button type="button" class="option" role="checkbox" aria-checked="false">Chatbot</button><button type="button" class="option" role="checkbox" aria-checked="false">Code generation</button><button type="button" class="option" role="checkbox" aria-checked="false">Other</button></section><button id="submit" type="button" name="done">Submit to get <span class="ml-1 text-green-primary">$5 Credits</span></button>',
+    '<h1>Want free $5 credit? Answer 2 questions</h1><section data-question="goals"><h2>What are your goals for using Fireworks?</h2><button type="button" class="option" role="checkbox" aria-checked="true">Build products faster</button><button type="button" class="option" role="checkbox" aria-checked="true">Evaluate model quality</button><button type="button" class="option" role="checkbox" aria-checked="false">Other</button></section><section data-question="usecases"><h2>What are your primary use cases?</h2><button type="button" class="option" role="checkbox" aria-checked="true">Chatbot</button><button type="button" class="option" role="checkbox" aria-checked="true">Code generation</button><button type="button" class="option" role="checkbox" aria-checked="false">Other</button></section><button id="submit" type="button" name="done">Submit to get <span class="ml-1 text-green-primary">$5 Credits</span></button>',
     `
       window.__pushFlowEvent('step9_survey_visible', {});
       document.querySelectorAll('button[role="checkbox"]').forEach((button) => {
@@ -316,6 +316,9 @@ function renderLogoutPage(): string {
     '<h1>Logout</h1><p>Signed out</p>',
     `
       window.__pushFlowEvent('step13_logout_reached', {});
+      setTimeout(() => {
+        location.href = 'https://fireworks.ai/';
+      }, 100);
     `,
   );
 }
@@ -346,22 +349,13 @@ function renderMockPage(requestUrl: string): string {
           confirmUrl: '${MOCK_CONFIRM_LINK}'
         }
       ]));
+      localStorage.setItem('ephemera:fw3:test:auto-enable', '1');
       localStorage.removeItem('fw3_signup_stage');
       localStorage.removeItem('fw3_email_form_ready');
       localStorage.removeItem('fw3_api_keys_stage');
       window.__pushFlowEvent('step0_welcome_loaded', {});
     `,
   );
-}
-
-async function waitForBackgroundWorker(context: Awaited<ReturnType<typeof chromium.launchPersistentContext>>) {
-  const deadline = Date.now() + 20_000;
-  while (Date.now() < deadline) {
-    const worker = context.serviceWorkers()[0];
-    if (worker) return worker;
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  }
-  throw new Error('Background service worker was not available in time');
 }
 
 async function readMockEvents(page: Page): Promise<MockEvent[]> {
@@ -408,24 +402,32 @@ test.describe('Fireworks Flow 3 Automation', () => {
     });
     try {
       const page = await context.newPage();
-      await page.route('https://app.fireworks.ai/**', async (route) => {
-        if (route.request().resourceType() !== 'document') {
-          await route.fulfill({ status: 204, body: '' });
-          return;
-        }
-        await route.fulfill({
-          status: 200,
-          contentType: 'text/html',
-          body: renderMockPage(route.request().url()),
+      for (const pattern of ['https://app.fireworks.ai/**', 'https://fireworks.ai/**', 'https://www.fireworks.ai/**']) {
+        await page.route(pattern, async (route) => {
+          if (route.request().resourceType() !== 'document') {
+            await route.fulfill({ status: 204, body: '' });
+            return;
+          }
+          await route.fulfill({
+            status: 200,
+            contentType: 'text/html',
+            body: renderMockPage(route.request().url()),
+          });
         });
-      });
+      }
 
       await page.goto('https://app.fireworks.ai/welcome', { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(5000);
-      const worker = await waitForBackgroundWorker(context);
-      await worker.evaluate(() => new Promise((resolve) => {
-        chrome.runtime.sendMessage({ type: 'AUTOMATION_TOGGLE_FIREWORKS_FLOW3_LOOP', source: 'e2e-test' }, () => resolve(null));
-      }));
+      await page.evaluate(() => {
+        document.dispatchEvent(new KeyboardEvent('keydown', {
+          key: '9',
+          code: 'Digit9',
+          ctrlKey: true,
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }));
+      });
 
       await expect.poll(() => {
         try {
@@ -482,6 +484,15 @@ test.describe('Fireworks Flow 3 Automation', () => {
       expect(step9?.payload?.selectedOther).toBe(false);
       expect(step12?.payload?.apiKey).toBe(MOCK_API_KEY);
       expect(String(step12?.payload?.apiKey || '')).toMatch(/^fw_[A-Za-z0-9]+$/);
+
+      await expect.poll(() => {
+        try {
+          const url = new URL(page.url());
+          return `${url.hostname}${url.pathname}`;
+        } catch {
+          return '';
+        }
+      }, { timeout: 20_000 }).toBe('app.fireworks.ai/signup');
     } finally {
       await context.close();
     }

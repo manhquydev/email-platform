@@ -17,12 +17,13 @@ import {
 } from './fireworks-flow3-dom-helpers';
 
 const STATE_KEY = 'fireworks_flow3_automation_state';
-const HOST = 'app.fireworks.ai';
+const FIREWORKS_HOSTS = new Set(['app.fireworks.ai', 'fireworks.ai', 'www.fireworks.ai']);
 const SIGNUP_URL = 'https://app.fireworks.ai/signup';
 const LOGOUT_URL = 'https://app.fireworks.ai/logout';
 const FLOW3_MAX_CREDENTIALS = 500;
 const ACTION_COOLDOWN_MS = 1000;
 const FLOW3_TEST_QUEUE_KEY = 'ephemera:fw3:test:credential-queue';
+const FLOW3_TEST_AUTO_ENABLE_KEY = 'ephemera:fw3:test:auto-enable';
 
 interface FireworksFlow3Credential extends FireworksFlow3CredentialRecord {
   inboxId?: string;
@@ -53,7 +54,7 @@ interface FireworksFlow3TestMockCredential {
 }
 
 function isSupportedHost(hostname: string): boolean {
-  return hostname === HOST;
+  return FIREWORKS_HOSTS.has(hostname);
 }
 
 function getState(): Promise<FireworksFlow3State> {
@@ -131,6 +132,14 @@ function consumeTestMockCredential(): FireworksFlow3TestMockCredential | null {
   }
 }
 
+function isFlow3TestAutoEnable(): boolean {
+  try {
+    return localStorage.getItem(FLOW3_TEST_AUTO_ENABLE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 function extractVisibleEmailsFromPage(): string[] {
   const source = document.body?.innerText || '';
   const matches = source.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
@@ -167,6 +176,16 @@ function findVisibleMenuItemByLabel(label: string): HTMLElement | null {
   return Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"], [data-radix-collection-item]'))
     .find((item) => isVisible(item) && normalizeText(item.textContent || item.getAttribute('aria-label') || '').includes(expected))
     || null;
+}
+
+async function waitForVisibleMenuItem(label: string, timeoutMs = 3000): Promise<HTMLElement | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const item = findVisibleMenuItemByLabel(label);
+    if (item) return item;
+    await sleep(120);
+  }
+  return null;
 }
 
 async function ensureActiveCredential(state: FireworksFlow3State): Promise<FireworksFlow3Credential | null> {
@@ -351,19 +370,28 @@ async function handleLoginEmail(pathname: string, state: FireworksFlow3State): P
   return true;
 }
 
-function clickRandomSurveyOption(questionHint: string): boolean {
+type SurveyQuestionStatus = 'picked' | 'already-selected' | 'missing';
+
+function clickRandomSurveyOption(questionHint: string): SurveyQuestionStatus {
   const marker = Array.from(document.querySelectorAll<HTMLElement>('h1,h2,h3,p,span,legend,div'))
     .find((node) => normalizeText(node.textContent).includes(normalizeText(questionHint)));
-  if (!marker) return false;
+  if (!marker) return 'missing';
 
   const container = marker.closest('section,fieldset,form,div') || marker.parentElement || document.body;
   const options = Array.from(container.querySelectorAll<HTMLElement>('button[role="checkbox"], [role="checkbox"]'))
-    .filter((el) => isVisible(el) && el.getAttribute('aria-checked') !== 'true')
+    .filter((el) => isVisible(el))
     .filter((el) => !normalizeText(el.closest('label,li,div')?.textContent || el.textContent).includes('other'));
 
-  if (options.length === 0) return false;
-  clickElement(randomPick(options));
-  return true;
+  if (options.length === 0) return 'missing';
+
+  const selected = options.filter((el) => el.getAttribute('aria-checked') === 'true');
+  if (selected.length > 0) return 'already-selected';
+
+  const unselected = options.filter((el) => el.getAttribute('aria-checked') !== 'true');
+  if (unselected.length === 0) return 'missing';
+
+  clickElement(randomPick(unselected));
+  return 'picked';
 }
 
 async function handleOnboarding(pathname: string, state: FireworksFlow3State): Promise<boolean> {
@@ -388,7 +416,8 @@ async function handleOnboarding(pathname: string, state: FireworksFlow3State): P
   if (pageContainsText('Want free $5 credit') || pageContainsText('Answer 2 questions')) {
     const pickedGoals = clickRandomSurveyOption('What are your goals for using Fireworks?');
     const pickedUseCases = clickRandomSurveyOption('What are your primary use cases?');
-    if (!pickedGoals || !pickedUseCases) return true;
+    if (pickedGoals === 'missing' || pickedUseCases === 'missing') return false;
+    if (pickedGoals === 'picked' || pickedUseCases === 'picked') await sleep(150);
     await clickWithCooldown('fw3-onboarding-submit', ['Submit to get $5 Credits', 'Submit to get']);
     return true;
   }
@@ -419,11 +448,18 @@ async function handleApiKeys(pathname: string, state: FireworksFlow3State): Prom
 
   const keyInput = findFirstInput(['input#name', 'input[name="name"]', 'input[placeholder*="enter a name" i]']);
   if (!keyInput) {
-    const trigger = await waitForButtonByLabels(['Create API Key'], 6000);
-    if (trigger) clickElement(trigger);
-    await sleep(120);
-    const menuItem = findVisibleMenuItemByLabel('API Key');
-    if (menuItem) clickElement(menuItem);
+    const visibleMenuItem = findVisibleMenuItemByLabel('API Key');
+    if (visibleMenuItem) {
+      clickElement(visibleMenuItem);
+      return true;
+    }
+
+    const opened = await clickWithCooldown('fw3-open-create-api-key-menu', ['Create API Key'], 6000, 1500);
+    if (!opened) return false;
+
+    const menuItem = await waitForVisibleMenuItem('API Key', 4000);
+    if (!menuItem) return false;
+    clickElement(menuItem);
     return true;
   }
 
@@ -451,7 +487,10 @@ async function handleLogoutRestart(pathname: string, state: FireworksFlow3State)
 }
 
 async function runFireworksFlow3(): Promise<void> {
-  const state = await getState();
+  let state = await getState();
+  if (!state.flow3LoopEnabled && isFlow3TestAutoEnable()) {
+    state = await setState({ flow3LoopEnabled: true });
+  }
   if (!state.flow3LoopEnabled) return;
   const pathname = window.location.pathname;
 

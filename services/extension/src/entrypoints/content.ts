@@ -5,7 +5,7 @@ import { initFireworksFlow3Automation } from '../content/fireworks-flow3-automat
 import browser from 'webextension-polyfill'
 
 const OPENAI_FLOW_HOSTS = new Set(['auth.openai.com', 'chatgpt.com'])
-const FIREWORKS_FLOW_HOSTS = new Set(['app.fireworks.ai'])
+const FIREWORKS_FLOW_HOSTS = new Set(['app.fireworks.ai', 'fireworks.ai', 'www.fireworks.ai'])
 
 function setupFlow1HotkeyFallback() {
   if (!OPENAI_FLOW_HOSTS.has(window.location.hostname)) return

@@ -40,9 +40,17 @@ const messagesQuerySchema = z.object({
   offset: z.coerce.number().min(0).optional().default(0),
 });
 
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt(value || '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export async function ephemeralInboxRoutes(app: FastifyInstance) {
+  const createInboxRateLimitMax = parsePositiveInt(process.env.EPHEMERAL_CREATE_RATE_LIMIT_MAX, 5);
+  const createInboxRateLimitWindow = process.env.EPHEMERAL_CREATE_RATE_LIMIT_WINDOW || '1 hour';
+
   // Create new ephemeral inbox (optional auth - captures anonymous session)
-  // SECURITY: Strict rate limiting - 5 creations per IP per hour
+  // SECURITY: Strict rate limiting, configurable for self-hosted extension automation workloads.
   app.post("/ephemeral/inbox", {
     // Optional preHandler: Try to authenticate but don't require it
     // This captures anonymous session ID for ownership transfer on login
@@ -61,8 +69,8 @@ export async function ephemeralInboxRoutes(app: FastifyInstance) {
     },
     config: {
       rateLimit: {
-        max: 5,
-        timeWindow: '1 hour',
+        max: createInboxRateLimitMax,
+        timeWindow: createInboxRateLimitWindow,
         keyGenerator: (request: any) => {
           // Use IP for rate limiting public endpoints
           return request.ip || request.headers['x-forwarded-for'] || 'unknown';

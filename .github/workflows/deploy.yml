@@ -50,8 +50,9 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
-          timeout 80m ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'ENDSSH'
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ConnectionAttempts=5 -o ServerAliveInterval=20 -o ServerAliveCountMax=15 -o TCPKeepAlive=yes"
+          for deploy_attempt in 1 2 3; do
+            if timeout 120m ssh $SSH_OPTS $SERVER_USER@$SERVER_HOST "DEPLOY_PATH='$DEPLOY_PATH' bash -se" << 'ENDSSH'
             set -euo pipefail
             echo "Starting deployment..."
 
@@ -68,6 +69,22 @@ jobs:
             fi
             cd "${TARGET_PATH}"
             echo "Deploy path: ${TARGET_PATH}"
+
+            # Keep ephemeral inbox creation usable for extension automation.
+            ENV_FILE="services/api/.env"
+            upsert_env() {
+              local key="$1"
+              local value="$2"
+              if grep -qE "^${key}=" "$ENV_FILE"; then
+                sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
+              else
+                printf "%s=%s\n" "$key" "$value" >> "$ENV_FILE"
+              fi
+            }
+            if [ -f "$ENV_FILE" ]; then
+              upsert_env "EPHEMERAL_CREATE_RATE_LIMIT_MAX" "${EPHEMERAL_CREATE_RATE_LIMIT_MAX:-30}"
+              upsert_env "EPHEMERAL_CREATE_RATE_LIMIT_WINDOW" "\"${EPHEMERAL_CREATE_RATE_LIMIT_WINDOW:-1 hour}\""
+            fi
 
             # Pull latest code
             echo "Pulling latest code..."
@@ -86,8 +103,27 @@ jobs:
             # Rebuild and restart Docker containers (api, web, postfix, dovecot)
             echo "Rebuilding Docker containers..."
             export COMPOSE_PROGRESS=plain
-            export DOCKER_BUILDKIT=1
-            docker compose -f docker-compose.prod.yml build --pull api web postfix dovecot
+            # Build sequentially for stability on constrained production hosts.
+            export DOCKER_BUILDKIT=0
+
+            retry() {
+              local max_attempts="$1"
+              shift
+              local attempt=1
+              until "$@"; do
+                if [ "$attempt" -ge "$max_attempts" ]; then
+                  echo "Command failed after ${max_attempts} attempts: $*"
+                  return 1
+                fi
+                echo "Command failed (attempt ${attempt}/${max_attempts}): $*"
+                attempt=$((attempt + 1))
+                sleep 15
+              done
+            }
+
+            retry 3 docker compose -f docker-compose.prod.yml build --pull postfix dovecot
+            retry 3 docker compose -f docker-compose.prod.yml build --pull api
+            retry 3 docker compose -f docker-compose.prod.yml build --pull web
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             # Ensure Caddy reloads latest Caddyfile changes (bind mount updates need container restart)
             docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate caddy
@@ -135,6 +171,16 @@ jobs:
 
             echo "Deployment completed successfully!"
           ENDSSH
+            then
+              break
+            fi
+            if [ "$deploy_attempt" -eq 3 ]; then
+              echo "Remote deploy command failed after 3 attempts."
+              exit 1
+            fi
+            echo "Remote deploy attempt ${deploy_attempt}/3 failed, retrying in 20s..."
+            sleep 20
+          done
 
       - name: Verify deployment
         env:

@@ -10,6 +10,8 @@ const envSchema = z.object({
   TOTP_ENCRYPTION_KEY: z.string().length(64, "TOTP_ENCRYPTION_KEY must be exactly 64 hex characters").regex(/^[0-9a-fA-F]+$/, "TOTP_ENCRYPTION_KEY must be valid hex").optional(),
   HTTP_PORT: z.string().regex(/^\d+$/).optional(),
   SMTP_PORT: z.string().regex(/^\d+$/).optional(),
+  SPAM_CHECK_TIMEOUT_MS: z.string().regex(/^\d+$/).optional(),
+  INBOUND_WORKER_CONCURRENCY: z.string().regex(/^\d+$/).optional(),
   PUBLIC_READY_ENDPOINT: z.enum(["true", "false"]).optional(),
   PUBLIC_METRICS_ENDPOINT: z.enum(["true", "false"]).optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).optional(),
@@ -97,6 +99,9 @@ export const appConfig = {
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean),
+  spamCheckEnabled: (process.env.SPAM_CHECK_ENABLED ?? "true").toLowerCase() === "true",
+  spamCheckTimeoutMs: Math.max(250, Number(process.env.SPAM_CHECK_TIMEOUT_MS ?? 2000)),
+  inboundWorkerConcurrency: Math.max(1, Number(process.env.INBOUND_WORKER_CONCURRENCY ?? 4)),
   retentionSweepMinutes: Number(process.env.RETENTION_SWEEP_MINUTES ?? 5),
   smtpRateLimit: {
     windowMinutes: Number(process.env.SMTP_RATE_WINDOW_MINUTES ?? 5),

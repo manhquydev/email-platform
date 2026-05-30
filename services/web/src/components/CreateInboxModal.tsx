@@ -43,11 +43,12 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
     return (
         <AnimatePresence>
             <motion.div
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 z-50 flex h-[100dvh] items-end justify-center overflow-hidden bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={handleRequestClose}
+                style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
             >
                 <motion.div
                     ref={modalRef}
@@ -57,49 +58,58 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                    className="w-full max-w-md"
+                    className="w-full max-w-xl sm:my-6"
                 >
-                    <GlassCard variant="elevated" className="p-6 sm:p-8 relative overflow-hidden h-full">
-                        <ModalHeader onClose={handleRequestClose} />
+                    <GlassCard
+                        variant="elevated"
+                        className="relative flex h-[min(100dvh-0.5rem,48rem)] w-full flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl"
+                    >
+                        <div className="sticky top-0 z-20 border-b border-nebula-border/60 bg-nebula-surface/95 px-4 py-3 backdrop-blur sm:px-6">
+                            <ModalHeader onClose={handleRequestClose} />
+                        </div>
 
-                        <div className="space-y-6">
-                            {verifiedDomains.length === 0 ? (
-                                <NoDomainState />
-                            ) : (
-                                <>
-                                    <EmailPreview previewEmail={previewEmail} presetSummary={presetSummary} />
-                                    <div className="space-y-4">
-                                        <LocalPartInput
-                                            value={localPart}
-                                            onChange={setLocalPart}
-                                            onRandomize={handleRandomize}
-                                        />
-                                        <DomainSelect
-                                            domains={verifiedDomains}
-                                            value={selectedDomainId}
-                                            onChange={setSelectedDomainId}
-                                            useRandomDomainPool={useRandomDomainPool}
-                                            randomDomainIds={randomDomainIds}
-                                            onRandomPoolToggle={handleRandomPoolToggle}
-                                            onRandomDomainSelection={handleRandomDomainSelection}
-                                        />
-                                        <TTLSelect value={ttlMs} onChange={setTtlMs} />
-                                    </div>
-                                </>
-                            )}
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-6 sm:py-4">
+                            <div className="space-y-3 pb-2 sm:space-y-5">
+                                {verifiedDomains.length === 0 ? (
+                                    <NoDomainState />
+                                ) : (
+                                    <>
+                                        <EmailPreview previewEmail={previewEmail} presetSummary={presetSummary} />
+                                        <div className="space-y-4">
+                                            <LocalPartInput
+                                                value={localPart}
+                                                onChange={setLocalPart}
+                                                onRandomize={handleRandomize}
+                                            />
+                                            <DomainSelect
+                                                domains={verifiedDomains}
+                                                value={selectedDomainId}
+                                                onChange={setSelectedDomainId}
+                                                useRandomDomainPool={useRandomDomainPool}
+                                                randomDomainIds={randomDomainIds}
+                                                onRandomPoolToggle={handleRandomPoolToggle}
+                                                onRandomDomainSelection={handleRandomDomainSelection}
+                                            />
+                                            <TTLSelect value={ttlMs} onChange={setTtlMs} />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         {verifiedDomains.length > 0 && (
-                        <ModalFooter
-                            loading={loading}
-                            loadingAction={loadingAction}
-                            canCreate={canCreate && !!activeDomain && !!localPart.trim()}
-                            onClose={handleRequestClose}
-                            onCreate={handleCreate}
-                            onCreateAndKeepSetup={handleCreateAndKeepSetup}
-                            onCreateBatch={handleCreateBatch}
-                        />
-                    )}
+                            <div className="sticky bottom-0 z-20 border-t border-nebula-border/60 bg-nebula-surface/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:px-6">
+                                <ModalFooter
+                                    loading={loading}
+                                    loadingAction={loadingAction}
+                                    canCreate={canCreate && !!activeDomain && !!localPart.trim()}
+                                    onClose={handleRequestClose}
+                                    onCreate={handleCreate}
+                                    onCreateAndKeepSetup={handleCreateAndKeepSetup}
+                                    onCreateBatch={handleCreateBatch}
+                                />
+                            </div>
+                        )}
                     </GlassCard>
                 </motion.div>
             </motion.div>

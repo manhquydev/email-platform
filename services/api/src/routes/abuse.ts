@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { recordAudit } from "../utils/audit";
 import { sendApiError } from "../utils/errorHandler";
+import { handlePendingTwoFactorToken } from "../utils/pending-2fa-guard";
 import { AbuseReportStatus, RuleScope, RuleType } from "@prisma/client";
 
 export async function abuseRoutes(app: FastifyInstance) {
@@ -82,7 +83,13 @@ export async function abuseRoutes(app: FastifyInstance) {
     let reporter = body.data.reporter;
     try {
       const decoded = await request.jwtVerify();
-      reporter = reporter ?? (decoded as any)?.email;
+      // Optional auth: pending2FA tokens are treated as unauthenticated here.
+      const isPendingTwoFactor = handlePendingTwoFactorToken(decoded as any, reply, { sendError: false });
+      if (isPendingTwoFactor) {
+        (request as any).user = undefined;
+      } else {
+        reporter = reporter ?? (decoded as any)?.email;
+      }
     } catch {
       // anonymous allowed
     }

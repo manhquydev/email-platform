@@ -36,6 +36,10 @@ export function LeftPane({
     onCreateInbox, onFilterChange, onSortChange, onInboxSearchChange
 }: LeftPaneProps) {
     const navigate = useNavigate();
+    const hasActiveFilter = filteredInboxes.length !== inboxes.length;
+    const inboxCountLabel = hasActiveFilter
+        ? `${filteredInboxes.length}/${inboxes.length} inboxes`
+        : `${inboxes.length} inboxes`;
 
     return (
         <div className="h-full flex flex-col">
@@ -47,7 +51,7 @@ export function LeftPane({
                             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
                             <span className="text-cyan-400">Quản lý</span>
                         </h2>
-                        <p className="text-[11px] text-text-secondary mt-0.5">{filteredInboxes.length} inboxes</p>
+                        <p className="text-[11px] text-text-secondary mt-0.5">{inboxCountLabel}</p>
                     </div>
                     <div className="flex items-center gap-1">
                         <button

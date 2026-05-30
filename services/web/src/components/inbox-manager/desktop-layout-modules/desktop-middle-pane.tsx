@@ -6,6 +6,7 @@ import { cn } from "../../../utils/cn";
 import { EmailStream } from "../../EmailStream";
 import { EnhancedSearchBar } from "../../search";
 import { MessageItemSkeleton } from "../../Skeleton";
+import toast from "react-hot-toast";
 import type { Inbox, Message } from "../../../types";
 
 export interface MiddlePaneProps {
@@ -31,6 +32,13 @@ export function MiddlePane({
     onSelectMessage, onSearch, onClearSearch, onDeleteInbox, loadMessages,
     disableInboxDelete = false
 }: MiddlePaneProps) {
+    const handleCopyEmail = () => {
+        if (!activeInbox) return;
+        const email = `${activeInbox.localPart}@${activeInbox.domain?.name ?? ""}`;
+        navigator.clipboard.writeText(email);
+        toast.success("Đã sao chép địa chỉ email");
+    };
+
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
@@ -42,9 +50,18 @@ export function MiddlePane({
                                 {activeInbox.shareMode === 'PUBLIC' && (
                                     <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" title="Công khai" />
                                 )}
-                                <h2 className="text-sm font-semibold text-text-main truncate">
-                                    {`${activeInbox.localPart}@${activeInbox.domain?.name}`}
-                                </h2>
+                                <button
+                                    type="button"
+                                    onClick={handleCopyEmail}
+                                    className="group inline-flex min-w-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-left text-sm font-semibold text-text-main hover:bg-white/5"
+                                    title="Bấm để sao chép địa chỉ email"
+                                >
+                                    <span className="truncate">{`${activeInbox.localPart}@${activeInbox.domain?.name}`}</span>
+                                    <svg className="w-3.5 h-3.5 shrink-0 text-text-secondary transition group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <rect x="9" y="9" width="11" height="11" rx="2" />
+                                        <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                                    </svg>
+                                </button>
                             </>
                         )}
                         {!activeInbox && !isSearchMode && (

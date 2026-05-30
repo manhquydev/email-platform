@@ -1,4 +1,5 @@
 import { defineConfig } from 'wxt';
+import { resolve } from 'node:path';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -24,7 +25,7 @@ export default defineConfig({
       extension_pages: "script-src 'self'; object-src 'self'; connect-src 'self' https://api.manhquy.click; img-src 'self' https: data:",
     },
     action: {
-      default_title: 'Ephemera',
+      default_title: '__MSG_extName__',
     },
     commands: {
       "create-inbox": {
@@ -53,6 +54,7 @@ export default defineConfig({
     },
   },
   vite: () => ({
+    publicDir: resolve(__dirname, 'public'),
     build: {
       chunkSizeWarningLimit: 600,
     },

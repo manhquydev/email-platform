@@ -138,6 +138,10 @@ services:
       WEB_URL: https://app.${DOMAIN:-localhost}
       STORAGE_DIR: /app/storage
       TRUST_PROXY: "true"
+      # Extension CORS defaults (no manual extension ID required)
+      CORS_ALLOW_EXTENSION_ORIGINS: ${CORS_ALLOW_EXTENSION_ORIGINS:-true}
+      CORS_ALLOWED_EXTENSIONS: ${CORS_ALLOWED_EXTENSIONS:-}
+      CORS_REQUIRE_EXTENSION_WHITELIST: ${CORS_REQUIRE_EXTENSION_WHITELIST:-false}
       # Postfix sync configuration
       RELAY_DOMAINS_PATH: /app/shared/relay_domains
       POSTFIX_CONTAINER: email-platform-postfix-1
@@ -304,10 +308,10 @@ services:
       resources:
         limits:
           cpus: '1.00'
-          memory: 768M
+          memory: 1536M
         reservations:
           cpus: '0.25'
-          memory: 256M
+          memory: 512M
     logging:
       driver: "json-file"
       options:
@@ -450,10 +454,10 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 512M
+          memory: 768M
         reservations:
           cpus: '0.10'
-          memory: 128M
+          memory: 256M
     logging:
       driver: "json-file"
       options:
@@ -557,10 +561,10 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 256M
+          memory: 512M
         reservations:
           cpus: '0.10'
-          memory: 128M
+          memory: 256M
     logging:
       driver: "json-file"
       options:

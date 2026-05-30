@@ -16,35 +16,156 @@ export interface CreateInboxModalProps {
 }
 
 const CREATE_INBOX_PREFERENCES_KEY = 'create_inbox_modal_preferences_v1';
+const LEGACY_CREATE_INBOX_PREFERENCES_KEYS = [
+    'create_inbox_modal_preferences',
+    'createInboxModalPreferences'
+] as const;
 const DEFAULT_TTL_MS = 10 * 60 * 1000;
 const DEFAULT_BATCH_COUNT = 5;
 const LOCAL_PART_SUFFIX_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const LOCAL_PART_MIN_LENGTH = 6;
+const LOCAL_PART_MAX_LENGTH = 24;
+
+const VIETNAMESE_FIRST_NAMES = [
+    'an', 'bao', 'binh', 'chi', 'duy', 'giang', 'hao', 'khanh', 'linh', 'mai',
+    'minh', 'nam', 'ngoc', 'phuong', 'quan', 'trang', 'tuan', 'vy'
+];
+const VIETNAMESE_LAST_NAMES = [
+    'nguyen', 'tran', 'le', 'pham', 'hoang', 'phan', 'vu', 'dang', 'bui', 'do'
+];
+const NEUTRAL_FIRST_NAMES = [
+    'alex', 'sam', 'jules', 'kai', 'morgan', 'taylor', 'riley', 'jordan', 'casey', 'devon'
+];
+const ROLE_WORDS = ['hello', 'contact', 'support', 'info', 'desk'];
+const TEAM_WORDS = ['team', 'studio', 'lab', 'ops', 'inbox'];
+
+const BLOCKED_LOCAL_PART_TOKENS = [
+    'test', 'temp', 'fake', 'spam', 'throwaway', 'xxx', 'qwerty', 'admin'
+];
+const BLOCKED_BRAND_TOKENS = [
+    'google', 'apple', 'microsoft', 'amazon', 'meta', 'tiktok', 'openai'
+];
+
+type LocalPartPattern =
+    | 'first.last'
+    | 'firstlast'
+    | 'firstlastnn'
+    | 'f.lastname'
+    | 'role.first'
+    | 'team.first'
+    | 'first_last'
+    | 'first.lastnameyy';
+
+const RANDOM_PATTERN_WEIGHTS: Array<{ pattern: LocalPartPattern; weight: number }> = [
+    { pattern: 'first.last', weight: 28 },
+    { pattern: 'firstlast', weight: 16 },
+    { pattern: 'firstlastnn', weight: 14 },
+    { pattern: 'f.lastname', weight: 10 },
+    { pattern: 'role.first', weight: 10 },
+    { pattern: 'team.first', weight: 8 },
+    { pattern: 'first_last', weight: 8 },
+    { pattern: 'first.lastnameyy', weight: 6 },
+];
 
 /** Generate random email name */
 export const generateRandomName = () => {
-    const adjectives = [
-        'swift', 'silent', 'bright', 'cool', 'neon', 'epic', 'pure', 'rapid', 'solar', 'lunar',
-        'arctic', 'ember', 'nova', 'pixel', 'stellar', 'quantum', 'turbo', 'hyper', 'zen', 'vivid',
-        'amber', 'velvet', 'cobalt', 'atomic', 'midnight', 'silver', 'crimson', 'aurora', 'frost', 'delta'
-    ];
-    const nouns = [
-        'fox', 'wolf', 'orbit', 'forge', 'wave', 'node', 'spark', 'byte', 'cloud', 'signal',
-        'nexus', 'pilot', 'pulse', 'rider', 'storm', 'echo', 'matrix', 'drift', 'vault', 'scope',
-        'frame', 'circuit', 'beacon', 'thread', 'lab', 'relay', 'vector', 'terminal', 'harbor', 'atlas'
-    ];
-    const letters = LOCAL_PART_SUFFIX_CHARS;
-    const pick = (items: string[]) => items[Math.floor(Math.random() * items.length)];
-    const randomSuffix = (length: number) =>
-        Array.from({ length }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
+    for (let attempt = 0; attempt < 32; attempt += 1) {
+        const pattern = pickWeightedPattern(RANDOM_PATTERN_WEIGHTS);
+        const first = pickRandom([...VIETNAMESE_FIRST_NAMES, ...NEUTRAL_FIRST_NAMES]);
+        const last = pickRandom(VIETNAMESE_LAST_NAMES);
+        const role = pickRandom(ROLE_WORDS);
+        const team = pickRandom(TEAM_WORDS);
+        const twoDigits = String(Math.floor(Math.random() * 90) + 10);
 
-    const style = Math.floor(Math.random() * 6);
-    if (style === 0) return `${pick(adjectives)}-${pick(nouns)}-${Math.floor(100 + Math.random() * 900)}`;
-    if (style === 1) return `${pick(nouns)}-${randomSuffix(5)}`;
-    if (style === 2) return `${pick(adjectives)}${Math.floor(1000 + Math.random() * 9000)}`;
-    if (style === 3) return `${pick(adjectives)}-${pick(nouns)}-${randomSuffix(4)}`;
-    if (style === 4) return `${pick(adjectives)}-${pick(nouns)}-${pick(nouns)}`;
-    return `${pick(nouns)}-${pick(adjectives)}-${Math.floor(10 + Math.random() * 89)}`;
+        let candidate = '';
+        switch (pattern) {
+            case 'first.last':
+                candidate = `${first}.${last}`;
+                break;
+            case 'firstlast':
+                candidate = `${first}${last}`;
+                break;
+            case 'firstlastnn':
+                candidate = `${first}${last}${twoDigits}`;
+                break;
+            case 'f.lastname':
+                candidate = `${first.charAt(0)}.${last}`;
+                break;
+            case 'role.first':
+                candidate = `${role}.${first}`;
+                break;
+            case 'team.first':
+                candidate = `${team}.${first}`;
+                break;
+            case 'first_last':
+                candidate = `${first}_${last}`;
+                break;
+            case 'first.lastnameyy':
+                candidate = `${first}.${last}${twoDigits}`;
+                break;
+        }
+
+        const normalized = normalizeLocalPartCandidate(candidate);
+        if (isLocalPartValid(normalized)) {
+            return normalized;
+        }
+    }
+
+    return normalizeLocalPartCandidate(`contact.${pickRandom(VIETNAMESE_FIRST_NAMES)}${String(Math.floor(Math.random() * 90) + 10)}`);
 };
+
+function pickRandom<T>(items: T[]): T {
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+function pickWeightedPattern(weights: Array<{ pattern: LocalPartPattern; weight: number }>): LocalPartPattern {
+    const total = weights.reduce((sum, entry) => sum + entry.weight, 0);
+    let cursor = Math.random() * total;
+    for (const entry of weights) {
+        cursor -= entry.weight;
+        if (cursor <= 0) return entry.pattern;
+    }
+    return weights[0].pattern;
+}
+
+function normalizeLocalPartCandidate(raw: string) {
+    const deAccented = raw
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    return deAccented
+        .replace(/[^a-z0-9._]/g, '')
+        .replace(/[._]{2,}/g, '.')
+        .replace(/^[._]+|[._]+$/g, '')
+        .slice(0, LOCAL_PART_MAX_LENGTH);
+}
+
+function hasLowVowelRatio(value: string) {
+    const letters = value.replace(/[^a-z]/g, '');
+    if (letters.length < 7) return false;
+    const vowels = letters.match(/[aeiou]/g)?.length ?? 0;
+    return vowels / letters.length < 0.18;
+}
+
+function isLocalPartValid(value: string) {
+    if (!value) return false;
+    if (value.length < LOCAL_PART_MIN_LENGTH || value.length > LOCAL_PART_MAX_LENGTH) return false;
+    if (/[._]$|^[._]/.test(value)) return false;
+    if (/[._]{2,}/.test(value)) return false;
+    if (/(.)\1{2,}/.test(value)) return false;
+    if (/\d{3,}/.test(value)) return false;
+
+    const digitCount = (value.match(/\d/g)?.length ?? 0);
+    if (digitCount > 4) return false;
+    if (digitCount / value.length > 0.3) return false;
+    if ((value.match(/[._]/g)?.length ?? 0) > 2) return false;
+    if (hasLowVowelRatio(value)) return false;
+
+    if (BLOCKED_LOCAL_PART_TOKENS.some((token) => value.includes(token))) return false;
+    if (BLOCKED_BRAND_TOKENS.some((token) => value.includes(token))) return false;
+    return true;
+}
 
 /** TTL options in milliseconds (null = permanent) */
 export const TTL_OPTIONS = [
@@ -63,32 +184,94 @@ type CreateInboxPreferences = {
     randomDomainIds: string[];
 };
 
-function readCreateInboxPreferences(): CreateInboxPreferences | null {
-    if (typeof window === 'undefined') return null;
-    try {
-        const raw = window.localStorage.getItem(CREATE_INBOX_PREFERENCES_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as Partial<CreateInboxPreferences>;
-        if (!parsed || typeof parsed !== 'object') return null;
-        const parsedTtl = parsed.ttlMs;
-        return {
-            ttlMs: parsedTtl === null
-                ? null
-                : typeof parsedTtl === 'number'
-                    ? parsedTtl
-                    : DEFAULT_TTL_MS,
-            selectedDomainId: typeof parsed.selectedDomainId === 'string' ? parsed.selectedDomainId : '',
-            useRandomDomainPool: Boolean(parsed.useRandomDomainPool),
-            randomDomainIds: Array.isArray(parsed.randomDomainIds)
-                ? parsed.randomDomainIds.filter((id): id is string => typeof id === 'string')
-                : [],
-        };
-    } catch {
-        return null;
+let inMemoryCreateInboxPreferences: CreateInboxPreferences | null = null;
+
+function parseTtlFromPreference(raw: unknown): number | null | undefined {
+    if (raw === null) return null;
+    if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+    if (typeof raw === 'string') {
+        const normalized = raw.trim().toLowerCase();
+        if (normalized === 'null' || normalized === 'permanent') return null;
+        const numeric = Number(normalized);
+        if (Number.isFinite(numeric)) return numeric;
     }
+    return undefined;
+}
+
+function parseCreateInboxPreferences(raw: string): CreateInboxPreferences | null {
+    const parsed = JSON.parse(raw) as Partial<CreateInboxPreferences> & {
+        ttl?: number | string | null;
+        ttlMinutes?: number;
+        ttlHours?: number;
+        randomDomains?: string[];
+        domainId?: string;
+    };
+
+    if (!parsed || typeof parsed !== 'object') return null;
+
+    let parsedTtl = parseTtlFromPreference(parsed.ttlMs);
+    if (parsedTtl === undefined) parsedTtl = parseTtlFromPreference(parsed.ttl);
+    if (parsedTtl === undefined && typeof parsed.ttlMinutes === 'number') {
+        parsedTtl = parsed.ttlMinutes * 60 * 1000;
+    }
+    if (parsedTtl === undefined && typeof parsed.ttlHours === 'number') {
+        parsedTtl = parsed.ttlHours * 60 * 60 * 1000;
+    }
+
+    const randomDomainIds = Array.isArray(parsed.randomDomainIds)
+        ? parsed.randomDomainIds
+        : Array.isArray(parsed.randomDomains)
+            ? parsed.randomDomains
+            : [];
+
+    return {
+        ttlMs: parsedTtl === null
+            ? null
+            : typeof parsedTtl === 'number'
+                ? parsedTtl
+                : DEFAULT_TTL_MS,
+        selectedDomainId: typeof parsed.selectedDomainId === 'string'
+            ? parsed.selectedDomainId
+            : typeof parsed.domainId === 'string'
+                ? parsed.domainId
+                : '',
+        useRandomDomainPool: Boolean(parsed.useRandomDomainPool),
+        randomDomainIds: randomDomainIds.filter((id): id is string => typeof id === 'string'),
+    };
+}
+
+function readCreateInboxPreferences(): CreateInboxPreferences | null {
+    if (inMemoryCreateInboxPreferences) return inMemoryCreateInboxPreferences;
+    if (typeof window === 'undefined') return null;
+
+    const keysToCheck = [CREATE_INBOX_PREFERENCES_KEY, ...LEGACY_CREATE_INBOX_PREFERENCES_KEYS];
+
+    try {
+        for (const key of keysToCheck) {
+            const raw = window.localStorage.getItem(key);
+            if (!raw) continue;
+            try {
+                const parsed = parseCreateInboxPreferences(raw);
+                if (!parsed) continue;
+
+                inMemoryCreateInboxPreferences = parsed;
+                if (key !== CREATE_INBOX_PREFERENCES_KEY) {
+                    window.localStorage.setItem(CREATE_INBOX_PREFERENCES_KEY, JSON.stringify(parsed));
+                }
+                return parsed;
+            } catch {
+                // Ignore invalid legacy payload and continue.
+            }
+        }
+    } catch {
+        // Ignore localStorage read errors and fallback to in-memory state.
+    }
+
+    return inMemoryCreateInboxPreferences;
 }
 
 function writeCreateInboxPreferences(preferences: CreateInboxPreferences) {
+    inMemoryCreateInboxPreferences = preferences;
     if (typeof window === 'undefined') return;
     try {
         window.localStorage.setItem(CREATE_INBOX_PREFERENCES_KEY, JSON.stringify(preferences));
@@ -117,17 +300,46 @@ function randomLocalPartSuffix(length = 4) {
 }
 
 export function buildBatchLocalParts(baseLocalPart: string, count: number) {
-    const normalizedBase = baseLocalPart.trim().toLowerCase();
+    let normalizedBase = normalizeLocalPartCandidate(baseLocalPart.trim().toLowerCase());
+    if (!isLocalPartValid(normalizedBase)) {
+        normalizedBase = generateRandomName();
+    }
     if (count <= 1) return [normalizedBase];
 
-    const results = new Set<string>();
-    results.add(normalizedBase);
+    const results = new Set<string>([normalizedBase]);
+    let sequence = 1;
+    const separator = normalizedBase.includes('.') ? '.' : normalizedBase.includes('_') ? '_' : '';
+    const maxBaseLengthForSequence = LOCAL_PART_MAX_LENGTH - suffixLengthWithSeparator(separator, 2);
+    const sequenceBase = trimSeparatorEdges(normalizedBase.slice(0, Math.max(LOCAL_PART_MIN_LENGTH - 2, maxBaseLengthForSequence)));
 
     while (results.size < count) {
-        results.add(`${normalizedBase}-${randomLocalPartSuffix()}`);
+        const suffix = String(sequence).padStart(2, '0');
+        const candidate = normalizeLocalPartCandidate(
+            separator ? `${sequenceBase}${separator}${suffix}` : `${sequenceBase}${suffix}`
+        );
+
+        if (isLocalPartValid(candidate)) {
+            results.add(candidate);
+        }
+        sequence += 1;
+
+        if (sequence > 99 && results.size < count) {
+            const fallback = normalizeLocalPartCandidate(`${normalizedBase}${randomLocalPartSuffix(2)}`);
+            if (isLocalPartValid(fallback)) {
+                results.add(fallback);
+            }
+        }
     }
 
     return Array.from(results);
+}
+
+function suffixLengthWithSeparator(separator: string, digits: number) {
+    return (separator ? 1 : 0) + digits;
+}
+
+function trimSeparatorEdges(value: string) {
+    return value.replace(/^[._]+|[._]+$/g, '');
 }
 
 /** Hook to manage create inbox form state and submission */

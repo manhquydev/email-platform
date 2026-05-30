@@ -2,6 +2,8 @@
  * Rspamd Spam Filter Integration
  * Provides spam scoring and filtering for incoming emails
  */
+import { appConfig } from '../config';
+import { fetchWithTimeout } from '../utils/fetch';
 
 export interface SpamCheckResult {
     score: number;
@@ -17,6 +19,13 @@ export interface SpamCheckResult {
 
 const RSPAMD_URL = process.env.RSPAMD_URL || 'http://rspamd:11333';
 const SPAM_THRESHOLD = parseFloat(process.env.SPAM_THRESHOLD || '5.0');
+const DEFAULT_SPAM_RESULT: SpamCheckResult = {
+    score: 0,
+    requiredScore: SPAM_THRESHOLD,
+    isSpam: false,
+    action: 'no action',
+    symbols: {},
+};
 
 /**
  * Check an email for spam using Rspamd
@@ -28,6 +37,10 @@ export async function checkSpam(
     emailBuffer: Buffer,
     clientIp?: string
 ): Promise<SpamCheckResult> {
+    if (!appConfig.spamCheckEnabled) {
+        return DEFAULT_SPAM_RESULT;
+    }
+
     try {
         const headers: Record<string, string> = {
             'Content-Type': 'message/rfc822',
@@ -37,22 +50,17 @@ export async function checkSpam(
             headers['IP'] = clientIp;
         }
 
-        const response = await fetch(`${RSPAMD_URL}/checkv2`, {
+        const response = await fetchWithTimeout(`${RSPAMD_URL}/checkv2`, {
             method: 'POST',
             body: new Uint8Array(emailBuffer),
             headers,
+            timeout: appConfig.spamCheckTimeoutMs,
         });
 
         if (!response.ok) {
             console.error(`Rspamd check failed with status ${response.status}`);
             // Return a safe default if Rspamd is unavailable
-            return {
-                score: 0,
-                requiredScore: SPAM_THRESHOLD,
-                isSpam: false,
-                action: 'no action',
-                symbols: {},
-            };
+            return DEFAULT_SPAM_RESULT;
         }
 
         const result = await response.json() as {
@@ -100,13 +108,7 @@ export async function checkSpam(
     } catch (error) {
         console.error('Rspamd spam check error:', error);
         // Return safe default if Rspamd is unavailable
-        return {
-            score: 0,
-            requiredScore: SPAM_THRESHOLD,
-            isSpam: false,
-            action: 'no action',
-            symbols: {},
-        };
+        return DEFAULT_SPAM_RESULT;
     }
 }
 

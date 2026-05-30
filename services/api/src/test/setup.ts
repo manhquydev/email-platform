@@ -45,12 +45,13 @@ function applyTestDbMigrationsOnce() {
             : "";
         const fullMessage = `${message}\n${stderr}`;
 
-        if (!fullMessage.includes("P3005")) {
+        if (!fullMessage.includes("P3005") && !fullMessage.includes("P3015")) {
             throw error;
         }
 
-        // Existing test DB wasn't baselined for migrate history: sync schema directly.
-        execSync("npx prisma db push", {
+        // Existing test DB is not suitable for migrate deploy (baselined or broken migration files):
+        // sync schema directly for test environment.
+        execSync("npx prisma db push --force-reset --accept-data-loss --skip-generate", {
             cwd: apiRoot,
             env: { ...process.env, DATABASE_URL: TEST_DB_URL },
             stdio: "pipe",

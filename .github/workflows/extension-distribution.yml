@@ -24,7 +24,7 @@ jobs:
       - name: Install Dependencies
         run: |
           cd services/extension
-          npm install
+          npm ci
 
       - name: Check Types
         run: |
@@ -34,29 +34,43 @@ jobs:
       - name: Build Chrome (MV3)
         run: |
           cd services/extension
-          npx wxt build
+          npm run build
 
       - name: Build Firefox (MV2)
         run: |
           cd services/extension
-          npx wxt build -b firefox
+          npm run build:firefox
 
       - name: Build Safari (MV2)
         run: |
           cd services/extension
-          npx wxt build -b safari
+          npm run build:safari
 
       - name: Package Extensions
         run: |
           cd services/extension
-          npx wxt zip
-          npx wxt zip -b firefox
-          npx wxt zip -b safari
+          npm run zip
+          npm run zip:firefox
+          npm run zip:safari
+
+      - name: Collect ZIP Artifacts
+        run: |
+          set -euo pipefail
+          rm -rf services/extension/.artifacts
+          mkdir -p services/extension/.artifacts
+          find services/extension/.output -type f -name "*.zip" -print -exec cp {} services/extension/.artifacts/ \;
+          ls -lah services/extension/.artifacts
+          ZIP_COUNT=$(find services/extension/.artifacts -type f -name "*.zip" | wc -l | tr -d ' ')
+          if [ "$ZIP_COUNT" -eq 0 ]; then
+            echo "No extension zip artifacts were produced."
+            exit 1
+          fi
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Ephemera-Extensions
           path: |
-            services/extension/.output/*.zip
+            services/extension/.artifacts/*.zip
+          if-no-files-found: error
           retention-days: 7

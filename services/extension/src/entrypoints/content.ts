@@ -1,11 +1,13 @@
 import { detectEmailFields, observeNewFields } from '../content/field-detector'
 import { injectUI } from '../content/ui-injector'
+import { initOpenAiAuthAutomation } from '../content/openai-auth-automation'
 
 export default defineContentScript({
   matches: ['<all_urls>'],
   runAt: 'document_end',
   main() {
     console.log('Ephemera: Content script loaded');
+    initOpenAiAuthAutomation();
 
     // Initial scan
     const fields = detectEmailFields()

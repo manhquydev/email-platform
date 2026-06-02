@@ -11,7 +11,7 @@ import puppeteer from 'puppeteer';
   // Type credentials
   const inputs = await page.$$('input');
   await inputs[0].type('quydoanahihi@gmail.com', { delay: 50 });
-  await inputs[1].type('Manhquy203@', { delay: 50 });
+  await inputs[1].type(process.env.TEST_PASSWORD || 'CHANGE_ME', { delay: 50 });
 
   // Click submit
   await page.click('button[type="submit"]');

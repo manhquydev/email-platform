@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import time
@@ -8,33 +9,35 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "paramiko", "-q"])
     import paramiko
 
-HOST = "165.22.48.193"
-USERNAME = "root"
-PASSWORD = "Manhquy203@"
-PAT_TOKEN = "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"
+from _ssh_config import HOST, USERNAME, PASSWORD
+
+_pat = os.environ.get("GITHUB_PAT")
+if not _pat:
+    print("Error: required environment variable 'GITHUB_PAT' is not set.", file=sys.stderr)
+    sys.exit(1)
 
 def full_deploy():
     print("🚀 Full Deploy to Production")
     print("=" * 50)
-    
+
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    
+
     try:
         client.connect(HOST, username=USERNAME, password=PASSWORD, timeout=30)
         print("✅ Connected!\n")
-        
+
         # Step 1: Pull code with PAT token
         print("📥 Step 1: Pulling code with PAT token...")
         stdin, stdout, stderr = client.exec_command(
-            f"cd /root/email-platform. && git pull https://manhquydev:{PAT_TOKEN}@github.com/manhquydev/email-platform.git main",
+            f"cd /root/email-platform. && git pull https://manhquydev:{_pat}@github.com/manhquydev/email-platform.git main",
             timeout=120
         )
         print(stdout.read().decode())
         err = stderr.read().decode()
         if err and 'Already up to date' not in err:
             print(f"stderr: {err}")
-        
+
         # Step 2: Rebuild all containers
         print("\n🐳 Step 2: Rebuilding API and Web containers...")
         stdin, stdout, stderr = client.exec_command(
@@ -50,10 +53,10 @@ def full_deploy():
         err = stderr.read().decode()
         if err:
             print(err[-2000:])  # Last 2000 chars
-            
+
         print("\n⏳ Waiting 15 seconds for containers to start...")
         time.sleep(15)
-        
+
         # Step 3: Verify containers
         print("\n📋 Step 3: Verifying containers...")
         stdin, stdout, stderr = client.exec_command(
@@ -61,7 +64,7 @@ def full_deploy():
             timeout=30
         )
         print(stdout.read().decode())
-        
+
         # Step 4: Test health
         print("📋 Step 4: Testing API health...")
         stdin, stdout, stderr = client.exec_command(
@@ -69,7 +72,7 @@ def full_deploy():
             timeout=15
         )
         print(stdout.read().decode())
-        
+
         # Step 5: Test domains endpoint
         print("\n📋 Step 5: Testing domains endpoint (should be 401)...")
         stdin, stdout, stderr = client.exec_command(
@@ -78,12 +81,12 @@ def full_deploy():
         )
         status = stdout.read().decode().strip()
         print(f"   Status: {status}")
-        
+
         print("\n" + "=" * 50)
         print("✅ Full deploy complete!")
-        
+
         client.close()
-        
+
     except Exception as e:
         print(f"❌ Error: {e}")
 

@@ -32,7 +32,7 @@ export function verifyWebhookSignature(
   if (age > toleranceSeconds) {
     return {
       valid: false,
-      error: `Timestamp expired: ${age}s old (max ${toleranceSeconds}s)`,
+      error: 'Timestamp outside allowed window',
     };
   }
 

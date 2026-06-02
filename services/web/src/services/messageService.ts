@@ -4,19 +4,16 @@
  */
 
 import { api } from '../utils/api';
+import { tokenManager } from '../utils/token-manager';
 import { PAGINATION, API_PATHS } from '../constants/app';
 import { logger } from '../utils/logger';
 import type { PaginatedResponse } from '../types/api';
 
 const log = logger.scope('MessageService');
 
-/** Get token from localStorage (fallback for service layer) */
+/** Get the in-memory access token (fallback for the service layer). */
 function getStoredToken(): string | undefined {
-    try {
-        // Token is stored directly under 'token' key (see login-hooks.ts, MagicLinkVerify.tsx)
-        return localStorage.getItem('token') ?? undefined;
-    } catch { /* ignore */ }
-    return undefined;
+    return tokenManager.getAccessToken() ?? undefined;
 }
 
 /**

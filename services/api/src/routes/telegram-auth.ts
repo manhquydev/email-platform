@@ -6,6 +6,10 @@ import { hashPassword } from "../utils/password";
 import { verifyTelegramAuth, isAuthDateFresh, TelegramAuthData } from "../utils/telegram-auth";
 import { recordAudit } from "../utils/audit";
 import { appConfig } from "../config";
+import { RefreshTokenService } from "../services/refresh-token.service";
+import { createAccessToken, createCsrfToken } from "./auth/auth-tokens";
+import { setAuthCookies } from "./auth/auth-cookies";
+import { COOKIE_MAX_AGE_DEFAULT } from "./auth/auth-config";
 
 const telegramAuthSchema = z.object({
   id: z.number(),
@@ -108,16 +112,20 @@ export async function telegramAuthRoutes(app: FastifyInstance) {
         return reply.status(403).send({ error: "Account is disabled. Contact administrator." });
       }
 
-      // Generate JWT
-      const token = app.jwt.sign(
-        { userId: existingUser.id, role: existingUser.role, tier: existingUser.tier },
-        { expiresIn: "30d" }
+      // Establish a normal session: short-lived revocable access token (jti + type) plus an
+      // opaque refresh-token cookie, instead of a non-revocable 30-day JWT.
+      const token = createAccessToken(app, existingUser);
+      const { token: refreshToken } = await RefreshTokenService.createToken(
+        existingUser.id, 7, request.headers["user-agent"], request.ip
       );
+      const csrfToken = createCsrfToken();
+      setAuthCookies(reply, request, refreshToken, csrfToken, COOKIE_MAX_AGE_DEFAULT);
 
       await recordAudit(existingUser.id, "TELEGRAM_LOGIN", { ip: request.ip });
 
       return {
         token,
+        csrfToken,
         user: { id: existingUser.id, email: existingUser.email, role: existingUser.role },
       };
     }
@@ -203,15 +211,18 @@ export async function telegramAuthRoutes(app: FastifyInstance) {
       },
     });
 
-    const token = app.jwt.sign(
-      { userId: user.id, role: user.role, tier: user.tier },
-      { expiresIn: "30d" }
+    const token = createAccessToken(app, user);
+    const { token: refreshToken } = await RefreshTokenService.createToken(
+      user.id, 7, request.headers["user-agent"], request.ip
     );
+    const csrfToken = createCsrfToken();
+    setAuthCookies(reply, request, refreshToken, csrfToken, COOKIE_MAX_AGE_DEFAULT);
 
     await recordAudit(user.id, "TELEGRAM_REGISTER", { email, telegramId: decoded.telegramId });
 
     return {
       token,
+      csrfToken,
       user: { id: user.id, email: user.email, role: user.role },
       message: appConfig.requireEmailVerification
         ? "Registration successful. Please verify your email."

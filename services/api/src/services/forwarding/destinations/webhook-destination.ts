@@ -6,6 +6,8 @@
 import crypto from "crypto";
 import type { Message, ForwardingRule } from "@prisma/client";
 import { extractOTP } from "../../../utils/otpExtractor";
+import { ssrfSafeFetch } from "../../../utils/ssrf-safe-fetch";
+import { decryptField } from "../../../utils/field-encryptor";
 
 interface SendResult {
   success: boolean;
@@ -24,7 +26,8 @@ export async function forwardToWebhook(
   rule: ForwardingRule
 ): Promise<SendResult> {
   const webhookUrl = (rule as any).webhookUrl;
-  const webhookSecret = (rule as any).webhookSecret;
+  const storedSecret = (rule as any).webhookSecret;
+  const webhookSecret = storedSecret ? decryptField(storedSecret) : null;
 
   if (!webhookUrl) {
     return { success: false, error: "No webhook URL configured" };
@@ -51,11 +54,11 @@ export async function forwardToWebhook(
       headers["X-Ephemera-Signature"] = `sha256=${signature}`;
     }
 
-    const response = await fetch(webhookUrl, {
+    const response = await ssrfSafeFetch(webhookUrl, {
       method: "POST",
       headers,
       body: payloadStr,
-      signal: AbortSignal.timeout(10000), // 10s timeout
+      timeoutMs: 10000,
     });
 
     if (!response.ok) {

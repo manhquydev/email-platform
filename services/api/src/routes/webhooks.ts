@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma';
 import { generateWebhookSecret, triggerWebhook, getAvailableEvents, WEBHOOK_EVENTS, signPayload } from '../services/webhookService';
 import { createTierEnforceHandler } from '../services/tier-enforcement.service';
 import { validateWebhookUrl } from '../utils/input-sanitizer';
+import { encryptField } from '../utils/field-encryptor';
 import crypto from 'crypto';
 import { sharedErrorResponseSchema } from '../plugins/swagger';
 
@@ -131,7 +132,9 @@ export async function webhookRoutes(app: FastifyInstance) {
             where: { userId: user.userId },
             orderBy: { createdAt: 'desc' }
         });
-        return webhooks;
+        // The signing secret is stored encrypted and only revealed once at creation —
+        // never echo it back on listing.
+        return webhooks.map(({ secret, ...rest }) => rest);
     });
 
     // Create a new webhook
@@ -177,17 +180,20 @@ export async function webhookRoutes(app: FastifyInstance) {
             return reply.status(400).send({ error: `Invalid webhook URL: ${urlValidation.reason}` });
         }
 
+        // Store the signing secret encrypted at rest; return the plaintext to the caller
+        // exactly once here so they can configure their receiver.
+        const plainSecret = generateWebhookSecret();
         const webhook = await prisma.webhook.create({
             data: {
                 userId: user.userId,
                 name: parsed.data.name,
                 url: parsed.data.url,
                 events: parsed.data.events,
-                secret: generateWebhookSecret(),
+                secret: encryptField(plainSecret),
             }
         });
 
-        return reply.status(201).send(webhook);
+        return reply.status(201).send({ ...webhook, secret: plainSecret });
     });
 
     // Delete a webhook
@@ -297,7 +303,9 @@ export async function webhookRoutes(app: FastifyInstance) {
             data: parsed.data
         });
 
-        return updated;
+        // Do not leak the stored signing secret on update responses.
+        const { secret, ...safe } = updated;
+        return safe;
     });
 
     // Get logs for a webhook

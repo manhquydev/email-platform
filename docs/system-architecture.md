@@ -343,6 +343,56 @@ REQUIRE_EMAIL_VERIFICATION=true
 - `services/web/src/index.css` (lines 16-32: @supports fallbacks)
 - `services/web/src/components/EmailStream.tsx` (removed list wrapper styles)
 
+## 8. Security Utilities
+
+A set of shared security utilities enforce defense-in-depth across the platform:
+
+### Outbound Network Security: `ssrf-safe-fetch.ts`
+- **SSRF Protection**: Blocks requests to private/loopback/link-local IPs and cloud metadata endpoints
+- **Protocol Lock**: HTTPS-only; rejects HTTP schemes
+- **Port Allowlist**: Restricts to safe ports (443 for HTTPS, configurable via `SAFE_FETCH_ALLOWED_PORTS`)
+- **Redirect Hardening**: Refuses all redirects
+- **Usage**: Webhook delivery and any user-controlled outbound HTTP
+
+### At-Rest Field Encryption: `field-encryptor.ts`
+- **Algorithm**: AES-256-GCM via `encryption.ts`
+- **Envelope Format**: `fenc:v1:{encryptedBase64}` prefix for version tracking
+- **Idempotent Migration**: `encryptIfNeeded()` prevents double-encryption
+- **Encrypted Fields**:
+  - `Webhook.secret`
+  - `ForwardingRule.webhookSecret`
+  - `HostingProvider.webhookSecret`
+  - DKIM private keys and TOTP secrets (existing)
+
+### Path Traversal Containment: `path-validation.ts`
+- **Validation**: `validatePathWithin(userPath, baseDir)` ensures path stays within container
+- **Usage**: Backup download/delete operations, maildir synchronization
+
+### CAPTCHA Verification: `captcha-verifier.ts`
+- **Providers**: Turnstile or hCaptcha (configurable)
+- **Integration**: Per-endpoint opt-in challenge-response
+- **Verification**: Server-side token validation before proceeding
+
+### Brute-Force Mitigation: `auth-attempt-limiter.ts`
+- **Mechanism**: Sliding window rate limiter (Redis + memory fallback)
+- **Coverage**: SMTP LOGIN, IMAP LOGIN attempts
+- **Policy**: Configurable threshold (default: 5 attempts / 15 minutes)
+- **Lockout**: Temporary ban; logged for audit
+
+### SSE Security: `sse-ticket.ts`
+- **Single-Use Auth**: 60-second opaque tickets (no tokens in URLs)
+- **Transport**: `GET /events?ticket=XXX` exchanges ticket for EventSource connection
+- **Replacement**: Eliminates token-in-URL risk for Server-Sent Events
+
+### Token Transport & Storage
+- **Access Token**: In-memory, cleared on page unload (never persisted)
+- **Refresh Token**: httpOnly, secure, SameSite=Strict cookie only (not in URL/localStorage)
+- **Token Manager** (`token-manager.ts`): Shared API for accessing current token; cross-tab sync via BroadcastChannel
+- **CSRF Token**: Parent-domain cookie + localStorage fallback (prevents CSRF in iframe contexts)
+- **Session Lifecycle**:
+  - Password login, SSO, magic-link, and Telegram flows all establish httpOnly refresh tokens
+  - Token revocation is **fail-closed** by default (`TOKEN_REVOCATION_FAIL_CLOSED=true`): if revocation store is unavailable, logins are rejected rather than allowed
+
 ## 9. Scalability Considerations
 
 ### Current Architecture

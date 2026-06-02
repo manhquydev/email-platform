@@ -13,9 +13,10 @@ import type {
 } from "./types";
 
 import { API_BASE } from "../../../utils/api";
+import { tokenManager } from "../../../utils/token-manager";
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = localStorage.getItem("token");
+  const token = tokenManager.getAccessToken();
   const res = await fetch(`${API_BASE}${url}`, {
     ...options,
     headers: {

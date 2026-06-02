@@ -83,8 +83,15 @@ export function useSSE() {
         eventSourceRef.current = null;
       }
 
-      // Create new SSE connection
-      const url = `${API_BASE}/realtime/sse?token=${encodeURIComponent(token)}`;
+      // Exchange the token for a single-use SSE ticket (token sent in the Authorization header),
+      // then open the EventSource with the ticket — the token is never placed in the URL.
+      const ticketRes = await fetch(`${API_BASE}/api/events/ticket`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!ticketRes.ok) throw new Error(`SSE ticket request failed (${ticketRes.status})`);
+      const { ticket } = (await ticketRes.json()) as { ticket: string };
+      const url = `${API_BASE}/api/events?ticket=${encodeURIComponent(ticket)}`;
       const eventSource = new EventSource(url);
 
       eventSource.onopen = () => {
@@ -120,6 +127,13 @@ export function useSSE() {
     } catch (error) {
       console.error('SSE connection failed:', error);
       isConnectingRef.current = false;
+      // Retry on transient failures (e.g. ticket request) with the same backoff as onerror.
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      reconnectTimeoutRef.current = setTimeout(() => {
+        connect();
+      }, 5000);
     }
   }, [isAuthenticated, handleSSEEvent]);
 

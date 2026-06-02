@@ -4,6 +4,7 @@ import { WEBHOOK_QUEUE_NAME } from './queue/webhookQueue';
 import { prisma } from './lib/prisma';
 import { signPayload, WebhookPayload } from './services/webhookService';
 import { isInternalUrl } from './utils/network';
+import { decryptField } from './utils/field-encryptor';
 
 interface WebhookJobData {
     webhookId: string;
@@ -44,7 +45,7 @@ export const setupWebhookWorker = (logger: { info: any, error: any, warn: any })
             }
 
             const payloadString = JSON.stringify(payload);
-            const signature = signPayload(payloadString, webhook.secret);
+            const signature = signPayload(payloadString, decryptField(webhook.secret));
 
             // Create AbortController for timeout
             const controller = new AbortController();

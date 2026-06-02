@@ -5,6 +5,10 @@ import { prisma } from "../lib/prisma";
 import { appConfig } from "../config";
 import { outboundService } from "../services/outbound";
 import { recordAudit } from "../utils/audit";
+import { RefreshTokenService } from "../services/refresh-token.service";
+import { createAccessToken, createCsrfToken } from "./auth/auth-tokens";
+import { setAuthCookies } from "./auth/auth-cookies";
+import { COOKIE_MAX_AGE_DEFAULT } from "./auth/auth-config";
 
 export async function magicLinkRoutes(app: FastifyInstance) {
     // 1. Request Magic Link - Strict rate limit to prevent SMTP spam
@@ -116,10 +120,23 @@ export async function magicLinkRoutes(app: FastifyInstance) {
             return reply.status(403).send({ error: "Account is disabled" });
         }
 
-        // Issue JWT
-        const jwt = app.jwt.sign({ userId: user.id, role: user.role, tier: user.tier }, { expiresIn: "30d" });
+        // Establish a normal session: a short-lived access token (carries jti + type so it is
+        // revocable via the denylist) plus an opaque refresh-token cookie. Previously this issued
+        // a 30-day JWT with no jti — long-lived AND impossible to revoke per-token.
+        const accessToken = createAccessToken(app, user);
+        const { token: refreshToken } = await RefreshTokenService.createToken(
+            user.id, 7, request.headers["user-agent"], request.ip
+        );
+        const csrfToken = createCsrfToken();
+        setAuthCookies(reply, request, refreshToken, csrfToken, COOKIE_MAX_AGE_DEFAULT);
+
         await recordAudit(user.id, "LOGIN_MAGIC_LINK", { ip: request.ip });
 
-        return { token: jwt, user: { id: user.id, email: user.email, role: user.role } };
+        return {
+            token: accessToken,
+            csrfToken,
+            expiresIn: 900,
+            user: { id: user.id, email: user.email, role: user.role },
+        };
     });
 }

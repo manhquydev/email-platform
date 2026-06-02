@@ -1,8 +1,5 @@
 import paramiko
-
-HOST = "165.22.48.193"
-USERNAME = "root"
-PASSWORD = "Manhquy203@"
+from _ssh_config import HOST, USERNAME, PASSWORD
 
 def list_root():
     client = paramiko.SSHClient()

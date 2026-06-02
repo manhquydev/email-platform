@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import type { ReactNode } from "react";
 import { jwtDecode } from "jwt-decode";
 import toast from "react-hot-toast";
-import { useLocalStorage } from "../hooks/useLocalStorage";
 import { api } from "../utils/api";
 import { tokenManager } from "../utils/token-manager";
 import type { User } from "../types";
@@ -27,7 +26,9 @@ const REFRESH_INTERVAL = 10 * 60 * 1000;
 const HIDDEN_REFRESH_THRESHOLD = 15 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [token, setToken] = useLocalStorage("token", "");
+    // Access token is held in memory only (see token-manager). This React state mirrors it for
+    // components that read useAuth().token; it is intentionally NOT persisted to localStorage.
+    const [token, setToken] = useState("");
     const [user, setUser] = useState<User | null>(null);
     const [busy, setBusy] = useState(false);
     const [initializing, setInitializing] = useState(true);
@@ -162,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     lastRefreshRef.current = Date.now();
 
                     // Notify other tabs (include CSRF token so they can sync it)
-                    const newCsrfToken = localStorage.getItem('csrfToken');
+                    const newCsrfToken = tokenManager.getCsrfToken();
                     channelRef.current?.postMessage({ type: 'token_refresh', token: newToken, csrfToken: newCsrfToken });
                 } catch (error) {
                     console.error('Background refresh failed:', (error as Error).message);
@@ -271,7 +272,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
                             setToken(newToken);
                             lastRefreshRef.current = Date.now();
-                            const newCsrfToken = localStorage.getItem('csrfToken');
+                            const newCsrfToken = tokenManager.getCsrfToken();
                             channelRef.current?.postMessage({ type: 'token_refresh', token: newToken, csrfToken: newCsrfToken });
                         } catch (error) {
                             console.error('Background refresh failed:', (error as Error).message);
@@ -298,9 +299,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasInitialized.current = true;
 
         const initAuth = async () => {
-            // Prefer tokenManager's accessToken (kept fresh by background refresh)
-            // over localStorage.token (which only updates when setToken() is explicitly called)
-            const latestToken = tokenManager.getAccessToken() || token;
+            // The access token lives in memory and is cleared on full page reload. If a session
+            // likely exists (the non-sensitive flag is set, meaning an httpOnly refresh cookie was
+            // issued), silently refresh to obtain a fresh access token; otherwise treat as logged out.
+            let latestToken = tokenManager.getAccessToken();
+            if (!latestToken && tokenManager.hasSessionFlag()) {
+                try {
+                    latestToken = await tokenManager.refreshAccessToken();
+                } catch {
+                    latestToken = null;
+                }
+            }
 
             if (latestToken) {
                 try {
@@ -324,8 +333,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             setUser(null);
                         }
                     } else {
-                        // Token still valid — sync to ensure localStorage.token is up-to-date
-                        if (latestToken !== token) setToken(latestToken);
+                        setToken(latestToken);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setUser({ id: decoded.id, email: decoded.email, role: decoded.role, tier: (decoded as any).tier });
 

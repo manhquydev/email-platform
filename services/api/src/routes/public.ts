@@ -3,12 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { appConfig } from "../config";
 import { recordAudit } from "../utils/audit";
-
-const verifyCaptcha = (token?: string) => {
-  if (!appConfig.requireCaptchaForPublicInbox) return true;
-  if (!appConfig.captchaSecret) return false;
-  return token === appConfig.captchaSecret;
-};
+import { verifyCaptchaToken } from "../utils/captcha-verifier";
 
 export async function publicRoutes(app: FastifyInstance) {
   app.post("/public/inboxes", async (request, reply) => {
@@ -28,7 +23,10 @@ export async function publicRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid payload", details: body.error.flatten() });
     }
 
-    if (!verifyCaptcha(body.data.captchaToken)) {
+    const captchaOk = appConfig.requireCaptchaForPublicInbox
+      ? await verifyCaptchaToken(body.data.captchaToken, request.ip)
+      : true;
+    if (!captchaOk) {
       return reply.status(403).send({ error: "CAPTCHA verification failed" });
     }
 

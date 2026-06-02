@@ -80,7 +80,7 @@ services:
       ALLOW_AUTO_DOMAIN_CREATION: "true"
       EPHEMERA_EDITION: "community"
       DEFAULT_ADMIN_EMAIL: "manhquydev@gmail.com"
-      DEFAULT_ADMIN_PASSWORD: "Manhquy203@"
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-changeme}
       # Use env var for WEB_URL or default to production domain
       WEB_URL: ${WEB_URL:-https://app.manhquy.click}
       STORAGE_DIR: /app/storage
@@ -188,7 +188,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
     volumes:
       - ./services/observability/grafana/provisioning:/etc/grafana/provisioning
       - ./services/observability/grafana/dashboards:/etc/grafana/dashboards

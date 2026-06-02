@@ -539,6 +539,33 @@ function ephemera_clientWebmailSSO(array $params)
         }
 
         $email = $_GET['email'] ?? null;
+
+        // Reject requests for a specific mailbox address unless that address
+        // belongs to this tenant, preventing cross-tenant SSO escalation.
+        if ($email !== null) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return 'Invalid email address';
+            }
+
+            // Verify the mailbox exists under this tenant before minting SSO.
+            $mailboxList = $api->listMailboxes($tenantId);
+            if (!$mailboxList['success']) {
+                return 'Unable to verify mailbox ownership';
+            }
+
+            $owned = false;
+            foreach ($mailboxList['data']['mailboxes'] ?? [] as $mailbox) {
+                if (strcasecmp($mailbox['email'] ?? '', $email) === 0) {
+                    $owned = true;
+                    break;
+                }
+            }
+
+            if (!$owned) {
+                return 'Mailbox not found for this service';
+            }
+        }
+
         $sso = $api->getWebmailSSO($tenantId, $email);
 
         if ($sso['success']) {

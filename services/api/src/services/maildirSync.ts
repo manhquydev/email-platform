@@ -6,6 +6,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { prisma } from '../lib/prisma';
+import { validatePathWithin, isSafePathComponent } from '../utils/path-validation';
 
 const MAILDIR_ROOT = process.env.MAILDIR_ROOT || '/var/mail';
 
@@ -28,10 +29,18 @@ interface MessageForMaildir {
 }
 
 /**
- * Get the Maildir path for a specific inbox
+ * Get the Maildir path for a specific inbox.
+ *
+ * domainName / localPart originate from stored inbox data and are used to build a
+ * filesystem path, so they must be rejected if they contain `..`, separators or other
+ * traversal characters; the result is also containment-checked against MAILDIR_ROOT.
+ * This is the single choke point for every maildir fs operation below.
  */
 export function getMaildirPath(domainName: string, localPart: string): string {
-    return path.join(MAILDIR_ROOT, domainName, localPart);
+    if (!isSafePathComponent(domainName) || !isSafePathComponent(localPart)) {
+        throw new Error('Invalid maildir path component');
+    }
+    return validatePathWithin(MAILDIR_ROOT, path.join(domainName, localPart));
 }
 
 /**

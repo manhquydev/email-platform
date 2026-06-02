@@ -6,9 +6,11 @@ import { ImapSyncService } from '../../services/migration/imap-sync';
 
 export default async function adminMigrationRoutes(fastify: FastifyInstance) {
 
-  // Start IMAP Sync Job
+  // Start IMAP Sync Job. Spawns a background sync that connects to an external IMAP host
+  // with caller-supplied credentials, so cap how often it can be triggered.
   fastify.post('/imap-sync', {
-    preHandler: requireAdminRole([AdminRole.SUPER_ADMIN, AdminRole.ORG_ADMIN])
+    preHandler: requireAdminRole([AdminRole.SUPER_ADMIN, AdminRole.ORG_ADMIN]),
+    config: { rateLimit: { max: 10, timeWindow: '1 hour' } }
   }, async (req, reply) => {
     const { sourceHost, sourcePort, sourceUser, sourcePass, targetInboxId, useSsl } = req.body as any;
 

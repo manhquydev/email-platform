@@ -27,19 +27,20 @@ export interface Alias {
   lastUsedAt: Date | null;
 }
 
-// Simple encryption for forward addresses (use proper KMS in production)
-// SECURITY: Require encryption key in production to prevent data loss on restart
-const ENCRYPTION_KEY = (() => {
+// AES key for forward-address encryption. There is NO hardcoded fallback: a dev key shipped
+// in source would let anyone with the code decrypt stored forward addresses. Resolved lazily
+// so importing this module never crashes; the requirement is enforced on first encrypt/decrypt.
+function getEncryptionKey(): Buffer {
   const key = process.env.ALIAS_ENCRYPTION_KEY;
-  if (!key && process.env.NODE_ENV === 'production') {
-    throw new Error('ALIAS_ENCRYPTION_KEY is required in production');
+  if (!key) {
+    throw new Error('ALIAS_ENCRYPTION_KEY env var is required');
   }
-  return key || 'dev-only-key-do-not-use-in-prod!';
-})();
+  return Buffer.from(key);
+}
 
 function encrypt(text: string): string {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  const cipher = crypto.createCipheriv('aes-256-cbc', getEncryptionKey(), iv);
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   return iv.toString('hex') + ':' + encrypted;
@@ -48,7 +49,7 @@ function encrypt(text: string): string {
 function decrypt(encryptedText: string): string {
   const [ivHex, encrypted] = encryptedText.split(':');
   const iv = Buffer.from(ivHex, 'hex');
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  const decipher = crypto.createDecipheriv('aes-256-cbc', getEncryptionKey(), iv);
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;

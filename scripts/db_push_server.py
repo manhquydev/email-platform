@@ -1,10 +1,8 @@
 import paramiko
 import sys
 
-# SSH connection details from workflow
-HOST = "165.22.48.193"
-USERNAME = "root"
-PASSWORD = "Manhquy203@"
+from _ssh_config import HOST, USERNAME, PASSWORD
+
 PROJECT_DIR = "/root/email-platform."
 
 def db_push():

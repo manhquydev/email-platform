@@ -14,6 +14,25 @@ use lib '/usr/local/cpanel/Cpanel/Ephemera';
 use Cpanel::Ephemera::API    ();
 use Cpanel::Ephemera::Config ();
 
+# HTML escaping: prefer HTML::Entities when available, fall back to inline sub
+my $encode_entities;
+eval { require HTML::Entities; $encode_entities = \&HTML::Entities::encode_entities; };
+if ($@) {
+    $encode_entities = sub {
+        my ($str) = @_;
+        return '' unless defined $str;
+        $str =~ s/&/&amp;/g;
+        $str =~ s/</&lt;/g;
+        $str =~ s/>/&gt;/g;
+        $str =~ s/"/&quot;/g;
+        $str =~ s/'/&#x27;/g;
+        return $str;
+    };
+}
+
+# CSRF token from WHM session environment
+my $EXPECTED_CSRF = $ENV{'cp_security_token'} || '';
+
 # Initialize
 Whostmgr::ACLS::init_acls();
 
@@ -30,33 +49,49 @@ my $message_type = '';
 
 # Handle form submission
 if ($form->{action} && $form->{action} eq 'save') {
-    my $new_config = {
-        api_url        => $form->{api_url} || 'https://api.ephemera.email',
-        api_key        => $form->{api_key} || '',
-        default_plan   => $form->{default_plan} || 'LITE',
-        auto_provision => $form->{auto_provision} ? 1 : 0,
-    };
-
-    if ($config->save($new_config)) {
-        $message = 'Settings saved successfully!';
-        $message_type = 'success';
-    } else {
-        $message = 'Failed to save settings.';
+    if (!$EXPECTED_CSRF || ($form->{csrf_token} || '') ne $EXPECTED_CSRF) {
+        $message = 'Invalid or missing security token. Please reload the page and try again.';
         $message_type = 'error';
+    } else {
+        # Keep existing api_key if the field was left blank (not pre-filled in form).
+        my $existing_settings = $config->load();
+        my $new_api_key = ($form->{api_key} && $form->{api_key} =~ /\S/)
+            ? $form->{api_key}
+            : $existing_settings->{api_key};
+
+        my $new_config = {
+            api_url        => $form->{api_url} || 'https://api.ephemera.email',
+            api_key        => $new_api_key || '',
+            default_plan   => $form->{default_plan} || 'LITE',
+            auto_provision => $form->{auto_provision} ? 1 : 0,
+        };
+
+        if ($config->save($new_config)) {
+            $message = 'Settings saved successfully!';
+            $message_type = 'success';
+        } else {
+            $message = 'Failed to save settings.';
+            $message_type = 'error';
+        }
     }
 }
 
 # Handle test connection
 if ($form->{action} && $form->{action} eq 'test') {
-    my $api = Cpanel::Ephemera::API->new();
-    my $result = $api->test_connection();
-
-    if ($result->{success}) {
-        $message = "Connection successful! Provider: $result->{data}{provider}{name}";
-        $message_type = 'success';
-    } else {
-        $message = "Connection failed: $result->{error}";
+    if (!$EXPECTED_CSRF || ($form->{csrf_token} || '') ne $EXPECTED_CSRF) {
+        $message = 'Invalid or missing security token. Please reload the page and try again.';
         $message_type = 'error';
+    } else {
+        my $api = Cpanel::Ephemera::API->new();
+        my $result = $api->test_connection();
+
+        if ($result->{success}) {
+            $message = 'Connection successful!';
+            $message_type = 'success';
+        } else {
+            $message = 'Connection test failed. Please check your API key and URL.';
+            $message_type = 'error';
+        }
     }
 }
 
@@ -156,25 +191,31 @@ print qq{
 };
 
 if ($message) {
-    print qq{<div class="alert alert-$message_type">$message</div>};
+    my $e_msg      = $encode_entities->($message);
+    my $e_msg_type = $encode_entities->($message_type);
+    print qq{<div class="alert alert-$e_msg_type">$e_msg</div>};
 }
+
+my $e_csrf    = $encode_entities->($EXPECTED_CSRF);
+my $e_api_url = $encode_entities->($settings->{api_url});
+# api_key is intentionally not pre-filled to avoid rendering the stored secret into HTML.
 
 print qq{
     <form method="post" action="settings.cgi">
         <input type="hidden" name="action" value="save">
+        <input type="hidden" name="csrf_token" value="$e_csrf">
 
         <div class="form-group">
             <label for="api_url">Ephemera API URL</label>
             <input type="text" id="api_url" name="api_url"
-                   value="$settings->{api_url}"
+                   value="$e_api_url"
                    placeholder="https://api.ephemera.email">
         </div>
 
         <div class="form-group">
             <label for="api_key">Provider API Key</label>
             <input type="password" id="api_key" name="api_key"
-                   value="$settings->{api_key}"
-                   placeholder="eph_provider_...">
+                   placeholder="Enter new API key to change (leave blank to keep current)">
             <small>Get your API key from <a href="https://ephemera.email/providers" target="_blank">ephemera.email/providers</a></small>
         </div>
 
@@ -203,6 +244,7 @@ print qq{
     <h3>Test Connection</h3>
     <form method="post" action="settings.cgi">
         <input type="hidden" name="action" value="test">
+        <input type="hidden" name="csrf_token" value="$e_csrf">
         <button type="submit" class="btn btn-secondary">Test API Connection</button>
     </form>
 </div>

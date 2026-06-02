@@ -79,6 +79,16 @@ export default function MessageDetailScreen() {
     []
   );
 
+  // Tags that can execute code or load external resources are suppressed so
+  // untrusted email HTML cannot inject active content into the render tree.
+  // Note: position/zIndex are already untranslatable by react-native-render-html
+  // and never applied to RN styles, so no CSS ignoredStyles are needed.
+  const ignoredDomTags = [
+    'script', 'iframe', 'object', 'embed',
+    'form', 'input', 'button',
+    'meta', 'link', 'style',
+  ];
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -170,6 +180,7 @@ export default function MessageDetailScreen() {
               contentWidth={width - 32}
               source={{ html: message.htmlBody }}
               tagsStyles={htmlTagStyles}
+              ignoredDomTags={ignoredDomTags}
             />
           ) : (
             <Text style={styles.textBody}>{message.textBody || ''}</Text>

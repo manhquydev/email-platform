@@ -6,6 +6,11 @@ const CHANNEL = 'realtime:events';
 // Get Redis config directly from env
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379');
+const REDIS_AUTH_OPTS = {
+  ...(process.env.REDIS_USERNAME ? { username: process.env.REDIS_USERNAME } : {}),
+  ...(process.env.REDIS_PASSWORD ? { password: process.env.REDIS_PASSWORD } : {}),
+  ...(process.env.REDIS_TLS === 'true' ? { tls: {} } : {}),
+};
 
 class RealtimePubSub {
   private publisher: Redis | null = null;
@@ -20,10 +25,12 @@ class RealtimePubSub {
     this.publisher = new Redis({
       host: REDIS_HOST,
       port: REDIS_PORT,
+      ...REDIS_AUTH_OPTS,
     });
     this.subscriber = new Redis({
       host: REDIS_HOST,
       port: REDIS_PORT,
+      ...REDIS_AUTH_OPTS,
     });
 
     this.publisher.on('error', (err) => {

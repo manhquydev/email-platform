@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { tokenManager } from "../../utils/token-manager";
 import type { TelegramUser } from "../../components/TelegramLoginButton";
 import toast from "react-hot-toast";
 
@@ -40,8 +41,9 @@ export function useLoginForm() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleLoginSuccess = (token: string, user: any) => {
-        // Use accessToken key to match tokenManager.getAccessToken() which reads localStorage.accessToken
-        localStorage.setItem('accessToken', token);
+        // Seed the in-memory access token + session flag; the full reload below re-hydrates the
+        // token from the httpOnly refresh cookie set by the server.
+        tokenManager.setTokens(token);
         localStorage.setItem('user', JSON.stringify(user));
         window.location.href = user.role === 'ADMIN' ? '/admin' : '/app';
     };
@@ -106,6 +108,9 @@ export function useLoginForm() {
 
             // Successful login
             if (data.token && data.user) {
+                // Seed the in-memory CSRF token so state-changing requests before the first
+                // refresh send a valid X-CSRF-Token (the cookie is also set server-side).
+                if (data.csrfToken) tokenManager.setCsrfToken(data.csrfToken);
                 toast.success("Đăng nhập Telegram thành công!");
                 handleLoginSuccess(data.token, data.user);
             }

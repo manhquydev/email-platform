@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../utils/api';
+import { tokenManager } from '../utils/token-manager';
 
 export interface QueueMetrics {
   waiting: number;
@@ -28,7 +29,7 @@ export interface SystemAnalytics {
 }
 
 export function useSystemAnalytics() {
-  const token = localStorage.getItem('token') ?? undefined;
+  const token = tokenManager.getAccessToken() ?? undefined;
   return useQuery<SystemAnalytics>({
     queryKey: ['admin', 'analytics', 'system'],
     queryFn: async () => {

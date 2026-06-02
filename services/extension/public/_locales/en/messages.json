@@ -141,5 +141,383 @@
   },
   "errorBoundary_message": {
     "message": "An error occurred. Please try again."
+  },
+  "appTagline": {
+    "message": "Temporary inbox assistant"
+  },
+  "appCompose": {
+    "message": "Compose"
+  },
+  "appOpenSidePanel": {
+    "message": "Open in Side Panel"
+  },
+  "sidepanelContextTitle": {
+    "message": "Context Intelligence"
+  },
+  "sidepanelGenerateFor": {
+    "message": "Generate for $1"
+  },
+  "login2faPrompt": {
+    "message": "Enter the verification code from your authenticator app"
+  },
+  "login2faFailed": {
+    "message": "Verification failed"
+  },
+  "loginAnonymousFailed": {
+    "message": "Failed to create anonymous inbox"
+  },
+  "createInboxTitle": {
+    "message": "Create New Inbox"
+  },
+  "closeModal": {
+    "message": "Close modal"
+  },
+  "createInboxModeRandom": {
+    "message": "Random"
+  },
+  "createInboxModeCustom": {
+    "message": "Custom"
+  },
+  "createInboxEmailPrefix": {
+    "message": "Email Prefix"
+  },
+  "createInboxDomain": {
+    "message": "Domain"
+  },
+  "createInboxPreview": {
+    "message": "Preview"
+  },
+  "createInboxRandomHint": {
+    "message": "A random email address will be generated automatically."
+  },
+  "createInboxCreating": {
+    "message": "Creating..."
+  },
+  "createInboxButtonRandom": {
+    "message": "Create Random Inbox"
+  },
+  "createInboxButtonCustom": {
+    "message": "Create Custom Inbox"
+  },
+  "composeRecipientPlaceholder": {
+    "message": "recipient@example.com"
+  },
+  "composeSubjectPlaceholder": {
+    "message": "Email subject"
+  },
+  "composeOriginalMessage": {
+    "message": "Original Message:"
+  },
+  "composeFromPrefix": {
+    "message": "From:"
+  },
+  "composeBodyPlaceholder": {
+    "message": "Type your message..."
+  },
+  "composeCancel": {
+    "message": "Cancel"
+  },
+  "messageListLoadFailed": {
+    "message": "Failed to load messages"
+  },
+  "goBackToMessageList": {
+    "message": "Go back to message list"
+  },
+  "messageListNoSubject": {
+    "message": "(No Subject)"
+  },
+  "messageListUnknownSender": {
+    "message": "Unknown sender"
+  },
+  "messageListOffline": {
+    "message": "OFFLINE"
+  },
+  "messageListCached": {
+    "message": "cached"
+  },
+  "messageListCountFiltered": {
+    "message": "$1 of $2 messages"
+  },
+  "messageListCountAll": {
+    "message": "$1 messages"
+  },
+  "messageListSearchPlaceholder": {
+    "message": "Search messages..."
+  },
+  "messageListEmptyTitle": {
+    "message": "Your inbox is empty"
+  },
+  "messageListEmptyHint": {
+    "message": "Messages will appear here when received"
+  },
+  "messageListCheckMessages": {
+    "message": "Check for messages"
+  },
+  "messageListNoMatching": {
+    "message": "No matching messages"
+  },
+  "messageListNoMatchingHint": {
+    "message": "Try a different search term"
+  },
+  "messageListEllipsis": {
+    "message": "..."
+  },
+  "goBackToInboxList": {
+    "message": "Go back to inbox list"
+  },
+  "settingsShareTitle": {
+    "message": "Ephemera - Disposable Email"
+  },
+  "settingsShareText": {
+    "message": "Check out Ephemera for disposable email addresses!"
+  },
+  "settingsRoleUser": {
+    "message": "User"
+  },
+  "settingsManageAccount": {
+    "message": "Manage Account"
+  },
+  "settingsAppearance": {
+    "message": "Appearance"
+  },
+  "settingsThemeLight": {
+    "message": "Light"
+  },
+  "settingsThemeDark": {
+    "message": "Dark"
+  },
+  "settingsThemeSystem": {
+    "message": "System"
+  },
+  "settingsThemeAria": {
+    "message": "$1 theme$2"
+  },
+  "settingsThemeSelectedSuffix": {
+    "message": " (selected)"
+  },
+  "settingsStateEnabled": {
+    "message": "enabled"
+  },
+  "settingsStateDisabled": {
+    "message": "disabled"
+  },
+  "settingsPreferences": {
+    "message": "Preferences"
+  },
+  "settingsPushNotifications": {
+    "message": "Push Notifications"
+  },
+  "settingsPushNotificationsHint": {
+    "message": "Get alerted for new messages"
+  },
+  "settingsPushNotificationsAria": {
+    "message": "Push notifications $1. Click to toggle."
+  },
+  "settingsAutoCopyAddress": {
+    "message": "Auto-copy Address"
+  },
+  "settingsAutoCopyHint": {
+    "message": "Copy on creation"
+  },
+  "settingsAutoCopyAria": {
+    "message": "Auto-copy address $1. Click to toggle."
+  },
+  "settingsDefaultInboxType": {
+    "message": "Default Inbox Type"
+  },
+  "settingsDefaultInboxTypeHint": {
+    "message": "Applied when extension creates inbox"
+  },
+  "settingsInboxTypeTemporary": {
+    "message": "Temporary (24h)"
+  },
+  "settingsInboxTypePermanent": {
+    "message": "Permanent"
+  },
+  "settingsAutomationConfig": {
+    "message": "OpenAI Automation & Quick Create"
+  },
+  "settingsAutomationConfigHint": {
+    "message": "Allowed domains apply to automation and quick inbox actions"
+  },
+  "settingsAutomationExpiry": {
+    "message": "Automation inbox expiry"
+  },
+  "settingsAutomationExpiryAria": {
+    "message": "Select automation inbox expiry in hours"
+  },
+  "settingsAutomationExpiryDisabledHint": {
+    "message": "Set to Permanent so this expiry option is disabled"
+  },
+  "settingsAutomationDomains": {
+    "message": "Allowed Domains"
+  },
+  "settingsAutomationDomainsLoading": {
+    "message": "Loading domains..."
+  },
+  "settingsAutomationDomainsEmpty": {
+    "message": "No domains available"
+  },
+  "settingsAutomationDomainAria": {
+    "message": "Allow domain $1 for automation"
+  },
+  "settingsAutomationDomainsAll": {
+    "message": "No domain selected = use all domains"
+  },
+  "settingsAutomationDomainsCount": {
+    "message": "$1 domain(s) selected"
+  },
+  "settingsAutomationExportTitle": {
+    "message": "OpenAI Flow Session Data"
+  },
+  "settingsAutomationExportHint": {
+    "message": "Download generated email/password history as TXT"
+  },
+  "settingsAutomationExportSummary": {
+    "message": "Total: $1 • Ready: $2 • Used: $3"
+  },
+  "settingsAutomationExportDownload": {
+    "message": "Download TXT Session Data"
+  },
+  "settingsAutomationExportDownloading": {
+    "message": "Preparing file..."
+  },
+  "settingsShareInvite": {
+    "message": "Share & Invite"
+  },
+  "settingsShareEphemera": {
+    "message": "Share Ephemera"
+  },
+  "settingsLinkCopied": {
+    "message": "Link copied!"
+  },
+  "settingsInviteFriends": {
+    "message": "Invite friends to try Ephemera"
+  },
+  "settingsSupportLegal": {
+    "message": "Support & Legal"
+  },
+  "settingsMainDashboard": {
+    "message": "Main Dashboard"
+  },
+  "settingsPrivacyTerms": {
+    "message": "Privacy & Terms"
+  },
+  "settingsSignOut": {
+    "message": "Sign Out"
+  },
+  "inboxListLoadFailed": {
+    "message": "Failed to load inboxes"
+  },
+  "inboxListCreateFailed": {
+    "message": "Failed to create inbox"
+  },
+  "inboxListUpdateFailed": {
+    "message": "Failed to update inbox"
+  },
+  "inboxListExtendFailed": {
+    "message": "Failed to extend inbox"
+  },
+  "inboxListDeleteConfirm": {
+    "message": "Are you sure you want to delete this inbox?"
+  },
+  "inboxListDeleteFailed": {
+    "message": "Failed to delete inbox"
+  },
+  "inboxListLoadingAria": {
+    "message": "Loading inboxes"
+  },
+  "inboxListLoadingSrOnly": {
+    "message": "Loading your inboxes, please wait..."
+  },
+  "inboxListUsage": {
+    "message": "Usage:"
+  },
+  "inboxListRefreshAria": {
+    "message": "Refresh inbox list"
+  },
+  "inboxListExpiresIn": {
+    "message": "Expires in $1"
+  },
+  "inboxListCopyAddress": {
+    "message": "Copy Address"
+  },
+  "inboxListCopyAddressAria": {
+    "message": "Copy email address to clipboard"
+  },
+  "inboxListShowQr": {
+    "message": "Show QR Code"
+  },
+  "inboxListShowQrAria": {
+    "message": "Show QR code for this email"
+  },
+  "inboxListUnpinAria": {
+    "message": "Unpin inbox"
+  },
+  "inboxListPinAria": {
+    "message": "Pin inbox"
+  },
+  "inboxListSwitchTemporary": {
+    "message": "Switch to Temporary (24h)"
+  },
+  "inboxListMakePermanent": {
+    "message": "Make Permanent"
+  },
+  "inboxListSwitchTemporaryAria": {
+    "message": "Switch inbox to temporary mode"
+  },
+  "inboxListMakePermanentAria": {
+    "message": "Make inbox permanent"
+  },
+  "onboardingStep1Title": {
+    "message": "Create Your First Inbox"
+  },
+  "onboardingStep1Desc": {
+    "message": "Click the button above to generate a random disposable email address. Use it for signups, trials, or anywhere you need a temporary email."
+  },
+  "onboardingStep2Title": {
+    "message": "Auto-fill on Any Website"
+  },
+  "onboardingStep2Desc": {
+    "message": "When you're on a signup form, right-click any email field and select \"Fill with Ephemera\" to instantly insert your temporary email."
+  },
+  "onboardingStep3Title": {
+    "message": "Use Side Panel for Quick Access"
+  },
+  "onboardingStep3Desc": {
+    "message": "Pin the Side Panel for always-on access. Check messages while browsing without switching tabs or opening the popup."
+  },
+  "onboardingSkipAria": {
+    "message": "Skip onboarding"
+  },
+  "onboardingStepCounter": {
+    "message": "Step $1 of $2"
+  },
+  "onboardingBack": {
+    "message": "Back"
+  },
+  "onboardingNext": {
+    "message": "Next"
+  },
+  "onboardingGetStarted": {
+    "message": "Get Started"
+  },
+  "onboardingDontShowAgain": {
+    "message": "Don't show this again"
+  },
+  "bgInboxCreatedTitle": {
+    "message": "Inbox Created"
+  },
+  "bgInboxCreatedMessage": {
+    "message": "Created $1"
+  },
+  "bgLatestInboxTitle": {
+    "message": "Latest Inbox"
+  },
+  "bgContextParent": {
+    "message": "Ephemera"
+  },
+  "bgNoActiveInboxes": {
+    "message": "No active inboxes"
   }
 }

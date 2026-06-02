@@ -271,6 +271,37 @@ describe('FeatureName', () => {
 
 ## 6. Security Standards
 
+### Security Conventions
+
+#### Command Execution
+- **NEVER use `exec()` with interpolated user input**
+  - Use `execFile()` or `spawn()` with argument arrays (not shell strings)
+  - Maintain a whitelist of allowed commands/scripts
+  - Example: `execFile('script.sh', [userArg])` not `exec('script.sh ' + userArg)`
+
+#### Path Validation
+- **All user-provided file paths** must pass `validatePathWithin(userPath, baseDir)`
+- Used for backup downloads, deletions, and maildir sync operations
+- Prevents directory traversal attacks (e.g., `../../etc/passwd`)
+
+#### Field Encryption
+- **Secret-bearing database fields** must be encrypted via `field-encryptor`
+  - Apply to: webhook secrets, API keys, DKIM private keys, TOTP secrets
+  - Envelope format: `fenc:v1:{encryptedBase64}`
+  - Use `encryptIfNeeded()` for idempotent migrations
+
+#### Outbound Network Requests
+- **All user-controlled outbound URLs** must use `ssrf-safe-fetch`
+  - HTTPS-only, blocks private IPs (10.0.0.0/8, 127.0.0.0/8, 169.254.0.0/16), cloud metadata (169.254.169.254)
+  - No redirects; port allowlist (443 for HTTPS)
+  - Used by webhook delivery
+
+#### Authentication Token Transport
+- **Access tokens**: In-memory only (no localStorage, no URL parameters)
+- **Refresh tokens**: httpOnly, Secure, SameSite=Strict cookies only
+- **CSRF tokens**: Parent-domain cookie + localStorage fallback (iframe-safe)
+- **Never embed tokens in URLs or query parameters** (use opaque SSE tickets for EventSource)
+
 ### Input Validation
 - Validate all inputs with Zod
 - **HTML Sanitization**: ALWAYS use `DOMPurify.sanitize()` before rendering untrusted HTML content via `dangerouslySetInnerHTML`.
@@ -281,6 +312,7 @@ describe('FeatureName', () => {
 - **Token Rotation**: `POST /auth/refresh` implements rotation with reuse detection and family tracking.
 - API keys hashed before storage
 - 2FA secrets encrypted with AES-256-GCM
+- **Token Revocation**: Fail-closed by default (`TOKEN_REVOCATION_FAIL_CLOSED=true`); if revocation store unavailable, logins rejected
 
 ### Headers
 - Helmet middleware for security headers

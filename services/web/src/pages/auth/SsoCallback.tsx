@@ -9,8 +9,11 @@ export function SsoCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const accessToken = searchParams.get('accessToken');
     const error = searchParams.get('error');
+    // SAML/OIDC now set httpOnly cookies and redirect with ?success=true (no token in URL).
+    const success = searchParams.get('success');
+    // Back-compat: some provider flows may still pass a short-lived token in the query.
+    const legacyToken = searchParams.get('accessToken');
 
     if (error) {
       toast.error(decodeURIComponent(error) || 'Login failed');
@@ -18,23 +21,26 @@ export function SsoCallback() {
       return;
     }
 
-    if (accessToken) {
+    (async () => {
       try {
-        // Store access token via tokenManager (consistent with login flow)
-        // CSRF token is set as a shared-domain cookie by the API — no manual handling needed
-        tokenManager.setTokens(accessToken, '');
+        if (legacyToken) {
+          tokenManager.setTokens(legacyToken, '');
+        } else if (success) {
+          // Exchange the httpOnly refresh cookie for an in-memory access token.
+          await tokenManager.refreshAccessToken();
+        } else {
+          navigate('/login');
+          return;
+        }
         toast.success('Đăng nhập thành công');
-
-        // Full reload so AuthContext re-initializes with the new token
+        // Full reload so AuthContext re-initializes the session.
         window.location.href = '/app';
       } catch (err) {
         console.error('SSO Error:', err);
-        toast.error('Failed to save session');
+        toast.error('Failed to complete sign-in');
         navigate('/login');
       }
-    } else {
-      navigate('/login');
-    }
+    })();
   }, [searchParams, navigate]);
 
   return <Loading fullScreen message="Đang xác thực..." />;

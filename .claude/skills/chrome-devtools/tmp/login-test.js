@@ -12,7 +12,7 @@ async function loginTest() {
   // Type credentials
   const inputs = await page.$$('input');
   await inputs[0].type('quydoanahihi@gmail.com', { delay: 30 });
-  await inputs[1].type('Manhquy203@', { delay: 30 });
+  await inputs[1].type(process.env.TEST_PASSWORD || 'CHANGE_ME', { delay: 30 });
 
   // Click submit
   await page.click('button[type="submit"]');

@@ -1,6 +1,10 @@
 const BASE_URL = "https://api.manhquy.click";
 const EMAIL = "admin@example.com";
-const PASSWORD = "changeme";
+const PASSWORD = process.env.DEBUG_INBOX_PASSWORD;
+if (!PASSWORD) {
+    console.error("Error: required environment variable 'DEBUG_INBOX_PASSWORD' is not set.");
+    process.exit(1);
+}
 
 async function main() {
     console.log(`Logging in as ${EMAIL}...`);

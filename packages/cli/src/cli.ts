@@ -18,6 +18,25 @@ import {
   isAuthenticated,
 } from './config';
 
+/**
+ * Validate a user-supplied base URL.
+ * Rejects anything that is not a well-formed https:// URL to prevent
+ * accidental credential leakage over plain HTTP or malformed fetch targets.
+ */
+function validateBaseUrl(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    console.error(chalk.red(`Invalid base URL: "${url}" is not a valid URL`));
+    process.exit(1);
+  }
+  if (parsed.protocol !== 'https:') {
+    console.error(chalk.red(`Insecure base URL: "${url}" — only https:// URLs are allowed`));
+    process.exit(1);
+  }
+}
+
 const program = new Command();
 
 program
@@ -52,6 +71,11 @@ auth
     if (!apiKey) {
       console.error(chalk.red('API key is required'));
       process.exit(1);
+    }
+
+    // Validate the user-supplied URL before using it in fetch or persisting it.
+    if (options.baseUrl) {
+      validateBaseUrl(options.baseUrl);
     }
 
     const spinner = ora('Verifying API key...').start();

@@ -8,9 +8,7 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "paramiko", "-q"])
     import paramiko
 
-HOST = "165.22.48.193"
-USERNAME = "root"
-PASSWORD = "Manhquy203@"
+from _ssh_config import HOST, USERNAME, PASSWORD
 
 def check_send_error():
     print("🔗 Connecting...")

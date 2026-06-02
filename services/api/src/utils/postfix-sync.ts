@@ -8,16 +8,24 @@
 import { prisma } from "../lib/prisma";
 import * as fs from "fs";
 import * as path from "path";
-import { exec } from "child_process";
+import * as os from "os";
+import { exec, execFile } from "child_process";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // Path to relay_domains file (shared volume between API and Postfix)
 const RELAY_DOMAINS_PATH = process.env.RELAY_DOMAINS_PATH || "/app/shared/relay_domains";
 
 // Postfix container name for docker exec (fallback method)
 const POSTFIX_CONTAINER = process.env.POSTFIX_CONTAINER || "email-platform-postfix-1";
+
+// Container name is passed to docker — restrict to a safe allowlist before use.
+const CONTAINER_NAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
+function isValidContainerName(name: string): boolean {
+  return CONTAINER_NAME_REGEX.test(name) && name.length > 0 && name.length <= 64;
+}
 
 interface SyncResult {
   success: boolean;
@@ -90,16 +98,24 @@ async function syncViaFile(domains: string[]): Promise<SyncResult> {
  * Requires docker socket to be mounted
  */
 async function syncViaDocker(domains: string[]): Promise<SyncResult> {
+  if (!isValidContainerName(POSTFIX_CONTAINER)) {
+    const error = `Invalid POSTFIX_CONTAINER name`;
+    console.error("[postfix-sync]", error, POSTFIX_CONTAINER);
+    return { success: false, method: "docker", domains, error };
+  }
+
+  // Write the generated content to a host temp file and copy it into the container with
+  // `docker cp`, then run postmap/reload as separate argument-array execs. This removes the
+  // previous `sh -c 'echo "..."'` shell pipeline, whose quoting could be broken by a crafted
+  // domain name (command/variable injection via $, backtick, backslash or double-quote).
+  const tmpFile = path.join(os.tmpdir(), `relay_domains_${process.pid}_${Date.now()}.tmp`);
   try {
     const content = generateRelayDomainsContent(domains);
+    await fs.promises.writeFile(tmpFile, content, "utf-8");
 
-    // Escape content for shell
-    const escapedContent = content.replace(/'/g, "'\\''");
-
-    // Write to Postfix container and reload
-    const cmd = `docker exec ${POSTFIX_CONTAINER} sh -c 'echo "${escapedContent}" > /etc/postfix/relay_domains && postmap lmdb:/etc/postfix/relay_domains && postfix reload'`;
-
-    await execAsync(cmd);
+    await execFileAsync("docker", ["cp", tmpFile, `${POSTFIX_CONTAINER}:/etc/postfix/relay_domains`]);
+    await execFileAsync("docker", ["exec", POSTFIX_CONTAINER, "postmap", "lmdb:/etc/postfix/relay_domains"]);
+    await execFileAsync("docker", ["exec", POSTFIX_CONTAINER, "postfix", "reload"]);
 
     console.log(`[postfix-sync] Docker sync: ${domains.length} domains`);
 
@@ -116,6 +132,8 @@ async function syncViaDocker(domains: string[]): Promise<SyncResult> {
       domains,
       error: (error as Error).message,
     };
+  } finally {
+    await fs.promises.unlink(tmpFile).catch(() => {});
   }
 }
 

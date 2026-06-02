@@ -4,9 +4,10 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Link } from "react-router-dom";
 import { useTickets, SupportTicketList, SupportCreateForm } from "./support-modules";
+import { tokenManager } from "../utils/token-manager";
 
 function useIsAuthenticated() {
-  return !!localStorage.getItem("token");
+  return !!tokenManager.getAccessToken();
 }
 
 export function Support() {

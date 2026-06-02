@@ -1,8 +1,13 @@
 
 import { execSync } from 'child_process';
 
-// Use CI DATABASE_URL if set, otherwise fallback to local dev port
-const TEST_DB_URL = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5434/email_service_test";
+// DATABASE_URL must be set explicitly — no fallback with embedded credentials.
+// For local dev use: export DATABASE_URL=postgresql://postgres:<password>@localhost:5434/email_service_test
+const TEST_DB_URL = process.env.DATABASE_URL;
+if (!TEST_DB_URL) {
+    console.error("Error: required environment variable 'DATABASE_URL' is not set.");
+    process.exit(1);
+}
 
 console.log(`Migrating test database at ${TEST_DB_URL}...`);
 

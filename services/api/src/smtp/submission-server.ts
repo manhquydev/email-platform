@@ -13,6 +13,10 @@ import fs from "fs/promises";
 import { createWriteStream } from "fs";
 import { generateToken } from "../utils/token";
 import { OUTBOUND_INGEST_QUEUE_NAME } from "../services/outbound-delivery";
+import { AuthAttemptLimiter } from "../utils/auth-attempt-limiter";
+
+// Throttles repeated failed SMTP AUTH attempts per client IP (credential-stuffing guard).
+const smtpAuthLimiter = new AuthAttemptLimiter("smtp");
 
 type Logger = {
   info: (obj: Record<string, unknown> | string, msg?: string) => void;
@@ -52,14 +56,25 @@ export const startSubmissionServer = (logger: Logger, port = 587) => {
         return callback(new Error('Invalid authentication method'));
       }
 
-      SmtpAuthHandler.validateCredentials(auth.username || '', auth.password || '')
-        .then((result) => {
-          if (result.success && result.user) {
-            (session as SecureSession).user = { id: result.user.id, email: result.user.email };
-            callback(null, { user: result.user.id });
-          } else {
-            callback(new Error(result.error || 'Authentication failed'));
+      const clientIp = session.remoteAddress || 'unknown';
+
+      smtpAuthLimiter.isBlocked(clientIp)
+        .then((blocked) => {
+          if (blocked) {
+            return callback(new Error('Too many failed login attempts. Try again later.'));
           }
+
+          return SmtpAuthHandler.validateCredentials(auth.username || '', auth.password || '')
+            .then((result) => {
+              if (result.success && result.user) {
+                void smtpAuthLimiter.recordSuccess(clientIp);
+                (session as SecureSession).user = { id: result.user.id, email: result.user.email };
+                callback(null, { user: result.user.id });
+              } else {
+                void smtpAuthLimiter.recordFailure(clientIp);
+                callback(new Error(result.error || 'Authentication failed'));
+              }
+            });
         })
         .catch((err) => {
           logger.error({ err }, "SMTP Auth Error");

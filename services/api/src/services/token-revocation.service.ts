@@ -1,13 +1,18 @@
 /**
  * Token Revocation Service
- * Uses Redis to maintain a denylist of revoked JWT tokens
- * Implements fail-open pattern for Redis failures (with logging)
+ * Uses Redis to maintain a denylist of revoked JWT tokens.
+ *
+ * Fails CLOSED by default: if Redis is unavailable we cannot prove a token is NOT revoked, so
+ * the token is treated as revoked (request denied). This prevents revoked/stolen tokens from
+ * being honored during a Redis outage. Set TOKEN_REVOCATION_FAIL_CLOSED=false to fall back to
+ * the previous fail-open behavior (availability over revocation guarantees).
  */
 import Redis from "ioredis";
 
 // Redis config from environment
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379", 10);
+const FAIL_CLOSED = (process.env.TOKEN_REVOCATION_FAIL_CLOSED ?? "true").toLowerCase() !== "false";
 
 class TokenRevocationService {
   private redis: Redis | null = null;
@@ -24,6 +29,9 @@ class TokenRevocationService {
         port: REDIS_PORT,
         maxRetriesPerRequest: 3,
         lazyConnect: true,
+        ...(process.env.REDIS_USERNAME ? { username: process.env.REDIS_USERNAME } : {}),
+        ...(process.env.REDIS_PASSWORD ? { password: process.env.REDIS_PASSWORD } : {}),
+        ...(process.env.REDIS_TLS === "true" ? { tls: {} } : {}),
       });
 
       this.redis.on("connect", () => {
@@ -42,7 +50,10 @@ class TokenRevocationService {
 
       // Attempt connection
       this.redis.connect().catch((err) => {
-        console.warn("[TokenRevocation] Redis connection failed, running in fail-open mode:", err.message);
+        console.warn(
+          `[TokenRevocation] Redis connection failed (revocation checks fail-${FAIL_CLOSED ? "closed" : "open"}):`,
+          err.message,
+        );
       });
     } catch (err) {
       console.warn("[TokenRevocation] Failed to initialize Redis:", err);
@@ -77,9 +88,9 @@ class TokenRevocationService {
    */
   async isRevoked(jti: string): Promise<boolean> {
     if (!this.redis || !this.isConnected) {
-      // Fail-open: allow request if Redis unavailable, but log it
-      console.warn("[TokenRevocation] Redis unavailable, fail-open allowing token");
-      return false;
+      // Cannot verify revocation status → deny when fail-closed (default).
+      console.error(`[TokenRevocation] Redis unavailable, returning revoked=${FAIL_CLOSED}`);
+      return FAIL_CLOSED;
     }
 
     try {
@@ -87,8 +98,7 @@ class TokenRevocationService {
       return result === 1;
     } catch (err) {
       console.error("[TokenRevocation] Failed to check revocation:", err);
-      // Fail-open on error
-      return false;
+      return FAIL_CLOSED;
     }
   }
 
@@ -122,7 +132,7 @@ class TokenRevocationService {
    */
   async isUserTokenRevoked(userId: string, tokenIssuedAt: number): Promise<boolean> {
     if (!this.redis || !this.isConnected) {
-      return false; // Fail-open
+      return FAIL_CLOSED; // deny when we cannot verify (default)
     }
 
     try {
@@ -134,7 +144,7 @@ class TokenRevocationService {
       return tokenIssuedAt * 1000 < revokedAt;
     } catch (err) {
       console.error("[TokenRevocation] Failed to check user token revocation:", err);
-      return false;
+      return FAIL_CLOSED;
     }
   }
 

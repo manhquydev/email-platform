@@ -1,5 +1,6 @@
 import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify';
 import { connectionManager } from '../services/connection-manager';
+import { issueSseTicket, consumeSseTicket } from '../utils/sse-ticket';
 
 interface JWTPayload {
   userId: string;
@@ -10,37 +11,51 @@ interface JWTPayload {
 }
 
 const realtimeSseRoutes: FastifyPluginAsync = async (app) => {
+  // Mint a short-lived, single-use SSE ticket for the authenticated user. EventSource cannot
+  // send an Authorization header, so the client exchanges this ticket instead of putting the
+  // access token in the SSE URL.
+  app.get('/api/events/ticket', {
+    preHandler: [(app as any).authenticate],
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const userId = (request.user as { userId: string }).userId;
+    const ticket = await issueSseTicket(userId);
+    return reply.send({ ticket });
+  });
+
   app.get('/api/events', {
     schema: {
       querystring: {
         type: 'object',
         properties: {
-          token: { type: 'string' },
+          ticket: { type: 'string' },
         },
       },
     },
-  }, async (request: FastifyRequest<{ Querystring: { token?: string } }>, reply: FastifyReply) => {
-    // Extract token from query or Authorization header
-    let token = request.query.token;
-    if (!token) {
+  }, async (request: FastifyRequest<{ Querystring: { ticket?: string } }>, reply: FastifyReply) => {
+    // Prefer a single-use ticket (browser EventSource). A Bearer header is still accepted for
+    // non-browser clients. The raw access token is no longer accepted as a query parameter.
+    let userId: string | null = null;
+    const ticket = request.query.ticket;
+    if (ticket) {
+      userId = await consumeSseTicket(ticket);
+      if (!userId) {
+        return reply.status(401).send({ error: 'Invalid or expired ticket' });
+      }
+    } else {
       const authHeader = request.headers.authorization;
       if (authHeader?.startsWith('Bearer ')) {
-        token = authHeader.slice(7);
+        try {
+          const decoded = app.jwt.verify<JWTPayload>(authHeader.slice(7));
+          userId = decoded.userId;
+        } catch (err) {
+          request.log.warn({ err }, 'SSE auth failed');
+          return reply.status(401).send({ error: 'Invalid token' });
+        }
       }
     }
 
-    if (!token) {
-      return reply.status(401).send({ error: 'Token required' });
-    }
-
-    // Verify JWT
-    let userId: string;
-    try {
-      const decoded = app.jwt.verify<JWTPayload>(token);
-      userId = decoded.userId;
-    } catch (err) {
-      request.log.warn({ err }, 'SSE auth failed');
-      return reply.status(401).send({ error: 'Invalid token' });
+    if (!userId) {
+      return reply.status(401).send({ error: 'Authentication required' });
     }
 
     // Set SSE headers

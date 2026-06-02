@@ -14,6 +14,26 @@ use lib '/usr/local/cpanel/Cpanel/Ephemera';
 use Cpanel::Ephemera::API    ();
 use Cpanel::Ephemera::Config ();
 
+# HTML escaping: prefer HTML::Entities when available, fall back to inline sub
+my $encode_entities;
+eval { require HTML::Entities; $encode_entities = \&HTML::Entities::encode_entities; };
+if ($@) {
+    $encode_entities = sub {
+        my ($str) = @_;
+        return '' unless defined $str;
+        $str =~ s/&/&amp;/g;
+        $str =~ s/</&lt;/g;
+        $str =~ s/>/&gt;/g;
+        $str =~ s/"/&quot;/g;
+        $str =~ s/'/&#x27;/g;
+        return $str;
+    };
+}
+
+# CSRF token: WHM sets cp_security_token in the URL for authenticated sessions;
+# read it from the environment so state-changing POSTs can be tied to the session.
+my $EXPECTED_CSRF = $ENV{'cp_security_token'} || '';
+
 Whostmgr::ACLS::init_acls();
 
 unless (Whostmgr::ACLS::hasroot()) {
@@ -29,13 +49,18 @@ my $message_type = '';
 
 # Handle actions
 if ($form->{action}) {
-    if ($form->{action} eq 'suspend' && $form->{tenant_id}) {
+    # Reject requests that don't carry the session security token to prevent CSRF.
+    if (!$EXPECTED_CSRF || ($form->{csrf_token} || '') ne $EXPECTED_CSRF) {
+        $message = 'Invalid or missing security token. Please reload the page and try again.';
+        $message_type = 'error';
+    }
+    elsif ($form->{action} eq 'suspend' && $form->{tenant_id}) {
         my $result = $api->suspend_tenant($form->{tenant_id});
         if ($result->{success}) {
             $message = 'Tenant suspended successfully.';
             $message_type = 'success';
         } else {
-            $message = "Failed to suspend: $result->{error}";
+            $message = 'Failed to suspend tenant.';
             $message_type = 'error';
         }
     }
@@ -45,7 +70,7 @@ if ($form->{action}) {
             $message = 'Tenant unsuspended successfully.';
             $message_type = 'success';
         } else {
-            $message = "Failed to unsuspend: $result->{error}";
+            $message = 'Failed to unsuspend tenant.';
             $message_type = 'error';
         }
     }
@@ -116,7 +141,9 @@ print qq{
 };
 
 if ($message) {
-    print qq{<div class="alert alert-$message_type">$message</div>};
+    my $e_msg      = $encode_entities->($message);
+    my $e_msg_type = $encode_entities->($message_type);
+    print qq{<div class="alert alert-$e_msg_type">$e_msg</div>};
 }
 
 if (@$tenants) {
@@ -136,42 +163,56 @@ if (@$tenants) {
         <tbody>
     };
 
+    my $e_csrf = $encode_entities->($EXPECTED_CSRF);
+
     for my $tenant (@$tenants) {
-        my $status_class = 'status-' . lc($tenant->{status});
+        my $raw_status   = $tenant->{status} || '';
+        my $status_class = 'status-' . lc($raw_status);
         my $domain_count = $tenant->{_count}{domains} || 0;
-        my $created = substr($tenant->{createdAt}, 0, 10);
+        my $created      = substr($tenant->{createdAt} || '', 0, 10);
+
+        my $e_ext_id  = $encode_entities->($tenant->{externalId});
+        my $e_email   = $encode_entities->($tenant->{customerEmail});
+        my $e_plan    = $encode_entities->($tenant->{plan});
+        my $e_status  = $encode_entities->($raw_status);
+        my $e_sc      = $encode_entities->($status_class);
+        my $e_count   = $encode_entities->("$domain_count");
+        my $e_created = $encode_entities->($created);
+        my $e_id      = $encode_entities->($tenant->{id});
 
         print qq{
             <tr>
-                <td>$tenant->{externalId}</td>
-                <td>$tenant->{customerEmail}</td>
-                <td>$tenant->{plan}</td>
-                <td><span class="$status_class">$tenant->{status}</span></td>
-                <td>$domain_count</td>
-                <td>$created</td>
+                <td>$e_ext_id</td>
+                <td>$e_email</td>
+                <td>$e_plan</td>
+                <td><span class="$e_sc">$e_status</span></td>
+                <td>$e_count</td>
+                <td>$e_created</td>
                 <td>
         };
 
-        if ($tenant->{status} eq 'ACTIVE') {
+        if ($raw_status eq 'ACTIVE') {
             print qq{
                 <form method="post" style="display:inline">
                     <input type="hidden" name="action" value="suspend">
-                    <input type="hidden" name="tenant_id" value="$tenant->{id}">
+                    <input type="hidden" name="tenant_id" value="$e_id">
+                    <input type="hidden" name="csrf_token" value="$e_csrf">
                     <button type="submit" class="btn-sm btn-warning">Suspend</button>
                 </form>
             };
-        } elsif ($tenant->{status} eq 'SUSPENDED') {
+        } elsif ($raw_status eq 'SUSPENDED') {
             print qq{
                 <form method="post" style="display:inline">
                     <input type="hidden" name="action" value="unsuspend">
-                    <input type="hidden" name="tenant_id" value="$tenant->{id}">
+                    <input type="hidden" name="tenant_id" value="$e_id">
+                    <input type="hidden" name="csrf_token" value="$e_csrf">
                     <button type="submit" class="btn-sm btn-success">Unsuspend</button>
                 </form>
             };
         }
 
         print qq{
-                <a href="tenant_detail.cgi?id=$tenant->{id}" class="btn-sm btn-info">Details</a>
+                <a href="tenant_detail.cgi?id=$e_id" class="btn-sm btn-info">Details</a>
                 </td>
             </tr>
         };

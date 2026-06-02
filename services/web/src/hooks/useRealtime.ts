@@ -31,7 +31,11 @@ const getApiHost = (): string => {
 
 const API_HOST = getApiHost();
 const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${API_HOST}/ws/events`;
-const SSE_URL = `${API_BASE_URL}/realtime/sse`;
+// The API exposes SSE at /api/events and mints a single-use ticket at /api/events/ticket.
+// The access token is exchanged for a ticket (sent in a header) instead of being placed in
+// the SSE URL, where it would leak into proxy/server access logs and browser history.
+const SSE_URL = `${API_BASE_URL}/api/events`;
+const SSE_TICKET_URL = `${API_BASE_URL}/api/events/ticket`;
 const MAX_RECONNECT_DELAY = 30000;
 const POLLING_INTERVAL = 30000; // Fallback polling every 30s
 // MAX_SSE_FAILURES removed - not currently used
@@ -90,44 +94,66 @@ export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeReturn
     if (!token || sseRef.current) return;
 
     setStatus('connecting');
-    const sse = new EventSource(`${SSE_URL}?token=${encodeURIComponent(token)}`);
-    sseRef.current = sse;
 
-    sse.onopen = () => {
-      setStatus('connected');
-      reconnectDelayRef.current = INITIAL_RECONNECT_DELAY;
-      onConnect?.();
+    const scheduleReconnect = () => {
+      if (!mountedRef.current) return;
+      reconnectTimeoutRef.current = setTimeout(() => {
+        if (mountedRef.current) {
+          reconnectDelayRef.current = Math.min(
+            reconnectDelayRef.current * 2,
+            MAX_RECONNECT_DELAY
+          );
+          connectSSERef.current();
+        }
+      }, reconnectDelayRef.current);
     };
 
-    sse.onmessage = (event) => {
+    const wireSse = (sse: EventSource) => {
+      sseRef.current = sse;
+
+      sse.onopen = () => {
+        setStatus('connected');
+        reconnectDelayRef.current = INITIAL_RECONNECT_DELAY;
+        onConnect?.();
+      };
+
+      sse.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'connected') return;
+          handleEvent(data as RealtimeEvent);
+        } catch (err) {
+          console.error('[Realtime] SSE parse error:', err);
+        }
+      };
+
+      sse.onerror = () => {
+        setStatus('error');
+        sse.close();
+        sseRef.current = null;
+        onDisconnect?.();
+        scheduleReconnect();
+      };
+    };
+
+    // Exchange the access token for a short-lived, single-use SSE ticket (token sent in the
+    // Authorization header), then open the EventSource with the ticket — no token in the URL.
+    void (async () => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'connected') return;
-        handleEvent(data as RealtimeEvent);
+        const res = await fetch(SSE_TICKET_URL, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(`ticket ${res.status}`);
+        const { ticket } = (await res.json()) as { ticket: string };
+        if (!mountedRef.current || sseRef.current) return;
+        wireSse(new EventSource(`${SSE_URL}?ticket=${encodeURIComponent(ticket)}`));
       } catch (err) {
-        console.error('[Realtime] SSE parse error:', err);
+        console.error('[Realtime] SSE ticket fetch failed:', err);
+        setStatus('error');
+        scheduleReconnect();
       }
-    };
-
-    sse.onerror = () => {
-      setStatus('error');
-      sse.close();
-      sseRef.current = null;
-      onDisconnect?.();
-
-      // Reconnect with backoff
-      if (mountedRef.current) {
-        reconnectTimeoutRef.current = setTimeout(() => {
-          if (mountedRef.current) {
-            reconnectDelayRef.current = Math.min(
-              reconnectDelayRef.current * 2,
-              MAX_RECONNECT_DELAY
-            );
-            connectSSERef.current();
-          }
-        }, reconnectDelayRef.current);
-      }
-    };
+    })();
   }, [token, handleEvent, onConnect, onDisconnect, startPolling, stopPolling]);
 
   const connectWebSocket = useCallback(() => {

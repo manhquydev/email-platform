@@ -6,6 +6,7 @@
 
 import { prisma } from '../lib/prisma';
 import crypto from 'crypto';
+import { decryptField } from '../utils/field-encryptor';
 
 // Webhook event types
 export type WebhookEventType =
@@ -90,9 +91,11 @@ export class ProviderWebhookService {
 
     const body = JSON.stringify(webhookPayload);
 
-    // Generate HMAC signature if secret is configured
-    const signature = secret
-      ? crypto.createHmac('sha256', secret).update(body).digest('hex')
+    // Generate HMAC signature if secret is configured. The secret is stored encrypted at
+    // rest, so decrypt it here before signing (decryptField passes through legacy plaintext).
+    const signingSecret = secret ? decryptField(secret) : null;
+    const signature = signingSecret
+      ? crypto.createHmac('sha256', signingSecret).update(body).digest('hex')
       : null;
 
     const headers: Record<string, string> = {

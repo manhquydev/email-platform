@@ -486,7 +486,7 @@ model ForwardingRule {
   telegramChatId    String?                // For TELEGRAM
   discordWebhookUrl String?                // For DISCORD
   webhookUrl        String?                // For WEBHOOK
-  webhookSecret     String?                // For WEBHOOK signature
+  webhookSecret     String?                // For WEBHOOK signature; encrypted at rest (AES-256-GCM)
 
   // Matching configuration
   conditions    Json            @default("[]")
@@ -882,7 +882,7 @@ model Webhook {
   userId    String
   name      String
   url       String
-  secret    String
+  secret    String       // Encrypted at rest (AES-256-GCM via field-encryptor)
   events    String[]     @default(["email.received"])
   isActive  Boolean      @default(true)
   createdAt DateTime     @default(now())
@@ -1366,7 +1366,7 @@ model HostingProvider {
   // Billing
   billingEmail  String?
   webhookUrl    String?
-  webhookSecret String?
+  webhookSecret String?  // Encrypted at rest (AES-256-GCM via field-encryptor)
 
   // Status
   status        ProviderStatus @default(ACTIVE)

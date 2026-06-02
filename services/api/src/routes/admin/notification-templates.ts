@@ -5,8 +5,12 @@
 
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma';
+import { AdminRole, requireAdminRole } from '../../middleware/rbac';
 import * as templateService from '../../services/notification-template-service';
+
+// Centralized admin gate (token-based, no per-request DB round-trip). The ADMIN→SUPER_ADMIN
+// bridge in requireAdminRole preserves the previous `role === 'ADMIN'` behavior.
+const requireAdmin = requireAdminRole([AdminRole.SUPER_ADMIN]);
 
 // Zod schemas
 const variableSchema = z.object({
@@ -29,11 +33,8 @@ const updateTemplateSchema = createTemplateSchema.partial();
 export async function notificationTemplateRoutes(app: FastifyInstance) {
   // List all templates
   app.get('/', {
-    preHandler: [app.authenticate],
-  }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
+    preHandler: [app.authenticate, requireAdmin],
+  }, async (request) => {
     const { includeArchived } = request.query as { includeArchived?: string };
     const templates = await templateService.listTemplates(includeArchived === 'true');
     return { templates };
@@ -41,11 +42,8 @@ export async function notificationTemplateRoutes(app: FastifyInstance) {
 
   // Get single template
   app.get('/:id', {
-    preHandler: [app.authenticate],
+    preHandler: [app.authenticate, requireAdmin],
   }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
     const { id } = request.params as { id: string };
     const template = await templateService.getTemplateById(id);
     if (!template) return reply.status(404).send({ error: 'Template not found' });
@@ -54,11 +52,8 @@ export async function notificationTemplateRoutes(app: FastifyInstance) {
 
   // Create template
   app.post('/', {
-    preHandler: [app.authenticate],
+    preHandler: [app.authenticate, requireAdmin],
   }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
     const body = createTemplateSchema.parse(request.body);
     const template = await templateService.createTemplate(body);
     return reply.status(201).send({ template });
@@ -66,11 +61,8 @@ export async function notificationTemplateRoutes(app: FastifyInstance) {
 
   // Update template
   app.put('/:id', {
-    preHandler: [app.authenticate],
-  }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
+    preHandler: [app.authenticate, requireAdmin],
+  }, async (request) => {
     const { id } = request.params as { id: string };
     const body = updateTemplateSchema.parse(request.body);
     const template = await templateService.updateTemplate(id, body);
@@ -79,11 +71,8 @@ export async function notificationTemplateRoutes(app: FastifyInstance) {
 
   // Archive template (soft delete)
   app.delete('/:id', {
-    preHandler: [app.authenticate],
-  }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
+    preHandler: [app.authenticate, requireAdmin],
+  }, async (request) => {
     const { id } = request.params as { id: string };
     await templateService.archiveTemplate(id);
     return { success: true };
@@ -91,11 +80,8 @@ export async function notificationTemplateRoutes(app: FastifyInstance) {
 
   // Restore archived template
   app.post('/:id/restore', {
-    preHandler: [app.authenticate],
-  }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
+    preHandler: [app.authenticate, requireAdmin],
+  }, async (request) => {
     const { id } = request.params as { id: string };
     const template = await templateService.restoreTemplate(id);
     return { template };
@@ -103,11 +89,8 @@ export async function notificationTemplateRoutes(app: FastifyInstance) {
 
   // Clone template
   app.post('/:id/clone', {
-    preHandler: [app.authenticate],
+    preHandler: [app.authenticate, requireAdmin],
   }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
     const { id } = request.params as { id: string };
     const { name } = (request.body as { name?: string }) || {};
     const template = await templateService.cloneTemplate(id, name);
@@ -116,11 +99,8 @@ export async function notificationTemplateRoutes(app: FastifyInstance) {
 
   // Get available system variables
   app.get('/variables/system', {
-    preHandler: [app.authenticate],
-  }, async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { id: request.user.userId } });
-    if (user?.role !== 'ADMIN') return reply.status(403).send({ error: 'Unauthorized' });
-
+    preHandler: [app.authenticate, requireAdmin],
+  }, async () => {
     return { variables: templateService.SYSTEM_VARIABLES };
   });
 }

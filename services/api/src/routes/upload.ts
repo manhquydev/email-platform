@@ -2,11 +2,23 @@
 import { FastifyInstance } from "fastify";
 import fs from "fs";
 import path from "path";
-import util from "util";
-import { pipeline } from "stream";
-import { z } from "zod";
 
-const pump = util.promisify(pipeline);
+// Allowlist of uploadable types. Files are served back from the same origin under
+// /public/uploads, so we must reject anything that could execute in a browser (svg/html) or
+// mismatch its claimed type. Each entry validates the declared MIME, the extension, and the
+// real content via magic bytes — a renamed .html → .png is rejected.
+const ALLOWED_UPLOADS: Record<string, { ext: string[]; magic: (b: Buffer) => boolean }> = {
+    "image/jpeg": { ext: [".jpg", ".jpeg"], magic: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+    "image/png": { ext: [".png"], magic: (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 },
+    "image/gif": { ext: [".gif"], magic: (b) => b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38 },
+    "image/webp": {
+        ext: [".webp"],
+        magic: (b) =>
+            b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+            b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50,
+    },
+    "application/pdf": { ext: [".pdf"], magic: (b) => b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46 },
+};
 
 export async function uploadRoutes(app: FastifyInstance) {
     // Ensure storage directory exists - use relative path as default for CI compatibility
@@ -30,19 +42,22 @@ export async function uploadRoutes(app: FastifyInstance) {
 
         for await (const part of parts) {
             if (part.type === 'file') {
-                const fileName = `${Date.now()}-${part.filename.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+                // Buffer the part (bounded by the @fastify/multipart fileSize limit) so the content
+                // can be validated before it is ever written to the public uploads directory.
+                const buf = await part.toBuffer();
+                const declared = part.mimetype;
+                const spec = ALLOWED_UPLOADS[declared];
+                const ext = path.extname(part.filename || "").toLowerCase();
+
+                if (!spec || !spec.ext.includes(ext) || buf.length < 12 || !spec.magic(buf)) {
+                    return reply.status(400).send({ error: "Unsupported or invalid file type" });
+                }
+
+                const safeName = (part.filename || "file").replace(/[^a-zA-Z0-9.-]/g, "");
+                const fileName = `${Date.now()}-${safeName}`;
                 const filePath = path.join(uploadsDir, fileName);
 
-                await pump(part.file, fs.createWriteStream(filePath));
-
-                // Construct Public URL
-                // Assuming nginx/caddy serves /storage/uploads or similar
-                // Or we serve static files via Fastify from this dir?
-                // Let's assume the API serves static files for now or Caddy handles /storage
-                // Docker compose says: caddy mapped /data, api mapped /app/storage
-                // BUT caddy doesn't seem to map /storage to /app/storage currently. 
-                // We might need to serve it via API statically or fix Caddy.
-                // For now, let's serve static via fastify-static if possible or just return a relative path the frontend can use if we proxy.
+                await fs.promises.writeFile(filePath, buf);
 
                 const baseUrl = process.env.VITE_API_BASE || "https://api.manhquy.click";
                 fileUrl = `${baseUrl}/public/uploads/${fileName}`;

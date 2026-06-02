@@ -113,6 +113,7 @@ export const appConfig = {
   allowedAttachmentExtensions: lower(list("ALLOWED_ATTACHMENT_EXTENSIONS", "txt,eml,pdf,png,jpg,jpeg")),
   publicInboxEnabled: (process.env.PUBLIC_INBOX_ENABLED ?? "false").toLowerCase() === "true",
   requireCaptchaForPublicInbox: (process.env.REQUIRE_CAPTCHA_FOR_PUBLIC_INBOX ?? "false").toLowerCase() === "true",
+  captchaProvider: (process.env.CAPTCHA_PROVIDER ?? "turnstile").toLowerCase(), // turnstile | hcaptcha
   captchaSecret: process.env.CAPTCHA_SECRET,
   webUrl: process.env.WEB_URL ?? "http://localhost:5173",
   apiUrl: process.env.API_URL ?? "http://localhost:3001",

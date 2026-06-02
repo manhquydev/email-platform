@@ -12,10 +12,14 @@ export interface DashboardData {
   user: {
     id: string;
     tier: string;
+    limits?: {
+      inboxes?: number;
+    };
   };
   stats: {
     totalInboxes: number;
     totalUnread: number;
+    inboxLimit?: number;
   };
   inboxes: Array<{
     id: string;
@@ -162,9 +166,10 @@ class ApiClient {
     return this.request<DashboardData>('/extension/dashboard');
   }
 
-  async createQuickInbox() {
+  async createQuickInbox(payload?: { localPart?: string; domainId?: string }) {
     return this.request<{ success: boolean; inbox: any }>('/extension/quick-inbox', {
-      method: 'POST'
+      method: 'POST',
+      ...(payload ? { body: JSON.stringify(payload) } : {}),
     });
   }
 
@@ -202,15 +207,40 @@ class ApiClient {
 
   // Custom inbox creation with prefix and domain
   async createCustomInbox(localPart: string, domainId?: string) {
-    return this.request<{ success: boolean; inbox: any }>('/extension/quick-inbox', {
-      method: 'POST',
-      body: JSON.stringify({ localPart, domainId }),
-    });
+    return this.createQuickInbox({ localPart, domainId });
+  }
+
+  private normalizeMessage(raw: any, fallbackInboxId = ''): Message {
+    const fromCandidate = typeof raw?.from === 'string'
+      ? raw.from
+      : (typeof raw?.fromAddress === 'string' ? raw.fromAddress : '');
+    const to = typeof raw?.to === 'string'
+      ? raw.to
+      : (typeof raw?.toAddress === 'string' ? raw.toAddress : '');
+    const createdAt = raw?.createdAt || raw?.receivedAt || new Date().toISOString();
+    const receivedAt = raw?.receivedAt || raw?.createdAt || createdAt;
+
+    return {
+      id: raw?.id || '',
+      inboxId: raw?.inboxId || raw?.inbox?.id || fallbackInboxId,
+      from: fromCandidate.trim() || 'Unknown sender',
+      to,
+      subject: raw?.subject || '',
+      htmlBody: raw?.htmlBody || undefined,
+      textBody: raw?.textBody || undefined,
+      isRead: Boolean(raw?.isRead),
+      createdAt,
+      receivedAt,
+    };
   }
 
   // Legacy/Full API support
   async getMessages(inboxId: string, limit = 10) {
-    return this.request<{ data: Message[] }>(`/inboxes/${inboxId}/messages?limit=${limit}`);
+    const response = await this.request<{ data: any[] }>(`/inboxes/${inboxId}/messages?limit=${limit}`);
+    return {
+      ...response,
+      data: Array.isArray(response.data) ? response.data.map((message) => this.normalizeMessage(message, inboxId)) : [],
+    };
   }
 
   // Cache-first message fetching for offline support
@@ -219,7 +249,12 @@ class ApiClient {
 
     // If offline and have cache, return cached data
     if (!navigator.onLine && cached) {
-      return { data: cached.messages as Message[], fromCache: true };
+      return {
+        data: Array.isArray(cached.messages)
+          ? cached.messages.map((message: any) => this.normalizeMessage(message, inboxId))
+          : [],
+        fromCache: true
+      };
     }
 
     try {
@@ -230,7 +265,12 @@ class ApiClient {
     } catch (err) {
       // On network error, fallback to cache
       if (cached) {
-        return { data: cached.messages as Message[], fromCache: true };
+        return {
+          data: Array.isArray(cached.messages)
+            ? cached.messages.map((message: any) => this.normalizeMessage(message, inboxId))
+            : [],
+          fromCache: true
+        };
       }
       throw err;
     }
@@ -255,9 +295,13 @@ class ApiClient {
 
   // Feature: Global Search
   async searchMessages(query: string, limit = 20) {
-    return this.request<{ data: Message[]; total: number }>(
+    const response = await this.request<{ data: any[]; total: number }>(
       `/messages/search?q=${encodeURIComponent(query)}&limit=${limit}`
     );
+    return {
+      ...response,
+      data: Array.isArray(response.data) ? response.data.map((message) => this.normalizeMessage(message)) : [],
+    };
   }
 
   // Feature: Reply/Forward

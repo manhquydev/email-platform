@@ -5,17 +5,28 @@
 
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { exec } from "child_process";
+import { exec, execFile, spawn } from "child_process";
 import { promisify } from "util";
 import { readdir, stat } from "fs/promises";
+import { createWriteStream } from "fs";
+import { createGzip } from "zlib";
 import { join } from "path";
 import { recordAudit } from "../../utils/audit";
+import { validatePathWithin } from "../../utils/path-validation";
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // Backup directory - configurable via env
 const BACKUP_DIR = process.env.BACKUP_DIR || "/app/backups";
 const CLOUD_BACKUP_SCRIPT = process.env.CLOUD_BACKUP_SCRIPT || "/app/scripts/cloud-backup.sh";
+
+// Container names discovered from `docker ps` must match this allowlist before they are
+// passed to execFile — defends against shell-metachar / argument injection.
+const CONTAINER_NAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
+function isValidContainerName(name: string): boolean {
+    return CONTAINER_NAME_REGEX.test(name) && name.length > 0 && name.length <= 64;
+}
 
 interface BackupFile {
     name: string;
@@ -25,25 +36,56 @@ interface BackupFile {
     type: "postgres" | "redis" | "storage" | "unknown";
 }
 
-interface BackupStatus {
-    localBackups: BackupFile[];
-    cloudBackups: BackupFile[];
-    lastBackupTime: string | null;
-    nextScheduledBackup: string;
-    diskUsage: {
-        used: number;
-        available: number;
-        percentage: number;
-    };
-    rcloneConfigured: boolean;
-}
-
 function formatBytes(bytes: number): string {
     if (bytes === 0) return "0 B";
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+/**
+ * Stream `pg_dump` from a container straight through gzip into the backup file.
+ * Uses spawn with an argument array (no shell), so neither the container name nor the
+ * output path can be used for command injection, and the dump never buffers in memory.
+ */
+async function dumpPostgresToGzip(container: string, outFile: string, timeoutMs = 120000): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+        const child = spawn(
+            "docker",
+            ["exec", container, "pg_dump", "-U", "postgres", "-d", "email_service"],
+            { stdio: ["ignore", "pipe", "pipe"] },
+        );
+
+        const timer = setTimeout(() => child.kill("SIGKILL"), timeoutMs);
+        let stderr = "";
+        let settled = false;
+        const fail = (err: Error) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            reject(err);
+        };
+
+        child.stderr.on("data", (d) => { stderr += d.toString(); });
+        child.on("error", fail);
+
+        const out = createWriteStream(outFile);
+        const gzip = createGzip();
+        out.on("error", fail);
+        gzip.on("error", fail);
+        child.stdout.pipe(gzip).pipe(out);
+
+        out.on("finish", () => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            resolve();
+        });
+        child.on("close", (code) => {
+            if (code !== 0) fail(new Error(`pg_dump exited with code ${code}: ${stderr.slice(0, 200)}`));
+        });
+    });
 }
 
 export async function adminBackupRoutes(app: FastifyInstance) {
@@ -95,7 +137,7 @@ export async function adminBackupRoutes(app: FastifyInstance) {
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
 
-            // Check cloud backups via rclone
+            // Check cloud backups via rclone (static command, no user input)
             let cloudBackups: BackupFile[] = [];
             let rcloneConfigured = false;
 
@@ -127,7 +169,7 @@ export async function adminBackupRoutes(app: FastifyInstance) {
                 // rclone not configured or failed
             }
 
-            // Get disk usage
+            // Get disk usage (static command, no user input)
             let diskUsage = { used: 0, available: 0, percentage: 0 };
             try {
                 const { stdout } = await execAsync("df -B1 / | tail -1");
@@ -168,73 +210,90 @@ export async function adminBackupRoutes(app: FastifyInstance) {
                 }
             };
         } catch (err: any) {
-            return reply.status(500).send({ error: "Failed to get backup status: " + err.message });
+            request.log.error({ err }, "backup status failed");
+            return reply.status(500).send({ error: "Failed to get backup status" });
         }
     });
 
-    // Trigger manual backup
-    app.post("/admin/backup/trigger", { preHandler: app.requireAdmin }, async (request, reply) => {
-        const body = z.object({
-            type: z.enum(["local", "cloud"]).default("local"),
-        }).safeParse(request.body);
+    // Trigger manual backup. Heavy operation (spawns pg_dump / cloud script): cap at a few
+    // runs per hour per admin on top of the global limiter.
+    app.post(
+        "/admin/backup/trigger",
+        { preHandler: app.requireAdmin, config: { rateLimit: { max: 3, timeWindow: "1 hour" } } },
+        async (request, reply) => {
+            const body = z.object({
+                type: z.enum(["local", "cloud"]).default("local"),
+            }).safeParse(request.body);
 
-        if (!body.success) {
-            return reply.status(400).send({ error: "Invalid request" });
-        }
-
-        try {
-            const userId = (request.user as any).userId;
-
-            if (body.data.type === "cloud") {
-                // Run cloud backup script
-                await execAsync(`bash ${CLOUD_BACKUP_SCRIPT}`, { timeout: 300000 });
-                await recordAudit(userId, "BACKUP_CLOUD_TRIGGERED", {});
-                return { success: true, message: "Cloud backup completed successfully" };
-            } else {
-                // Run local backup only
-                const timestamp = new Date().toISOString().replace(/[:.]/g, "").slice(0, 15);
-                const backupFile = `${BACKUP_DIR}/backup_postgres_${timestamp}.sql.gz`;
-
-                // Find postgres container
-                const { stdout: containerName } = await execAsync(
-                    "docker ps --format '{{.Names}}' | grep postgres | head -1"
-                );
-
-                if (!containerName.trim()) {
-                    return reply.status(500).send({ error: "PostgreSQL container not found" });
-                }
-
-                // Run pg_dump
-                await execAsync(
-                    `docker exec ${containerName.trim()} pg_dump -U postgres -d email_service | gzip > ${backupFile}`,
-                    { timeout: 120000 }
-                );
-
-                await recordAudit(userId, "BACKUP_LOCAL_TRIGGERED", { file: backupFile });
-                return { success: true, message: "Local backup completed", file: backupFile };
+            if (!body.success) {
+                return reply.status(400).send({ error: "Invalid request" });
             }
-        } catch (err: any) {
-            return reply.status(500).send({ error: "Backup failed: " + err.message });
-        }
-    });
+
+            try {
+                const userId = (request.user as any).userId;
+
+                if (body.data.type === "cloud") {
+                    // Run cloud backup script via execFile (script path passed as an arg, no shell)
+                    await execFileAsync("bash", [CLOUD_BACKUP_SCRIPT], { timeout: 300000 });
+                    await recordAudit(userId, "BACKUP_CLOUD_TRIGGERED", {});
+                    return { success: true, message: "Cloud backup completed successfully" };
+                } else {
+                    // Find postgres container via execFile + JS-side filtering (no shell pipe)
+                    const { stdout: psOut } = await execFileAsync("docker", [
+                        "ps", "--format", "{{.Names}}", "--filter", "status=running",
+                    ]);
+                    const containerName = psOut
+                        .split("\n")
+                        .map((n) => n.trim())
+                        .find((n) => n.includes("postgres"));
+
+                    if (!containerName || !isValidContainerName(containerName)) {
+                        return reply.status(500).send({ error: "PostgreSQL container not found" });
+                    }
+
+                    // Output path uses a server-generated timestamp only (no user input)
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, "").slice(0, 15);
+                    const backupFile = `${BACKUP_DIR}/backup_postgres_${timestamp}.sql.gz`;
+
+                    await dumpPostgresToGzip(containerName, backupFile);
+
+                    await recordAudit(userId, "BACKUP_LOCAL_TRIGGERED", { file: backupFile });
+                    return { success: true, message: "Local backup completed", file: backupFile };
+                }
+            } catch (err: any) {
+                request.log.error({ err }, "backup trigger failed");
+                return reply.status(500).send({ error: "Backup failed" });
+            }
+        },
+    );
 
     // Download backup file
     app.get("/admin/backup/download/:filename", { preHandler: app.requireAdmin }, async (request, reply) => {
         const { filename } = request.params as { filename: string };
 
-        // Security: prevent path traversal
-        if (filename.includes("..") || filename.includes("/")) {
+        let safeName: string;
+        try {
+            // Decode first so percent-encoded traversal (%2e%2e / %2f) is caught by the checks below
+            safeName = decodeURIComponent(filename);
+        } catch {
             return reply.status(400).send({ error: "Invalid filename" });
         }
 
-        const filePath = join(BACKUP_DIR, filename);
+        if (safeName.includes("..") || safeName.includes("/") || safeName.includes("\\") || safeName.includes("\0")) {
+            return reply.status(400).send({ error: "Invalid filename" });
+        }
+
+        let filePath: string;
+        try {
+            filePath = validatePathWithin(BACKUP_DIR, safeName);
+        } catch {
+            return reply.status(400).send({ error: "Invalid filename" });
+        }
 
         try {
             await stat(filePath);
-
-            await recordAudit((request.user as any).userId, "BACKUP_DOWNLOADED", { filename });
-
-            return reply.sendFile(filename, BACKUP_DIR);
+            await recordAudit((request.user as any).userId, "BACKUP_DOWNLOADED", { filename: safeName });
+            return reply.sendFile(safeName, BACKUP_DIR);
         } catch {
             return reply.status(404).send({ error: "Backup file not found" });
         }
@@ -244,18 +303,29 @@ export async function adminBackupRoutes(app: FastifyInstance) {
     app.delete("/admin/backup/:filename", { preHandler: app.requireAdmin }, async (request, reply) => {
         const { filename } = request.params as { filename: string };
 
-        // Security: prevent path traversal
-        if (filename.includes("..") || filename.includes("/")) {
+        let safeName: string;
+        try {
+            safeName = decodeURIComponent(filename);
+        } catch {
             return reply.status(400).send({ error: "Invalid filename" });
         }
 
-        const filePath = join(BACKUP_DIR, filename);
+        if (safeName.includes("..") || safeName.includes("/") || safeName.includes("\\") || safeName.includes("\0")) {
+            return reply.status(400).send({ error: "Invalid filename" });
+        }
+
+        let filePath: string;
+        try {
+            filePath = validatePathWithin(BACKUP_DIR, safeName);
+        } catch {
+            return reply.status(400).send({ error: "Invalid filename" });
+        }
 
         try {
             const { unlink } = await import("fs/promises");
             await unlink(filePath);
 
-            await recordAudit((request.user as any).userId, "BACKUP_DELETED", { filename });
+            await recordAudit((request.user as any).userId, "BACKUP_DELETED", { filename: safeName });
 
             return { success: true, message: "Backup deleted" };
         } catch {
@@ -263,7 +333,7 @@ export async function adminBackupRoutes(app: FastifyInstance) {
         }
     });
 
-    // Get backup logs
+    // Get backup logs (static command, no user input)
     app.get("/admin/backup/logs", { preHandler: app.requireAdmin }, async (request, reply) => {
         try {
             const { stdout } = await execAsync("tail -100 /var/log/cloud-backup.log 2>/dev/null || echo 'No logs available'");

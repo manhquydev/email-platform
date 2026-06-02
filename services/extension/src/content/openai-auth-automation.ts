@@ -10,6 +10,8 @@ const STATE_KEY = 'openai_auth_automation_state';
 const HOST = 'auth.openai.com';
 const CREATE_INBOX_RETRY_DELAYS_MS = [0, 1200, 2500];
 const EMAIL_VERIFICATION_PATH = '/email-verification';
+const AUTO_ACTION_COOLDOWN_MS = 5000;
+const FLOW2_RECENT_SUCCESS_GUARD_MS = 2 * 60 * 1000;
 
 interface AutomationState {
   latestEmail?: string;
@@ -25,6 +27,15 @@ interface AutomationState {
   usedOtpMessageIds?: string[];
   createInboxRateLimitedUntil?: number;
   lastCreateInboxError?: string;
+  lastAutoActionKey?: string;
+  lastAutoActionAt?: number;
+  flow2Ready?: boolean;
+  flow1CompletedAt?: number;
+  flow2StartedAt?: number;
+  flow2CompletedAt?: number;
+  flowCycleId?: number;
+  flow2ConsumedCycleId?: number;
+  lastFlow1CompletionToken?: string;
   updatedAt?: number;
 }
 
@@ -39,6 +50,16 @@ function setInputValue(input: HTMLInputElement, value: string): void {
   setter?.call(input, value);
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function normalizeText(value: string | null | undefined): string {
+  if (!value) return '';
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function isEmailVerificationPath(pathname: string): boolean {
@@ -62,6 +83,85 @@ async function waitForInput(selectors: string[], timeoutMs = 12000): Promise<HTM
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   return null;
+}
+
+function getClickableLabel(element: HTMLElement): string {
+  if (element instanceof HTMLInputElement) {
+    return normalizeText(element.value || element.getAttribute('aria-label') || '');
+  }
+  return normalizeText(element.textContent || element.getAttribute('aria-label') || '');
+}
+
+function listVisibleClickableElements(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>(
+    'button, input[type="submit"], input[type="button"], [role="button"], a[href], a[role="button"]',
+  )).filter((el) => {
+    if (!isVisible(el)) return false;
+    if (el instanceof HTMLButtonElement || el instanceof HTMLInputElement) {
+      if (el.disabled) return false;
+    }
+    if (el.getAttribute('aria-disabled') === 'true') return false;
+    return true;
+  });
+}
+
+function findButtonByLabels(labels: string[]): HTMLElement | null {
+  const normalizedLabels = labels.map((label) => normalizeText(label)).filter(Boolean);
+  const clickables = listVisibleClickableElements();
+
+  for (const el of clickables) {
+    const text = getClickableLabel(el);
+    if (!text) continue;
+    if (normalizedLabels.some((label) => text.includes(label))) {
+      return el;
+    }
+  }
+  return null;
+}
+
+function findVisibleSubmitButton(): HTMLElement | null {
+  const submitButton = Array.from(document.querySelectorAll<HTMLElement>('button[type="submit"], input[type="submit"]'))
+    .find((el) => isVisible(el) && !(el as HTMLButtonElement | HTMLInputElement).disabled);
+  if (submitButton) return submitButton;
+
+  return listVisibleClickableElements()[0] ?? null;
+}
+
+async function waitForButtonByLabels(labels: string[], timeoutMs = 10000): Promise<HTMLElement | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const button = findButtonByLabels(labels);
+    if (button) return button;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return null;
+}
+
+async function clickWithCooldown(
+  actionKey: string,
+  labels: string[],
+  options?: { timeoutMs?: number; allowSubmitFallback?: boolean },
+): Promise<boolean> {
+  const state = await getState();
+  const now = Date.now();
+
+  if (
+    state.lastAutoActionKey === actionKey
+    && now - (state.lastAutoActionAt ?? 0) < AUTO_ACTION_COOLDOWN_MS
+  ) {
+    return false;
+  }
+
+  const button = await waitForButtonByLabels(labels, options?.timeoutMs ?? 10000);
+  const target = button ?? (options?.allowSubmitFallback ? findVisibleSubmitButton() : null);
+  if (!target) return false;
+
+  target.click();
+  await setState({
+    lastAutoActionKey: actionKey,
+    lastAutoActionAt: Date.now(),
+  });
+  return true;
 }
 
 async function getState(): Promise<AutomationState> {
@@ -163,13 +263,35 @@ async function handleCreateAccount(): Promise<void> {
     'input[name="identifier"]',
   ], 20000);
   if (!emailInput) return;
-  if (emailInput.value.trim()) return;
+  if (emailInput.value.trim()) {
+    await setState({
+      flow2Ready: false,
+      flow2StartedAt: undefined,
+      flow2CompletedAt: undefined,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    await clickWithCooldown('create-account-continue', ['Tiếp tục', 'Continue'], {
+      timeoutMs: 10000,
+      allowSubmitFallback: true,
+    });
+    return;
+  }
 
   const state = await getState();
   const now = Date.now();
   if ((state.createInboxRateLimitedUntil ?? 0) > now) {
     if (state.latestEmail) {
       setInputValue(emailInput, state.latestEmail);
+      await setState({
+        flow2Ready: false,
+        flow2StartedAt: undefined,
+        flow2CompletedAt: undefined,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 180));
+      await clickWithCooldown('create-account-continue', ['Tiếp tục', 'Continue'], {
+        timeoutMs: 10000,
+        allowSubmitFallback: true,
+      });
     }
     return;
   }
@@ -184,6 +306,16 @@ async function handleCreateAccount(): Promise<void> {
     // Fallback to last known email so flow remains interactive even when API is rate-limited.
     if (state.latestEmail) {
       setInputValue(emailInput, state.latestEmail);
+      await setState({
+        flow2Ready: false,
+        flow2StartedAt: undefined,
+        flow2CompletedAt: undefined,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 180));
+      await clickWithCooldown('create-account-continue', ['Tiếp tục', 'Continue'], {
+        timeoutMs: 10000,
+        allowSubmitFallback: true,
+      });
     }
     console.warn('[Ephemera][OpenAI Automation] create inbox failed:', response?.error || 'unknown');
     return;
@@ -203,6 +335,15 @@ async function handleCreateAccount(): Promise<void> {
     usedOtpMessageIds: [],
     createInboxRateLimitedUntil: undefined,
     lastCreateInboxError: undefined,
+    flow2Ready: false,
+    flow2StartedAt: undefined,
+    flow2CompletedAt: undefined,
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 180));
+  await clickWithCooldown('create-account-continue', ['Tiếp tục', 'Continue'], {
+    timeoutMs: 10000,
+    allowSubmitFallback: true,
   });
 }
 
@@ -221,6 +362,12 @@ async function handlePassword(): Promise<void> {
     password,
     otpRequestedAt: Date.now(),
     verificationEnteredAt: undefined,
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 180));
+  await clickWithCooldown('create-account-password-continue', ['Tiếp tục', 'Continue'], {
+    timeoutMs: 10000,
+    allowSubmitFallback: true,
   });
 }
 
@@ -286,6 +433,13 @@ async function handleEmailVerification(): Promise<void> {
     lastOtpUsedAt: Date.now(),
     usedOtpMessageIds: appendRecentIds(state.usedOtpMessageIds, response.messageId),
   });
+
+  const otpActionSuffix = response.messageId || response.otp;
+  await new Promise((resolve) => setTimeout(resolve, 180));
+  await clickWithCooldown(`email-verification-continue-${otpActionSuffix}`, ['Tiếp tục', 'Continue'], {
+    timeoutMs: 10000,
+    allowSubmitFallback: true,
+  });
 }
 
 async function handleAboutYou(): Promise<void> {
@@ -312,11 +466,55 @@ async function handleAboutYou(): Promise<void> {
   if (ageInput && !ageInput.value) {
     setInputValue(ageInput, generateRandomAge(18, 60));
   }
+
+  const hasName = Boolean(nameInput?.value?.trim());
+  const hasAge = Boolean(ageInput?.value?.trim());
+  if (!hasName || !hasAge) return;
+
+  await new Promise((resolve) => setTimeout(resolve, 180));
+  await clickWithCooldown('about-you-finish-account', [
+    'Hoàn tất tạo tài khoản',
+    'Hoan tat tao tai khoan',
+    'Complete account',
+    'Create account',
+  ], {
+    timeoutMs: 12000,
+    allowSubmitFallback: true,
+  });
+}
+
+function getReadyFlowCycleId(state: AutomationState): number {
+  if (typeof state.flowCycleId === 'number' && Number.isFinite(state.flowCycleId)) {
+    return state.flowCycleId;
+  }
+  // Backward compatibility for older state shape before cycle IDs.
+  return state.flow2Ready ? 1 : 0;
+}
+
+async function handleLoginToSignup(): Promise<void> {
+  await clickWithCooldown('login-go-signup', [
+    'Đăng ký',
+    'Dang ky',
+    'Sign up',
+    'Signup',
+    'Create account',
+  ], {
+    timeoutMs: 8000,
+    allowSubmitFallback: false,
+  });
 }
 
 async function handleLogin(): Promise<void> {
   const state = await getState();
-  if (!state.latestEmail) return;
+  const readyCycleId = getReadyFlowCycleId(state);
+  const consumedCycleId = state.flow2ConsumedCycleId ?? 0;
+
+  if (!state.latestEmail || readyCycleId <= consumedCycleId) {
+    await handleLoginToSignup();
+    return;
+  }
+
+  if (state.flow2CompletedAt && Date.now() - state.flow2CompletedAt < FLOW2_RECENT_SUCCESS_GUARD_MS) return;
 
   const input = await waitForInput([
     'input[type="email"]',
@@ -335,9 +533,79 @@ async function handleLogin(): Promise<void> {
     setInputValue(input, state.latestEmail);
   }
 
+  await new Promise((resolve) => setTimeout(resolve, 180));
+  const clicked = await clickWithCooldown('login-email-continue', ['Tiếp tục', 'Continue'], {
+    timeoutMs: 10000,
+    allowSubmitFallback: true,
+  });
+  if (!clicked) return;
+
+  await setState({
+    otpRequestedAt: undefined,
+    verificationEnteredAt: undefined,
+    flow2StartedAt: Date.now(),
+    flow2Ready: false,
+    flow2ConsumedCycleId: readyCycleId,
+  });
+}
+
+async function handleLoginPassword(): Promise<void> {
+  const clicked = await clickWithCooldown('login-password-one-time-code', [
+    'Đăng nhập bằng mã dùng một lần',
+    'Dang nhap bang ma dung mot lan',
+    'Đăng nhập mã dùng 1 lần',
+    'Dang nhap ma dung 1 lan',
+    'Đăng nhập bằng mã dùng 1 lần',
+    'Dang nhap bang ma dung 1 lan',
+    'mã dùng một lần',
+    'ma dung mot lan',
+    'one-time code',
+    'one time code',
+  ], {
+    timeoutMs: 12000,
+    allowSubmitFallback: false,
+  });
+
+  if (!clicked) return;
   await setState({
     otpRequestedAt: Date.now(),
     verificationEnteredAt: undefined,
+  });
+}
+
+async function handleCodexConsent(): Promise<void> {
+  const state = await getState();
+  const clicked = await clickWithCooldown('codex-consent-continue', ['Tiếp tục', 'Continue'], {
+    timeoutMs: 12000,
+    allowSubmitFallback: true,
+  });
+  if (!clicked) return;
+
+  const readyCycleId = getReadyFlowCycleId(state);
+  await setState({
+    flow2Ready: false,
+    flow2StartedAt: undefined,
+    flow2CompletedAt: Date.now(),
+    flow2ConsumedCycleId: Math.max(state.flow2ConsumedCycleId ?? 0, readyCycleId),
+    otpRequestedAt: undefined,
+    verificationEnteredAt: undefined,
+  });
+}
+
+async function handleAddPhoneStop(): Promise<void> {
+  const state = await getState();
+  const completionToken = `${state.latestEmail ?? ''}:${state.emailCreatedAt ?? ''}`;
+  if (!completionToken || completionToken === ':') return;
+  if (state.lastFlow1CompletionToken === completionToken) return;
+
+  const nextCycleId = Math.max(state.flowCycleId ?? 0, state.flow2ConsumedCycleId ?? 0) + 1;
+  await setState({
+    flow2Ready: true,
+    flowCycleId: nextCycleId,
+    flow1CompletedAt: Date.now(),
+    flow2ConsumedCycleId: state.flow2ConsumedCycleId ?? 0,
+    lastFlow1CompletionToken: completionToken,
+    flow2StartedAt: undefined,
   });
 }
 
@@ -351,6 +619,9 @@ export function initOpenAiAuthAutomation(): void {
     if (path === '/email-verification') return handleEmailVerification();
     if (path === '/about-you') return handleAboutYou();
     if (path === '/log-in') return handleLogin();
+    if (path.startsWith('/log-in/password')) return handleLoginPassword();
+    if (path.startsWith('/sign-in-with-chatgpt/codex/consent')) return handleCodexConsent();
+    if (path.startsWith('/add-phone')) return handleAddPhoneStop();
   };
 
   let previousPath = '';

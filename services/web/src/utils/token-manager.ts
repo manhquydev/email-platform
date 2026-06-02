@@ -15,15 +15,51 @@ interface TokenResponse {
   expiresIn: number;
 }
 
-// Cross-tab refresh lock: prevent multiple tabs from refreshing concurrently
+// Cross-tab refresh lock: prevent multiple tabs from refreshing concurrently.
 const REFRESH_LOCK_KEY = 'token_refresh_lock';
 const REFRESH_LOCK_TIMEOUT_MS = 30_000; // 30 seconds max hold time (network + hidden tab tolerance)
+
+// Non-sensitive marker that a session likely exists (the refresh token is an httpOnly cookie we
+// cannot read). It lets a fresh page load decide whether to attempt a silent refresh. It holds
+// NO token material — only the literal '1'.
+const SESSION_FLAG_KEY = 'auth:hasSession';
 
 class TokenManager {
   private refreshPromise: Promise<string> | null = null;
 
+  // Access and CSRF tokens live ONLY in memory — never localStorage/sessionStorage — so an XSS
+  // payload cannot read them. The refresh token remains an httpOnly cookie owned by the server.
+  private accessToken: string | null = null;
+  private csrfToken: string | null = null;
+
+  // BroadcastChannel shares a freshly-refreshed token across tabs (replaces the previous
+  // localStorage `storage` event mechanism, which only worked because the token was persisted).
+  private channel: BroadcastChannel | null =
+    typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('token_manager_sync') : null;
+
+  constructor() {
+    this.channel?.addEventListener('message', (ev: MessageEvent) => {
+      const data = ev.data as { type?: string; token?: string; csrf?: string };
+      if (data?.type === 'token' && data.token) {
+        this.accessToken = data.token;
+        if (data.csrf) this.csrfToken = data.csrf;
+      } else if (data?.type === 'clear') {
+        this.accessToken = null;
+        this.csrfToken = null;
+      }
+    });
+  }
+
+  hasSessionFlag(): boolean {
+    try {
+      return localStorage.getItem(SESSION_FLAG_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
   getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
+    return this.accessToken;
   }
 
   getRefreshToken(): string | null {
@@ -31,21 +67,41 @@ class TokenManager {
     return null;
   }
 
-  setTokens(accessToken: string, _refreshToken: string): void {
-    localStorage.setItem('accessToken', accessToken);
+  setTokens(accessToken: string, _refreshToken?: string): void {
+    this.accessToken = accessToken;
+    try {
+      localStorage.setItem(SESSION_FLAG_KEY, '1');
+    } catch {
+      // storage may be unavailable (private mode) — in-memory token still works for this tab
+    }
+    this.channel?.postMessage({ type: 'token', token: accessToken, csrf: this.csrfToken ?? undefined });
   }
 
-  // Store CSRF token in localStorage (cookie approach fails cross-subdomain)
   setCsrfToken(token: string): void {
-    localStorage.setItem('csrfToken', token);
+    this.csrfToken = token;
+    // Only broadcast alongside a real access token — receiving tabs ignore empty tokens, and the
+    // CSRF cookie is already shared cross-tab as the authoritative double-submit source.
+    if (this.accessToken) {
+      this.channel?.postMessage({ type: 'token', token: this.accessToken, csrf: token });
+    }
   }
 
   clearTokens(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken'); // Cleanup old storage key
-    localStorage.removeItem('csrfToken');
-    localStorage.removeItem(REFRESH_LOCK_KEY);
+    this.accessToken = null;
+    this.csrfToken = null;
+    try {
+      localStorage.removeItem(SESSION_FLAG_KEY);
+      // Clean up any tokens persisted by older builds.
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('csrfToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem(REFRESH_LOCK_KEY);
+    } catch {
+      // ignore
+    }
     this.refreshPromise = null;
+    this.channel?.postMessage({ type: 'clear' });
   }
 
   isTokenExpiringSoon(token: string, thresholdSeconds = 300): boolean {
@@ -58,13 +114,12 @@ class TokenManager {
     }
   }
 
-  // CSRF token: prefer cookie, then fall back to localStorage.
-  // Cookie is server-side source-of-truth for /auth/refresh validation.
-  private getCsrfToken(): string {
+  // CSRF token: prefer the cookie (server-side source of truth for /auth/refresh double-submit
+  // validation), then the in-memory copy.
+  getCsrfToken(): string {
     const fromCookie = document.cookie.match(/csrfToken=([^;]+)/);
     if (fromCookie) return fromCookie[1];
-    const fromStorage = localStorage.getItem('csrfToken');
-    return fromStorage || '';
+    return this.csrfToken || '';
   }
 
   // Acquire cross-tab refresh lock. Returns true if lock acquired, false if another tab holds it.
@@ -77,7 +132,6 @@ class TokenManager {
           return false; // Another tab holds the lock
         }
       } catch {
-        // Corrupted lock payload - clear and continue acquiring a fresh lock.
         localStorage.removeItem(REFRESH_LOCK_KEY);
       }
     }
@@ -89,19 +143,36 @@ class TokenManager {
     localStorage.removeItem(REFRESH_LOCK_KEY);
   }
 
-  // Wait for another tab to complete its refresh, then return the updated access token.
+  // Wait for another tab to broadcast its freshly-refreshed access token.
   private waitForOtherTabRefresh(): Promise<string> {
     return new Promise((resolve, reject) => {
+      const channel = this.channel;
+      if (!channel) {
+        // No cross-tab channel available — refresh ourselves.
+        this.refreshPromise = null;
+        this.refreshAccessToken().then(resolve).catch(reject);
+        return;
+      }
+
+      const onMessage = (ev: MessageEvent) => {
+        const data = ev.data as { type?: string; token?: string };
+        if (data?.type === 'token' && data.token) {
+          cleanup();
+          resolve(data.token);
+        }
+      };
+      const cleanup = () => {
+        clearTimeout(deadline);
+        channel.removeEventListener('message', onMessage);
+      };
+
       const deadline = setTimeout(() => {
-        window.removeEventListener('storage', handler);
-        // Timeout: another tab may be slow or storage event was missed.
-        // If we already have a valid token, keep session stable and avoid replaying stale refresh tokens.
-        const latestToken = this.getAccessToken();
-        if (latestToken && !this.isTokenExpiringSoon(latestToken, 0)) {
-          resolve(latestToken);
+        cleanup();
+        // If we already hold a valid token, keep the session stable.
+        if (this.accessToken && !this.isTokenExpiringSoon(this.accessToken, 0)) {
+          resolve(this.accessToken);
           return;
         }
-
         // Lock looks stale -> release and retry ourselves.
         const existingLock = localStorage.getItem(REFRESH_LOCK_KEY);
         if (existingLock) {
@@ -114,30 +185,11 @@ class TokenManager {
             localStorage.removeItem(REFRESH_LOCK_KEY);
           }
         }
-
         this.refreshPromise = null;
         this.refreshAccessToken().then(resolve).catch(reject);
       }, REFRESH_LOCK_TIMEOUT_MS);
 
-      const handler = (event: StorageEvent) => {
-        if (event.key === 'accessToken' && event.newValue) {
-          // Another tab stored a fresh access token
-          clearTimeout(deadline);
-          window.removeEventListener('storage', handler);
-          // Also sync the CSRF token if updated
-          resolve(event.newValue);
-        } else if (event.key === REFRESH_LOCK_KEY && !event.newValue) {
-          // Lock released - check for fresh token
-          const token = this.getAccessToken();
-          if (token) {
-            clearTimeout(deadline);
-            window.removeEventListener('storage', handler);
-            resolve(token);
-          }
-        }
-      };
-
-      window.addEventListener('storage', handler);
+      channel.addEventListener('message', onMessage);
     });
   }
 
@@ -172,29 +224,30 @@ class TokenManager {
         'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken,
       },
-      // Backend expects JSON when Content-Type is application/json.
-      // Send a minimal body to avoid Fastify FST_ERR_CTP_EMPTY_JSON_BODY.
       body: '{}',
     });
 
     if (!response.ok) {
-      // Avoid premature logout on transient refresh failures while current access token is still valid.
-      // This keeps active sessions stable and lets next refresh attempt recover.
-      const existingToken = this.getAccessToken();
-      if (existingToken && !this.isTokenExpiringSoon(existingToken, 0)) {
-        return existingToken;
+      // Avoid premature logout on transient refresh failures while current token is still valid.
+      if (this.accessToken && !this.isTokenExpiringSoon(this.accessToken, 0)) {
+        return this.accessToken;
       }
       this.clearTokens();
       throw new Error(`Token refresh failed (${response.status})`);
     }
 
     const data: TokenResponse = await response.json();
-    // Store new access token (triggers storage event in other tabs)
-    localStorage.setItem('accessToken', data.token);
-    // Update CSRF token for subsequent refreshes
+    this.accessToken = data.token;
     if (data.csrfToken) {
-      localStorage.setItem('csrfToken', data.csrfToken);
+      this.csrfToken = data.csrfToken;
     }
+    try {
+      localStorage.setItem(SESSION_FLAG_KEY, '1');
+    } catch {
+      // ignore
+    }
+    // Share the new token with other tabs.
+    this.channel?.postMessage({ type: 'token', token: data.token, csrf: data.csrfToken });
     return data.token;
   }
 }

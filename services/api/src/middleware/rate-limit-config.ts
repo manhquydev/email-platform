@@ -8,6 +8,12 @@ import Redis from "ioredis";
 // Redis config from environment
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379", 10);
+// Optional Redis auth/TLS — applied to every client below so production can require a password.
+const REDIS_AUTH_OPTS = {
+  ...(process.env.REDIS_USERNAME ? { username: process.env.REDIS_USERNAME } : {}),
+  ...(process.env.REDIS_PASSWORD ? { password: process.env.REDIS_PASSWORD } : {}),
+  ...(process.env.REDIS_TLS === "true" ? { tls: {} } : {}),
+};
 
 // Tier-based rate limits (requests per minute)
 export const TIER_RATE_LIMITS: Record<string, number> = {
@@ -42,6 +48,7 @@ export function createRateLimitRedis(): Redis | undefined {
       maxRetriesPerRequest: 3,
       lazyConnect: true,
       enableOfflineQueue: false,
+      ...REDIS_AUTH_OPTS,
     });
 
     redis.on("error", (err) => {
@@ -120,6 +127,7 @@ export class TwoFactorBackoff {
           host: REDIS_HOST,
           port: REDIS_PORT,
           lazyConnect: true,
+          ...REDIS_AUTH_OPTS,
         });
         this.redis.connect().catch(() => {});
       } catch {

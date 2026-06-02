@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { tokenManager } from "../utils/token-manager";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavigationProvider, DesktopNav, MobileNav, HamburgerMenu } from "../components/Navigation/index";
 import { CommandPalette } from "../components/CommandPalette";
@@ -122,7 +123,7 @@ export function FocusStreamLayout({
                             onCreateInbox={onCreateInbox}
                             onDeleteInbox={onDeleteInbox}
                             user={user}
-                            token={localStorage.getItem('token')}
+                            token={tokenManager.getAccessToken()}
                         />
                         <button
                             type="button"

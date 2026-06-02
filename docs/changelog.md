@@ -4,6 +4,13 @@ All notable changes to the Ephemera project will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+- **Comprehensive Security Audit Remediation** (2026-06-02): 4-phase audit addressing 81 findings across command injection, SSRF, path traversal, atomic quota, field encryption, auth token transport, brute-force limits, CAPTCHA integration, SCIM IDOR, and fail-closed token revocation.
+  - **New Security Utilities**: `ssrf-safe-fetch.ts` (HTTPS-only, private IP blocks, port allowlist, no redirects), `field-encryptor.ts` (AES-256-GCM with versioned envelope), `path-validation.ts` (directory traversal containment), `captcha-verifier.ts` (Turnstile/hCaptcha), `auth-attempt-limiter.ts` (SMTP/IMAP brute-force sliding window), `sse-ticket.ts` (single-use 60s auth tickets)
+  - **Auth Hardening**: Refresh tokens isolated to httpOnly cookies; access tokens in-memory only; CSRF token in parent-domain cookie + localStorage fallback; all auth flows (password/SSO/magic-link/Telegram) now establish opaque refresh sessions
+  - **Token Revocation**: Fail-closed by default (`TOKEN_REVOCATION_FAIL_CLOSED`); revocation store unavailability rejects logins rather than allows
+  - **Code Injection Prevention**: `execFile`/`spawn` with arg arrays (no shell interpolation); user paths validated via `validatePathWithin`; field encryption applied to webhook secrets, forwarding rule secrets, provider secrets
+
 ### Fixed
 - **Register/SSO opaque refresh tokens**: Register and SSO endpoints now store DB opaque refresh tokens (same as login), preventing 15-min logout after register/SSO sign-in
 - **Multi-tab token rotation race condition**: Added cross-tab localStorage lock + 5s backend grace window to prevent concurrent refresh calls from invalidating each other

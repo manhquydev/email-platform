@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:7-alpine
+          image: redis:7.4-alpine # pin to @sha256:<digest> before production deploy
           ports:
             - containerPort: 6379
           resources:
@@ -80,7 +80,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:16-alpine
+          image: postgres:16.4-alpine # pin to @sha256:<digest> before production deploy
           ports:
             - containerPort: 5432
           env:

@@ -13,6 +13,12 @@ vi.mock('../../shared/api', () => ({
     getMe: vi.fn().mockResolvedValue({
       user: { id: '1', email: 'test@example.com', role: 'USER', tier: 'FREE' },
     }),
+    getDomains: vi.fn().mockResolvedValue({
+      domains: [
+        { id: 'dom-1', name: 'alpha.test', isPublic: true },
+        { id: 'dom-2', name: 'beta.test', isPublic: true },
+      ],
+    }),
   },
 }));
 
@@ -26,6 +32,9 @@ vi.mock('../../shared/storage', () => ({
     getSettings: vi.fn().mockResolvedValue({
       autoCopy: true,
       theme: 'system',
+      defaultInboxLifetime: 'temporary',
+      automationExpiryHours: 2,
+      automationAllowedDomainIds: [],
     }),
     updateSettings: vi.fn().mockResolvedValue(undefined),
   },
@@ -142,6 +151,44 @@ describe('Settings', () => {
         await userEvent.click(autoCopyButton);
         expect(storage.updateSettings).toHaveBeenCalledWith({ autoCopy: false });
       }
+    });
+
+    it('should render default inbox type controls', async () => {
+      render(<Settings onBack={mockOnBack} onLogout={mockOnLogout} />);
+
+      expect(screen.getByText('Default Inbox Type')).toBeInTheDocument();
+      expect(screen.getByText('Temporary (24h)')).toBeInTheDocument();
+      expect(screen.getByText('Permanent')).toBeInTheDocument();
+    });
+
+    it('should update default inbox type setting', async () => {
+      const { storage } = await import('../../shared/storage');
+      render(<Settings onBack={mockOnBack} onLogout={mockOnLogout} />);
+
+      await userEvent.click(screen.getByText('Permanent'));
+      expect(storage.updateSettings).toHaveBeenCalledWith({ defaultInboxLifetime: 'permanent' });
+    });
+
+    it('should disable automation expiry when default inbox type is permanent', async () => {
+      const { storage } = await import('../../shared/storage');
+      render(<Settings onBack={mockOnBack} onLogout={mockOnLogout} />);
+
+      await userEvent.click(screen.getByText('Permanent'));
+      const expirySelect = screen.getByLabelText('Select automation inbox expiry in hours');
+      expect(expirySelect).toBeDisabled();
+
+      const callCountBefore = (storage.updateSettings as ReturnType<typeof vi.fn>).mock.calls.length;
+      fireEvent.change(expirySelect, { target: { value: '24' } });
+      expect((storage.updateSettings as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callCountBefore);
+    });
+
+    it('should update automation expiry setting', async () => {
+      const { storage } = await import('../../shared/storage');
+      render(<Settings onBack={mockOnBack} onLogout={mockOnLogout} />);
+
+      const expirySelect = screen.getByLabelText('Select automation inbox expiry in hours');
+      fireEvent.change(expirySelect, { target: { value: '24' } });
+      expect(storage.updateSettings).toHaveBeenCalledWith({ automationExpiryHours: 24 });
     });
   });
 

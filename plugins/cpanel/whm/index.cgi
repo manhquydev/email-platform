@@ -10,6 +10,22 @@ use Whostmgr::HTMLInterface ();
 use Whostmgr::ACLS          ();
 use Cpanel::Form            ();
 
+# HTML escaping: prefer HTML::Entities when available, fall back to inline sub
+my $encode_entities;
+eval { require HTML::Entities; $encode_entities = \&HTML::Entities::encode_entities; };
+if ($@) {
+    $encode_entities = sub {
+        my ($str) = @_;
+        return '' unless defined $str;
+        $str =~ s/&/&amp;/g;
+        $str =~ s/</&lt;/g;
+        $str =~ s/>/&gt;/g;
+        $str =~ s/"/&quot;/g;
+        $str =~ s/'/&#x27;/g;
+        return $str;
+    };
+}
+
 use lib '/usr/local/cpanel/Cpanel/Ephemera';
 use Cpanel::Ephemera::API    ();
 use Cpanel::Ephemera::Config ();
@@ -131,34 +147,43 @@ unless ($settings->{api_key}) {
     my $tenant_count = $usage->{summary}{tenants} || 0;
     my $mailbox_count = $usage->{summary}{mailboxes} || 0;
 
+    my $e_name         = $encode_entities->($provider_info->{name});
+    my $e_tier         = $encode_entities->($provider_info->{tier});
+    my $e_status       = $encode_entities->($provider_info->{status});
+    my $e_status_class = $encode_entities->($status_class);
+    my $e_tenant_count = $encode_entities->("$tenant_count");
+    my $e_mailbox_count= $encode_entities->("$mailbox_count");
+    my $e_api_url      = $encode_entities->($settings->{api_url});
+    my $e_default_plan = $encode_entities->($settings->{default_plan});
+
     print qq{
     <div class="dashboard-grid">
         <div class="dashboard-card">
             <h3>Provider Status</h3>
-            <p><strong>Name:</strong> $provider_info->{name}</p>
-            <p><strong>Tier:</strong> $provider_info->{tier}</p>
-            <p><strong>Status:</strong> <span class="$status_class">$provider_info->{status}</span></p>
+            <p><strong>Name:</strong> $e_name</p>
+            <p><strong>Tier:</strong> $e_tier</p>
+            <p><strong>Status:</strong> <span class="$e_status_class">$e_status</span></p>
         </div>
 
         <div class="dashboard-card">
             <h3>Usage Summary</h3>
-            <p><span class="stat-value">$tenant_count</span> <span class="stat-label">Active Tenants</span></p>
-            <p><span class="stat-value">$mailbox_count</span> <span class="stat-label">Total Mailboxes</span></p>
+            <p><span class="stat-value">$e_tenant_count</span> <span class="stat-label">Active Tenants</span></p>
+            <p><span class="stat-value">$e_mailbox_count</span> <span class="stat-label">Total Mailboxes</span></p>
         </div>
 
         <div class="dashboard-card">
             <h3>Quick Actions</h3>
             <div class="quick-links">
-                <a href="settings.cgi">⚙️ Provider Settings</a>
-                <a href="tenants.cgi">👥 Manage Tenants</a>
-                <a href="usage.cgi">📊 Usage Reports</a>
+                <a href="settings.cgi">&#9881;&#65039; Provider Settings</a>
+                <a href="tenants.cgi">&#128101; Manage Tenants</a>
+                <a href="usage.cgi">&#128202; Usage Reports</a>
             </div>
         </div>
 
         <div class="dashboard-card">
             <h3>Configuration</h3>
-            <p><strong>API URL:</strong> $settings->{api_url}</p>
-            <p><strong>Default Plan:</strong> $settings->{default_plan}</p>
+            <p><strong>API URL:</strong> $e_api_url</p>
+            <p><strong>Default Plan:</strong> $e_default_plan</p>
             <p><strong>Auto-Provision:</strong> } . ($settings->{auto_provision} ? 'Enabled' : 'Disabled') . qq{</p>
         </div>
     </div>

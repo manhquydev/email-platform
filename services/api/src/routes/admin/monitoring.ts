@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { AdminRole, requireAdminRole } from '../../middleware/rbac';
 import { PrismaClient } from '@prisma/client';
+import { appConfig } from '../../config';
 import os from 'os';
 
 const prisma = new PrismaClient();
@@ -10,12 +11,19 @@ export default async function adminMonitoringRoutes(fastify: FastifyInstance) {
   fastify.get('/stream', {
     preHandler: requireAdminRole([AdminRole.SUPER_ADMIN, AdminRole.HELPDESK])
   }, (req, reply) => {
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'text/event-stream',
       'Connection': 'keep-alive',
       'Cache-Control': 'no-cache',
-      'Access-Control-Allow-Origin': '*'
     };
+    // This admin stream exposes user counts and system metrics — never wildcard CORS.
+    // Echo the credentialed origin only when it matches the configured web app.
+    const origin = req.headers.origin;
+    if (origin && origin === appConfig.webUrl) {
+      headers['Access-Control-Allow-Origin'] = origin;
+      headers['Access-Control-Allow-Credentials'] = 'true';
+      headers['Vary'] = 'Origin';
+    }
     reply.raw.writeHead(200, headers);
 
     const sendUpdate = async () => {

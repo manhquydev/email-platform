@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { api } from "../utils/api";
+import { tokenManager } from "../utils/token-manager";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Button } from "../components/ui/Button";
 
@@ -22,13 +23,15 @@ export function MagicLinkVerify() {
     const verifyToken = async (token: string) => {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const res = await api<{ token: string; user: any }>("/auth/magic-link/verify", {
+            const res = await api<{ token: string; csrfToken?: string; user: any }>("/auth/magic-link/verify", {
                 method: "POST",
                 body: { token }
             });
 
-            // Save auth data
-            localStorage.setItem("token", res.token);
+            // Seed the in-memory access token + session flag (the server set the httpOnly refresh
+            // cookie). The reload below re-hydrates the session via AuthContext.
+            tokenManager.setTokens(res.token);
+            if (res.csrfToken) tokenManager.setCsrfToken(res.csrfToken);
             localStorage.setItem("user", JSON.stringify(res.user));
 
             setStatus("success");

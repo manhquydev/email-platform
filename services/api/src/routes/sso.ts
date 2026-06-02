@@ -1,11 +1,13 @@
 import { FastifyInstance } from "fastify";
-import { z } from "zod";
 import { SamlService } from "../_wip/identity/saml-sp";
 import { OidcService } from "../_wip/identity/oidc-client";
 import { provisionUser } from "../_wip/identity/jit-provisioning";
 import { appConfig } from "../config";
 import { sendApiError } from "../utils/errorHandler";
-import crypto from "crypto";
+import { RefreshTokenService } from "../services/refresh-token.service";
+import { createCsrfToken } from "./auth/auth-tokens";
+import { setAuthCookies } from "./auth/auth-cookies";
+import { COOKIE_MAX_AGE_DEFAULT } from "./auth/auth-config";
 
 export async function ssoRoutes(app: FastifyInstance) {
   // SAML Login
@@ -39,21 +41,16 @@ export async function ssoRoutes(app: FastifyInstance) {
         profile
       );
 
-      // Issue JWTs (Similar to auth.ts)
-      const accessJti = crypto.randomUUID();
-      const refreshJti = crypto.randomUUID();
-      const accessToken = app.jwt.sign(
-        { userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti },
-        { expiresIn: "15m" }
+      // Establish a session via httpOnly cookies (opaque DB refresh token + CSRF), matching
+      // the login flow. The access token is fetched by the client via /auth/refresh after the
+      // redirect — it is never placed in the URL (which leaks to logs/Referer/history).
+      const { token: refreshToken } = await RefreshTokenService.createToken(
+        user.id, 7, request.headers["user-agent"], request.ip
       );
-      const refreshToken = app.jwt.sign(
-        { userId: user.id, type: "refresh", jti: refreshJti },
-        { expiresIn: "7d" }
-      );
+      const csrfToken = createCsrfToken();
+      setAuthCookies(reply, request, refreshToken, csrfToken, COOKIE_MAX_AGE_DEFAULT);
 
-      // Redirect to frontend with tokens
-      const redirectUrl = `${appConfig.webUrl}/auth/callback?token=${accessToken}&refreshToken=${refreshToken}`;
-      return reply.redirect(redirectUrl);
+      return reply.redirect(`${appConfig.webUrl}/auth/sso?success=true`);
     } catch (err) {
       request.log.error(err);
       return reply.redirect(`${appConfig.webUrl}/login?error=saml_failed`);
@@ -86,20 +83,15 @@ export async function ssoRoutes(app: FastifyInstance) {
         userInfo
       );
 
-      // Issue JWTs
-      const accessJti = crypto.randomUUID();
-      const refreshJti = crypto.randomUUID();
-      const accessToken = app.jwt.sign(
-        { userId: user.id, role: user.role, tier: user.tier, type: "access", jti: accessJti },
-        { expiresIn: "15m" }
+      // Establish a session via httpOnly cookies (opaque DB refresh token + CSRF). The access
+      // token is fetched by the client via /auth/refresh after the redirect — never in the URL.
+      const { token: refreshToken } = await RefreshTokenService.createToken(
+        user.id, 7, request.headers["user-agent"], request.ip
       );
-      const refreshToken = app.jwt.sign(
-        { userId: user.id, type: "refresh", jti: refreshJti },
-        { expiresIn: "7d" }
-      );
+      const csrfToken = createCsrfToken();
+      setAuthCookies(reply, request, refreshToken, csrfToken, COOKIE_MAX_AGE_DEFAULT);
 
-      const redirectUrl = `${appConfig.webUrl}/auth/callback?token=${accessToken}&refreshToken=${refreshToken}`;
-      return reply.redirect(redirectUrl);
+      return reply.redirect(`${appConfig.webUrl}/auth/sso?success=true`);
     } catch (err) {
       request.log.error(err);
       return reply.redirect(`${appConfig.webUrl}/login?error=oidc_failed`);

@@ -24,11 +24,11 @@ describe("token-manager refresh resilience", () => {
     vi.restoreAllMocks();
   });
 
-  it("prefers csrf token from cookie over localStorage", async () => {
-    localStorage.setItem("csrfToken", "storage-csrf");
+  it("prefers csrf token from cookie over in-memory value", async () => {
+    tokenManager.setCsrfToken("memory-csrf");
     document.cookie = "csrfToken=cookie-csrf; path=/";
 
-    localStorage.setItem("accessToken", createJwt(600));
+    tokenManager.setTokens(createJwt(600));
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -48,8 +48,8 @@ describe("token-manager refresh resilience", () => {
 
   it("keeps current session when refresh fails but access token is still valid", async () => {
     const validToken = createJwt(600);
-    localStorage.setItem("accessToken", validToken);
-    localStorage.setItem("csrfToken", "csrf-valid");
+    tokenManager.setTokens(validToken);
+    tokenManager.setCsrfToken("csrf-valid");
 
     vi.stubGlobal(
       "fetch",
@@ -61,12 +61,12 @@ describe("token-manager refresh resilience", () => {
 
     const token = await tokenManager.refreshAccessToken();
     expect(token).toBe(validToken);
-    expect(localStorage.getItem("accessToken")).toBe(validToken);
+    expect(tokenManager.getAccessToken()).toBe(validToken);
   });
 
   it("clears tokens when refresh fails and access token is expired", async () => {
-    localStorage.setItem("accessToken", createJwt(-10));
-    localStorage.setItem("csrfToken", "csrf-expired");
+    tokenManager.setTokens(createJwt(-10));
+    tokenManager.setCsrfToken("csrf-expired");
 
     vi.stubGlobal(
       "fetch",
@@ -77,43 +77,54 @@ describe("token-manager refresh resilience", () => {
     );
 
     await expect(tokenManager.refreshAccessToken()).rejects.toThrow("Token refresh failed (401)");
+    expect(tokenManager.getAccessToken()).toBeNull();
+    expect(tokenManager.hasSessionFlag()).toBe(false);
+  });
+
+  it("does not persist the access token to localStorage", async () => {
+    tokenManager.setTokens(createJwt(600));
     expect(localStorage.getItem("accessToken")).toBeNull();
-    expect(localStorage.getItem("csrfToken")).toBeNull();
+    expect(localStorage.getItem("token")).toBeNull();
+    // Only the non-sensitive session marker is persisted.
+    expect(localStorage.getItem("auth:hasSession")).toBe("1");
   });
 
   it("keeps token and releases lock when refresh request throws network error", async () => {
     const validToken = createJwt(600);
-    localStorage.setItem("accessToken", validToken);
-    localStorage.setItem("csrfToken", "csrf-valid");
+    tokenManager.setTokens(validToken);
+    tokenManager.setCsrfToken("csrf-valid");
 
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
 
     await expect(tokenManager.refreshAccessToken()).rejects.toThrow("network down");
-    expect(localStorage.getItem("accessToken")).toBe(validToken);
+    expect(tokenManager.getAccessToken()).toBe(validToken);
     expect(localStorage.getItem("token_refresh_lock")).toBeNull();
   });
 
-  it("waits for another tab refresh when lock is held", async () => {
+  it("waits for another tab to broadcast a refreshed token when lock is held", async () => {
     localStorage.setItem("token_refresh_lock", JSON.stringify({ timestamp: Date.now() }));
     const tokenFromOtherTab = createJwt(900);
+    const otherTab = new BroadcastChannel("token_manager_sync");
 
     const refreshPromise = tokenManager.refreshAccessToken();
-    window.dispatchEvent(new StorageEvent("storage", { key: "accessToken", newValue: tokenFromOtherTab }));
+    // The waiter attaches its listener synchronously; broadcast the new token from the "other tab".
+    otherTab.postMessage({ type: "token", token: tokenFromOtherTab });
 
     await expect(refreshPromise).resolves.toBe(tokenFromOtherTab);
+    otherTab.close();
   });
 
   it("keeps current token when waiting for other tab times out", async () => {
     vi.useFakeTimers();
     const validToken = createJwt(600);
-    localStorage.setItem("accessToken", validToken);
+    tokenManager.setTokens(validToken);
     localStorage.setItem("token_refresh_lock", JSON.stringify({ timestamp: Date.now() }));
 
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
     const refreshPromise = tokenManager.refreshAccessToken();
-    await vi.advanceTimersByTimeAsync(60_000);
+    await vi.advanceTimersByTimeAsync(30_000);
 
     await expect(refreshPromise).resolves.toBe(validToken);
     expect(fetchMock).not.toHaveBeenCalled();

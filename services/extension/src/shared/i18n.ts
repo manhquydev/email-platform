@@ -53,7 +53,8 @@ export type MessageKey =
   | 'noMessages'
   | 'loadingPreview'
   | 'errorBoundary_title'
-  | 'errorBoundary_message';
+  | 'errorBoundary_message'
+  | 'messageListUnknownSender';
 
 /**
  * Get a translated message by key.

@@ -6,6 +6,12 @@ USERNAME="$1"
 DOMAIN="$2"
 EMAIL="$3"
 
+# Validate inputs before logging or passing to the provisioner.
+# Reject values that contain shell metacharacters or log-injection sequences.
+[[ "$USERNAME" =~ ^[a-zA-Z0-9._-]+$ ]] || { echo "[$(date)] user_create: invalid USERNAME"; exit 1; }
+[[ "$DOMAIN"   =~ ^[a-zA-Z0-9._-]+$ ]] || { echo "[$(date)] user_create: invalid DOMAIN";   exit 1; }
+[[ "$EMAIL"    =~ ^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+$ ]] || { echo "[$(date)] user_create: invalid EMAIL"; exit 1; }
+
 # Log the event
 echo "[$(date)] User create hook: $USERNAME / $DOMAIN" >> /var/log/ephemera.log
 

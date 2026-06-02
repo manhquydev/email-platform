@@ -16,6 +16,8 @@ import {
 import { getForwardingStats } from "../services/forwarding";
 import { createTierEnforceHandler } from "../services/tier-enforcement.service";
 import { sendApiError } from "../utils/errorHandler";
+import { encryptField } from "../utils/field-encryptor";
+import { validateWebhookUrl } from "../utils/input-sanitizer";
 
 // Schema for conditions
 const conditionSchema = z.object({
@@ -116,7 +118,8 @@ export async function forwardingRoutes(app: FastifyInstance) {
                 _count: { select: { logs: true } }
             }
         });
-        return { rules };
+        // Webhook signing secrets are stored encrypted and must not be echoed to clients.
+        return { rules: rules.map(({ webhookSecret, ...rest }) => rest) };
     });
 
     // Create forwarding rule (enhanced)
@@ -154,6 +157,14 @@ export async function forwardingRoutes(app: FastifyInstance) {
             }
         }
 
+        // Block SSRF at rule-creation time as well as at delivery time (defense in depth).
+        if (data.destinationType === 'WEBHOOK' && data.webhookUrl) {
+            const urlCheck = validateWebhookUrl(data.webhookUrl);
+            if (!urlCheck.valid) {
+                return sendApiError(reply, 400, `Invalid webhook URL: ${urlCheck.reason}`, { code: "BAD_REQUEST" });
+            }
+        }
+
         const rule = await prisma.forwardingRule.create({
             data: {
                 userId: user.userId,
@@ -164,7 +175,7 @@ export async function forwardingRoutes(app: FastifyInstance) {
                 telegramChatId: data.telegramChatId || null,
                 discordWebhookUrl: data.discordWebhookUrl || null,
                 webhookUrl: data.webhookUrl || null,
-                webhookSecret: data.webhookSecret || null,
+                webhookSecret: data.webhookSecret ? encryptField(data.webhookSecret) : null,
                 conditions: data.conditions,
                 matchType: data.matchType,
                 priority: data.priority,
@@ -186,6 +197,13 @@ export async function forwardingRoutes(app: FastifyInstance) {
             return sendApiError(reply, 400, "Invalid data", { code: "BAD_REQUEST" });
         }
 
+        if (parsed.data.webhookUrl) {
+            const urlCheck = validateWebhookUrl(parsed.data.webhookUrl);
+            if (!urlCheck.valid) {
+                return sendApiError(reply, 400, `Invalid webhook URL: ${urlCheck.reason}`, { code: "BAD_REQUEST" });
+            }
+        }
+
         const rule = await prisma.forwardingRule.findFirst({
             where: { id, userId: user.userId }
         });
@@ -194,9 +212,15 @@ export async function forwardingRoutes(app: FastifyInstance) {
             return sendApiError(reply, 404, "Rule not found", { code: "NOT_FOUND" });
         }
 
+        // Encrypt an updated webhook secret at rest, matching the create path.
+        const updateData = { ...parsed.data };
+        if (updateData.webhookSecret) {
+            updateData.webhookSecret = encryptField(updateData.webhookSecret);
+        }
+
         await prisma.forwardingRule.update({
             where: { id },
-            data: parsed.data
+            data: updateData
         });
 
         return { success: true };

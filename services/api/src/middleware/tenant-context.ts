@@ -29,35 +29,40 @@ export const tenantContext = async (request: FastifyRequest, reply: FastifyReply
     }
   }
 
-  // 2. Try to get tenant from header (X-Tenant-ID or X-Tenant-Slug)
-  const tenantId = request.headers['x-tenant-id'] as string;
-  const tenantSlug = request.headers['x-tenant-slug'] as string;
+  // 2. A client-supplied X-Tenant-ID / X-Tenant-Slug header may only override the tenant
+  // for an authenticated platform super-admin. An unauthenticated or ordinary user can
+  // never select another organization by sending a header (prevents tenant impersonation).
+  const isSuperAdmin = !!user && (user.adminRole === 'SUPER_ADMIN' || user.role === 'ADMIN');
+  if (isSuperAdmin) {
+    const tenantId = request.headers['x-tenant-id'] as string;
+    const tenantSlug = request.headers['x-tenant-slug'] as string;
 
-  if (tenantId) {
-    const org = await prisma.organization.findUnique({
-      where: { id: tenantId }
-    });
-    if (org) {
-      request.tenant = {
-        id: org.id,
-        slug: org.slug,
-        settings: org.settings
-      };
-      return;
+    if (tenantId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: tenantId }
+      });
+      if (org) {
+        request.tenant = {
+          id: org.id,
+          slug: org.slug,
+          settings: org.settings
+        };
+        return;
+      }
     }
-  }
 
-  if (tenantSlug) {
-    const org = await prisma.organization.findUnique({
-      where: { slug: tenantSlug }
-    });
-    if (org) {
-      request.tenant = {
-        id: org.id,
-        slug: org.slug,
-        settings: org.settings
-      };
-      return;
+    if (tenantSlug) {
+      const org = await prisma.organization.findUnique({
+        where: { slug: tenantSlug }
+      });
+      if (org) {
+        request.tenant = {
+          id: org.id,
+          slug: org.slug,
+          settings: org.settings
+        };
+        return;
+      }
     }
   }
 

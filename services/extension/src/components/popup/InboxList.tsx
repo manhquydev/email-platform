@@ -7,12 +7,12 @@ import { t } from '../../shared/i18n';
 import { Plus, Copy, RefreshCw, Loader2, Mail, Clock, Sparkles, ExternalLink, CalendarPlus, Trash2, QrCode, Pin } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CONFIG } from '../../shared/config';
-import { TIER_LIMITS, COUNTDOWN_INTERVAL_MS } from '../../shared/constants';
 import CreateInboxModal from '../shared/CreateInboxModal';
 import QRCodeModal from '../shared/QRCodeModal';
 import { InboxSkeleton } from '../shared/Skeleton';
 import CountdownRing from '../shared/CountdownRing';
 import { usePinnedInboxes } from '../../hooks/usePinnedInboxes';
+import browser from 'webextension-polyfill';
 
 interface InboxListProps {
   onSelectInbox: (id: string, email: string) => void;
@@ -29,6 +29,10 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [qrEmail, setQrEmail] = useState<string | null>(null);
+  const msg = (key: string, fallback: string, substitutions?: string[]) => {
+    const value = browser.i18n.getMessage(key, substitutions);
+    return value || fallback;
+  };
 
   const { isPinned, togglePin } = usePinnedInboxes();
 
@@ -72,9 +76,9 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       }));
       setInboxes(mappedInboxes);
 
-      // Set stats for limit indicator
-      const tier = response.user.tier || 'FREE';
-      const limit = tier === 'FREE' ? 5 : (tier === 'STARTER' ? 20 : 100); // Mirroring TIER_LIMITS
+      const limit = typeof response.stats.inboxLimit === 'number'
+        ? response.stats.inboxLimit
+        : mappedInboxes.length;
       setStats({
         totalInboxes: response.stats.totalInboxes,
         limit
@@ -83,7 +87,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       // Sync to storage for content script using standardized helper
       await storage.setInboxes(response.inboxes);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load inboxes');
+      setError(err instanceof Error ? err.message : msg('inboxListLoadFailed', 'Failed to load inboxes'));
     } finally {
       setLoading(false);
     }
@@ -124,7 +128,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
         }
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create inbox');
+      setError(err instanceof Error ? err.message : msg('inboxListCreateFailed', 'Failed to create inbox'));
     } finally {
       setCreating(false);
       setShowCreateModal(false);
@@ -162,7 +166,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
         }
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create inbox');
+      setError(err instanceof Error ? err.message : msg('inboxListCreateFailed', 'Failed to create inbox'));
     } finally {
       setCreating(false);
       setShowCreateModal(false);
@@ -192,7 +196,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       const dashboard = await api.getDashboard();
       await storage.setInboxes(dashboard.inboxes);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update inbox');
+      setError(err instanceof Error ? err.message : msg('inboxListUpdateFailed', 'Failed to update inbox'));
     } finally {
       setUpdatingId(null);
     }
@@ -215,14 +219,14 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       const dashboard = await api.getDashboard();
       await storage.setInboxes(dashboard.inboxes);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to extend inbox');
+      setError(err instanceof Error ? err.message : msg('inboxListExtendFailed', 'Failed to extend inbox'));
     } finally {
       setUpdatingId(null);
     }
   };
 
   const handleDeleteInbox = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this inbox?')) return;
+    if (!window.confirm(msg('inboxListDeleteConfirm', 'Are you sure you want to delete this inbox?'))) return;
     setUpdatingId(id);
     try {
       await api.deleteInbox(id);
@@ -232,7 +236,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
       const dashboard = await api.getDashboard();
       await storage.setInboxes(dashboard.inboxes);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to delete inbox');
+      setError(err instanceof Error ? err.message : msg('inboxListDeleteFailed', 'Failed to delete inbox'));
     } finally {
       setUpdatingId(null);
     }
@@ -252,7 +256,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
 
   if (loading && inboxes.length === 0) {
     return (
-      <div className="p-4 space-y-4" role="status" aria-label="Loading inboxes">
+      <div className="p-4 space-y-4" role="status" aria-label={msg('inboxListLoadingAria', 'Loading inboxes')}>
         <div className="flex justify-between items-center px-1">
           <div className="flex flex-col">
             <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('activeInboxes')}</h2>
@@ -263,7 +267,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
           <InboxSkeleton />
           <InboxSkeleton />
         </div>
-        <span className="sr-only">Loading your inboxes, please wait...</span>
+        <span className="sr-only">{msg('inboxListLoadingSrOnly', 'Loading your inboxes, please wait...')}</span>
       </div>
     );
   }
@@ -275,10 +279,10 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
           <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('activeInboxes')}</h2>
           {stats && (
             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-              Usage: <span className={cn(
+              {msg('inboxListUsage', 'Usage:')} <span className={cn(
                 "font-bold",
-                stats.totalInboxes >= stats.limit ? "text-red-500" : "text-primary-500"
-              )}>{stats.totalInboxes}/{stats.limit}</span>
+                stats.limit > 0 && stats.totalInboxes >= stats.limit ? "text-red-500" : "text-primary-500"
+              )}>{stats.totalInboxes}/{stats.limit < 0 ? '∞' : stats.limit}</span>
             </p>
           )}
         </div>
@@ -286,7 +290,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
           onClick={fetchInboxes}
           className="text-slate-400 hover:text-primary-500 p-2 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
           title={t('refresh')}
-          aria-label="Refresh inbox list"
+          aria-label={msg('inboxListRefreshAria', 'Refresh inbox list')}
         >
           <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
         </button>
@@ -356,7 +360,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                       {inbox._count?.messages || 0}
                     </span>
                     {inbox.expiresAt && (
-                      <div className="flex items-center gap-1.5" title={`Expires in ${formatTimeLeft(inbox.expiresAt)}`}>
+                      <div className="flex items-center gap-1.5" title={msg('inboxListExpiresIn', 'Expires in $1', [formatTimeLeft(inbox.expiresAt) || ''])}>
                         <CountdownRing expiresAt={inbox.expiresAt} size={20} strokeWidth={2.5} />
                         <span className={cn(
                           "text-[9px] font-bold tabular-nums tracking-tight",
@@ -380,8 +384,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                       "p-2 rounded-xl transition-all duration-200",
                       copiedId === inbox.id ? "text-green-600 bg-green-50 dark:bg-green-900/20" : "text-slate-400 hover:text-primary-500 hover:bg-slate-50 dark:hover:bg-slate-700/50"
                     )}
-                    title="Copy Address"
-                    aria-label="Copy email address to clipboard"
+                    title={msg('inboxListCopyAddress', 'Copy Address')}
+                    aria-label={msg('inboxListCopyAddressAria', 'Copy email address to clipboard')}
                   >
                     {copiedId === inbox.id ? (
                       <span className="text-[9px] font-black uppercase">{t('copied')}</span>
@@ -395,8 +399,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                       setQrEmail(`${inbox.localPart}@${domainName}`);
                     }}
                     className="p-2 rounded-xl transition-all duration-200 text-slate-400 hover:text-primary-500 hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                    title="Show QR Code"
-                    aria-label="Show QR code for this email"
+                    title={msg('inboxListShowQr', 'Show QR Code')}
+                    aria-label={msg('inboxListShowQrAria', 'Show QR code for this email')}
                   >
                     <QrCode className="w-3.5 h-3.5" />
                   </button>
@@ -409,7 +413,7 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                         : "text-slate-400 hover:text-primary-500 hover:bg-slate-50 dark:hover:bg-slate-700/50"
                     )}
                     title={isPinned(inbox.id) ? t('unpinInbox') : t('pinInbox')}
-                    aria-label={isPinned(inbox.id) ? "Unpin inbox" : "Pin inbox"}
+                    aria-label={isPinned(inbox.id) ? msg('inboxListUnpinAria', 'Unpin inbox') : msg('inboxListPinAria', 'Pin inbox')}
                   >
                     <Pin className={cn("w-3.5 h-3.5", isPinned(inbox.id) && "fill-current")} />
                   </button>
@@ -422,8 +426,8 @@ export default function InboxList({ onSelectInbox }: InboxListProps) {
                         ? "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                         : "text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                     )}
-                    title={!inbox.expiresAt ? "Switch to Temporary (24h)" : "Make Permanent"}
-                    aria-label={!inbox.expiresAt ? "Switch inbox to temporary mode" : "Make inbox permanent"}
+                    title={!inbox.expiresAt ? msg('inboxListSwitchTemporary', 'Switch to Temporary (24h)') : msg('inboxListMakePermanent', 'Make Permanent')}
+                    aria-label={!inbox.expiresAt ? msg('inboxListSwitchTemporaryAria', 'Switch inbox to temporary mode') : msg('inboxListMakePermanentAria', 'Make inbox permanent')}
                   >
                     {updatingId === inbox.id ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />

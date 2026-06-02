@@ -50,12 +50,18 @@ export const setupOutboundEmailWorker = (logger: { info: any; error: any; warn: 
             } catch (err: any) {
                 logger.error({ jobId: job.id, outboundMessageId, err: err.message }, 'Failed to send outbound email');
 
+                // Persist only the remote SMTP reply (safe to show), never the raw internal
+                // error string, which can leak internal hosts/paths from connection failures.
+                const bounceMessage = err?.responseCode
+                    ? `${err.responseCode} ${String(err.response ?? '').slice(0, 250)}`.trim()
+                    : 'Delivery failed';
+
                 // Update to FAILED
                 await prisma.outboundMessage.update({
                     where: { id: outboundMessageId },
                     data: {
                         status: 'FAILED',
-                        bounceMessage: err.message,
+                        bounceMessage,
                     }
                 }).catch(() => { });
 

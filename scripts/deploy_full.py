@@ -1,13 +1,17 @@
-import paramiko
+import os
 import sys
+import paramiko
 import time
 
-# SSH connection details from workflow
-HOST = "165.22.48.193"
-USERNAME = "root"
-PASSWORD = "Manhquy203@"
+from _ssh_config import HOST, USERNAME, PASSWORD
+
+_pat = os.environ.get("GITHUB_PAT")
+if not _pat:
+    print("Error: required environment variable 'GITHUB_PAT' is not set.", file=sys.stderr)
+    sys.exit(1)
+
 PROJECT_DIR = "/root/email-platform."
-GIT_URL = "https://manhquydev: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@github.com/manhquydev/email-platform.git"
+GIT_URL = f"https://manhquydev:{_pat}@github.com/manhquydev/email-platform.git"
 
 def deploy():
     client = paramiko.SSHClient()

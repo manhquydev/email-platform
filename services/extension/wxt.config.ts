@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   srcDir: 'src',
+  publicDir: resolve(__dirname, 'public'),
   modules: ['@wxt-dev/module-react'],
   manifest: {
     name: '__MSG_extName__',
@@ -19,8 +20,15 @@ export default defineConfig({
       'sidePanel',
       'contextMenus',
       'scripting',
+      'webRequest',
     ],
-    host_permissions: ['https://api.manhquy.click/*'],
+    host_permissions: [
+      'https://api.manhquy.click/*',
+      'https://auth.openai.com/*',
+      'https://chatgpt.com/*',
+      'https://app.fireworks.ai/*',
+      'http://localhost:1455/*',
+    ],
     content_security_policy: {
       extension_pages: "script-src 'self'; object-src 'self'; connect-src 'self' https://api.manhquy.click; img-src 'self' https: data:",
     },
@@ -41,6 +49,20 @@ export default defineConfig({
           "mac": "Command+Shift+C"
         },
         "description": "Copy the most recent inbox address"
+      },
+      "toggle-openai-flow1-loop": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+8",
+          "mac": "Command+Shift+8"
+        },
+        "description": "Toggle OpenAI Flow 1 loop automation"
+      },
+      "toggle-fireworks-flow3-loop": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+9",
+          "mac": "Command+Shift+9"
+        },
+        "description": "Toggle Fireworks Flow 3 loop automation"
       }
     },
     browser_specific_settings: {
@@ -54,7 +76,6 @@ export default defineConfig({
     },
   },
   vite: () => ({
-    publicDir: resolve(__dirname, 'public'),
     build: {
       chunkSizeWarningLimit: 600,
     },

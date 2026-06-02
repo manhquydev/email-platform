@@ -59,7 +59,9 @@ export class ImapServer {
 
     console.log(`New IMAP connection ${connection.id} from ${socket.remoteAddress}`);
 
-    socket.write("* OK [CAPABILITY IMAP4rev1 STARTTLS AUTH=PLAIN] Email Platform IMAP Ready\r\n");
+    // STARTTLS is not implemented (no command handler), so it is not advertised — clients
+    // should connect to the implicit-TLS port instead of attempting an unsupported upgrade.
+    socket.write("* OK [CAPABILITY IMAP4rev1 AUTH=PLAIN] Email Platform IMAP Ready\r\n");
 
     let buffer = "";
 

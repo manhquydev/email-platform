@@ -20,12 +20,12 @@ export const DOC_SECTIONS = [
 ] as const;
 
 export const CODE_EXAMPLES = {
-    createInbox: `curl -X POST https://api.manhquy.click/inboxes \
+    createInbox: `curl -X POST https://api.manhquy.id.vn/inboxes \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"domainId": "your-domain-id"}'`,
 
-    listMessages: `curl https://api.manhquy.click/inboxes/{inbox_id}/messages \
+    listMessages: `curl https://api.manhquy.id.vn/inboxes/{inbox_id}/messages \
   -H "Authorization: Bearer YOUR_API_KEY"`,
 
     webhookPayload: `{
@@ -53,7 +53,7 @@ function verifyWebhookSignature(payload, signature, secret) {
   );
 }`,
 
-    fetchExample: `const response = await fetch('https://api.manhquy.click/inboxes', {
+    fetchExample: `const response = await fetch('https://api.manhquy.id.vn/inboxes', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ' + API_KEY,

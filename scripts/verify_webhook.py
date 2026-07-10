@@ -39,12 +39,12 @@ def verify_webhook():
             print(result)
             
             # Check if webhook URL is set correctly
-            if "api.manhquy.click/telegram/webhook" in result:
+            if "api.manhquy.id.vn/telegram/webhook" in result:
                 print("\n✅ Webhook is configured correctly!")
             elif '"url":""' in result or '"url": ""' in result:
                 print("\n❌ Webhook URL is empty! Setting it now...")
                 stdin, stdout, stderr = client.exec_command(
-                    f'''curl -s -X POST "https://api.telegram.org/bot{bot_token}/setWebhook" -H "Content-Type: application/json" -d '{{"url": "https://api.manhquy.click/telegram/webhook", "allowed_updates": ["message", "callback_query"]}}'
+                    f'''curl -s -X POST "https://api.telegram.org/bot{bot_token}/setWebhook" -H "Content-Type: application/json" -d '{{"url": "https://api.manhquy.id.vn/telegram/webhook", "allowed_updates": ["message", "callback_query"]}}'
                     ''',
                     timeout=30
                 )

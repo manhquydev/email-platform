@@ -118,7 +118,7 @@ export function TermsOfService() {
                     <section className="mb-8">
                         <h2>12. Liên hệ pháp lý</h2>
                         <p>
-                            Email: <a href="mailto:legal@manhquy.click" className="text-[var(--nebula-primary)] hover:underline">legal@manhquy.click</a>
+                            Email: <a href="mailto:legal@manhquy.id.vn" className="text-[var(--nebula-primary)] hover:underline">legal@manhquy.id.vn</a>
                         </p>
                     </section>
                 </div>

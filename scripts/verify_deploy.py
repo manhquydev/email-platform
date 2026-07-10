@@ -49,7 +49,7 @@ def verify_deployment():
         # Check domains endpoint
         print("📋 4. Domains Endpoint (external):")
         stdin, stdout, stderr = client.exec_command(
-            "curl -s -o /dev/null -w '%{http_code}' https://api.manhquy.click/domains",
+            "curl -s -o /dev/null -w '%{http_code}' https://api.manhquy.id.vn/domains",
             timeout=15
         )
         status = stdout.read().decode().strip()

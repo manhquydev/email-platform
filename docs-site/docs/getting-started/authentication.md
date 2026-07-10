@@ -8,7 +8,7 @@ All API requests require authentication via API key.
 
 ## Getting Your API Key
 
-1. Sign up at [dashboard.manhquy.click](https://dashboard.manhquy.click)
+1. Sign up at [dashboard.manhquy.id.vn](https://dashboard.manhquy.id.vn)
 2. Navigate to **Settings** → **API Keys**
 3. Click **Create API Key**
 4. Copy and securely store your key
@@ -22,7 +22,7 @@ API keys are shown only once. Store them securely and never commit to version co
 ### HTTP Header
 
 ```bash
-curl https://api.manhquy.click/v1/inboxes \
+curl https://api.manhquy.id.vn/v1/inboxes \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

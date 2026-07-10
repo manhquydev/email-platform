@@ -31,7 +31,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     environment:
-      - DOMAIN=${DOMAIN:-manhquy.click}
+      - DOMAIN=${DOMAIN:-manhquy.id.vn}
       - ACME_EMAIL=${ACME_EMAIL:-manhquydev@gmail.com}
     depends_on:
       - api
@@ -82,7 +82,7 @@ services:
       DEFAULT_ADMIN_EMAIL: "manhquydev@gmail.com"
       DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-changeme}
       # Use env var for WEB_URL or default to production domain
-      WEB_URL: ${WEB_URL:-https://app.manhquy.click}
+      WEB_URL: ${WEB_URL:-https://app.manhquy.id.vn}
       STORAGE_DIR: /app/storage
       BACKUP_DIR: /app/backups
     depends_on:
@@ -121,7 +121,7 @@ services:
     ports:
       - "8080:80"
     environment:
-      VITE_API_BASE: ${VITE_API_BASE:-https://api.manhquy.click}
+      VITE_API_BASE: ${VITE_API_BASE:-https://api.manhquy.id.vn}
 
   pushgateway:
     image: prom/pushgateway:latest

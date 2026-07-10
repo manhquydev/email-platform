@@ -52,7 +52,7 @@ case "${1:-help}" in
         docker compose -f $COMPOSE_FILE ps
         echo ""
         echo "Testing API health endpoint..."
-        curl -s https://api.manhquy.click/health || echo -e "${RED}API not responding${NC}"
+        curl -s https://api.manhquy.id.vn/health || echo -e "${RED}API not responding${NC}"
         ;;
         
     rebuild)

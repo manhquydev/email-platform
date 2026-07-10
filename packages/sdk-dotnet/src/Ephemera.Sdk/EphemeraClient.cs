@@ -21,7 +21,7 @@ namespace Ephemera.Sdk;
 /// </example>
 public class EphemeraClient : IDisposable
 {
-    private const string DefaultBaseUrl = "https://api.manhquy.click";
+    private const string DefaultBaseUrl = "https://api.manhquy.id.vn";
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
     private readonly string _apiKey;

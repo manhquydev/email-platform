@@ -46,7 +46,7 @@ const client = new EphemeraClient('your-api-key');
 // Advanced: full configuration
 const client = new EphemeraClient({
   apiKey: 'your-api-key',
-  baseUrl: 'https://api.manhquy.click', // optional
+  baseUrl: 'https://api.manhquy.id.vn', // optional
   timeout: 30000 // optional, in ms
 });
 ```

@@ -20,7 +20,7 @@ interface SEOHeadProps {
   noSuffix?: boolean;
 }
 
-const BASE_URL = 'https://manhquy.click';
+const BASE_URL = 'https://app.manhquy.id.vn';
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const BRAND_NAME = 'Ephemera';
 

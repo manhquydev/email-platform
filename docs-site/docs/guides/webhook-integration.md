@@ -29,7 +29,7 @@ app.post('/webhooks/ephemera', express.raw({ type: 'application/json' }), (req, 
 ### 2. Register Webhook
 
 ```bash
-curl -X POST https://api.manhquy.click/v1/webhooks \
+curl -X POST https://api.manhquy.id.vn/v1/webhooks \
   -H "Authorization: Bearer $API_KEY" \
   -d '{
     "url": "https://your-server.com/webhooks/ephemera",

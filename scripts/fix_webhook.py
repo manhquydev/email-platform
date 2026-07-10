@@ -45,7 +45,7 @@ def fix_webhook():
         
         # Set webhook WITH secret_token
         print("\n🔧 Setting webhook WITH secret_token...")
-        webhook_url = "https://api.manhquy.click/telegram/webhook"
+        webhook_url = "https://api.manhquy.id.vn/telegram/webhook"
         
         curl_cmd = f'''curl -s -X POST "https://api.telegram.org/bot{bot_token}/setWebhook" \
             -H "Content-Type: application/json" \

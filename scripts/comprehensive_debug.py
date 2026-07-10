@@ -123,7 +123,7 @@ def comprehensive_debug():
         # Test without secret
         print("Testing without secret header:")
         stdin, stdout, stderr = client.exec_command(
-            '''curl -s -X POST "https://api.manhquy.click/telegram/webhook" \
+            '''curl -s -X POST "https://api.manhquy.id.vn/telegram/webhook" \
                 -H "Content-Type: application/json" \
                 -d '{"update_id":99999,"message":{"message_id":1,"from":{"id":123456,"is_bot":false,"first_name":"Test"},"chat":{"id":123456,"type":"private"},"text":"/start","date":1703350000}}'
             ''',
@@ -135,7 +135,7 @@ def comprehensive_debug():
         if webhook_secret:
             print(f"\nTesting WITH secret header (x-telegram-bot-api-secret-token):")
             stdin, stdout, stderr = client.exec_command(
-                f'''curl -s -X POST "https://api.manhquy.click/telegram/webhook" \
+                f'''curl -s -X POST "https://api.manhquy.id.vn/telegram/webhook" \
                     -H "Content-Type: application/json" \
                     -H "x-telegram-bot-api-secret-token: {webhook_secret}" \
                     -d '{{"update_id":99999,"message":{{"message_id":1,"from":{{"id":123456,"is_bot":false,"first_name":"Test"}},"chat":{{"id":123456,"type":"private"}},"text":"/start","date":1703350000}}}}'
@@ -157,7 +157,7 @@ def comprehensive_debug():
         print(f"Delete: {stdout.read().decode()}")
         
         # Set webhook with secret
-        webhook_url = "https://api.manhquy.click/telegram/webhook"
+        webhook_url = "https://api.manhquy.id.vn/telegram/webhook"
         if webhook_secret:
             set_cmd = f'''curl -s -X POST "https://api.telegram.org/bot{bot_token}/setWebhook" \
                 -H "Content-Type: application/json" \

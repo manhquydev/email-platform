@@ -35,7 +35,7 @@ class EphemeraClient
 
     public function __construct(
         string $apiKey,
-        string $baseUrl = 'https://api.manhquy.click',
+        string $baseUrl = 'https://api.manhquy.id.vn',
         int $timeout = 30
     ) {
         if (empty($apiKey)) {

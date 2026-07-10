@@ -2,7 +2,7 @@ import requests
 import sys
 import json
 
-BASE_URL = "https://api.manhquy.click" # Default to broadcast
+BASE_URL = "https://api.manhquy.id.vn" # Default to broadcast
 # BASE_URL = "http://localhost:3001" # Local option
 
 def login(email, password):

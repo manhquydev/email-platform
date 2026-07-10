@@ -35,7 +35,7 @@ class AsyncEphemeraClient:
     def __init__(
         self,
         api_key: str,
-        base_url: str = "https://api.manhquy.click",
+        base_url: str = "https://api.manhquy.id.vn",
         timeout: float = 30.0,
     ):
         if not api_key:

@@ -266,7 +266,7 @@ export function ApiReferenceSection() {
             <GlassCard className="p-6">
                 <h2 className="text-xl font-bold text-[#F1F5F9] mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Base URL</h2>
                 <code className="block bg-[#1E293B] rounded-lg p-3 text-green-400 font-mono border border-white/5">
-                    https://api.manhquy.click
+                    https://api.manhquy.id.vn
                 </code>
             </GlassCard>
 

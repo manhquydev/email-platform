@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * }</pre>
  */
 public class EphemeraClient {
-    private static final String DEFAULT_BASE_URL = "https://api.manhquy.click";
+    private static final String DEFAULT_BASE_URL = "https://api.manhquy.id.vn";
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
 
     private final String apiKey;

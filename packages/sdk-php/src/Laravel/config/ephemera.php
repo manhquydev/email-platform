@@ -21,7 +21,7 @@ return [
     | change this unless you're using a self-hosted instance.
     |
     */
-    'base_url' => env('EPHEMERA_BASE_URL', 'https://api.manhquy.click'),
+    'base_url' => env('EPHEMERA_BASE_URL', 'https://api.manhquy.id.vn'),
 
     /*
     |--------------------------------------------------------------------------

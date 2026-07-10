@@ -19,7 +19,7 @@ React SPA = Client-Side Rendering (CSR). Google can render JS but with delay (qu
 ### Step 1: Sign Up
 1. Go to https://prerender.io
 2. Create account
-3. Add domain: `manhquy.click`
+3. Add domain: `manhquy.id.vn`
 4. Get API token
 
 ### Step 2: Add Meta Tag
@@ -31,13 +31,13 @@ Uncomment in `services/web/index.html`:
 ### Step 3: Configure Caddy
 Add to Caddyfile:
 ```caddyfile
-manhquy.click {
+manhquy.id.vn {
     @bot {
         header_regexp User-Agent (?i)(googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora|pinterest|slackbot|vkShare|W3C_Validator|whatsapp|applebot)
     }
 
     handle @bot {
-        rewrite * /https://manhquy.click{uri}
+        rewrite * /https://app.manhquy.id.vn{uri}
         reverse_proxy service.prerender.io:443 {
             header_up Host service.prerender.io
             header_up X-Prerender-Token {env.PRERENDER_TOKEN}
@@ -59,10 +59,10 @@ export PRERENDER_TOKEN="your-token-here"
 ### Step 5: Test
 ```bash
 # Should return pre-rendered HTML
-curl -A "Googlebot" https://manhquy.click/
+curl -A "Googlebot" https://app.manhquy.id.vn/
 
 # Compare with normal response
-curl https://manhquy.click/
+curl https://app.manhquy.id.vn/
 ```
 
 ## Option 2: Self-Hosted Rendertron
@@ -74,13 +74,13 @@ docker run -d -p 3000:3000 --name rendertron googlechrome/rendertron
 
 ### Step 2: Configure Caddy
 ```caddyfile
-manhquy.click {
+manhquy.id.vn {
     @bot {
         header_regexp User-Agent (?i)(googlebot|bingbot|yandex)
     }
 
     handle @bot {
-        reverse_proxy localhost:3000/render/https://manhquy.click{uri}
+        reverse_proxy localhost:3000/render/https://app.manhquy.id.vn{uri}
     }
 
     handle {

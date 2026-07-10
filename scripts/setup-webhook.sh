@@ -5,7 +5,7 @@
 # REQUIRED: Set your bot token here or as environment variable
 # Get this from @BotFather on Telegram
 BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
-API_URL="${API_URL:-https://api.manhquy.click}"
+API_URL="${API_URL:-https://api.manhquy.id.vn}"
 WEBHOOK_SECRET="${TELEGRAM_WEBHOOK_SECRET:-}"
 
 if [ -z "$BOT_TOKEN" ]; then

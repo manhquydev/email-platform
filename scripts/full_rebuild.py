@@ -83,7 +83,7 @@ def full_rebuild_and_test():
             echo "" && \
             curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/setWebhook" \
                 -H "Content-Type: application/json" \
-                -d "{\\\"url\\\": \\\"https://api.manhquy.click/telegram/webhook\\\", \\\"allowed_updates\\\": [\\\"message\\\", \\\"callback_query\\\"], \\\"secret_token\\\": \\\"$SECRET\\\"}"
+                -d "{\\\"url\\\": \\\"https://api.manhquy.id.vn/telegram/webhook\\\", \\\"allowed_updates\\\": [\\\"message\\\", \\\"callback_query\\\"], \\\"secret_token\\\": \\\"$SECRET\\\"}"
             ''',
             timeout=30
         )

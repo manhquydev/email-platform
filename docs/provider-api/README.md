@@ -5,7 +5,7 @@ The Ephemera Provider API allows hosting providers, registrars, and agencies to 
 ## Base URL
 All API requests should be made to:
 ```
-https://api.manhquy.click/v1/provider
+https://api.manhquy.id.vn/v1/provider
 ```
 
 ## Test Credentials (Development)

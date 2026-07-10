@@ -72,7 +72,7 @@ export function QuickActionCards() {
 
 /** Code example panel - redesigned */
 const CODE_EXAMPLE = `# Tạo inbox mới
-curl -X POST https://api.manhquy.click/inboxes \\
+curl -X POST https://api.manhquy.id.vn/inboxes \\
   -H "Authorization: Bearer $API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"domainId": "..."}'
@@ -123,7 +123,7 @@ export function CodeExample() {
                 {/* Code content */}
                 <div className="p-6 font-mono text-sm text-slate-300 space-y-1 overflow-x-auto">
                     <div className="text-slate-500"># Tạo inbox mới</div>
-                    <div className="text-green-400">$ curl -X POST https://api.manhquy.click/inboxes \</div>
+                    <div className="text-green-400">$ curl -X POST https://api.manhquy.id.vn/inboxes \</div>
                     <div className="pl-4">-H <span className="text-amber-300">"Authorization: Bearer $API_KEY"</span> \</div>
                     <div className="pl-4">-H <span className="text-amber-300">"Content-Type: application/json"</span> \</div>
                     <div className="pl-4">-d <span className="text-amber-300">'{`{"domainId": "..."}`}'</span></div>

@@ -118,8 +118,8 @@ export function PrivacyPolicy() {
                         <h2>11. Liên hệ và khiếu nại</h2>
                         <p>
                             Email tiếp nhận yêu cầu dữ liệu cá nhân:
-                            <a href="mailto:privacy@manhquy.click" className="ml-1 text-nebula-violet dark:text-nebula-violet-light hover:underline">
-                                privacy@manhquy.click
+                            <a href="mailto:privacy@manhquy.id.vn" className="ml-1 text-nebula-violet dark:text-nebula-violet-light hover:underline">
+                                privacy@manhquy.id.vn
                             </a>
                         </p>
                         <p className="mt-3">

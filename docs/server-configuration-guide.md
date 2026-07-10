@@ -307,9 +307,9 @@ DATABASE_URL=postgresql://postgres:postgres@postgres:5432/email_service
 JWT_SECRET=$(openssl rand -hex 32)
 
 # Domain configuration
-DOMAIN=manhquy.click
-WEB_URL=https://app.manhquy.click
-API_URL=https://api.manhquy.click
+DOMAIN=manhquy.id.vn
+WEB_URL=https://app.manhquy.id.vn
+API_URL=https://api.manhquy.id.vn
 
 # Admin credentials
 DEFAULT_ADMIN_EMAIL=admin@example.com
@@ -391,7 +391,7 @@ www.{$DOMAIN} {
 
 ```bash
 # Check certificate
-openssl s_client -connect api.manhquy.click:443 -servername api.manhquy.click 2>/dev/null | openssl x509 -noout -dates
+openssl s_client -connect api.manhquy.id.vn:443 -servername api.manhquy.id.vn 2>/dev/null | openssl x509 -noout -dates
 
 # View Caddy certificates
 docker compose exec caddy caddy list-modules
@@ -406,7 +406,7 @@ If not using Caddy:
 apt install certbot python3-certbot-nginx -y
 
 # Get certificate
-certbot certonly --standalone -d api.manhquy.click -d app.manhquy.click
+certbot certonly --standalone -d api.manhquy.id.vn -d app.manhquy.id.vn
 
 # Auto-renewal
 certbot renew --dry-run
@@ -610,7 +610,7 @@ docker run --rm \
 ```bash
 # Update A records to new IP
 # Wait for propagation (check with)
-dig +short api.manhquy.click
+dig +short api.manhquy.id.vn
 ```
 
 #### Step 4: Start Services
@@ -625,8 +625,8 @@ docker compose logs -f
 
 ```bash
 # Health checks
-curl https://api.manhquy.click/health
-curl https://app.manhquy.click
+curl https://api.manhquy.id.vn/health
+curl https://app.manhquy.id.vn
 
 # Check database
 docker compose exec postgres psql -U postgres -c "SELECT count(*) FROM users;"
@@ -695,7 +695,7 @@ docker compose logs caddy
 docker compose exec caddy caddy reload
 
 # Manual certificate test
-openssl s_client -connect api.manhquy.click:443 2>/dev/null | openssl x509 -noout -dates
+openssl s_client -connect api.manhquy.id.vn:443 2>/dev/null | openssl x509 -noout -dates
 ```
 
 #### Port Already in Use

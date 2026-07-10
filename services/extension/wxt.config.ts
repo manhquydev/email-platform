@@ -23,14 +23,14 @@ export default defineConfig({
       'webRequest',
     ],
     host_permissions: [
-      'https://api.manhquy.click/*',
+      'https://api.manhquy.id.vn/*',
       'https://auth.openai.com/*',
       'https://chatgpt.com/*',
       'https://app.fireworks.ai/*',
       'http://localhost:1455/*',
     ],
     content_security_policy: {
-      extension_pages: "script-src 'self'; object-src 'self'; connect-src 'self' https://api.manhquy.click; img-src 'self' https: data:",
+      extension_pages: "script-src 'self'; object-src 'self'; connect-src 'self' https://api.manhquy.id.vn; img-src 'self' https: data:",
     },
     action: {
       default_title: '__MSG_extName__',

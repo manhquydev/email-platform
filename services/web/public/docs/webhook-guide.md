@@ -10,7 +10,7 @@ Webhooks cho phép nhận thông báo realtime khi có email mới thay vì poll
 
 ### 1. Tạo Webhook
 ```bash
-curl -X POST https://api.manhquy.click/webhooks \
+curl -X POST https://api.manhquy.id.vn/webhooks \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -33,7 +33,7 @@ Khi có email mới, server của bạn nhận POST request:
   "idempotencyKey": "uuid",
   "data": {
     "messageId": "msg_xxx",
-    "inboxEmail": "random@manhquy.click",
+    "inboxEmail": "random@manhquy.id.vn",
     "from": "sender@example.com",
     "subject": "Your OTP Code",
     "extractedOtp": {
@@ -339,27 +339,27 @@ Sau 5 lần thất bại, webhook được đánh dấu failed. Có thể retry 
 
 ```bash
 # Tạo test receiver
-curl -X POST https://api.manhquy.click/webhook-test/create \
+curl -X POST https://api.manhquy.id.vn/webhook-test/create \
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # Response
 {
   "receiverId": "abc123",
-  "webhookUrl": "https://api.manhquy.click/webhook-test/receive/abc123",
-  "viewUrl": "https://api.manhquy.click/webhook-test/payloads/abc123"
+  "webhookUrl": "https://api.manhquy.id.vn/webhook-test/receive/abc123",
+  "viewUrl": "https://api.manhquy.id.vn/webhook-test/payloads/abc123"
 }
 
 # Tạo webhook với URL test
-curl -X POST https://api.manhquy.click/webhooks \
+curl -X POST https://api.manhquy.id.vn/webhooks \
   -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"name":"Test","url":"https://api.manhquy.click/webhook-test/receive/abc123","events":["email.received","test.event"]}'
+  -d '{"name":"Test","url":"https://api.manhquy.id.vn/webhook-test/receive/abc123","events":["email.received","test.event"]}'
 
 # Trigger test event
-curl -X POST https://api.manhquy.click/webhooks/{id}/test \
+curl -X POST https://api.manhquy.id.vn/webhooks/{id}/test \
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # Xem payloads đã nhận
-curl https://api.manhquy.click/webhook-test/payloads/abc123
+curl https://api.manhquy.id.vn/webhook-test/payloads/abc123
 ```
 
 ### Sử dụng ngrok (local development)
@@ -369,7 +369,7 @@ curl https://api.manhquy.click/webhook-test/payloads/abc123
 ngrok http 3000
 
 # Terminal 2: Tạo webhook với ngrok URL
-curl -X POST https://api.manhquy.click/webhooks \
+curl -X POST https://api.manhquy.id.vn/webhooks \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{"name":"Local Dev","url":"https://abc123.ngrok.io/webhook","events":["email.received"]}'
 ```

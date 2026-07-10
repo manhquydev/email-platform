@@ -58,7 +58,7 @@ export class RealtimeClient {
 
   constructor(
     apiKey: string,
-    baseUrl = 'https://api.manhquy.click',
+    baseUrl = 'https://api.manhquy.id.vn',
     options: RealtimeOptions = {}
   ) {
     this.apiKey = apiKey;

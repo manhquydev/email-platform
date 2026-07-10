@@ -26,7 +26,7 @@ Ephemera is a browser extension that helps you create and manage temporary email
 ## Data Storage
 
 - **Local Storage**: Settings and cached inbox data stored locally in your browser
-- **Cloud Storage**: Account data and messages stored on secure servers (api.manhquy.click)
+- **Cloud Storage**: Account data and messages stored on secure servers (api.manhquy.id.vn)
 - **Encryption**: All data transmitted over HTTPS/TLS
 
 ## Permissions Explained
@@ -44,7 +44,7 @@ Ephemera is a browser extension that helps you create and manage temporary email
 
 ## Third-Party Services
 
-- **Ephemera API** (api.manhquy.click): Core service for email management
+- **Ephemera API** (api.manhquy.id.vn): Core service for email management
 - No advertising networks
 - No third-party analytics tracking services (only internal anonymous usage metrics)
 - No data sold to third parties
@@ -82,8 +82,8 @@ We may update this policy. Significant changes will be communicated via extensio
 ## Contact
 
 For privacy questions or data requests:
-- Email: support@manhquy.click
-- Dashboard: https://manhquy.click/dashboard
+- Email: support@manhquy.id.vn
+- Dashboard: https://app.manhquy.id.vn/dashboard
 
 ## Consent
 

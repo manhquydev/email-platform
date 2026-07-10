@@ -73,7 +73,7 @@ export function AcceptableUse() {
                         <h2>6. Báo cáo lạm dụng</h2>
                         <p>
                             Vui lòng gửi thông tin lạm dụng về
-                            <a href="mailto:abuse@manhquy.click" className="ml-1 text-[var(--nebula-primary)] hover:underline">abuse@manhquy.click</a>
+                            <a href="mailto:abuse@manhquy.id.vn" className="ml-1 text-[var(--nebula-primary)] hover:underline">abuse@manhquy.id.vn</a>
                             , kèm thời gian, địa chỉ liên quan và bằng chứng kỹ thuật nếu có.
                         </p>
                     </section>

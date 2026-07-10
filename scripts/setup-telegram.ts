@@ -44,7 +44,7 @@ const envPath = path.join(process.cwd(), "services/api/.env");
 loadEnvRaw(envPath);
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const WEB_URL = process.env.WEB_URL; // e.g. https://app.manhquy.click
+const WEB_URL = process.env.WEB_URL; // e.g. https://app.manhquy.id.vn
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
 const API_URL_ENV = process.env.API_URL;
 

@@ -195,8 +195,8 @@ export function generateOpenAPIDocument() {
       description: 'Temporary email platform API for developers. Create disposable inboxes, receive emails, extract OTP codes, and integrate with webhooks.',
       contact: {
         name: 'Ephemera Support',
-        url: 'https://manhquy.click',
-        email: 'support@manhquy.click',
+        url: 'https://app.manhquy.id.vn',
+        email: 'support@manhquy.id.vn',
       },
       license: {
         name: 'MIT',
@@ -205,7 +205,7 @@ export function generateOpenAPIDocument() {
     },
     servers: [
       {
-        url: 'https://api.manhquy.click/v1',
+        url: 'https://api.manhquy.id.vn/v1',
         description: 'Production',
       },
       {

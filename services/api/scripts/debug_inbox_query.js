@@ -1,4 +1,4 @@
-const BASE_URL = "https://api.manhquy.click";
+const BASE_URL = "https://api.manhquy.id.vn";
 const EMAIL = "admin@example.com";
 const PASSWORD = process.env.DEBUG_INBOX_PASSWORD;
 if (!PASSWORD) {

@@ -112,7 +112,7 @@ export function RegisterFormInputs({
                 label="Địa chỉ Email"
                 {...register("email")}
                 type="email"
-                placeholder="you@manhquy.click"
+                placeholder="you@manhquy.id.vn"
                 disabled={busy}
                 error={errors.email?.message}
                 className="bg-surface-elevated border-border focus:border-primary focus:ring-primary"

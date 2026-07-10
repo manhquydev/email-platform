@@ -9,7 +9,7 @@ The Ephemera API is a RESTful API for managing temporary email inboxes.
 ## Base URL
 
 ```
-https://api.manhquy.click/v1
+https://api.manhquy.id.vn/v1
 ```
 
 ## Authentication

@@ -64,7 +64,7 @@ def run_ssh_commands():
         if bot_token:
             print(f"\n📱 Found Bot Token: {bot_token[:20]}...")
 
-            webhook_url = "https://api.manhquy.click/telegram/webhook"
+            webhook_url = "https://api.manhquy.id.vn/telegram/webhook"
 
             # Build curl command for setWebhook
             if webhook_secret:

@@ -4,7 +4,7 @@ Tài liệu này hướng dẫn cách cấu hình DNS và server để email g�
 
 ## 📋 Yêu cầu
 
-- Domain: `manhquy.click` (đã chỉnh DNS về server)
+- Domain: `manhquy.id.vn` (đã chỉnh DNS về server)
 - Server IP: `165.22.48.193`
 - Truy cập quản lý DNS (Tenten.vn hoặc provider khác)
 
@@ -43,7 +43,7 @@ Bạn sẽ thấy output tương tự:
 ============================================
 DKIM PUBLIC KEY - ADD THIS TO DNS TXT RECORD
 ============================================
-Record Name: mail._domainkey.manhquy.click
+Record Name: mail._domainkey.manhquy.id.vn
 
 mail._domainkey IN TXT ( "v=DKIM1; k=rsa; "
     "p=MIIBIjANBgkqhk..." ... )
@@ -84,7 +84,7 @@ Truy cập quản lý DNS của domain và thêm các record sau:
 |-------|-------|
 | Type | TXT |
 | Name | _dmarc |
-| Value | `v=DMARC1; p=quarantine; rua=mailto:admin@manhquy.click; pct=100` |
+| Value | `v=DMARC1; p=quarantine; rua=mailto:admin@manhquy.id.vn; pct=100` |
 | TTL | 3600 |
 
 ### 4. MX Record (Nếu muốn nhận mail từ ngoài vào domain)
@@ -93,7 +93,7 @@ Truy cập quản lý DNS của domain và thêm các record sau:
 |-------|-------|
 | Type | MX |
 | Name | @ |
-| Value | `mail.manhquy.click` |
+| Value | `mail.manhquy.id.vn` |
 | Priority | 10 |
 | TTL | 3600 |
 
@@ -117,13 +117,13 @@ Truy cập quản lý DNS của domain và thêm các record sau:
 1. Đăng nhập vào DigitalOcean Dashboard
 2. Vào **Networking** → **Domains**
 3. Click vào droplet của bạn
-4. Trong phần **Hostname**, đổi tên thành: `mail.manhquy.click`
+4. Trong phần **Hostname**, đổi tên thành: `mail.manhquy.id.vn`
 
 Hoặc:
 
 1. Tạo support ticket yêu cầu setup PTR:
    - IP: `165.22.48.193`
-   - PTR: `mail.manhquy.click`
+   - PTR: `mail.manhquy.id.vn`
 
 ---
 
@@ -133,23 +133,23 @@ Hoặc:
 
 ```bash
 # Kiểm tra SPF
-dig TXT manhquy.click +short
+dig TXT manhquy.id.vn +short
 
 # Kiểm tra DKIM
-dig TXT mail._domainkey.manhquy.click +short
+dig TXT mail._domainkey.manhquy.id.vn +short
 
 # Kiểm tra DMARC
-dig TXT _dmarc.manhquy.click +short
+dig TXT _dmarc.manhquy.id.vn +short
 
 # Kiểm tra MX
-dig MX manhquy.click +short
+dig MX manhquy.id.vn +short
 ```
 
 ### Kiểm tra PTR:
 
 ```bash
 dig -x 165.22.48.193 +short
-# Kết quả mong đợi: mail.manhquy.click.
+# Kết quả mong đợi: mail.manhquy.id.vn.
 ```
 
 ### Test gửi email:
@@ -188,7 +188,7 @@ docker-compose -f docker-compose.prod.yml exec api sh -c "nc -zv postfix 587"
 
 ```bash
 # Kiểm tra DKIM key đã tạo
-docker-compose -f docker-compose.prod.yml exec postfix cat /etc/opendkim/keys/manhquy.click/mail.txt
+docker-compose -f docker-compose.prod.yml exec postfix cat /etc/opendkim/keys/manhquy.id.vn/mail.txt
 
 # Restart OpenDKIM
 docker-compose -f docker-compose.prod.yml restart postfix
@@ -202,11 +202,11 @@ docker-compose -f docker-compose.prod.yml restart postfix
 |------|------|-------|
 | TXT | @ | `v=spf1 ip4:165.22.48.193 ~all` |
 | TXT | mail._domainkey | (từ logs postfix) |
-| TXT | _dmarc | `v=DMARC1; p=quarantine; rua=mailto:admin@manhquy.click; pct=100` |
+| TXT | _dmarc | `v=DMARC1; p=quarantine; rua=mailto:admin@manhquy.id.vn; pct=100` |
 | A | mail | `165.22.48.193` |
-| MX | @ | `mail.manhquy.click` (priority 10) |
+| MX | @ | `mail.manhquy.id.vn` (priority 10) |
 
-**PTR Record**: Liên hệ DigitalOcean để setup `165.22.48.193` → `mail.manhquy.click`
+**PTR Record**: Liên hệ DigitalOcean để setup `165.22.48.193` → `mail.manhquy.id.vn`
 
 ---
 

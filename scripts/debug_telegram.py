@@ -43,7 +43,7 @@ def debug_telegram():
         # Check if API is receiving webhook calls
         print("\n📋 Testing webhook endpoint with sample data:")
         stdin, stdout, stderr = client.exec_command(
-            '''curl -s -X POST "https://api.manhquy.click/telegram/webhook" \
+            '''curl -s -X POST "https://api.manhquy.id.vn/telegram/webhook" \
             -H "Content-Type: application/json" \
             -d '{"update_id":1,"message":{"message_id":1,"chat":{"id":123,"type":"private"},"text":"/start","date":1703350000}}'
             ''',
@@ -69,7 +69,7 @@ def debug_telegram():
                 # Check if webhook was set WITH the secret
                 print("\n📋 Re-setting webhook WITH secret_token...")
                 stdin, stdout, stderr = client.exec_command(
-                    f'''cd /root/email-platform. && BOT_TOKEN=$(grep TELEGRAM_BOT_TOKEN services/api/.env | cut -d'=' -f2 | tr -d '"' | tr -d "'") && curl -s -X POST "https://api.telegram.org/bot${{BOT_TOKEN}}/setWebhook" -H "Content-Type: application/json" -d '{{"url": "https://api.manhquy.click/telegram/webhook", "allowed_updates": ["message", "callback_query"], "secret_token": "{secret}"}}'
+                    f'''cd /root/email-platform. && BOT_TOKEN=$(grep TELEGRAM_BOT_TOKEN services/api/.env | cut -d'=' -f2 | tr -d '"' | tr -d "'") && curl -s -X POST "https://api.telegram.org/bot${{BOT_TOKEN}}/setWebhook" -H "Content-Type: application/json" -d '{{"url": "https://api.manhquy.id.vn/telegram/webhook", "allowed_updates": ["message", "callback_query"], "secret_token": "{secret}"}}'
                     ''',
                     timeout=30
                 )

@@ -61,7 +61,7 @@ export function Plans() {
 
         if (pkg.targetTier === "ENTERPRISE" || pkg.price === 0) {
             if (pkg.targetTier === 'ENTERPRISE') {
-                window.location.href = "mailto:support@manhquy.click?subject=Enterprise%20Plan%20Inquiry";
+                window.location.href = "mailto:support@manhquy.id.vn?subject=Enterprise%20Plan%20Inquiry";
             }
             return;
         }
@@ -129,7 +129,7 @@ export function Plans() {
 
                     <div className="mt-12 text-center">
                         <p className="text-sm" style={{ color: 'var(--nebula-text-muted)' }}>
-                            Cần thêm tài nguyên tùy chỉnh? <a href="mailto:support@manhquy.click" className="text-[var(--nebula-blue)] hover:underline">Liên hệ chúng tôi</a> để được tư vấn.
+                            Cần thêm tài nguyên tùy chỉnh? <a href="mailto:support@manhquy.id.vn" className="text-[var(--nebula-blue)] hover:underline">Liên hệ chúng tôi</a> để được tư vấn.
                         </p>
                     </div>
                 </div>

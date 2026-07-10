@@ -34,11 +34,11 @@ Fill in the required fields:
 - **Description**: Use the text from `README.md` features section.
 - **Category**: Productivity / Social & Communication
 - **Language**: English
-- **Privacy Policy**: Link to hosted version of `PRIVACY.md` (e.g., `https://manhquy.click/privacy`)
+- **Privacy Policy**: Link to hosted version of `PRIVACY.md` (e.g., `https://app.manhquy.id.vn/privacy`)
 
 ## 5. Privacy Practices
 Complete the "Privacy" tab:
-- **Host Permissions**: Explain why we need `https://api.manhquy.click/*` (API communication).
+- **Host Permissions**: Explain why we need `https://api.manhquy.id.vn/*` (API communication).
 - **Scripting/ActiveTab**: Explain why we need access to page content (Auto-fill email fields).
   - *Justification*: "The extension detects email input fields on the user's current tab to provide a 1-click auto-fill button for disposable emails."
 - **Data Usage**: Check "Personally identifiable information" (Email) and "Authentication information".

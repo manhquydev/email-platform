@@ -3,7 +3,7 @@
  * Internal endpoint to test webhook delivery without external services
  *
  * Usage:
- * 1. Create webhook with URL: https://api.manhquy.click/webhook-test/receive/{unique-id}
+ * 1. Create webhook with URL: https://api.manhquy.id.vn/webhook-test/receive/{unique-id}
  * 2. Trigger webhook (send email, test button, etc.)
  * 3. Check received payloads: GET /webhook-test/payloads/{unique-id}
  */
@@ -48,7 +48,7 @@ export async function webhookTestReceiverRoutes(app: FastifyInstance) {
         receivedPayloads.set(receiverId, []);
         receiverTimestamps.set(receiverId, Date.now());
 
-        const baseUrl = process.env.API_URL || 'https://api.manhquy.click';
+        const baseUrl = process.env.API_URL || 'https://api.manhquy.id.vn';
 
         return {
             receiverId,

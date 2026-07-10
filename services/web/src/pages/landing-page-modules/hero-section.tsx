@@ -84,7 +84,7 @@ function TerminalPreview() {
                 {/* Terminal Content */}
                 <div className="p-6 text-left font-mono text-sm overflow-x-auto bg-[#0a0a16]/80">
                     <div className="flex items-center gap-2 text-slate-400 mb-2">
-                        <span className="text-green-400">$</span> curl -X POST https://api.manhquy.click/inboxes \
+                        <span className="text-green-400">$</span> curl -X POST https://api.manhquy.id.vn/inboxes \
                     </div>
                     <div className="pl-4 text-slate-400 mb-4">
                         -H <span className="text-yellow-300">"Authorization: Bearer ep_8a2b9c..."</span>
@@ -96,7 +96,7 @@ function TerminalPreview() {
                         <span className="text-purple-400">"id"</span>: <span className="text-green-300">"inbox_9928371"</span>,
                     </div>
                     <div className="pl-4 text-slate-300">
-                        <span className="text-purple-400">"address"</span>: <span className="text-green-300">"ghost_99@manhquy.click"</span>,
+                        <span className="text-purple-400">"address"</span>: <span className="text-green-300">"ghost_99@manhquy.id.vn"</span>,
                     </div>
                     <div className="pl-4 text-slate-300">
                         <span className="text-purple-400">"expires_at"</span>: <span className="text-green-300">"2023-10-24T18:00:00Z"</span>

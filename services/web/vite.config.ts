@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     Sitemap({
-      hostname: 'https://manhquy.click',
+      hostname: 'https://app.manhquy.id.vn',
       dynamicRoutes: [
         '/',
         '/login',

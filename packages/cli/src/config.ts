@@ -31,7 +31,7 @@ const config = new Conf<ConfigSchema>({
   encryptionKey: deriveEncryptionKey(),
   schema: {
     apiKey: { type: 'string', default: '' },
-    baseUrl: { type: 'string', default: 'https://api.manhquy.click' },
+    baseUrl: { type: 'string', default: 'https://api.manhquy.id.vn' },
     defaultExpireMinutes: { type: 'number', default: 60 },
   },
 });

@@ -22,7 +22,7 @@ import (
 
 const (
 	// DefaultBaseURL is the default API base URL.
-	DefaultBaseURL = "https://api.manhquy.click"
+	DefaultBaseURL = "https://api.manhquy.id.vn"
 	// DefaultTimeout is the default request timeout.
 	DefaultTimeout = 30 * time.Second
 	// Version is the SDK version.

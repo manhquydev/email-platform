@@ -9,7 +9,7 @@ set -euo pipefail
 PROJECT_DIR="${PROJECT_DIR:-/root/email-platform}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
-DOMAIN="${DOMAIN:-manhquy.click}"
+DOMAIN="${DOMAIN:-manhquy.id.vn}"
 ACME_EMAIL="${ACME_EMAIL:-admin@${DOMAIN}}"
 API_HOST="${API_HOST:-api.${DOMAIN}}"
 WEB_HOST="${WEB_HOST:-app.${DOMAIN}}"

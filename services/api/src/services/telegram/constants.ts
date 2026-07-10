@@ -35,7 +35,7 @@ export const NOTIFICATION_EMOJIS: Record<string, string> = {
 };
 
 // Get web URL with fallback
-export const getWebUrl = () => process.env.WEB_URL || 'https://app.manhquy.click';
+export const getWebUrl = () => process.env.WEB_URL || 'https://app.manhquy.id.vn';
 
 // Get bot token from environment
 export const getBotToken = () => process.env.TELEGRAM_BOT_TOKEN;

@@ -81,7 +81,7 @@ auth
     const spinner = ora('Verifying API key...').start();
 
     try {
-      const baseUrl = options.baseUrl || 'https://api.manhquy.click';
+      const baseUrl = options.baseUrl || 'https://api.manhquy.id.vn';
       const response = await fetch(`${baseUrl}/auth/me`, {
         headers: { 'Authorization': `Bearer ${apiKey}` },
       });

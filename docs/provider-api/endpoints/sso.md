@@ -15,19 +15,19 @@ Create a temporary, single-use login URL for a specific mailbox.
 
 **Example Request:**
 ```bash
-curl -X POST "https://api.manhquy.click/v1/provider/tenants/{tenant_id}/mailboxes/{email}/sso" \
+curl -X POST "https://api.manhquy.id.vn/v1/provider/tenants/{tenant_id}/mailboxes/{email}/sso" \
   -H "X-Provider-Key: eph_provider_xxx..." \
   -H "Content-Type: application/json" \
   -d '{
     "clientIp": "203.0.113.1",
-    "returnUrl": "https://app.manhquy.click/inbox"
+    "returnUrl": "https://app.manhquy.id.vn/inbox"
   }'
 ```
 
 **Example Response:**
 ```json
 {
-  "ssoUrl": "https://app.manhquy.click/auth/sso?token=8f44d6ff4eac7c81..."
+  "ssoUrl": "https://app.manhquy.id.vn/auth/sso?token=8f44d6ff4eac7c81..."
 }
 ```
 
@@ -41,12 +41,12 @@ curl -X POST "https://api.manhquy.click/v1/provider/tenants/{tenant_id}/mailboxe
 # 1. Generate SSO URL (replace YOUR_IP with your actual IP)
 API_KEY="eph_provider_3408c01b228155367cee5b46e13aaae55a9fb2144ef0b04fdd68acc169a0f313"
 TENANT_ID="ece152f6-edce-4a26-ad45-c51a129cee2e"
-EMAIL="admin@test-cpanel.manhquy.click"
+EMAIL="admin@test-cpanel.manhquy.id.vn"
 
-curl -s -X POST "https://api.manhquy.click/v1/provider/tenants/$TENANT_ID/mailboxes/$EMAIL/sso" \
+curl -s -X POST "https://api.manhquy.id.vn/v1/provider/tenants/$TENANT_ID/mailboxes/$EMAIL/sso" \
   -H "X-Provider-Key: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"clientIp":"YOUR_IP","returnUrl":"https://app.manhquy.click/inbox"}'
+  -d '{"clientIp":"YOUR_IP","returnUrl":"https://app.manhquy.id.vn/inbox"}'
 
 # 2. Copy the ssoUrl from response and open in browser
 # 3. You will be auto-logged in to the mailbox!
@@ -58,7 +58,7 @@ $response = $client->post("v1/provider/tenants/{$tenantId}/mailboxes/{$email}/ss
     'headers' => ['X-Provider-Key' => $apiKey],
     'json' => [
         'clientIp' => $_SERVER['REMOTE_ADDR'],
-        'returnUrl' => 'https://app.manhquy.click/inbox'
+        'returnUrl' => 'https://app.manhquy.id.vn/inbox'
     ]
 ]);
 $data = json_decode($response->getBody(), true);

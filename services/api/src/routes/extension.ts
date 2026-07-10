@@ -268,7 +268,7 @@ export async function extensionRoutes(app: FastifyInstance) {
     if (limit.inboxes > -1 && currentCount >= limit.inboxes) {
       return reply.status(403).send({
         error: "Inbox limit reached",
-        upgradeUrl: "https://manhquy.click/pricing"
+        upgradeUrl: "https://app.manhquy.id.vn/pricing"
       });
     }
 

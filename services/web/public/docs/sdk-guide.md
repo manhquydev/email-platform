@@ -447,6 +447,6 @@ All SDKs include webhook signature verification using HMAC-SHA256 with constant-
 
 ## Support
 
-- **Documentation:** https://docs.manhquy.click
-- **API Reference:** https://api.manhquy.click/docs
+- **Documentation:** https://docs.manhquy.id.vn
+- **API Reference:** https://api.manhquy.id.vn/docs
 - **GitHub:** https://github.com/ephemera

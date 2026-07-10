@@ -32,7 +32,7 @@ We **DO NOT** collect, store, or transmit the content of the websites you visit,
 
 ## Data Storage
 - **Local Storage:** Your authentication token and preferences are stored locally on your device using Chrome's secure storage API.
-- **Transmission:** All data transmission to our servers (`api.manhquy.click`) is encrypted via HTTPS.
+- **Transmission:** All data transmission to our servers (`api.manhquy.id.vn`) is encrypted via HTTPS.
 
 ## Third-Party Sharing
 We do not sell, trade, or rent your personal identification information to others.
@@ -41,4 +41,4 @@ We do not sell, trade, or rent your personal identification information to other
 You can revoke the extension's permissions at any time via your browser settings. You can also delete your Ephemera account and all associated data via the web dashboard.
 
 ## Contact Us
-If you have any questions about this Privacy Policy, please contact us at privacy@manhquy.click.
+If you have any questions about this Privacy Policy, please contact us at privacy@manhquy.id.vn.

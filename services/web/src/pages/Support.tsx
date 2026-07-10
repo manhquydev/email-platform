@@ -45,7 +45,7 @@ export function Support() {
 
             <div className="grid md:grid-cols-3 gap-4 mt-8">
               <QuickLink icon="menu_book" color="text-primary" title="Tài liệu" desc="Xem hướng dẫn" to="/docs" />
-              <QuickLink icon="email" color="text-green-400" title="Email" desc="support@manhquy.click" href="mailto:support@manhquy.click" />
+              <QuickLink icon="email" color="text-green-400" title="Email" desc="support@manhquy.id.vn" href="mailto:support@manhquy.id.vn" />
               <QuickLink icon="schedule" color="text-yellow-400" title="Giờ làm việc" desc="T2-T6: 9:00-18:00" />
             </div>
           </div>
@@ -61,7 +61,7 @@ export function Support() {
             </GlassCard>
             <div className="space-y-4">
               <QuickLink icon="menu_book" color="text-primary" title="Tài liệu" desc="Xem hướng dẫn" to="/docs" />
-              <QuickLink icon="email" color="text-green-400" title="Email" desc="support@manhquy.click" href="mailto:support@manhquy.click" />
+              <QuickLink icon="email" color="text-green-400" title="Email" desc="support@manhquy.id.vn" href="mailto:support@manhquy.id.vn" />
               <QuickLink icon="schedule" color="text-yellow-400" title="Giờ làm việc" desc="T2-T6: 9:00-18:00" />
             </div>
           </div>

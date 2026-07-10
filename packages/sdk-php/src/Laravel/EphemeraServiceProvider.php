@@ -24,7 +24,7 @@ class EphemeraServiceProvider extends ServiceProvider
         $this->app->singleton(EphemeraClient::class, function ($app) {
             return new EphemeraClient(
                 config('ephemera.api_key'),
-                config('ephemera.base_url', 'https://api.manhquy.click')
+                config('ephemera.base_url', 'https://api.manhquy.id.vn')
             );
         });
 

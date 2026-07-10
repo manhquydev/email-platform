@@ -37,7 +37,7 @@ new EphemeraClient(apiKey: string, options?: ClientOptions)
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| baseUrl | string | https://api.manhquy.click/v1 | API base URL |
+| baseUrl | string | https://api.manhquy.id.vn/v1 | API base URL |
 | timeout | number | 30000 | Request timeout (ms) |
 
 ### Methods

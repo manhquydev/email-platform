@@ -20,7 +20,7 @@ npm run serve  # Preview production build
 
 Deployed automatically to Vercel on push to main branch.
 
-**Live URL:** https://docs.manhquy.click
+**Live URL:** https://docs.manhquy.id.vn
 
 ## Structure
 

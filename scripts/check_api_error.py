@@ -39,7 +39,7 @@ def check_api_error():
         # Test domains endpoint directly
         print("\n📋 3. Test /domains endpoint:")
         stdin, stdout, stderr = client.exec_command(
-            "curl -s -o /dev/null -w '%{http_code}' https://api.manhquy.click/domains?limit=100 -H 'Authorization: Bearer test'",
+            "curl -s -o /dev/null -w '%{http_code}' https://api.manhquy.id.vn/domains?limit=100 -H 'Authorization: Bearer test'",
             timeout=30
         )
         print(f"   Status: {stdout.read().decode()}")

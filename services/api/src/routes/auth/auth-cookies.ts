@@ -3,17 +3,30 @@ import { appConfig } from "../../config";
 import { COOKIE_MAX_AGE_DEFAULT, LEGACY_REFRESH_COOKIE_PATH, REFRESH_COOKIE_PATH } from "./auth-config";
 
 /**
- * Returns the shared parent domain for cookies (e.g. ".manhquy.click") so
- * the csrfToken cookie set by api.{domain} is readable by app.{domain}.
+ * Returns the shared parent domain for cookies (e.g. ".manhquy.id.vn") so the
+ * csrfToken cookie set by api.{domain} is readable by app.{domain}.
+ *
+ * The parent is derived by stripping the leftmost label of the configured web
+ * host (app.{domain} -> .{domain}). This is correct for multi-level public
+ * suffixes such as ".id.vn": naively taking the last two labels would yield
+ * ".id.vn" (a public suffix the browser rejects), breaking cross-subdomain
+ * auth. Assumes the web app is served on a subdomain of the registrable
+ * domain. A COOKIE_DOMAIN env var overrides the derivation when the host
+ * shape is unusual (e.g. web served on the registrable apex of a 2-level TLD).
  * Returns undefined for localhost/IP (no subdomain sharing needed).
  */
 export function getCookieDomain(_requestHost?: string): string | undefined {
+  const override = process.env.COOKIE_DOMAIN?.trim();
+  if (override) return override.startsWith(".") ? override : "." + override;
   try {
     const { hostname } = new URL(appConfig.webUrl);
     if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
     const parts = hostname.split(".");
-    const configuredDomain = parts.length >= 2 ? "." + parts.slice(-2).join(".") : undefined;
-    return configuredDomain || undefined;
+    if (parts.length < 2) return undefined;
+    // Apex web host (no subdomain): scope cookie to the host itself.
+    if (parts.length === 2) return "." + hostname;
+    // Subdomain web host: drop the leftmost label to get the shared parent.
+    return "." + parts.slice(1).join(".");
   } catch {
     return undefined;
   }

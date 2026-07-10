@@ -266,9 +266,9 @@ if [ "$DRY_RUN" = false ]; then
 fi
 echo ""
 echo -e "${BLUE}Endpoints:${NC}"
-echo "   - Web:  https://app.manhquy.click"
-echo "   - API:  https://api.manhquy.click"
-echo "   - Health: https://api.manhquy.click/health"
+echo "   - Web:  https://app.manhquy.id.vn"
+echo "   - API:  https://api.manhquy.id.vn"
+echo "   - Health: https://api.manhquy.id.vn/health"
 echo ""
 echo -e "${YELLOW}Quick Commands:${NC}"
 echo "   - View logs:    docker compose -f $COMPOSE_FILE logs -f api"

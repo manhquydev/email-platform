@@ -6,7 +6,7 @@
 import type { Domain } from "../../types";
 
 // Mail server configuration from environment
-const MAIL_HOSTNAME = import.meta.env.VITE_MAIL_HOSTNAME || "mail.manhquy.click";
+const MAIL_HOSTNAME = import.meta.env.VITE_MAIL_HOSTNAME || "mail.manhquy.id.vn";
 const MAIL_SERVER_IP = import.meta.env.VITE_MAIL_SERVER_IP || "165.22.48.193";
 
 // ============================================

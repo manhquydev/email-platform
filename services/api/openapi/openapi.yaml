@@ -6,13 +6,13 @@ info:
     inboxes, receive emails, extract OTP codes, and integrate with webhooks.
   contact:
     name: Ephemera Support
-    url: https://manhquy.click
-    email: support@manhquy.click
+    url: https://app.manhquy.id.vn
+    email: support@manhquy.id.vn
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://api.manhquy.click/v1
+  - url: https://api.manhquy.id.vn/v1
     description: Production
   - url: http://localhost:3001/v1
     description: Development

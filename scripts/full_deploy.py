@@ -76,7 +76,7 @@ def full_deploy():
         # Step 5: Test domains endpoint
         print("\n📋 Step 5: Testing domains endpoint (should be 401)...")
         stdin, stdout, stderr = client.exec_command(
-            "curl -s -o /dev/null -w '%{http_code}' https://api.manhquy.click/domains",
+            "curl -s -o /dev/null -w '%{http_code}' https://api.manhquy.id.vn/domains",
             timeout=15
         )
         status = stdout.read().decode().strip()

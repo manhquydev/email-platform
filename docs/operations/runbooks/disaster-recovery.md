@@ -52,7 +52,7 @@ docker-compose up -d
 ### 8. Verify
 ```bash
 # Health check
-curl https://api.manhquy.click/health
+curl https://api.manhquy.id.vn/health
 
 # Check logs
 docker-compose logs -f api

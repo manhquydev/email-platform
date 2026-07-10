@@ -1,6 +1,6 @@
 # Ephemera - Email Platform
 
-> 🚀 **Production Ready** | [manhquy.click](https://manhquy.click)
+> 🚀 **Production Ready** | [manhquy.id.vn](https://app.manhquy.id.vn)
 
 Multi-domain inbound email platform with disposable inboxes, modern UI, and comprehensive API. Self-hosted temp mail solution for developers and teams.
 
@@ -19,9 +19,9 @@ Multi-domain inbound email platform with disposable inboxes, modern UI, and comp
 
 | Service | URL |
 |---------|-----|
-| **Web App** | https://app.manhquy.click |
-| **API** | https://api.manhquy.click |
-| **Grafana** | https://grafana.manhquy.click |
+| **Web App** | https://app.manhquy.id.vn |
+| **API** | https://api.manhquy.id.vn |
+| **Grafana** | https://grafana.manhquy.id.vn |
 
 ## 🛠 Stack
 

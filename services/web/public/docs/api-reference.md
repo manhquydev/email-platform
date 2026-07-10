@@ -4,7 +4,7 @@
 
 ## Base URL
 ```
-https://api.manhquy.click
+https://api.manhquy.id.vn
 ```
 
 ## Authentication
@@ -15,7 +15,7 @@ Authorization: Bearer YOUR_API_KEY
 X-API-Key: YOUR_API_KEY
 ```
 
-Get your API key at: https://app.manhquy.click/settings?tab=developer
+Get your API key at: https://app.manhquy.id.vn/settings?tab=developer
 
 ---
 
@@ -24,7 +24,7 @@ Get your API key at: https://app.manhquy.click/settings?tab=developer
 ### Create Inbox & Wait for Email (Node.js)
 ```javascript
 const API_KEY = 'epk_live_xxx';
-const API_BASE = 'https://api.manhquy.click';
+const API_BASE = 'https://api.manhquy.id.vn';
 
 // 1. Create inbox
 const inbox = await fetch(`${API_BASE}/inboxes`, {
@@ -59,7 +59,7 @@ import requests
 import time
 
 API_KEY = 'epk_live_xxx'
-API_BASE = 'https://api.manhquy.click'
+API_BASE = 'https://api.manhquy.id.vn'
 headers = {'Authorization': f'Bearer {API_KEY}'}
 
 # 1. Create inbox
@@ -91,21 +91,21 @@ for _ in range(30):  # 30 attempts, 2s each = 60s timeout
 ### cURL Examples
 ```bash
 # Create inbox
-curl -X POST https://api.manhquy.click/inboxes \
+curl -X POST https://api.manhquy.id.vn/inboxes \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"domainId": "your-domain-id"}'
 
 # List messages
-curl https://api.manhquy.click/inboxes/{inbox_id}/messages \
+curl https://api.manhquy.id.vn/inboxes/{inbox_id}/messages \
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # Get message with OTP
-curl https://api.manhquy.click/messages/{message_id} \
+curl https://api.manhquy.id.vn/messages/{message_id} \
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # Delete inbox
-curl -X DELETE https://api.manhquy.click/inboxes/{inbox_id} \
+curl -X DELETE https://api.manhquy.id.vn/inboxes/{inbox_id} \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -130,7 +130,7 @@ curl -X DELETE https://api.manhquy.click/inboxes/{inbox_id} \
   "localPart": "random123",
   "domain": {
     "id": "uuid",
-    "name": "manhquy.click"
+    "name": "manhquy.id.vn"
   },
   "ownerId": "uuid",
   "expiresAt": "2024-12-31T23:59:59Z",
@@ -145,7 +145,7 @@ curl -X DELETE https://api.manhquy.click/inboxes/{inbox_id} \
   {
     "id": "uuid",
     "localPart": "random123",
-    "domain": { "id": "uuid", "name": "manhquy.click" },
+    "domain": { "id": "uuid", "name": "manhquy.id.vn" },
     "messageCount": 5,
     "createdAt": "2024-01-15T10:00:00Z"
   }
@@ -158,7 +158,7 @@ curl -X DELETE https://api.manhquy.click/inboxes/{inbox_id} \
 {
   "id": "uuid",
   "localPart": "random123",
-  "domain": { "id": "uuid", "name": "manhquy.click" },
+  "domain": { "id": "uuid", "name": "manhquy.id.vn" },
   "ownerId": "uuid",
   "expiresAt": null,
   "createdAt": "2024-01-15T10:00:00Z"
@@ -178,7 +178,7 @@ curl -X DELETE https://api.manhquy.click/inboxes/{inbox_id} \
   {
     "id": "uuid",
     "fromAddress": "sender@example.com",
-    "toAddress": "random123@manhquy.click",
+    "toAddress": "random123@manhquy.id.vn",
     "subject": "Verification Code",
     "receivedAt": "2024-01-15T10:30:00Z",
     "isRead": false,
@@ -197,7 +197,7 @@ curl -X DELETE https://api.manhquy.click/inboxes/{inbox_id} \
 {
   "id": "uuid",
   "fromAddress": "sender@example.com",
-  "toAddress": "random123@manhquy.click",
+  "toAddress": "random123@manhquy.id.vn",
   "subject": "Your verification code",
   "textBody": "Your code is 123456",
   "htmlBody": "<html>...</html>",
@@ -237,7 +237,7 @@ Returns binary file with appropriate Content-Type header.
 [
   {
     "id": "uuid",
-    "name": "manhquy.click",
+    "name": "manhquy.id.vn",
     "verified": true,
     "isPublic": true,
     "mxVerified": true,
@@ -258,7 +258,7 @@ Returns binary file with appropriate Content-Type header.
   "name": "yourdomain.com",
   "verified": false,
   "verificationToken": "ephemera-verify-xxx",
-  "mxRecord": "mx.manhquy.click"
+  "mxRecord": "mx.manhquy.id.vn"
 }
 ```
 
@@ -266,7 +266,7 @@ Returns binary file with appropriate Content-Type header.
 ```json
 // Response 200
 {
-  "mx": { "valid": true, "expected": "mx.manhquy.click", "found": "mx.manhquy.click" },
+  "mx": { "valid": true, "expected": "mx.manhquy.id.vn", "found": "mx.manhquy.id.vn" },
   "spf": { "valid": true },
   "dkim": { "valid": false, "expected": "...", "found": null }
 }
@@ -372,10 +372,10 @@ Returns binary file with appropriate Content-Type header.
   "data": {
     "messageId": "uuid",
     "inboxId": "uuid",
-    "inboxEmail": "random123@manhquy.click",
-    "domainName": "manhquy.click",
+    "inboxEmail": "random123@manhquy.id.vn",
+    "domainName": "manhquy.id.vn",
     "from": "sender@example.com",
-    "to": "random123@manhquy.click",
+    "to": "random123@manhquy.id.vn",
     "subject": "Verification Code",
     "receivedAt": "2024-01-15T10:30:00Z",
     "hasAttachments": false,
@@ -544,23 +544,23 @@ X-RateLimit-Reset: 1705312800
 Use our internal test receiver:
 ```bash
 # 1. Create test receiver
-curl -X POST https://api.manhquy.click/webhook-test/create \
+curl -X POST https://api.manhquy.id.vn/webhook-test/create \
   -H "Authorization: Bearer YOUR_API_KEY"
 
-# Response: { "receiverId": "xxx", "webhookUrl": "https://api.manhquy.click/webhook-test/receive/xxx" }
+# Response: { "receiverId": "xxx", "webhookUrl": "https://api.manhquy.id.vn/webhook-test/receive/xxx" }
 
 # 2. Create webhook with test URL
-curl -X POST https://api.manhquy.click/webhooks \
+curl -X POST https://api.manhquy.id.vn/webhooks \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Test","url":"https://api.manhquy.click/webhook-test/receive/xxx","events":["email.received"]}'
+  -d '{"name":"Test","url":"https://api.manhquy.id.vn/webhook-test/receive/xxx","events":["email.received"]}'
 
 # 3. Trigger test
-curl -X POST https://api.manhquy.click/webhooks/{webhook_id}/test \
+curl -X POST https://api.manhquy.id.vn/webhooks/{webhook_id}/test \
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # 4. View received payloads
-curl https://api.manhquy.click/webhook-test/payloads/xxx
+curl https://api.manhquy.id.vn/webhook-test/payloads/xxx
 ```
 
 ---

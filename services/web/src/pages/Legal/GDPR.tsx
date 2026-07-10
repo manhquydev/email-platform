@@ -57,7 +57,7 @@ export function GDPR() {
                     Mọi yêu cầu liên quan đến dữ liệu cá nhân (VN/EU) vui lòng gửi về:
                 </p>
                 <p>
-                    <strong>Email:</strong> privacy@manhquy.click
+                    <strong>Email:</strong> privacy@manhquy.id.vn
                 </p>
                 <p>
                     Trường hợp cần khiếu nại, người dùng có thể thực hiện theo cơ chế tại chính sách bảo mật và quy định pháp luật áp dụng.

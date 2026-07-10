@@ -59,7 +59,7 @@ export async function uploadRoutes(app: FastifyInstance) {
 
                 await fs.promises.writeFile(filePath, buf);
 
-                const baseUrl = process.env.VITE_API_BASE || "https://api.manhquy.click";
+                const baseUrl = process.env.VITE_API_BASE || "https://api.manhquy.id.vn";
                 fileUrl = `${baseUrl}/public/uploads/${fileName}`;
             }
         }

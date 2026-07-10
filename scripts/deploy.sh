@@ -35,5 +35,5 @@ echo "🔄 Restarting API service..."
 docker compose -f docker-compose.prod.yml restart api
 
 echo "✅ Deployment completed successfully!"
-echo "   - Web: https://app.manhquy.click"
-echo "   - API: https://api.manhquy.click"
+echo "   - Web: https://app.manhquy.id.vn"
+echo "   - API: https://api.manhquy.id.vn"

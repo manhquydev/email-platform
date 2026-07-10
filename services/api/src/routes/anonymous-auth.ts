@@ -35,14 +35,12 @@ async function deleteChallenge(key: string): Promise<void> {
   await redis.del(`${CHALLENGE_PREFIX}${key}`);
 }
 
-// Derive RP ID from webUrl (e.g., "http://localhost:5173" -> "localhost")
+// RP ID = registrable domain (mailDomain), shared with webauthn.ts so passkeys
+// registered via either flow validate against the same relying party. Using the
+// apex (e.g. "manhquy.id.vn") keeps credentials valid across app./api. subdomains.
+// Falls back to "localhost" in dev where mailDomain defaults to "localhost".
 function getRpId(): string {
-  try {
-    const url = new URL(appConfig.webUrl);
-    return url.hostname;
-  } catch {
-    return "localhost";
-  }
+  return appConfig.mailDomain || "localhost";
 }
 
 export async function anonymousAuthRoutes(app: FastifyInstance) {

@@ -593,7 +593,7 @@ Add to monitoring:
 
 ```bash
 # API health
-curl -f https://api.manhquy.click/health || alert "API down"
+curl -f https://api.manhquy.id.vn/health || alert "API down"
 
 # Database health
 docker exec postgres pg_isready || alert "DB down"

@@ -59,11 +59,11 @@ Available in English and Vietnamese (more coming soon).
 
 ### SUPPORT
 
-Questions? Visit https://manhquy.click/support
+Questions? Visit https://app.manhquy.id.vn/support
 
 ---
 
-Note: This extension requires an Ephemera account. Sign up free at https://app.manhquy.click
+Note: This extension requires an Ephemera account. Sign up free at https://app.manhquy.id.vn
 
 ---
 
@@ -79,7 +79,7 @@ Note: This extension requires an Ephemera account. Sign up free at https://app.m
 | sidePanel | Provide persistent access to inboxes via Chrome side panel |
 | contextMenus | Enable right-click menu for quick email insertion |
 | scripting | Inject autofill UI into web pages with email fields |
-| host_permissions (api.manhquy.click) | Communicate with Ephemera API for authentication and inbox management |
+| host_permissions (api.manhquy.id.vn) | Communicate with Ephemera API for authentication and inbox management |
 
 ---
 
@@ -103,7 +103,7 @@ Note: This extension requires an Ephemera account. Sign up free at https://app.m
 
 ## Privacy Policy URL
 
-https://manhquy.click/privacy
+https://app.manhquy.id.vn/privacy
 
 ---
 

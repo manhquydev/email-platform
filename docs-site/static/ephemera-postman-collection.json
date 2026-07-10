@@ -9,7 +9,7 @@
     "bearer": [{ "key": "token", "value": "{{api_key}}" }]
   },
   "variable": [
-    { "key": "base_url", "value": "https://api.manhquy.click/v1" },
+    { "key": "base_url", "value": "https://api.manhquy.id.vn/v1" },
     { "key": "api_key", "value": "" }
   ],
   "item": [

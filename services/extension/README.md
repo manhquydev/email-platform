@@ -101,7 +101,7 @@ This workflow avoids publishing to Chrome Web Store when internal/team usage is 
 
 ## 📡 Backend Integration
 
-The extension integrates with the Ephemera API (`https://api.manhquy.click`).
+The extension integrates with the Ephemera API (`https://api.manhquy.id.vn`).
 - **Standard Auth**: Email/Password and 2FA support.
 - **Anonymous Auth**: Session-less inbox creation via `deviceId`.
 - **Push Service**: Secure subscription to incoming message events.

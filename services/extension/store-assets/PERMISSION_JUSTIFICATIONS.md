@@ -60,7 +60,7 @@
 
 ## Host Permissions
 
-### `https://api.manhquy.click/*`
+### `https://api.manhquy.id.vn/*`
 **Justification:** Connect to Ephemera backend API for:
 - User authentication
 - Creating/managing temporary inboxes

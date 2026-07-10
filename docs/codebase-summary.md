@@ -1,123 +1,190 @@
-# Ephemera Email Platform: Codebase Summary
+# Ephemera: Codebase Summary
 
-## 1. Directory Structure
+## Directory Structure
 
 ```
 email-platform/
-├── .claude/
-│   ├── skills/
-│   │   └── .venv/
-│   └── workflows/
-│       ├── development-rules.md
-│       ├── documentation-management.md
-│       ├── orchestration-protocol.md
-│       ├── primary-workflow.md
-│       └── README.md
-├── .dockerignore
-├── .env.example
-├── .eslintrc.js
-├── .gitignore
-├── .prettierrc.js
-├── Caddyfile
-├── CLAUDE.md
-├── Dockerfile
-├── README.md
-├── docs/
-│   ├── code-standards.md
-│   ├── codebase-summary.md
-│   ├── project-overview-pdr.md
-│   ├── system-architecture.md
-│   └── README.md
-├── package.json
-├── plans/
-├── repomix-output.xml
+├── .claude/              # Claude Code configuration & hooks
+├── .agent/              # Agent system prompts & skills
 ├── services/
-│   ├── api/
-│   │   ├── plugins/
-│   │   ├── services/
-│   │   │   ├── hosting-provider.service.ts
-│   │   │   ├── provider-webhook.service.ts
-│   │   │   └── ...
-│   │   ├── routes/
-│   │   │   ├── provider.ts
-│   │   │   └── ...
-│   │   ├── middleware/
-│   │   │   ├── provider-auth.ts
-│   │   │   └── ...
-│   │   ├── schemas/
-│   │   ├── smtp/
-│   │   ├── workers/
-│   │   ├── cron/
-│   │   ├── README.md
-│   │   └── server.js
-│   ├── extension/
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   ├── entrypoints/
-│   │   │   │   ├── background.ts
-│   │   │   │   ├── popup/
-│   │   │   │   └── sidepanel/
-│   │   │   ├── hooks/
-│   │   │   └── utils/
-│   │   ├── wxt.config.ts
-│   │   └── package.json
-│   ├── web/
-│   │   ├── public/
-│   │   ├── src/
-│   │   │   ├── App.tsx
-│   │   │   ├── assets/
-│   │   │   ├── components/
-│   │   │   ├── contexts/
-│   │   │   ├── hooks/
-│   │   │   ├── layouts/
-│   │   │   ├── pages/
-│   │   │   ├── router/
-│   │   │   ├── services/
-│   │   │   ├── types/
-│   │   │   ├── utils/
-│   │   │   ├── index.css
-│   │   │   └── main.tsx
-│   │   ├── Dockerfile
-│   │   ├── package.json
-│   │   └── vite.config.ts
-│   └── Dockerfile
-├── tsconfig.json
-└── yarn.lock
+│   ├── api/             # Backend API (Node.js + Fastify v5)
+│   ├── web/             # Frontend (React 19 + Vite 7)
+│   ├── extension/       # Browser extension (WXT + MV3)
+│   ├── mobile/          # Mobile app (React Native + Expo)
+│   ├── dovecot/         # IMAP/LMTP server
+│   ├── postfix/         # SMTP MTA
+│   ├── rspamd/          # Spam/virus filter
+│   └── observability/   # Prometheus + Grafana
+├── packages/            # Shared SDKs (JS, Python, Go, Java, PHP, .NET)
+├── plugins/             # Hosting provider plugins (cPanel, DirectAdmin, Plesk)
+├── docs/                # Documentation
+├── plans/               # Development plans & reports
+├── docker-compose.yml   # Development stack
+└── docker-compose.prod.yml  # Production stack
 ```
 
-## 2. LOC Breakdown (Estimate)
+## Service Overview
 
-This is a high-level estimate. A precise count would require running a LOC tool.
+| Service | Tech | LOC | Purpose |
+|---------|------|-----|---------|
+| **services/api** | Fastify v5, TypeScript | ~37,500 | Core API, SMTP/IMAP/POP3/WebDAV servers, workers, cron jobs |
+| **services/web** | React 19, Vite 7, Tailwind | ~48,200 | SPA frontend, PWA, i18n, real-time updates |
+| **services/extension** | WXT, React, MV3 | ~7,300 | Chrome/Firefox/Safari extension, Side Panel, push handler |
+| **services/mobile** | React Native, Expo | ~5,000 | iOS/Android app, offline sync, biometric auth |
+| **sdk-js** | TypeScript | ~2,000 | Universal JS/Node.js SDK |
+| **sdk-python** | Python | ~1,500 | Sync + async Python client |
+| **sdk-go** | Go | ~1,200 | Go client library |
+| **plugins/cpanel** | Perl | ~800 | cPanel WHM provisioning |
 
-- **services/api**: Largest codebase, contains core backend logic, routes, services, database interactions.
-- **services/web**: Significant codebase, includes frontend components, pages, routing, and UI logic.
-- **docs/**: Documentation files, expected to grow.
-- **.claude/**: Agent-specific configurations and scripts.
+**Total: ~105,500 LOC**
 
-## 3. Key File Purposes
+## Key Packages & Dependencies
 
-- **`services/api/server.js`**: Fastify application entry point, plugin registration, server startup.
-- **`services/web/src/main.tsx`**: Frontend application entry point, initializes React app and context providers.
-- **`services/web/src/App.tsx`**: Main application component, sets up routing and theme.
-- **`services/api/routes/*`**: API endpoint definitions.
-- **`services/api/services/*`**: Business logic and service implementations (e.g., StripeService, OutboundService).
-- **`services/api/schemas/*`**: Data validation schemas (likely Zod).
-- **`services/web/src/components/*`**: Reusable UI components.
-- **`services/web/src/components/EmailItem.tsx`**: Email list item with glassmorphism card design (Phase 1 redesign).
-- **`services/web/src/components/ErrorBoundary/*`**: Error boundary components (SectionErrorBoundary, FeatureErrorBoundary).
-- **`services/web/src/components/skeletons/*`**: Loading skeleton components (MessageListSkeleton, MessageDetailSkeleton, PageSkeleton).
-- **`services/web/src/hooks/useAppToast.ts`**: Custom toast notification hook.
-- **`services/web/src/pages/*`**: Top-level page components.
-- **`services/web/src/contexts/*`**: React context providers (Auth, Theme).
-- **`Dockerfile` (root, api, web)**: Containerization definitions.
-- **`Caddyfile`**: Reverse proxy and HTTPS configuration.
-- **`CLAUDE.md`**: Agent-specific instructions for the codebase.
-- **`.env.example`**: Environment variable definitions.
-- **`services/web/tailwind.config.js`**: Tailwind config with glassmorphism utilities (`.glass`, `.glass-elevated`, `.glass-unread`, `.glass-hover`).
-- **`services/web/src/index.css`**: Global styles with glassmorphism fallbacks for legacy browsers.
+### Backend (services/api)
+- **Fastify v5** - HTTP server framework
+- **Prisma** - ORM with 46 migrations
+- **PostgreSQL** - Primary database
+- **Redis** - Sessions, job queues, rate limiting (ioredis)
+- **BullMQ** - Job queue system (email, outbound, webhooks)
+- **Zod** - Schema validation
+- **JWT** - Authentication (jsonwebtoken)
+- **WebAuthn** - Passkey support (@simplewebauthn/server)
+- **TOTP** - MFA (otplib)
+- **AES-GCM** - Field encryption (crypto built-in)
+- **Stripe** - Payment processing
+- **AWS SDK** - S3 + SES integration
+- **Nodemailer** - SMTP client
+- **mailparser** - Email parsing
+- **Gemini API** - AI summarization
+- **Pino** - Structured logging
 
-## 4. Module Dependencies (High-Level)
+### Frontend (services/web)
+- **React 19** - UI framework
+- **Vite 7** - Build tool
+- **React Router v7** - Routing
+- **TanStack Query v5** - Data fetching & caching
+- **Tailwind CSS v3** - Styling + custom glassmorphism utilities
+- **Tiptap v3** - Rich text editor
+- **Framer Motion** - Animations
+- **i18next** - Localization (EN/VI)
+- **Zustand/Context API** - State management
+- **TypeScript** - Type safety
 
-- **Backend**: Core logic depends on database (Prisma), external services (Stripe, Telegram), and internal services (SMTP, EmailForwarder).
-- **Frontend**: Depends on backend API (via `api.ts`), routing, state management (Context API), and UI libraries.
-- **Infrastructure**: Docker orchestrates all services; Caddy manages ingress traffic.
+### Browser Extension
+- **WXT** - Extension framework
+- **React** - UI components
+- **TypeScript** - Type safety
+- **Manifest v3** - Latest Chrome spec
+- **Chrome Storage API** - Data persistence
+- **Chrome Alarms API** - Background tasks
+- **Web Push API** - Notifications
+
+## Repository Statistics
+
+- **Total Files:** 1,706
+- **Total Tokens:** 5.9M
+- **Total Chars:** 24.5M
+- **Production Ready:** Yes (beta)
+- **Test Coverage:** Vitest tests in all major services
+
+## Key Code Patterns
+
+### Backend
+- **Route Structure:** `services/api/src/routes/` (74 files)
+  - Auth, inboxes, messages, domains, webhooks, billing, teams, orgs, SCIM, admin
+  - REST endpoints with Zod validation
+  - Middleware-based RBAC (role-based access control)
+
+- **Services:** `services/api/src/services/` (83 files)
+  - Email provider factory (Brevo, Mailgun, SendGrid, SES, SMTP, Postfix)
+  - Forwarding engines (Email/Webhook/Telegram/Discord)
+  - Billing & tier enforcement
+  - WebAuthn, DKIM, AI summarization
+
+- **SMTP/IMAP/POP3 Servers:** Built-in protocol handlers
+  - SMTP ingest on port 2525
+  - IMAP/LMTP for Dovecot integration
+  - POP3/WebDAV support
+
+- **Workers:** BullMQ-based async processing
+  - Email delivery
+  - Outbound mail
+  - Webhook delivery
+  - Scheduled tasks
+
+### Frontend
+- **Page Structure:** ~55 pages organized by feature
+  - Public pages (landing, pricing, features)
+  - Auth pages (login, register, SSO, passkeys)
+  - Protected routes (/app/*, /settings/*, /admin/*)
+  - Focus dashboard for quick email access
+  - Inbox workspace with search/filters
+  - Settings, domains, forwarding, developer portal
+
+- **Components:** ~377 files (18.2K LOC)
+  - Reusable UI components
+  - Feature-specific components
+  - Error boundaries & skeleton loaders
+  - Glassmorphism design system
+
+- **PWA Support:**
+  - Service worker (sw.js, push-sw.js)
+  - vite-plugin-pwa + Workbox
+  - Offline capability
+  - Install prompts
+
+- **Real-time:**
+  - WebSocket connections (primary)
+  - SSE fallback
+  - Redis pub/sub for multi-instance sync
+
+## Database Schema (Prisma)
+
+**Core Models:**
+- User, Profile, Session, ApiKey
+- Domain, Inbox, Message, Attachment
+- MailForwardingRule, Filter, Label, Team, Invitation
+- Subscription, BillingEvent, WebhookEvent
+- AbuseReport, AbuseRule, AuditLog
+- OtpExtraction, DeliveryLog, Bounce, Complaint
+
+**Relationships:**
+- User ↔ Domain, Inbox, Team, Subscription
+- Inbox ↔ Message, Label, Filter, MailForwardingRule
+- Message ↔ Attachment
+
+## Testing
+
+- **Framework:** Vitest
+- **Location:** `src/test/` (55+ files in api), `__tests__/` in web
+- **Coverage Areas:** Auth, API routes, email processing, DB operations
+- **E2E:** Playwright tests in extension (79 tests)
+
+## Observability
+
+- **Metrics:** Prometheus format from `/metrics`
+- **Dashboard:** Grafana (included in docker-compose)
+- **Logs:** Pino structured logging → Loki/ELK optional
+- **Health Checks:** `/health` (always public), `/ready` (DB connectivity)
+
+## Deployment
+
+- **Docker:** `docker-compose.yml` (dev), `docker-compose.prod.yml` (prod)
+- **K8s:** Kustomize configs in `k8s/` with 3-replica API deployment
+- **Reverse Proxy:** Caddy (auto-TLS, security headers)
+- **Backup:** Automated snapshot system (Postgres, Redis, S3)
+
+## WIP Features
+
+- SAML/OIDC/LDAP integration (`src/_wip/` stubs)
+- Mobile app completion
+- Multi-region K8s setup
+- DLP/compliance framework
+
+## Notes
+
+- Monorepo structure with independent services
+- TypeScript strict mode across codebase
+- Security-first design (encryption, input validation, rate limiting)
+- Extensible provider model for outbound email
+- Multi-tenancy support via tenant context middleware

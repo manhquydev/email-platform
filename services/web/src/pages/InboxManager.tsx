@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { CreateInboxModal } from "../components/CreateInboxModal";
 import { Loading } from "../components/Loading";
+import { VisibilityRulesPanel } from "../components/VisibilityRulesPanel";
+import { ShareModeToggle } from "../components/inbox-card-modules";
 import { useAuth } from "../context/AuthContext";
 import { AppShell } from "../layouts/AppShell";
 import { api } from "../utils/api";
-import type { Domain, Inbox, PaginatedResponse } from "../types";
+import type { Domain, Inbox, PaginatedResponse, ShareMode } from "../types";
 
 const PAGE_SIZE_OPTIONS = [10, 15] as const;
 const MAX_PAGE_TABS = 7;
@@ -87,6 +89,7 @@ export function InboxManager() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [deletingInboxId, setDeletingInboxId] = useState("");
     const [recentInboxes, setRecentInboxes] = useState<RecentInboxItem[]>(() => readRecentInboxes());
+    const [visibilityRulesInbox, setVisibilityRulesInbox] = useState<Inbox | null>(null);
 
     const loadDomains = useCallback(async () => {
         if (!token) return;
@@ -213,6 +216,19 @@ export function InboxManager() {
         }
     }, [currentPage, inboxes.length, loadInboxes, token]);
 
+    const handleShareModeChange = useCallback(async (inbox: Inbox, shareMode: ShareMode) => {
+        if (!token) return;
+
+        try {
+            await api(`/inboxes/${inbox.id}`, { method: "PATCH", token, body: { shareMode } });
+            setInboxes((prev) => prev.map((item) => (item.id === inbox.id ? { ...item, shareMode } : item)));
+            toast.success(shareMode === "PUBLIC" ? "Inbox đã công khai" : "Inbox đã chuyển sang riêng tư");
+        } catch (error) {
+            console.error("[InboxManager] Failed to update share mode", error);
+            toast.error("Cập nhật chế độ chia sẻ thất bại");
+        }
+    }, [token]);
+
     return (
         <AppShell>
             <div className="space-y-3 p-3 pb-24 sm:space-y-4 sm:p-6 lg:p-8">
@@ -310,12 +326,15 @@ export function InboxManager() {
                                         Không có inbox phù hợp với bộ lọc hiện tại.
                                     </p>
                                 ) : (
-                                    inboxes.map((inbox) => (
+                                    inboxes.map((inbox) => {
+                                        const isOwnInbox = !user?.id || !inbox.ownerId || inbox.ownerId === user.id;
+
+                                        return (
                                         <div key={inbox.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 sm:p-4">
                                             <button onClick={() => openInbox(inbox)} className="w-full text-left">
                                                 <div className="flex items-center gap-2">
                                                     <p className="truncate text-sm font-semibold text-white">{toInboxEmail(inbox)}</p>
-                                                    {user?.id && inbox.ownerId && inbox.ownerId !== user.id && (
+                                                    {!isOwnInbox && (
                                                         <span className="rounded border border-cyan-400/40 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] text-cyan-300">Shared</span>
                                                     )}
                                                 </div>
@@ -347,9 +366,26 @@ export function InboxManager() {
                                                 >
                                                     {deletingInboxId === inbox.id ? "Đang xóa..." : "Xóa"}
                                                 </button>
+                                                {isOwnInbox && (
+                                                    <button
+                                                        onClick={() => setVisibilityRulesInbox(inbox)}
+                                                        className="rounded-lg border border-white/10 px-3 py-2 text-xs text-text-secondary hover:text-white"
+                                                    >
+                                                        Quy tắc hiển thị
+                                                    </button>
+                                                )}
                                             </div>
+                                            {isOwnInbox && (
+                                                <div className="mt-2">
+                                                    <ShareModeToggle
+                                                        shareMode={(inbox.shareMode as ShareMode) ?? "PRIVATE"}
+                                                        onChange={(mode) => void handleShareModeChange(inbox, mode)}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
-                                    ))
+                                        );
+                                    })
                                 )}
 
                                 {total > rowsPerPage && (
@@ -429,6 +465,14 @@ export function InboxManager() {
                     onInboxCreated={() => {
                         void loadInboxes();
                     }}
+                />
+            )}
+
+            {visibilityRulesInbox && (
+                <VisibilityRulesPanel
+                    inboxId={visibilityRulesInbox.id}
+                    inboxEmail={toInboxEmail(visibilityRulesInbox)}
+                    onClose={() => setVisibilityRulesInbox(null)}
                 />
             )}
         </AppShell>

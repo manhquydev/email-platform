@@ -61,6 +61,13 @@ const mockSharedInbox = {
     ownerId: "someone-else",
 };
 
+const mockNoOwnerInbox = {
+    ...mockInbox,
+    id: "inbox-3",
+    localPart: "test3",
+    ownerId: null,
+};
+
 const mockApi = vi.fn();
 vi.mock("../utils/api", () => ({
     api: (...args: unknown[]) => mockApi(...args),
@@ -131,6 +138,28 @@ describe("InboxManager - share mode + visibility rules controls", () => {
 
         renderPage();
         await screen.findByText("test2@example.com");
+
+        expect(screen.queryByTitle(/chuyển sang public/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/quy tắc hiển thị/i)).not.toBeInTheDocument();
+    });
+
+    it("hides the share toggle and visibility rules button when ownerId is null (regression: backend 403s on unverifiable ownership)", async () => {
+        // Backend `verifyInboxOwnership` requires an exact `ownerId === userId` match
+        // and returns 403 for anything else, including a null ownerId. The controls
+        // must not render for inboxes whose ownership can't be positively confirmed —
+        // otherwise clicking them redirects the whole app to /403 (production regression).
+        mockApi.mockImplementation((url: string) => {
+            if (url.startsWith("/domains")) {
+                return Promise.resolve({ data: [] });
+            }
+            if (url.startsWith("/inboxes")) {
+                return Promise.resolve({ data: [mockNoOwnerInbox], meta: { total: 1 } });
+            }
+            return Promise.resolve({});
+        });
+
+        renderPage();
+        await screen.findByText("test3@example.com");
 
         expect(screen.queryByTitle(/chuyển sang public/i)).not.toBeInTheDocument();
         expect(screen.queryByText(/quy tắc hiển thị/i)).not.toBeInTheDocument();

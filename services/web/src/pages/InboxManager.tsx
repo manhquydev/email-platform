@@ -327,14 +327,19 @@ export function InboxManager() {
                                     </p>
                                 ) : (
                                     inboxes.map((inbox) => {
-                                        const isOwnInbox = !user?.id || !inbox.ownerId || inbox.ownerId === user.id;
+                                        // Cosmetic badge: unchanged from original — only flags an *explicit* other owner.
+                                        const isSharedToUser = Boolean(user?.id && inbox.ownerId && inbox.ownerId !== user.id);
+                                        // Gate for owner-only actions (share toggle, visibility rules): backend
+                                        // `verifyInboxOwnership` requires an exact `ownerId === userId` match and
+                                        // 403s otherwise — so a null/missing ownerId must NOT be treated as "own".
+                                        const canManageSharing = Boolean(user?.id && inbox.ownerId === user.id);
 
                                         return (
                                         <div key={inbox.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 sm:p-4">
                                             <button onClick={() => openInbox(inbox)} className="w-full text-left">
                                                 <div className="flex items-center gap-2">
                                                     <p className="truncate text-sm font-semibold text-white">{toInboxEmail(inbox)}</p>
-                                                    {!isOwnInbox && (
+                                                    {isSharedToUser && (
                                                         <span className="rounded border border-cyan-400/40 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] text-cyan-300">Shared</span>
                                                     )}
                                                 </div>
@@ -366,7 +371,7 @@ export function InboxManager() {
                                                 >
                                                     {deletingInboxId === inbox.id ? "Đang xóa..." : "Xóa"}
                                                 </button>
-                                                {isOwnInbox && (
+                                                {canManageSharing && (
                                                     <button
                                                         onClick={() => setVisibilityRulesInbox(inbox)}
                                                         className="rounded-lg border border-white/10 px-3 py-2 text-xs text-text-secondary hover:text-white"
@@ -375,7 +380,7 @@ export function InboxManager() {
                                                     </button>
                                                 )}
                                             </div>
-                                            {isOwnInbox && (
+                                            {canManageSharing && (
                                                 <div className="mt-2">
                                                     <ShareModeToggle
                                                         shareMode={(inbox.shareMode as ShareMode) ?? "PRIVATE"}

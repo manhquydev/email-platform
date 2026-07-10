@@ -37,5 +37,8 @@ export const NOTIFICATION_EMOJIS: Record<string, string> = {
 // Get web URL with fallback
 export const getWebUrl = () => process.env.WEB_URL || 'https://app.manhquy.id.vn';
 
+// Get API URL with fallback (used for the Telegram webhook target)
+export const getApiUrl = () => process.env.API_URL || 'https://api.manhquy.id.vn';
+
 // Get bot token from environment
 export const getBotToken = () => process.env.TELEGRAM_BOT_TOKEN;

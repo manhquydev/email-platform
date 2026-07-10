@@ -20,6 +20,7 @@ export type {
 export {
     escapeHtml,
     setupBotCommands,
+    registerWebhook,
     sendTelegramMessage,
     sendTelegramPhoto,
     respondToCallbackQuery,

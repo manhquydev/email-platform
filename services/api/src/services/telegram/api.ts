@@ -3,7 +3,7 @@
  * Low-level API calls to Telegram Bot API
  */
 
-import { TELEGRAM_API_BASE, getBotToken, BOT_COMMANDS } from './constants';
+import { TELEGRAM_API_BASE, getApiUrl, getBotToken, BOT_COMMANDS } from './constants';
 import type { SendMessageOptions, CallbackQueryOptions } from './types';
 
 /**
@@ -43,6 +43,52 @@ export async function setupBotCommands(): Promise<boolean> {
         }
     } catch (error) {
         console.error('[Telegram] Error setting commands:', error);
+        return false;
+    }
+}
+
+/**
+ * Register the Telegram webhook to point at this deployment's public API.
+ * Called on server startup so the webhook always tracks the current API_URL
+ * (e.g. after a domain change) instead of requiring a manual reset. No-ops in
+ * dev where API_URL is not a public HTTPS URL Telegram can reach.
+ */
+export async function registerWebhook(): Promise<boolean> {
+    const token = getBotToken();
+    if (!token) {
+        console.log('[Telegram] Bot token not configured, skipping webhook registration');
+        return false;
+    }
+
+    const apiUrl = getApiUrl();
+    if (!/^https:\/\//i.test(apiUrl)) {
+        console.log(`[Telegram] API_URL is not public HTTPS (${apiUrl}), skipping webhook registration`);
+        return false;
+    }
+
+    const webhookUrl = `${apiUrl.replace(/\/$/, '')}/telegram/webhook`;
+    const secret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+
+    try {
+        const response = await fetch(`${TELEGRAM_API_BASE}${token}/setWebhook`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                url: webhookUrl,
+                allowed_updates: ['message', 'callback_query'],
+                ...(secret ? { secret_token: secret } : {}),
+            }),
+        });
+
+        if (response.ok) {
+            console.log(`[Telegram] Webhook registered: ${webhookUrl}`);
+            return true;
+        } else {
+            console.error('[Telegram] Failed to register webhook:', await response.text());
+            return false;
+        }
+    } catch (error) {
+        console.error('[Telegram] Error registering webhook:', error);
         return false;
     }
 }

@@ -34,7 +34,7 @@ import { webhookRoutes } from "./routes/webhooks";
 import { forwardingRoutes } from "./routes/forwarding";
 import { subscriptionRoutes } from "./routes/subscription";
 import { sepayRoutes } from "./routes/sepay";
-import { setupBotCommands } from "./services/telegram";
+import { setupBotCommands, registerWebhook } from "./services/telegram";
 import { webauthnRoutes } from "./routes/webauthn";
 import { magicLinkRoutes } from "./routes/magic-link";
 import { telegramAuthRoutes } from "./routes/telegram-auth";
@@ -582,6 +582,12 @@ export const startHttpServer = async (): Promise<FastifyInstance> => {
   // Setup Telegram bot commands menu
   setupBotCommands().catch(err => {
     app.log.error('Failed to setup Telegram bot commands:', err);
+  });
+
+  // Register the Telegram webhook against this deployment's public API URL so
+  // it self-heals after a domain/URL change instead of needing a manual reset.
+  registerWebhook().catch(err => {
+    app.log.error('Failed to register Telegram webhook:', err);
   });
 
   // Graceful shutdown

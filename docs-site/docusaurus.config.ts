@@ -6,7 +6,7 @@ const config: Config = {
   title: 'Ephemera API',
   tagline: 'Temporary email platform for developers',
   favicon: 'img/favicon.ico',
-  url: 'https://docs.manhquy.click',
+  url: 'https://docs.manhquy.id.vn',
   baseUrl: '/',
   organizationName: 'ephemera',
   projectName: 'ephemera-docs',
@@ -76,7 +76,7 @@ const config: Config = {
           title: 'More',
           items: [
             { label: 'GitHub', href: 'https://github.com/ephemera' },
-            { label: 'Status', href: 'https://status.manhquy.click' },
+            { label: 'Status', href: 'https://status.manhquy.id.vn' },
           ],
         },
       ],
@@ -88,8 +88,10 @@ const config: Config = {
       additionalLanguages: ['bash', 'json', 'php', 'java', 'csharp', 'go'],
     },
     algolia: {
-      appId: 'YOUR_APP_ID',
-      apiKey: 'YOUR_SEARCH_API_KEY',
+      // Algolia DocSearch credentials come from env; placeholders keep the
+      // config valid until real (search-only, public) keys are provided.
+      appId: process.env.ALGOLIA_APP_ID || 'YOUR_APP_ID',
+      apiKey: process.env.ALGOLIA_SEARCH_API_KEY || 'YOUR_SEARCH_API_KEY',
       indexName: 'ephemera',
       contextualSearch: true,
     },

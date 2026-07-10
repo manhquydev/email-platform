@@ -3,12 +3,14 @@
  * Focuses on quick actions and selected inbox summary instead of message reading.
  */
 import { Link } from "react-router-dom";
-import type { Inbox } from "../../../types";
+import type { Inbox, ShareMode } from "../../../types";
+import { ShareModeToggle } from "../../inbox-card-modules";
 
 interface ManagerWorkspacePaneProps {
     activeInbox: Inbox | null;
     filteredCount: number;
     onCreateInbox: () => void;
+    onShareModeChange: (inboxId: string, mode: ShareMode) => void;
 }
 
 function formatExpiry(expiresAt?: string | null) {
@@ -24,7 +26,7 @@ function formatExpiry(expiresAt?: string | null) {
     });
 }
 
-export function ManagerWorkspacePane({ activeInbox, filteredCount, onCreateInbox }: ManagerWorkspacePaneProps) {
+export function ManagerWorkspacePane({ activeInbox, filteredCount, onCreateInbox, onShareModeChange }: ManagerWorkspacePaneProps) {
     const inboxEmail = activeInbox ? `${activeInbox.localPart}@${activeInbox.domain?.name}` : "";
 
     return (
@@ -61,7 +63,10 @@ export function ManagerWorkspacePane({ activeInbox, filteredCount, onCreateInbox
                         <div className="space-y-2 text-sm">
                             <div className="text-text-main break-all">{inboxEmail}</div>
                             <div className="text-text-secondary">Hạn dùng: {formatExpiry(activeInbox.expiresAt)}</div>
-                            <div className="text-text-secondary">Chế độ chia sẻ: {activeInbox.shareMode ?? "PRIVATE"}</div>
+                            <ShareModeToggle
+                                shareMode={(activeInbox.shareMode as 'PUBLIC' | 'PRIVATE') ?? 'PRIVATE'}
+                                onChange={(mode) => onShareModeChange(activeInbox.id, mode)}
+                            />
                             <div className="text-text-secondary">Tổng email: {activeInbox._count?.messages ?? 0}</div>
                         </div>
                     ) : (

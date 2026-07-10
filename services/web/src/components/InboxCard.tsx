@@ -126,14 +126,12 @@ export function InboxCard({
                         onClick={handleViewMessages}
                     />
 
-                    {/* Share toggle - hidden on mobile variant, shown on sm+ */}
+                    {/* Share toggle - hidden on dedicated mobile variant (uses long-press action sheet instead) */}
                     {onShareModeChange && !isMobile && (
-                        <div className="hidden sm:block">
-                            <ShareModeToggle
-                                shareMode={inbox.shareMode as 'PUBLIC' | 'PRIVATE'}
-                                onChange={onShareModeChange}
-                            />
-                        </div>
+                        <ShareModeToggle
+                            shareMode={inbox.shareMode as 'PUBLIC' | 'PRIVATE'}
+                            onChange={onShareModeChange}
+                        />
                     )}
                 </div>
 

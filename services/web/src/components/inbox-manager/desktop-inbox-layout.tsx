@@ -81,6 +81,7 @@ export function DesktopInboxLayout({
                     activeInbox={activeInbox}
                     filteredCount={filteredInboxes.length}
                     onCreateInbox={onCreateInbox}
+                    onShareModeChange={onShareModeChange}
                 />
             </div>
         </div>

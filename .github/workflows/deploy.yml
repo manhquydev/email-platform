@@ -86,6 +86,23 @@ jobs:
               upsert_env "EPHEMERAL_CREATE_RATE_LIMIT_WINDOW" "\"${EPHEMERAL_CREATE_RATE_LIMIT_WINDOW:-1 hour}\""
             fi
 
+            # Ensure the production domain is set for compose/Caddy interpolation.
+            # docker-compose.prod.yml derives every host (api./app./mail./grafana.)
+            # and Caddy's TLS from ${DOMAIN}, read from the root .env file.
+            ROOT_ENV=".env"
+            touch "$ROOT_ENV"
+            upsert_root_env() {
+              local key="$1"
+              local value="$2"
+              if grep -qE "^${key}=" "$ROOT_ENV"; then
+                sed -i "s|^${key}=.*|${key}=${value}|" "$ROOT_ENV"
+              else
+                printf "%s=%s\n" "$key" "$value" >> "$ROOT_ENV"
+              fi
+            }
+            upsert_root_env "DOMAIN" "manhquy.id.vn"
+            upsert_root_env "ACME_EMAIL" "manhquy.mqy@gmail.com"
+
             # Pull latest code
             echo "Pulling latest code..."
             git fetch --prune origin main

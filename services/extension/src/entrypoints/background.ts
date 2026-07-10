@@ -3,13 +3,9 @@ import { api } from '../shared/api';
 import { analytics } from '../shared/analytics';
 import { handlePushMessage, handleNotificationClick, updateBadge } from '../background/push-handler';
 import { createAutomationInbox, pollLatestLink, pollLatestOtp } from '../background/openai-auth-automation-service';
-import { initNetworkInterceptor, getCapturedData, clearCapturedData } from '../background/network-interceptor';
 import browser from 'webextension-polyfill';
 
 export default defineBackground(() => {
-  // Initialize network interceptor for OpenAI auth flow analysis
-  initNetworkInterceptor();
-
   type ContextMenuCreateProperties = Parameters<typeof browser.contextMenus.create>[0];
   const msg = (key: string, fallback: string, substitutions?: string[]) => {
     const value = browser.i18n.getMessage(key, substitutions);
@@ -692,19 +688,6 @@ export default defineBackground(() => {
 
     if (message.type === 'TRACK_EVENT') {
       analytics.track(message.event, message.metadata);
-      return Promise.resolve({ success: true });
-    }
-
-    // Network interceptor message handlers
-    if (message.type === 'NETWORK_GET_CAPTURED_DATA') {
-      return Promise.resolve({
-        success: true,
-        data: getCapturedData(),
-      });
-    }
-
-    if (message.type === 'NETWORK_CLEAR_CAPTURED_DATA') {
-      clearCapturedData();
       return Promise.resolve({ success: true });
     }
   });

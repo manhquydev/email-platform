@@ -59,6 +59,40 @@ export default {
                 info: 'var(--color-info)',
                 'info-bg': 'var(--color-info-bg)',
 
+                // SEMANTIC PALETTE (Phase 1: Notion-inspired Design System Foundation)
+                // Purpose-named tokens referencing src/styles/primitives.css via
+                // src/styles/semantic-tokens.css. Additive alongside nebula.*/v3.* —
+                // does not replace them (old namespaces still serve 172 out-of-scope files).
+                semantic: {
+                    'bg-primary': 'var(--semantic-bg-primary)',
+                    'bg-secondary': 'var(--semantic-bg-secondary)',
+                    'bg-elevated': 'var(--semantic-bg-elevated)',
+                    'bg-hover': 'var(--semantic-bg-hover)',
+                    'bg-selected': 'var(--semantic-bg-selected)',
+                    'text-main': 'var(--semantic-text-main)',
+                    'text-secondary': 'var(--semantic-text-secondary)',
+                    'text-muted': 'var(--semantic-text-muted)',
+                    'text-inverse': 'var(--semantic-text-inverse)',
+                    border: 'var(--semantic-border)',
+                    'border-hover': 'var(--semantic-border-hover)',
+                    'border-strong': 'var(--semantic-border-strong)',
+                    accent: 'var(--semantic-accent)',
+                    'accent-hover': 'var(--semantic-accent-hover)',
+                    'accent-active': 'var(--semantic-accent-active)',
+                    'accent-subtle': 'var(--semantic-accent-subtle)',
+                    'accent-text': 'var(--semantic-accent-text)',
+                    success: 'var(--semantic-success)',
+                    'success-subtle': 'var(--semantic-success-subtle)',
+                    warning: 'var(--semantic-warning)',
+                    'warning-hover': 'var(--semantic-warning-hover)',
+                    'warning-subtle': 'var(--semantic-warning-subtle)',
+                    danger: 'var(--semantic-danger)',
+                    'danger-hover': 'var(--semantic-danger-hover)',
+                    'danger-subtle': 'var(--semantic-danger-subtle)',
+                    info: 'var(--semantic-info)',
+                    'info-subtle': 'var(--semantic-info-subtle)',
+                },
+
                 // VERSION C PALETTE (Superhuman Style)
                 v3: {
                     // Backgrounds
@@ -101,6 +135,10 @@ export default {
                 // Version C Shadows (minimal)
                 'v3-none': 'var(--v3-shadow-none)',
                 'v3-sm': 'var(--v3-shadow-sm)',
+                // Semantic Shadows (Phase 1: Notion-inspired, soft/minimal)
+                'semantic-sm': 'var(--semantic-shadow-sm)',
+                'semantic-md': 'var(--semantic-shadow-md)',
+                'semantic-lg': 'var(--semantic-shadow-lg)',
             },
             // Mobile touch targets (44px minimum per WCAG 2.1)
             minHeight: {

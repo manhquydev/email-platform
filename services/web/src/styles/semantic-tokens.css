@@ -1,0 +1,107 @@
+/* ============================================
+   SEMANTIC TOKENS — purpose-named, theme-aware
+   Phase 1: Notion-inspired Design System Foundation
+   ------------------------------------------------
+   References primitives.css only. Light values live at
+   :root, dark values inside `.dark { }` — matches Tailwind's
+   `darkMode: 'class'` wiring (ThemeContext toggles `.dark`
+   on document.documentElement). Do NOT use [data-theme]
+   selectors here.
+
+   Consumed via tailwind.config.js `theme.extend.colors.semantic`
+   (e.g. `bg-semantic-bg-primary`, `text-semantic-text-main`).
+   ============================================ */
+
+:root {
+    /* Backgrounds */
+    --semantic-bg-primary: var(--color-neutral-0);
+    --semantic-bg-secondary: var(--color-neutral-100);
+    --semantic-bg-elevated: var(--color-neutral-0);
+    --semantic-bg-hover: var(--color-neutral-100);
+    --semantic-bg-selected: var(--color-blue-50);
+
+    /* Text */
+    --semantic-text-main: var(--color-neutral-800);
+    --semantic-text-secondary: var(--color-neutral-600);
+    --semantic-text-muted: var(--color-neutral-500);
+    --semantic-text-inverse: var(--color-neutral-0);
+
+    /* Borders */
+    --semantic-border: var(--color-neutral-200);
+    --semantic-border-hover: var(--color-neutral-300);
+    --semantic-border-strong: var(--color-neutral-400);
+
+    /* Accent — confirmed brand blue #3B82F6 */
+    --semantic-accent: var(--color-blue-500);
+    --semantic-accent-hover: var(--color-blue-600);
+    --semantic-accent-active: var(--color-blue-700);
+    --semantic-accent-subtle: var(--color-blue-50);
+    --semantic-accent-text: var(--color-blue-600);
+
+    /* Status */
+    --semantic-success: var(--color-green-500);
+    --semantic-success-subtle: #D1FAE5;
+    --semantic-warning: var(--color-amber-500);
+    --semantic-warning-hover: var(--color-amber-600);
+    --semantic-warning-subtle: #FEF3C7;
+    --semantic-danger: var(--color-red-500);
+    --semantic-danger-hover: var(--color-red-600);
+    --semantic-danger-subtle: #FEE2E2;
+    --semantic-info: var(--color-blue-500);
+    --semantic-info-subtle: var(--color-blue-50);
+
+    /* Focus ring */
+    --semantic-focus-ring: 0 0 0 3px rgb(59 130 246 / 0.35);
+
+    /* Shadows — soft, minimal (Notion-style) */
+    --semantic-shadow-sm: 0 1px 2px rgb(15 15 15 / 0.06);
+    --semantic-shadow-md: 0 2px 8px rgb(15 15 15 / 0.08);
+    --semantic-shadow-lg: 0 8px 24px rgb(15 15 15 / 0.12);
+}
+
+.dark {
+    /* Backgrounds */
+    --semantic-bg-primary: var(--color-neutral-950);
+    --semantic-bg-secondary: var(--color-neutral-900);
+    --semantic-bg-elevated: var(--color-neutral-900);
+    --semantic-bg-hover: var(--color-neutral-800);
+    --semantic-bg-selected: rgb(59 130 246 / 0.16);
+
+    /* Text */
+    --semantic-text-main: var(--color-neutral-50);
+    --semantic-text-secondary: var(--color-neutral-400);
+    --semantic-text-muted: var(--color-neutral-600);
+    --semantic-text-inverse: var(--color-neutral-900);
+
+    /* Borders — subtle white-alpha, matches Notion dark chrome */
+    --semantic-border: rgb(255 255 255 / 0.09);
+    --semantic-border-hover: rgb(255 255 255 / 0.14);
+    --semantic-border-strong: rgb(255 255 255 / 0.2);
+
+    /* Accent — lighter blue reads better on dark surfaces */
+    --semantic-accent: var(--color-blue-400);
+    --semantic-accent-hover: var(--color-blue-500);
+    --semantic-accent-active: var(--color-blue-600);
+    --semantic-accent-subtle: rgb(59 130 246 / 0.16);
+    --semantic-accent-text: var(--color-blue-400);
+
+    /* Status */
+    --semantic-success: var(--color-green-500);
+    --semantic-success-subtle: rgb(16 185 129 / 0.16);
+    --semantic-warning: var(--color-amber-500);
+    --semantic-warning-hover: var(--color-amber-600);
+    --semantic-warning-subtle: rgb(245 158 11 / 0.16);
+    --semantic-danger: var(--color-red-500);
+    --semantic-danger-hover: var(--color-red-600);
+    --semantic-danger-subtle: rgb(239 68 68 / 0.16);
+    --semantic-info: var(--color-blue-400);
+    --semantic-info-subtle: rgb(59 130 246 / 0.16);
+
+    /* Focus ring */
+    --semantic-focus-ring: 0 0 0 3px rgb(96 165 250 / 0.4);
+
+    /* Shadows */
+    --semantic-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+    --semantic-shadow-md: 0 2px 8px rgb(0 0 0 / 0.4);
+    --semantic-shadow-lg: 0 8px 24px rgb(0 0 0 / 0.5);
+}

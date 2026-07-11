@@ -21,13 +21,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     icon,
     ...props
 }, ref) => {
-    // Nebula Variants - Using design tokens for consistency
+    // Phase 1 retoken: uses semantic-* tokens (src/styles/semantic-tokens.css) instead of legacy nebula-*/top-level tokens
     const variants = {
-        primary: 'bg-gradient-to-r from-nebula-violet to-nebula-violet-dark text-white shadow-lg hover:shadow-xl hover:scale-[1.02] border-none',
-        secondary: 'bg-nebula-surface/50 backdrop-blur-md border border-nebula-border text-nebula-text hover:bg-nebula-surface/80 hover:border-nebula-border shadow-sm',
-        ghost: 'bg-transparent text-nebula-text hover:bg-nebula-elevated/50 data-[state=open]:bg-nebula-elevated/50',
-        danger: 'bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20',
-        outline: 'border border-nebula-border bg-transparent hover:bg-nebula-surface/50 text-nebula-text',
+        primary: 'bg-gradient-to-r from-semantic-accent to-semantic-accent-active text-white shadow-lg hover:shadow-xl hover:scale-[1.02] border-none',
+        secondary: 'bg-semantic-bg-elevated/50 backdrop-blur-md border border-semantic-border text-semantic-text-main hover:bg-semantic-bg-elevated/80 hover:border-semantic-border-hover shadow-sm',
+        ghost: 'bg-transparent text-semantic-text-main hover:bg-semantic-bg-hover data-[state=open]:bg-semantic-bg-hover',
+        danger: 'bg-semantic-danger-subtle text-semantic-danger border border-semantic-danger/20 hover:bg-semantic-danger/20',
+        outline: 'border border-semantic-border bg-transparent hover:bg-semantic-bg-hover text-semantic-text-main',
     };
 
     // Touch target sizes - WCAG 2.5.5 requires minimum 44x44px for touch targets
@@ -39,8 +39,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     };
 
     // Success state overrides variant styling
-    const successStyles = isSuccess 
-        ? 'bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30' 
+    const successStyles = isSuccess
+        ? 'bg-semantic-success-subtle border-semantic-success/30 text-semantic-success hover:bg-semantic-success/20'
         : '';
 
     return (
@@ -49,7 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
             aria-busy={isLoading}
             aria-disabled={disabled || isLoading}
             className={cn(
-                'relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-nebula-violet/50 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
+                'relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-semantic-accent/50 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
                 variants[variant],
                 sizes[size],
                 (isLoading || isSuccess) && 'text-transparent cursor-wait',

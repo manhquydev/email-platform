@@ -131,6 +131,11 @@ services:
       MAIL_DOMAIN: ${DOMAIN:-localhost}
       MAIL_FROM_NAME: "Ephemera"
       MAIL_FROM_ADDRESS: "noreply@${DOMAIN:-localhost}"
+      # Default domain for homepage/public ephemeral inbox creation (see
+      # ephemeral-inbox.service.ts). Overrides any stale value baked into
+      # services/api/.env so the homepage always uses the current DOMAIN,
+      # which has working MX/SMTP, instead of an unrelated legacy domain.
+      EPHEMERAL_DOMAIN: ${EPHEMERAL_DOMAIN:-${DOMAIN:-localhost}}
       # TEMPORARY: Set to false until PTR record is configured
       # Change to true after setting up PTR record with DigitalOcean
       REQUIRE_EMAIL_VERIFICATION: "false"

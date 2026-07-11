@@ -38,18 +38,18 @@ export function SubscriptionStatsCards({ profile }: SubscriptionStatsCardsProps)
     return (
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Current Plan */}
-            <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-nebula-surface border border-nebula-border shadow-sm">
+            <GlassCard className="p-6 flex flex-col justify-between h-full gap-4 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <span className="material-symbols-outlined text-6xl text-nebula-text">diamond</span>
+                    <span className="material-symbols-outlined text-6xl text-semantic-text-main">diamond</span>
                 </div>
                 <div>
-                    <p className="text-nebula-text-muted text-sm font-medium uppercase tracking-wider">Gói hiện tại</p>
-                    <p className="text-3xl font-bold mt-1 text-nebula-text">{profile?.tier === 'FREE' ? 'MIỄN PHÍ' : profile?.tier || 'MIỄN PHÍ'}</p>
+                    <p className="text-semantic-text-muted text-sm font-medium uppercase tracking-wider">Gói hiện tại</p>
+                    <p className="text-3xl font-bold mt-1 text-semantic-text-main">{profile?.tier === 'FREE' ? 'MIỄN PHÍ' : profile?.tier || 'MIỄN PHÍ'}</p>
                 </div>
-                <div className="w-full bg-nebula-elevated h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div className="bg-nebula-violet h-full rounded-full w-[40%]"></div>
+                <div className="w-full bg-semantic-bg-secondary h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div className="bg-semantic-accent h-full rounded-full w-[40%]"></div>
                 </div>
-                <p className="text-xs text-nebula-text-muted">
+                <p className="text-xs text-semantic-text-muted">
                     {profile?.subscriptionEndsAt
                         ? `Gia hạn vào ${new Date(profile.subscriptionEndsAt).toLocaleDateString("vi-VN")}`
                         : 'Miễn phí mãi mãi'}
@@ -57,46 +57,46 @@ export function SubscriptionStatsCards({ profile }: SubscriptionStatsCardsProps)
             </GlassCard>
 
             {/* Daily Email Limit */}
-            <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-4 relative overflow-hidden group bg-nebula-surface border border-nebula-border shadow-sm">
+            <GlassCard className="p-6 flex flex-col justify-between h-full gap-4 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <span className="material-symbols-outlined text-6xl text-nebula-text">mail</span>
+                    <span className="material-symbols-outlined text-6xl text-semantic-text-main">mail</span>
                 </div>
                 <div>
-                    <p className="text-nebula-text-muted text-sm font-medium uppercase tracking-wider">Email/Ngày</p>
-                    <p className="text-3xl font-bold mt-1 text-success">
+                    <p className="text-semantic-text-muted text-sm font-medium uppercase tracking-wider">Email/Ngày</p>
+                    <p className="text-3xl font-bold mt-1 text-semantic-success">
                         {profile?.limits?.dailyEmails === -1 ? 'Vô hạn' : profile?.limits?.dailyEmails || 5}
                     </p>
                 </div>
-                <p className="text-sm text-nebula-text-muted font-medium flex items-center gap-1">
+                <p className="text-sm text-semantic-text-muted font-medium flex items-center gap-1">
                     Giới hạn gửi email mỗi ngày
                 </p>
             </GlassCard>
 
             {/* Domain Usage */}
-            <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-nebula-surface border border-nebula-border shadow-sm">
+            <GlassCard className="p-6 flex flex-col justify-between h-full gap-2">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="text-nebula-text-muted text-sm font-medium uppercase tracking-wider">Tên miền riêng</p>
-                        <p className="text-2xl font-bold mt-1 text-nebula-text">{domainUsage} <span className="text-lg text-nebula-text-muted font-normal">/ {domainLimitDisplay}</span></p>
+                        <p className="text-semantic-text-muted text-sm font-medium uppercase tracking-wider">Tên miền riêng</p>
+                        <p className="text-2xl font-bold mt-1 text-semantic-text-main">{domainUsage} <span className="text-lg text-semantic-text-muted font-normal">/ {domainLimitDisplay}</span></p>
                     </div>
-                    <span className="material-symbols-outlined text-nebula-text-muted">dns</span>
+                    <span className="material-symbols-outlined text-semantic-text-muted">dns</span>
                 </div>
-                <div className="w-full bg-nebula-elevated h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div className="bg-success h-full rounded-full" style={{ width: `${domainPercent}%` }}></div>
+                <div className="w-full bg-semantic-bg-secondary h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div className="bg-semantic-success h-full rounded-full" style={{ width: `${domainPercent}%` }}></div>
                 </div>
             </GlassCard>
 
             {/* Storage Usage */}
-            <GlassCard className="p-6 rounded-xl flex flex-col justify-between h-full gap-2 bg-nebula-surface border border-nebula-border shadow-sm">
+            <GlassCard className="p-6 flex flex-col justify-between h-full gap-2">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="text-nebula-text-muted text-sm font-medium uppercase tracking-wider">Dung lượng</p>
-                        <p className="text-2xl font-bold mt-1 text-nebula-text">{Math.round((storageUsage / storageLimitBytes) * 100)}% <span className="text-lg text-nebula-text-muted font-normal">({formatBytes(storageUsage)})</span></p>
+                        <p className="text-semantic-text-muted text-sm font-medium uppercase tracking-wider">Dung lượng</p>
+                        <p className="text-2xl font-bold mt-1 text-semantic-text-main">{Math.round((storageUsage / storageLimitBytes) * 100)}% <span className="text-lg text-semantic-text-muted font-normal">({formatBytes(storageUsage)})</span></p>
                     </div>
-                    <span className="material-symbols-outlined text-nebula-text-muted">cloud_done</span>
+                    <span className="material-symbols-outlined text-semantic-text-muted">cloud_done</span>
                 </div>
-                <div className="w-full bg-nebula-elevated h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div className="bg-warning h-full rounded-full" style={{ width: `${storagePercent}%` }}></div>
+                <div className="w-full bg-semantic-bg-secondary h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div className="bg-semantic-warning h-full rounded-full" style={{ width: `${storagePercent}%` }}></div>
                 </div>
             </GlassCard>
         </div>

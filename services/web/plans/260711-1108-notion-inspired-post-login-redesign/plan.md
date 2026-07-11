@@ -1,7 +1,7 @@
 ---
 title: "Post-login UI Redesign — Notion-inspired Design System"
 description: ""
-status: in-progress
+status: completed
 priority: P2
 branch: "chore/domain-manhquy-id-vn"
 tags: []
@@ -138,7 +138,7 @@ A separate future plan should migrate the ~172 out-of-scope files off `nebula-*`
 | 3 | [Inbox Manager](./phase-03-inbox-manager.md) | Completed |
 | 4 | [Focus Dashboard](./phase-04-focus-dashboard.md) | Completed |
 | 5 | [My Domains](./phase-05-my-domains.md) | Completed |
-| 6 | [Settings](./phase-06-settings.md) | Pending |
+| 6 | [Settings](./phase-06-settings.md) | Completed |
 
 ## Dependencies
 

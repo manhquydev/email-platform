@@ -11,18 +11,18 @@ import { type Label, LABEL_COLORS } from "./labels-tab-utils";
 
 /** Loading state */
 export function LoadingState() {
-    return <div className="p-8 text-center text-nebula-text-muted">Đang tải...</div>;
+    return <div className="p-8 text-center text-semantic-text-muted">Đang tải...</div>;
 }
 
 /** No inbox selected state */
 export function NoInboxState() {
-    return <div className="p-8 text-center text-nebula-text-muted">Vui lòng chọn một hộp thư để quản lý nhãn.</div>;
+    return <div className="p-8 text-center text-semantic-text-muted">Vui lòng chọn một hộp thư để quản lý nhãn.</div>;
 }
 
 /** Empty labels state */
 export function EmptyLabelsState() {
     return (
-        <div className="col-span-full text-center py-8 text-nebula-text-muted italic">
+        <div className="col-span-full text-center py-8 text-semantic-text-muted italic">
             Chưa có nhãn nào được tạo.
         </div>
     );
@@ -40,7 +40,7 @@ export function InboxSelector({ inboxes, selectedInboxId, onInboxChange }: Inbox
         <select
             value={selectedInboxId}
             onChange={(e) => onInboxChange(e.target.value)}
-            className="bg-nebula-elevated border border-nebula-border rounded-lg px-3 py-1.5 text-sm text-nebula-text focus:outline-none focus:border-nebula-violet max-w-[200px]"
+            className="bg-semantic-bg-secondary border border-semantic-border rounded-lg px-3 py-1.5 text-sm text-semantic-text-main focus:outline-none focus:border-semantic-accent max-w-[200px]"
         >
             {inboxes.map(ib => (
                 <option key={ib.id} value={ib.id}>{ib.localPart}@{ib.domain?.name || '...'}</option>
@@ -65,8 +65,8 @@ export function LabelCard({ label, onEdit, onDelete }: LabelCardProps) {
                     style={{ backgroundColor: label.color || "#ccc" }}
                 />
                 <div>
-                    <div className="font-medium text-nebula-text">{label.name}</div>
-                    <div className="text-xs text-nebula-text-muted">
+                    <div className="font-medium text-semantic-text-main">{label.name}</div>
+                    <div className="text-xs text-semantic-text-muted">
                         {label._count?.messages || 0} email
                     </div>
                 </div>
@@ -75,7 +75,7 @@ export function LabelCard({ label, onEdit, onDelete }: LabelCardProps) {
                 <Button variant="ghost" size="sm" onClick={onEdit}>
                     Sửa
                 </Button>
-                <Button variant="ghost" size="sm" className="text-danger hover:text-danger/80" onClick={onDelete}>
+                <Button variant="ghost" size="sm" className="text-semantic-danger hover:text-semantic-danger" onClick={onDelete}>
                     Xóa
                 </Button>
             </div>
@@ -98,13 +98,13 @@ export function LabelModal({ isEditing, name, onNameChange, color, onColorChange
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <GlassCard className="w-full max-w-md p-6 space-y-6">
-                <h3 className="text-xl font-bold text-nebula-text">
+                <h3 className="text-xl font-bold text-semantic-text-main">
                     {isEditing ? "Chỉnh sửa Nhãn" : "Tạo Nhãn Mới"}
                 </h3>
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-nebula-text-muted mb-1">Tên nhãn</label>
+                        <label className="block text-sm font-medium text-semantic-text-muted mb-1">Tên nhãn</label>
                         <Input
                             value={name}
                             onChange={(e) => onNameChange(e.target.value)}
@@ -114,8 +114,8 @@ export function LabelModal({ isEditing, name, onNameChange, color, onColorChange
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-nebula-text-muted mb-2">Màu sắc</label>
-                        <div className="bg-nebula-elevated p-4 rounded-lg flex justify-center">
+                        <label className="block text-sm font-medium text-semantic-text-muted mb-2">Màu sắc</label>
+                        <div className="bg-semantic-bg-secondary p-4 rounded-lg flex justify-center">
                             <CirclePicker
                                 color={color}
                                 onChange={(res: ColorResult) => onColorChange(res.hex)}

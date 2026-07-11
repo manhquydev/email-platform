@@ -55,11 +55,11 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
     } = useFiltersData(effectiveInboxId);
 
     if (loading && filters.length === 0) {
-        return <div className="p-8 text-center text-nebula-text-muted">Đang tải...</div>;
+        return <div className="p-8 text-center text-semantic-text-muted">Đang tải...</div>;
     }
 
     if (!effectiveInboxId && (!inboxes || inboxes.length === 0)) {
-        return <div className="p-8 text-center text-nebula-text-muted">Vui lòng chọn hộp thư.</div>;
+        return <div className="p-8 text-center text-semantic-text-muted">Vui lòng chọn hộp thư.</div>;
     }
 
     return (
@@ -67,12 +67,12 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
             {/* Header */}
             <div className="flex justify-between items-center gap-4">
                 <div className="flex items-center gap-4 flex-1">
-                    <h3 className="text-lg font-semibold text-nebula-text whitespace-nowrap">Bộ lọc tự động</h3>
+                    <h3 className="text-lg font-semibold text-semantic-text-main whitespace-nowrap">Bộ lọc tự động</h3>
                     {inboxes.length > 0 && onInboxChange && (
                         <select
                             value={selectedInboxId}
                             onChange={(e) => onInboxChange(e.target.value)}
-                            className="bg-nebula-elevated border border-nebula-border rounded-lg px-3 py-1.5 text-sm text-nebula-text focus:outline-none focus:border-nebula-violet max-w-[200px]"
+                            className="bg-semantic-bg-secondary border border-semantic-border rounded-lg px-3 py-1.5 text-sm text-semantic-text-main focus:outline-none focus:border-semantic-accent max-w-[200px]"
                         >
                             {inboxes.map(ib => (
                                 <option key={ib.id} value={ib.id}>{ib.localPart}@{ib.domain?.name || '...'}</option>
@@ -97,7 +97,7 @@ export function FiltersTab({ inboxId, inboxes = [], selectedInboxId, onInboxChan
                     />
                 ))}
                 {filters.length === 0 && (
-                    <div className="text-center py-10 border border-dashed border-nebula-border rounded-xl text-nebula-text-muted">
+                    <div className="text-center py-10 border border-dashed border-semantic-border rounded-xl text-semantic-text-muted">
                         Chưa có bộ lọc nào. Hãy tạo bộ lọc đầu tiên để tự động hóa hộp thư của bạn.
                     </div>
                 )}

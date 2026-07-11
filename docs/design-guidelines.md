@@ -92,6 +92,47 @@ import { Badge } from '../components/ui/Badge';
 <Badge variant="danger">Error</Badge>
 ```
 
+**Table** (Phase 6 primitive)
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from '../components/ui/Table';
+
+<Table>
+  <TableCaption>DNS records for example.com</TableCaption>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Record Type</TableHead>
+      <TableHead>Value</TableHead>
+      <TableHead>Status</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>MX</TableCell>
+      <TableCell>mail.example.com</TableCell>
+      <TableCell><Badge variant="success">Verified</Badge></TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+Use for read-only data display (DNS records, payment history, logs). Semantic `<table>` markup with `<th scope="col">` — **not** an interactive grid pattern. See Phase 6 plan, red-team finding #12.
+
+**Tabs** (Phase 6 primitive)
+```tsx
+import { Tabs, TabsList, TabsTrigger, TabsPanel } from '../components/ui/Tabs';
+
+<Tabs activeId={activeTab} onChange={setActiveTab}>
+  <TabsList aria-label="Settings sections">
+    <TabsTrigger id="general">General</TabsTrigger>
+    <TabsTrigger id="security">Security</TabsTrigger>
+    <TabsTrigger id="billing">Billing</TabsTrigger>
+  </TabsList>
+  <TabsPanel id="general">{/* General settings */}</TabsPanel>
+  <TabsPanel id="security">{/* Security settings */}</TabsPanel>
+  <TabsPanel id="billing">{/* Billing settings */}</TabsPanel>
+</Tabs>
+```
+Controlled compound component. Caller owns `activeId` state (e.g., for URL `?tab=` sync). Includes keyboard navigation (arrow keys, Home/End). Proper ARIA tablist/tab/tabpanel semantics.
+
 ### Token Namespaces in Tailwind
 
 ```javascript
@@ -192,7 +233,10 @@ gap-6        /* grid gaps */
 |------|---------|
 | `services/web/src/styles/primitives.css` | Raw color values (Notion palette) |
 | `services/web/src/styles/semantic-tokens.css` | Purpose-named tokens, light + dark |
-| `services/web/src/components/ui/Badge.tsx` | Badge primitive (example) |
+| `services/web/src/components/ui/Badge.tsx` | Badge primitive (status labels) |
+| `services/web/src/components/ui/Table.tsx` | Table primitive (read-only data display) |
+| `services/web/src/components/ui/Tabs.tsx` | Tabs primitive (multi-section navigation) |
+| `services/web/src/hooks/use-tabs-keyboard-nav.ts` | Keyboard navigation for Tabs (arrow keys, Home/End) |
 | `docs/design-system-version-c.md` | Version C (Legacy) full spec |
 | `services/web/plans/260711-1108-notion-inspired-post-login-redesign/phase-01-design-system-foundation.md` | Phase 1 implementation details |
 
@@ -200,10 +244,13 @@ gap-6        /* grid gaps */
 
 ## Migration Path (Phases)
 
-The redesign is structured in 6 phases. Each phase introduces new semantic-token components and pages:
+The redesign is structured in 6 phases. All phases complete as of Phase 6 (2026-07-11):
 
 1. **Phase 1** (Complete) — Design system foundation: tokens, Badge, Modal, Button, Input, Dropdown, GlassCard, AppShell
-2. **Phase 2** (Upcoming) — Inbox reading and management
-3. **Phase 3–6** (Upcoming) — Additional pages/features, Table + Tabs primitives in Phase 6
+2. **Phase 2** (Complete) — Inbox reading and management
+3. **Phase 3** (Complete) — Additional pages
+4. **Phase 4** (Complete) — Performance & theming
+5. **Phase 5** (Complete) — Component migration
+6. **Phase 6** (Complete) — Settings tabs: all 10 settings pages restyled + Table & Tabs primitives
 
 Old `v3-*`/`nebula-*` tokens remain **indefinitely** for out-of-scope pages (172 files across codebase). No single "cutoff" — pages migrate as their phase lands.

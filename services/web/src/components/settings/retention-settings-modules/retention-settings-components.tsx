@@ -14,14 +14,14 @@ interface TierInfoBannerProps {
 
 export function TierInfoBanner({ tierLabel, tierMax, userTier }: TierInfoBannerProps) {
     return (
-        <div className="p-4 rounded-xl bg-gradient-to-r from-nebula-violet/10 to-nebula-violet-dark/10 border border-nebula-violet/20">
+        <div className="p-4 rounded-xl bg-gradient-to-r from-semantic-accent/10 to-semantic-accent-active/10 border border-semantic-accent/20">
             <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-nebula-violet text-2xl">schedule</span>
+                <span className="material-symbols-outlined text-semantic-accent text-2xl">schedule</span>
                 <div>
-                    <p className="font-medium text-nebula-text">
+                    <p className="font-medium text-semantic-text-main">
                         Gói {tierLabel} - Tối đa {tierMax} ngày
                     </p>
-                    <p className="text-sm text-nebula-text-muted">
+                    <p className="text-sm text-semantic-text-muted">
                         {userTier === "FREE"
                             ? "Nâng cấp để lưu trữ email lâu hơn"
                             : "Bạn có thể cấu hình thời gian lưu trữ tùy chỉnh"
@@ -51,7 +51,7 @@ export function RetentionSelect({ value, onChange, options, className = "" }: Re
         <select
             value={value === null ? "null" : value.toString()}
             onChange={(e) => onChange(e.target.value === "null" ? null : parseInt(e.target.value))}
-            className={`px-3 py-2 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text ${className}`}
+            className={`px-3 py-2 rounded-lg border border-semantic-border bg-semantic-bg-elevated text-semantic-text-main ${className}`}
         >
             {options.map(opt => (
                 <option key={opt.value ?? "null"} value={opt.value === null ? "null" : opt.value}>
@@ -81,14 +81,14 @@ export function DefaultRetentionSection({
     onSave
 }: DefaultRetentionSectionProps) {
     return (
-        <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border border-l-4 border-l-info/70 shadow-sm">
+        <section className="rounded-xl p-6 bg-semantic-bg-elevated border border-semantic-border border-l-4 border-l-semantic-info/70 shadow-semantic-sm">
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="text-lg font-bold text-nebula-text mb-1 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-info">settings</span>
+                    <h3 className="text-lg font-bold text-semantic-text-main mb-1 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-semantic-info">settings</span>
                         Mặc định cho tài khoản
                     </h3>
-                    <p className="text-sm text-nebula-text-muted">
+                    <p className="text-sm text-semantic-text-muted">
                         Áp dụng cho tất cả inbox không có cấu hình riêng.
                     </p>
                 </div>
@@ -106,7 +106,7 @@ export function DefaultRetentionSection({
                 </Button>
             </div>
 
-            <p className="text-xs text-nebula-text-muted mt-2">
+            <p className="text-xs text-semantic-text-muted mt-2">
                 Mặc định theo gói: {tierInfo.max} ngày ({tierInfo.label})
             </p>
         </section>
@@ -127,18 +127,18 @@ export function InboxItem({ inbox, isSelected, onSelect }: InboxItemProps) {
             onClick={onSelect}
             className={`p-4 rounded-lg border cursor-pointer transition-all ${
                 isSelected
-                    ? "border-success bg-success/10"
-                    : "border-nebula-border bg-nebula-elevated/50 hover:border-nebula-border-highlight"
+                    ? "border-semantic-success bg-semantic-success-subtle"
+                    : "border-semantic-border bg-semantic-bg-secondary/50 hover:border-semantic-border-hover"
             }`}
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-success text-[18px]">mail</span>
-                    <span className="font-mono text-sm text-nebula-text">
+                    <span className="material-symbols-outlined text-semantic-success text-[18px]">mail</span>
+                    <span className="font-mono text-sm text-semantic-text-main">
                         {inbox.localPart}@{inbox.domain?.name}
                     </span>
                 </div>
-                <span className="text-xs text-nebula-text-muted">
+                <span className="text-xs text-semantic-text-muted">
                     {inboxWithRetention.retentionDays
                         ? `${inboxWithRetention.retentionDays} ngày`
                         : "Mặc định"
@@ -152,9 +152,9 @@ export function InboxItem({ inbox, isSelected, onSelect }: InboxItemProps) {
 /** Empty inbox state */
 export function EmptyInboxState() {
     return (
-        <div className="text-center py-8 bg-nebula-elevated/50 rounded-lg border border-nebula-border border-dashed">
-            <span className="material-symbols-outlined text-nebula-text-muted text-3xl mb-2">inbox</span>
-            <p className="text-nebula-text-muted text-sm">Chưa có inbox nào.</p>
+        <div className="text-center py-8 bg-semantic-bg-secondary/50 rounded-lg border border-semantic-border border-dashed">
+            <span className="material-symbols-outlined text-semantic-text-muted text-3xl mb-2">inbox</span>
+            <p className="text-semantic-text-muted text-sm">Chưa có inbox nào.</p>
         </div>
     );
 }
@@ -180,8 +180,8 @@ export function InboxEditPanel({
     onCancel
 }: InboxEditPanelProps) {
     return (
-        <div className="mt-4 p-4 bg-nebula-elevated rounded-lg border border-nebula-border">
-            <h4 className="font-medium text-nebula-text mb-3">
+        <div className="mt-4 p-4 bg-semantic-bg-secondary rounded-lg border border-semantic-border">
+            <h4 className="font-medium text-semantic-text-main mb-3">
                 Cấu hình cho: {inbox.localPart}@{inbox.domain?.name}
             </h4>
             <div className="flex items-center gap-4">
@@ -209,12 +209,12 @@ interface InfoBoxProps {
 
 export function InfoBox({ tierMax }: InfoBoxProps) {
     return (
-        <div className="p-4 rounded-lg bg-nebula-elevated border border-nebula-border">
-            <h4 className="font-medium text-nebula-text mb-2 flex items-center gap-2">
+        <div className="p-4 rounded-lg bg-semantic-bg-secondary border border-semantic-border">
+            <h4 className="font-medium text-semantic-text-main mb-2 flex items-center gap-2">
                 <span className="material-symbols-outlined text-[18px]">info</span>
                 Cách hoạt động
             </h4>
-            <ul className="text-sm text-nebula-text-secondary space-y-1">
+            <ul className="text-sm text-semantic-text-secondary space-y-1">
                 <li>• <strong>Inbox riêng</strong> được ưu tiên cao nhất</li>
                 <li>• Nếu không có, dùng <strong>mặc định tài khoản</strong></li>
                 <li>• Nếu không có, dùng <strong>mặc định gói</strong> ({tierMax} ngày)</li>

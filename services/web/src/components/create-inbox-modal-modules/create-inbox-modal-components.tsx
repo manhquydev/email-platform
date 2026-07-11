@@ -11,10 +11,10 @@ import { TTL_OPTIONS } from './create-inbox-modal-hooks';
 export function ModalHeader({ onClose }: { onClose: () => void }) {
     return (
         <div className="flex items-center justify-between">
-            <h2 id="create-inbox-modal-title" className="text-xl font-bold text-nebula-text">Tạo email mới</h2>
+            <h2 id="create-inbox-modal-title" className="text-xl font-bold text-semantic-text-main">Tạo email mới</h2>
             <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-nebula-elevated text-text-secondary transition-colors"
+                className="p-2 rounded-lg hover:bg-semantic-bg-hover text-semantic-text-secondary transition-colors"
                 title="Đóng"
             >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
@@ -34,13 +34,13 @@ export function EmailPreview({
     presetSummary?: string;
 }) {
     return (
-        <div className="flex flex-col items-center rounded-xl border border-primary/20 bg-primary/10 p-3.5 text-center sm:p-4">
-            <span className="text-xs font-medium text-primary/80 uppercase tracking-widest mb-1">Địa chỉ email của bạn</span>
-            <span className="text-lg sm:text-xl font-bold text-nebula-text break-all">
+        <div className="flex flex-col items-center rounded-xl border border-semantic-accent/20 bg-semantic-accent-subtle p-3.5 text-center sm:p-4">
+            <span className="text-xs font-medium text-semantic-accent-text uppercase tracking-widest mb-1">Địa chỉ email của bạn</span>
+            <span className="text-lg sm:text-xl font-bold text-semantic-text-main break-all">
                 {previewEmail || 'chọn domain...'}
             </span>
             {presetSummary && (
-                <span className="mt-2 text-xs text-text-secondary">
+                <span className="mt-2 text-xs text-semantic-text-secondary">
                     {presetSummary}
                 </span>
             )}
@@ -51,9 +51,9 @@ export function EmailPreview({
 /** No domains state */
 export function NoDomainState() {
     return (
-        <div className="flex flex-col items-center justify-center py-8 text-center text-text-secondary">
+        <div className="flex flex-col items-center justify-center py-8 text-center text-semantic-text-secondary">
             <div className="text-4xl mb-4">📧</div>
-            <h4 className="text-lg font-medium text-nebula-text mb-2">Chưa có domain khả dụng</h4>
+            <h4 className="text-lg font-medium text-semantic-text-main mb-2">Chưa có domain khả dụng</h4>
             <p className="mb-6">Tài khoản của bạn chưa có domain nào được xác thực.</p>
             <Button variant="primary" onClick={() => window.location.href = '/my-domains'}>
                 + Quản lý Domain
@@ -119,7 +119,7 @@ export function DomainSelect({
 }: DomainSelectProps) {
     return (
         <div className="space-y-2">
-            <label htmlFor="domain" className="text-sm font-medium text-text-secondary ml-1">Domain</label>
+            <label htmlFor="domain" className="text-sm font-medium text-semantic-text-secondary ml-1">Domain</label>
             <div className="relative">
                 <select
                     id="domain"
@@ -127,38 +127,38 @@ export function DomainSelect({
                     onChange={(e) => onChange(e.target.value)}
                     disabled={useRandomDomainPool}
                     className={cn(
-                        "w-full h-11 px-4 bg-nebula-elevated border border-nebula-border rounded-xl sm:h-[46px]",
-                        "text-nebula-text outline-none transition-all duration-200",
-                        "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
+                        "w-full h-11 px-4 bg-semantic-bg-elevated border border-semantic-border rounded-xl sm:h-[46px]",
+                        "text-semantic-text-main outline-none transition-all duration-200",
+                        "focus:border-semantic-accent/50 focus:ring-1 focus:ring-semantic-accent/50",
                         "appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     )}
                 >
                     {domains.map(d => (
-                        <option key={d.id} value={d.id} className="bg-nebula-surface text-nebula-text">
+                        <option key={d.id} value={d.id} className="bg-semantic-bg-elevated text-semantic-text-main">
                             @{d.name} {d.isPublic ? '(Shared)' : '(Private)'}
                         </option>
                     ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-tertiary">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-semantic-text-muted">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
                 </div>
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-sm text-semantic-text-secondary cursor-pointer select-none">
                 <input
                     type="checkbox"
                     checked={useRandomDomainPool}
                     onChange={(event) => onRandomPoolToggle(event.target.checked)}
-                    className="h-4 w-4 rounded border-nebula-border bg-nebula-elevated accent-primary"
+                    className="h-4 w-4 rounded border-semantic-border bg-semantic-bg-elevated accent-semantic-accent"
                 />
                 Random domain từ nhóm đã chọn
             </label>
 
             {useRandomDomainPool && (
-                <div className="rounded-xl border border-nebula-border bg-nebula-elevated/40 p-3 space-y-2">
-                    <p className="text-xs text-text-secondary">
+                <div className="rounded-xl border border-semantic-border bg-semantic-bg-secondary p-3 space-y-2">
+                    <p className="text-xs text-semantic-text-secondary">
                         Chọn domain để hệ thống random khi tạo email ({randomDomainIds.length}/{domains.length} đã chọn)
                     </p>
                     <div className="max-h-28 space-y-1.5 overflow-auto pr-1 sm:max-h-32">
@@ -170,17 +170,17 @@ export function DomainSelect({
                                     className={cn(
                                         "flex items-center gap-2 rounded-lg px-2.5 py-2 border transition-colors cursor-pointer",
                                         checked
-                                            ? "border-primary/50 bg-primary/10"
-                                            : "border-nebula-border hover:border-primary/30"
+                                            ? "border-semantic-accent/50 bg-semantic-accent-subtle"
+                                            : "border-semantic-border hover:border-semantic-accent/30"
                                     )}
                                 >
                                     <input
                                         type="checkbox"
                                         checked={checked}
                                         onChange={(event) => onRandomDomainSelection(domain.id, event.target.checked)}
-                                        className="h-4 w-4 rounded border-nebula-border bg-nebula-elevated accent-primary"
+                                        className="h-4 w-4 rounded border-semantic-border bg-semantic-bg-elevated accent-semantic-accent"
                                     />
-                                    <span className="text-sm text-nebula-text">
+                                    <span className="text-sm text-semantic-text-main">
                                         @{domain.name} {domain.isPublic ? '(Shared)' : '(Private)'}
                                     </span>
                                 </label>
@@ -188,7 +188,7 @@ export function DomainSelect({
                         })}
                     </div>
                     {randomDomainIds.length === 0 && (
-                        <p className="text-xs text-amber-300">Vui lòng chọn ít nhất 1 domain để random.</p>
+                        <p className="text-xs text-semantic-warning">Vui lòng chọn ít nhất 1 domain để random.</p>
                     )}
                 </div>
             )}
@@ -205,26 +205,26 @@ interface TTLSelectProps {
 export function TTLSelect({ value, onChange }: TTLSelectProps) {
     return (
         <div className="space-y-2">
-            <label htmlFor="ttl" className="text-sm font-medium text-text-secondary ml-1">Thời hạn</label>
+            <label htmlFor="ttl" className="text-sm font-medium text-semantic-text-secondary ml-1">Thời hạn</label>
             <div className="relative">
                 <select
                     id="ttl"
                     value={value === null ? 'null' : String(value)}
                     onChange={(e) => onChange(e.target.value === 'null' ? null : Number(e.target.value))}
                     className={cn(
-                        "w-full h-11 px-4 bg-nebula-elevated border border-nebula-border rounded-xl sm:h-[46px]",
-                        "text-nebula-text outline-none transition-all duration-200",
-                        "focus:border-primary/50 focus:ring-1 focus:ring-primary/50",
+                        "w-full h-11 px-4 bg-semantic-bg-elevated border border-semantic-border rounded-xl sm:h-[46px]",
+                        "text-semantic-text-main outline-none transition-all duration-200",
+                        "focus:border-semantic-accent/50 focus:ring-1 focus:ring-semantic-accent/50",
                         "appearance-none cursor-pointer"
                     )}
                 >
                     {TTL_OPTIONS.map(opt => (
-                        <option key={opt.label} value={opt.value === null ? 'null' : String(opt.value)} className="bg-nebula-surface text-nebula-text">
+                        <option key={opt.label} value={opt.value === null ? 'null' : String(opt.value)} className="bg-semantic-bg-elevated text-semantic-text-main">
                             {opt.label}
                         </option>
                     ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-tertiary">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-semantic-text-muted">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>

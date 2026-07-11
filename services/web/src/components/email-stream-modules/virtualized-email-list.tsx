@@ -23,8 +23,10 @@ type RowItem =
     | { type: "message"; message: Message };
 
 // Estimated row heights for virtualization
-const HEADER_HEIGHT = 40;
-const MESSAGE_HEIGHT = 120;
+// MESSAGE_HEIGHT matches the fixed 60px row height used by EmailItem (Phase 2 restyle,
+// Notion-inspired density) so virtualized rows line up with the non-virtualized list.
+const HEADER_HEIGHT = 36;
+const MESSAGE_HEIGHT = 60;
 
 /**
  * Virtualization threshold: 50+ messages triggers virtualized rendering
@@ -104,6 +106,7 @@ export function VirtualizedEmailList({
                         <div
                             key={virtualRow.key}
                             role={item.type === "message" ? "listitem" : "presentation"}
+                            className={item.type === "message" ? "border-b border-semantic-border" : undefined}
                             style={{
                                 position: "absolute",
                                 top: 0,

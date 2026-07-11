@@ -134,7 +134,7 @@ A separate future plan should migrate the ~172 out-of-scope files off `nebula-*`
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | [Design System Foundation](./phase-01-design-system-foundation.md) | Completed |
-| 2 | [Inbox Reading and Management](./phase-02-inbox-reading-and-management.md) | Pending |
+| 2 | [Inbox Reading and Management](./phase-02-inbox-reading-and-management.md) | Completed |
 | 3 | [Inbox Manager](./phase-03-inbox-manager.md) | Pending |
 | 4 | [Focus Dashboard](./phase-04-focus-dashboard.md) | Pending |
 | 5 | [My Domains](./phase-05-my-domains.md) | Pending |

@@ -36,7 +36,7 @@ const FILE_ICONS: Record<string, { icon: string; color: string }> = {
     rar: { icon: '📦', color: 'text-yellow-400 bg-yellow-500/10' },
     txt: { icon: '📃', color: 'text-gray-400 bg-gray-500/10' },
     csv: { icon: '📋', color: 'text-green-400 bg-green-500/10' },
-    default: { icon: '📎', color: 'text-text-secondary bg-white/5' },
+    default: { icon: '📎', color: 'text-semantic-text-secondary bg-semantic-bg-hover' },
 };
 
 function getFileIcon(filename: string): { icon: string; color: string } {
@@ -76,12 +76,12 @@ export function AttachmentGrid({
 
     return (
         <>
-            <div className={cn('border-t border-white/5 pt-3', className)}>
+            <div className={cn('border-t border-semantic-border pt-3', className)}>
                 <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-semantic-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                     </svg>
-                    <span className="text-xs font-medium text-text-secondary">
+                    <span className="text-xs font-medium text-semantic-text-secondary">
                         {attachments.length} tệp đính kèm
                     </span>
                 </div>
@@ -143,15 +143,15 @@ function AttachmentItem({ attachment, onClick }: AttachmentItemProps) {
         <button
             onClick={onClick}
             className={cn(
-                'group flex flex-col items-center p-3 rounded-lg border border-white/5',
-                'hover:border-primary/30 hover:bg-primary/5 transition-all',
+                'group flex flex-col items-center p-3 rounded-lg border border-semantic-border',
+                'hover:border-semantic-accent/40 hover:bg-semantic-accent-subtle/50 transition-colors',
                 'text-left w-full'
             )}
         >
             {/* Thumbnail or Icon */}
             <div className={cn(
                 'w-12 h-12 rounded-lg flex items-center justify-center mb-2',
-                isImg ? 'bg-white/5' : color
+                isImg ? 'bg-semantic-bg-hover' : color
             )}>
                 {isImg && attachment.url ? (
                     <img
@@ -165,12 +165,12 @@ function AttachmentItem({ attachment, onClick }: AttachmentItemProps) {
             </div>
 
             {/* Filename */}
-            <p className="text-xs text-text-main font-medium truncate w-full text-center group-hover:text-primary transition-colors">
+            <p className="text-xs text-semantic-text-main font-medium truncate w-full text-center group-hover:text-semantic-accent-text transition-colors">
                 {attachment.filename}
             </p>
 
             {/* Size */}
-            <p className="text-[10px] text-text-secondary">
+            <p className="text-[10px] text-semantic-text-secondary">
                 {formatFileSize(attachment.size ?? 0)}
             </p>
         </button>

@@ -51,7 +51,7 @@ export function EmailActionToolbar({
                 }
                 label={isPinned ? 'Bỏ ghim' : 'Ghim'}
                 isActive={isPinned}
-                activeColor="text-amber-400"
+                activeColor="text-semantic-warning"
             />
 
             {/* Copy source */}
@@ -79,7 +79,7 @@ export function EmailActionToolbar({
             )}
 
             {/* Divider */}
-            <div className="w-px h-5 bg-white/10 mx-1" />
+            <div className="w-px h-5 bg-semantic-border mx-1" />
 
             {/* Delete */}
             {onDelete && (
@@ -121,7 +121,7 @@ function ActionButton({
     icon,
     label,
     isActive = false,
-    activeColor = 'text-primary',
+    activeColor = 'text-semantic-accent',
     variant = 'default',
     disabled = false,
 }: ActionButtonProps) {
@@ -131,12 +131,12 @@ function ActionButton({
             disabled={disabled}
             className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                'hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed',
+                'hover:bg-semantic-bg-hover disabled:opacity-50 disabled:cursor-not-allowed',
                 variant === 'danger'
-                    ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
+                    ? 'text-semantic-danger hover:bg-semantic-danger-subtle'
                     : isActive
-                    ? `${activeColor} bg-white/5`
-                    : 'text-text-secondary hover:text-text-main'
+                    ? `${activeColor} bg-semantic-bg-hover`
+                    : 'text-semantic-text-secondary hover:text-semantic-text-main'
             )}
             title={label}
         >

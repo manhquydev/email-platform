@@ -50,24 +50,24 @@ export function OTPBanner({ otp, autoCopy = false, onCopy, className }: OTPBanne
     };
 
     const confidenceColors = {
-        high: 'border-green-500/30 bg-green-500/5',
-        medium: 'border-yellow-500/30 bg-yellow-500/5',
-        low: 'border-gray-500/30 bg-gray-500/5',
+        high: 'border-semantic-success/30 bg-semantic-success-subtle',
+        medium: 'border-semantic-warning/30 bg-semantic-warning-subtle',
+        low: 'border-semantic-border bg-semantic-bg-secondary',
     };
 
     return (
         <div
             className={cn(
-                'rounded-xl border-2 p-4 mb-4 transition-all',
+                'rounded-xl border p-4 mb-4 transition-colors',
                 confidenceColors[otp.confidence],
-                status === 'copied' && 'border-green-500/50 bg-green-500/10',
+                status === 'copied' && 'border-semantic-success/50 bg-semantic-success-subtle',
                 className
             )}
         >
             {/* Header */}
             <div className="flex items-center gap-2 mb-3">
                 <svg
-                    className="w-5 h-5 text-primary"
+                    className="w-5 h-5 text-semantic-accent"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -79,11 +79,11 @@ export function OTPBanner({ otp, autoCopy = false, onCopy, className }: OTPBanne
                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                     />
                 </svg>
-                <span className="text-sm font-medium text-text-main">
+                <span className="text-sm font-medium text-semantic-text-main">
                     Mã xác thực
                 </span>
                 {otp.confidence === 'high' && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 font-medium">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-semantic-success-subtle text-semantic-success font-medium">
                         Độ tin cậy cao
                     </span>
                 )}
@@ -94,16 +94,16 @@ export function OTPBanner({ otp, autoCopy = false, onCopy, className }: OTPBanne
                 onClick={handleCopy}
                 className={cn(
                     'w-full flex items-center justify-center gap-3 py-4 px-6 rounded-lg',
-                    'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30',
-                    'transition-all duration-200 group',
-                    status === 'copied' && 'bg-green-500/10 border-green-500/30'
+                    'bg-semantic-bg-elevated hover:bg-semantic-bg-hover border border-semantic-border hover:border-semantic-accent/30',
+                    'transition-colors duration-200 group',
+                    status === 'copied' && 'bg-semantic-success-subtle border-semantic-success/30'
                 )}
             >
                 {/* Code digits */}
                 <span
                     className={cn(
-                        'text-3xl font-mono font-bold tracking-[0.3em] text-text-main',
-                        status === 'copied' && 'text-green-400'
+                        'text-3xl font-mono font-bold tracking-[0.3em] text-semantic-text-main',
+                        status === 'copied' && 'text-semantic-success'
                     )}
                 >
                     {otp.code}
@@ -114,8 +114,8 @@ export function OTPBanner({ otp, autoCopy = false, onCopy, className }: OTPBanne
                     className={cn(
                         'flex items-center gap-1.5 text-sm transition-colors',
                         status === 'copied'
-                            ? 'text-green-400'
-                            : 'text-text-secondary group-hover:text-primary'
+                            ? 'text-semantic-success'
+                            : 'text-semantic-text-secondary group-hover:text-semantic-accent'
                     )}
                 >
                     {status === 'copied' ? (
@@ -139,7 +139,7 @@ export function OTPBanner({ otp, autoCopy = false, onCopy, className }: OTPBanne
 
             {/* Context hint */}
             {otp.context && (
-                <p className="mt-2 text-xs text-text-secondary truncate">
+                <p className="mt-2 text-xs text-semantic-text-secondary truncate">
                     {otp.context}
                 </p>
             )}

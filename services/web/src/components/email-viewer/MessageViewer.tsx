@@ -46,15 +46,15 @@ export function MessageViewer({
     return (
         <div
             className={cn(
-                'flex flex-col h-full',
-                isModal && 'bg-bg-secondary rounded-2xl overflow-hidden',
+                'flex flex-col h-full bg-semantic-bg-primary',
+                isModal && 'rounded-2xl overflow-hidden',
                 className
             )}
         >
             {/* Header with close button for modal */}
             <div className={cn(
-                'flex-shrink-0 p-4 border-b border-white/5',
-                isModal && 'bg-surface/30'
+                'flex-shrink-0 p-4 border-b border-semantic-border',
+                isModal && 'bg-semantic-bg-secondary'
             )}>
                 <div className="flex items-start justify-between gap-4">
                     <EmailHeader message={message} className="flex-1 min-w-0" />
@@ -62,7 +62,7 @@ export function MessageViewer({
                     {isModal && onClose && (
                         <button
                             onClick={onClose}
-                            className="p-2 rounded-lg bg-surface hover:bg-white/10 text-text-secondary hover:text-white transition-colors flex-shrink-0"
+                            className="p-2 rounded-lg bg-semantic-bg-secondary hover:bg-semantic-bg-hover text-semantic-text-secondary hover:text-semantic-text-main transition-colors flex-shrink-0"
                             aria-label="Đóng"
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -73,7 +73,7 @@ export function MessageViewer({
                 </div>
 
                 {/* Action Toolbar */}
-                <div className="mt-3 pt-3 border-t border-white/5">
+                <div className="mt-3 pt-3 border-t border-semantic-border">
                     <EmailActionToolbar
                         message={message}
                         onDelete={onDelete}

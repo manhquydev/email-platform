@@ -5,6 +5,7 @@ import { CreateInboxModal } from "../components/CreateInboxModal";
 import { Loading } from "../components/Loading";
 import { VisibilityRulesPanel } from "../components/VisibilityRulesPanel";
 import { ShareModeToggle } from "../components/inbox-card-modules";
+import { Badge } from "../components/ui/Badge";
 import { useAuth } from "../context/AuthContext";
 import { AppShell } from "../layouts/AppShell";
 import { api } from "../utils/api";
@@ -232,19 +233,19 @@ export function InboxManager() {
     return (
         <AppShell>
             <div className="space-y-3 p-3 pb-24 sm:space-y-4 sm:p-6 lg:p-8">
-                <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-nebula-violet/20 via-nebula-cyan/10 to-nebula-pink/10 p-4 sm:p-5">
-                    <h1 className="text-xl font-bold text-white sm:text-2xl">Inbox Manager 2.0</h1>
-                    <p className="mt-1 text-sm text-text-secondary">Tối ưu thao tác nhanh: tạo inbox, tìm inbox, mở inbox trong 1 click.</p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-text-secondary">
-                        <span className="rounded-full border border-white/10 px-3 py-1">Hiển thị {inboxes.length}/{total.toLocaleString("vi-VN")} inbox</span>
-                        <span className="rounded-full border border-white/10 px-3 py-1">Đang xem: {SCOPE_OPTIONS.find((item) => item.value === selectedScope)?.label}</span>
+                <section className="rounded-2xl border border-semantic-border bg-semantic-accent-subtle p-4 sm:p-5">
+                    <h1 className="text-xl font-bold text-semantic-text-main sm:text-2xl">Inbox Manager 2.0</h1>
+                    <p className="mt-1 text-sm text-semantic-text-secondary">Tối ưu thao tác nhanh: tạo inbox, tìm inbox, mở inbox trong 1 click.</p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-semantic-text-secondary">
+                        <span className="rounded-full border border-semantic-border bg-semantic-bg-elevated px-3 py-1">Hiển thị {inboxes.length}/{total.toLocaleString("vi-VN")} inbox</span>
+                        <span className="rounded-full border border-semantic-border bg-semantic-bg-elevated px-3 py-1">Đang xem: {SCOPE_OPTIONS.find((item) => item.value === selectedScope)?.label}</span>
                         {debouncedSearch ? (
-                            <span className="rounded-full border border-nebula-cyan/30 px-3 py-1 text-nebula-cyan">Search server-side: "{debouncedSearch}"</span>
+                            <span className="rounded-full border border-semantic-accent/30 bg-semantic-bg-elevated px-3 py-1 text-semantic-accent-text">Search server-side: "{debouncedSearch}"</span>
                         ) : null}
                     </div>
                 </section>
 
-                <section className="rounded-2xl border border-white/10 bg-surface/30 p-3 sm:p-4">
+                <section className="rounded-2xl border border-semantic-border bg-semantic-bg-elevated p-3 sm:p-4">
                     <div className="mb-3 flex flex-wrap gap-2">
                         {SCOPE_OPTIONS.map((option) => (
                             <button
@@ -252,8 +253,8 @@ export function InboxManager() {
                                 onClick={() => setSelectedScope(option.value)}
                                 className={`rounded-lg border px-3 py-1.5 text-xs transition ${
                                     selectedScope === option.value
-                                        ? "border-nebula-cyan bg-nebula-cyan/20 text-white"
-                                        : "border-white/10 text-text-secondary hover:text-white"
+                                        ? "border-semantic-accent bg-semantic-accent-subtle text-semantic-accent-text"
+                                        : "border-semantic-border text-semantic-text-secondary hover:text-semantic-text-main"
                                 }`}
                             >
                                 {option.label}
@@ -266,12 +267,12 @@ export function InboxManager() {
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Tìm email nhanh..."
-                            className="h-11 flex-1 rounded-xl border border-white/20 bg-white/[0.08] px-4 text-sm text-white placeholder:text-text-secondary/80 focus:border-nebula-cyan focus:outline-none"
+                            className="h-11 flex-1 rounded-xl border border-semantic-border bg-semantic-bg-primary px-4 text-sm text-semantic-text-main placeholder:text-semantic-text-muted focus:border-semantic-accent focus:outline-none"
                         />
                         <select
                             value={selectedDomain}
                             onChange={(event) => setSelectedDomain(event.target.value)}
-                            className="h-11 w-full rounded-xl border border-white/20 bg-white/[0.08] px-4 text-sm text-white focus:border-nebula-cyan focus:outline-none"
+                            className="h-11 w-full rounded-xl border border-semantic-border bg-semantic-bg-primary px-4 text-sm text-semantic-text-main focus:border-semantic-accent focus:outline-none"
                         >
                             <option value="">Tất cả domain</option>
                             {domains.map((domain) => (
@@ -282,19 +283,19 @@ export function InboxManager() {
                         </select>
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="h-11 w-full rounded-xl bg-nebula-cyan px-4 text-sm font-semibold text-slate-900 hover:bg-nebula-cyan/90 lg:w-auto"
+                            className="h-11 w-full rounded-xl bg-semantic-accent px-4 text-sm font-semibold text-white hover:bg-semantic-accent-hover lg:w-auto"
                         >
                             Tạo email mới
                         </button>
                         <button
                             onClick={() => void loadInboxes()}
-                            className="h-11 w-full rounded-xl border border-white/10 px-4 text-sm text-text-secondary hover:text-white lg:w-auto"
+                            className="h-11 w-full rounded-xl border border-semantic-border px-4 text-sm text-semantic-text-secondary hover:text-semantic-text-main lg:w-auto"
                         >
                             Làm mới
                         </button>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-text-secondary">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-semantic-text-secondary">
                         <span className="uppercase tracking-[0.14em]">Mỗi trang</span>
                         {PAGE_SIZE_OPTIONS.map((size) => (
                             <button
@@ -303,8 +304,8 @@ export function InboxManager() {
                                 onClick={() => setRowsPerPage(size)}
                                 className={`rounded-md border px-2 py-1 transition ${
                                     rowsPerPage === size
-                                        ? "border-nebula-cyan bg-nebula-cyan/20 text-white"
-                                        : "border-white/15 bg-white/[0.03] hover:text-white"
+                                        ? "border-semantic-accent bg-semantic-accent-subtle text-semantic-accent-text"
+                                        : "border-semantic-border bg-semantic-bg-primary hover:text-semantic-text-main"
                                 }`}
                             >
                                 {size}
@@ -314,7 +315,7 @@ export function InboxManager() {
                 </section>
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-                    <section className="rounded-2xl border border-white/10 bg-surface/30 p-4">
+                    <section className="rounded-2xl border border-semantic-border bg-semantic-bg-elevated p-4">
                         {busy ? (
                             <div className="flex justify-center py-12">
                                 <Loading />
@@ -322,7 +323,7 @@ export function InboxManager() {
                         ) : (
                             <div className="space-y-2">
                                 {inboxes.length === 0 ? (
-                                    <p className="rounded-xl border border-dashed border-white/15 p-8 text-center text-sm text-text-secondary">
+                                    <p className="rounded-xl border border-dashed border-semantic-border p-8 text-center text-sm text-semantic-text-secondary">
                                         Không có inbox phù hợp với bộ lọc hiện tại.
                                     </p>
                                 ) : (
@@ -335,22 +336,22 @@ export function InboxManager() {
                                         const canManageSharing = Boolean(user?.id && inbox.ownerId === user.id);
 
                                         return (
-                                        <div key={inbox.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 sm:p-4">
+                                        <div key={inbox.id} className="rounded-xl border border-semantic-border bg-semantic-bg-primary p-3 sm:p-4">
                                             <button onClick={() => openInbox(inbox)} className="w-full text-left">
                                                 <div className="flex items-center gap-2">
-                                                    <p className="truncate text-sm font-semibold text-white">{toInboxEmail(inbox)}</p>
+                                                    <p className="truncate text-sm font-semibold text-semantic-text-main">{toInboxEmail(inbox)}</p>
                                                     {isSharedToUser && (
-                                                        <span className="rounded border border-cyan-400/40 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] text-cyan-300">Shared</span>
+                                                        <Badge variant="info">Shared</Badge>
                                                     )}
                                                 </div>
-                                                <p className="mt-1 text-xs text-text-secondary">
+                                                <p className="mt-1 text-xs text-semantic-text-secondary">
                                                     {inbox._count?.messages ?? 0} email • Tạo lúc {new Date(inbox.createdAt).toLocaleString("vi-VN")}
                                                 </p>
                                             </button>
                                             <div className="mt-3 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                                                 <button
                                                     onClick={() => openInbox(inbox)}
-                                                    className="w-full rounded-lg border border-white/20 bg-white/[0.08] px-3 py-2 text-xs font-semibold text-white hover:bg-white/20 sm:w-auto"
+                                                    className="w-full rounded-lg border border-semantic-border bg-semantic-bg-elevated px-3 py-2 text-xs font-semibold text-semantic-text-main hover:bg-semantic-bg-hover sm:w-auto"
                                                 >
                                                     Mở inbox
                                                 </button>
@@ -360,21 +361,21 @@ export function InboxManager() {
                                                             .writeText(toInboxEmail(inbox))
                                                             .then(() => toast.success("Đã copy email"));
                                                     }}
-                                                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-text-secondary hover:text-white"
+                                                    className="rounded-lg border border-semantic-border px-3 py-2 text-xs text-semantic-text-secondary hover:text-semantic-text-main"
                                                 >
                                                     Copy email
                                                 </button>
                                                 <button
                                                     disabled={deletingInboxId === inbox.id}
                                                     onClick={() => void handleDelete(inbox)}
-                                                    className="rounded-lg border border-rose-400/40 px-3 py-2 text-xs text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                                                    className="rounded-lg border border-semantic-danger/40 px-3 py-2 text-xs text-semantic-danger hover:bg-semantic-danger-subtle disabled:opacity-50"
                                                 >
                                                     {deletingInboxId === inbox.id ? "Đang xóa..." : "Xóa"}
                                                 </button>
                                                 {canManageSharing && (
                                                     <button
                                                         onClick={() => setVisibilityRulesInbox(inbox)}
-                                                        className="rounded-lg border border-white/10 px-3 py-2 text-xs text-text-secondary hover:text-white"
+                                                        className="rounded-lg border border-semantic-border px-3 py-2 text-xs text-semantic-text-secondary hover:text-semantic-text-main"
                                                     >
                                                         Quy tắc hiển thị
                                                     </button>
@@ -394,8 +395,8 @@ export function InboxManager() {
                                 )}
 
                                 {total > rowsPerPage && (
-                                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2">
-                                        <p className="text-xs text-text-secondary">
+                                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-semantic-border bg-semantic-bg-secondary px-3 py-2">
+                                        <p className="text-xs text-semantic-text-secondary">
                                             Trang {activePage}/{totalPages}
                                         </p>
                                         <div className="flex flex-wrap items-center gap-1">
@@ -403,13 +404,13 @@ export function InboxManager() {
                                                 type="button"
                                                 onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
                                                 disabled={activePage === 1}
-                                                className="rounded-md border border-white/10 px-2 py-1 text-xs text-text-secondary hover:text-white disabled:opacity-50"
+                                                className="rounded-md border border-semantic-border px-2 py-1 text-xs text-semantic-text-secondary hover:text-semantic-text-main disabled:opacity-50"
                                             >
                                                 Trước
                                             </button>
                                             {pageTabs.map((token, index) => (
                                                 token === "ellipsis" ? (
-                                                    <span key={`dots-${index}`} className="px-1 text-xs text-text-secondary">
+                                                    <span key={`dots-${index}`} className="px-1 text-xs text-semantic-text-secondary">
                                                         ...
                                                     </span>
                                                 ) : (
@@ -419,8 +420,8 @@ export function InboxManager() {
                                                         onClick={() => setCurrentPage(token)}
                                                         className={`rounded-md border px-2 py-1 text-xs transition ${
                                                             token === activePage
-                                                                ? "border-nebula-cyan bg-nebula-cyan/20 text-white"
-                                                                : "border-white/10 text-text-secondary hover:text-white"
+                                                                ? "border-semantic-accent bg-semantic-accent-subtle text-semantic-accent-text"
+                                                                : "border-semantic-border text-semantic-text-secondary hover:text-semantic-text-main"
                                                         }`}
                                                     >
                                                         {token}
@@ -431,7 +432,7 @@ export function InboxManager() {
                                                 type="button"
                                                 onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
                                                 disabled={activePage === totalPages}
-                                                className="rounded-md border border-white/10 px-2 py-1 text-xs text-text-secondary hover:text-white disabled:opacity-50"
+                                                className="rounded-md border border-semantic-border px-2 py-1 text-xs text-semantic-text-secondary hover:text-semantic-text-main disabled:opacity-50"
                                             >
                                                 Sau
                                             </button>
@@ -442,19 +443,19 @@ export function InboxManager() {
                         )}
                     </section>
 
-                    <aside className="space-y-3 rounded-2xl border border-white/10 bg-surface/30 p-4">
-                        <h2 className="text-sm font-semibold text-white">Mở lại nhanh</h2>
+                    <aside className="space-y-3 rounded-2xl border border-semantic-border bg-semantic-bg-elevated p-4">
+                        <h2 className="text-sm font-semibold text-semantic-text-main">Mở lại nhanh</h2>
                         {recentInboxes.length === 0 ? (
-                            <p className="text-xs text-text-secondary">Các inbox đã mở gần đây sẽ hiện ở đây.</p>
+                            <p className="text-xs text-semantic-text-secondary">Các inbox đã mở gần đây sẽ hiện ở đây.</p>
                         ) : (
                             recentInboxes.map((item) => (
                                 <button
                                     key={item.id}
                                     onClick={() => navigate(`/app/inbox/${item.id}`)}
-                                    className="w-full rounded-lg border border-white/10 px-3 py-2 text-left hover:bg-white/5"
+                                    className="w-full rounded-lg border border-semantic-border px-3 py-2 text-left hover:bg-semantic-bg-hover"
                                 >
-                                    <p className="truncate text-sm text-white">{item.email}</p>
-                                    <p className="text-xs text-text-secondary">{new Date(item.openedAt).toLocaleString("vi-VN")}</p>
+                                    <p className="truncate text-sm text-semantic-text-main">{item.email}</p>
+                                    <p className="text-xs text-semantic-text-secondary">{new Date(item.openedAt).toLocaleString("vi-VN")}</p>
                                 </button>
                             ))
                         )}

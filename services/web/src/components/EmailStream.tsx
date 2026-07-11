@@ -50,9 +50,9 @@ export function EmailStream({ messages, selectedMessageId, onSelectMessage, onCo
         if (groupMessages.length === 0) return null;
 
         return (
-            <div className="mb-6 last:mb-0" key={groupKey}>
+            <div key={groupKey}>
                 <GroupHeader label={TIME_GROUP_LABELS[groupKey]} count={groupMessages.length} />
-                <div className="flex flex-col space-y-2 px-2">
+                <div className="flex flex-col divide-y divide-semantic-border">
                     {groupMessages.map(message => (
                         <EmailItem
                             key={message.id}

@@ -23,7 +23,7 @@ export function EmailHeader({ message, className }: EmailHeaderProps) {
     return (
         <div className={cn('space-y-3', className)}>
             {/* Subject */}
-            <h2 className="text-lg font-bold text-text-main leading-tight">
+            <h2 className="text-lg font-semibold text-semantic-text-main leading-tight">
                 {message.subject || '(Không có tiêu đề)'}
             </h2>
 
@@ -31,10 +31,10 @@ export function EmailHeader({ message, className }: EmailHeaderProps) {
             <div className="flex flex-wrap items-start gap-x-6 gap-y-2 text-sm">
                 {/* From */}
                 <div className="flex items-center gap-2">
-                    <span className="font-medium text-primary bg-primary/10 px-2 py-0.5 rounded text-xs">
+                    <span className="font-medium text-semantic-accent-text bg-semantic-accent-subtle px-2 py-0.5 rounded text-xs">
                         Từ
                     </span>
-                    <span className="text-text-main">{message.fromAddress}</span>
+                    <span className="text-semantic-text-main">{message.fromAddress}</span>
                     <CopyButton
                         text={message.fromAddress ?? ''}
                         size="sm"
@@ -47,19 +47,19 @@ export function EmailHeader({ message, className }: EmailHeaderProps) {
                 {/* To (if available) */}
                 {message.toAddress && (
                     <div className="flex items-center gap-2">
-                        <span className="font-medium text-text-secondary bg-white/5 px-2 py-0.5 rounded text-xs">
+                        <span className="font-medium text-semantic-text-secondary bg-semantic-bg-hover px-2 py-0.5 rounded text-xs">
                             Đến
                         </span>
-                        <span className="text-text-secondary">{message.toAddress}</span>
+                        <span className="text-semantic-text-secondary">{message.toAddress}</span>
                     </div>
                 )}
 
                 {/* Date */}
                 <div className="flex items-center gap-2 ml-auto">
-                    <svg className="w-4 h-4 text-text-secondary opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-semantic-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span className="text-text-secondary text-xs">{formattedDate}</span>
+                    <span className="text-semantic-text-muted text-xs">{formattedDate}</span>
                 </div>
             </div>
 

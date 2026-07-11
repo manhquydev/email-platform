@@ -8,6 +8,9 @@
 @import './styles/version-c-tokens.css';
 /* Mobile Safe Area Support */
 @import './styles/mobile-safe-area.css';
+/* Phase 1: Notion-inspired Design System Foundation — primitives + semantic tokens (additive, coexists with legacy tokens above) */
+@import './styles/primitives.css';
+@import './styles/semantic-tokens.css';
 
 @tailwind base;
 @tailwind components;

@@ -19,9 +19,9 @@ import {
 function scrollAndHighlight(element: HTMLElement | null) {
     if (!element) return;
     element.scrollIntoView({ behavior: "smooth", block: "center" });
-    element.classList.add("ring-2", "ring-nebula-violet", "ring-offset-2", "ring-offset-nebula-bg");
+    element.classList.add("ring-2", "ring-semantic-accent", "ring-offset-2", "ring-offset-semantic-bg-primary");
     setTimeout(() => {
-        element.classList.remove("ring-2", "ring-nebula-violet", "ring-offset-2", "ring-offset-nebula-bg");
+        element.classList.remove("ring-2", "ring-semantic-accent", "ring-offset-2", "ring-offset-semantic-bg-primary");
     }, 1500);
 }
 
@@ -62,8 +62,8 @@ export function SecuritySettings({ profile, loadProfile }: SecuritySettingsProps
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Bảo mật</h2>
-                <p className="text-nebula-text-muted font-body">Bảo vệ tài khoản của bạn với các tiêu chuẩn bảo mật hiện đại.</p>
+                <h2 className="text-3xl font-bold text-semantic-text-main mb-2 tracking-tight">Bảo mật</h2>
+                <p className="text-semantic-text-muted font-body">Bảo vệ tài khoản của bạn với các tiêu chuẩn bảo mật hiện đại.</p>
             </div>
 
             <SecurityStatusCard

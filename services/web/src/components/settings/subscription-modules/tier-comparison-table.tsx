@@ -5,6 +5,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { api } from "../../../utils/api";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "../../ui/Table";
+import { cn } from "../../../utils/cn";
 
 interface TierLimits {
     domains: number;
@@ -97,7 +99,7 @@ export function TierComparisonTable() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <span className="text-nebula-text-muted">Đang tải...</span>
+                <span className="text-semantic-text-muted">Đang tải...</span>
             </div>
         );
     }
@@ -105,102 +107,101 @@ export function TierComparisonTable() {
     const currentTier = user?.tier || "FREE";
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-                <thead>
-                    <tr className="border-b border-nebula-border">
-                        <th className="py-4 px-4 text-nebula-text-muted font-medium sticky left-0 bg-nebula-surface z-10">
-                            Tính năng
-                        </th>
-                        {tiers.map((tier) => (
-                            <th
-                                key={tier.id}
-                                className={`py-4 px-4 text-center font-bold min-w-[120px] ${
-                                    tier.id === currentTier
-                                        ? "text-nebula-violet bg-nebula-violet/5"
-                                        : "text-nebula-text"
-                                }`}
-                            >
-                                <div className="flex flex-col items-center gap-1">
-                                    <span>{tier.name}</span>
-                                    {tier.badge && (
-                                        <span className="text-[10px] bg-nebula-violet text-white px-2 py-0.5 rounded-full">
-                                            {tier.badge}
-                                        </span>
-                                    )}
-                                    {tier.id === currentTier && (
-                                        <span className="text-[10px] bg-nebula-violet/20 text-nebula-violet px-2 py-0.5 rounded-full">
-                                            Hiện tại
-                                        </span>
-                                    )}
-                                </div>
-                            </th>
-                        ))}
-                    </tr>
-                    {/* Pricing row */}
-                    <tr className="border-b border-nebula-border bg-nebula-elevated/30">
-                        <td className="py-4 px-4 text-nebula-text-muted font-medium sticky left-0 bg-nebula-surface z-10">
-                            Giá
-                        </td>
-                        {tiers.map((tier) => (
-                            <td
-                                key={tier.id}
-                                className={`py-4 px-4 text-center ${
-                                    tier.id === currentTier ? "bg-nebula-violet/5" : ""
-                                }`}
-                            >
-                                <div className="flex flex-col items-center">
-                                    <span className="text-2xl font-bold text-nebula-text">
-                                        {formatPrice(tier.price, tier.currency)}
+        <Table>
+            <TableCaption>So sánh chi tiết các gói dịch vụ theo tính năng và giới hạn</TableCaption>
+            <TableHeader className="bg-transparent">
+                <tr className="border-b border-semantic-border">
+                    <TableHead className="sticky left-0 bg-semantic-bg-elevated z-10 normal-case text-sm">
+                        Tính năng
+                    </TableHead>
+                    {tiers.map((tier) => (
+                        <TableHead
+                            key={tier.id}
+                            scope="col"
+                            className={cn(
+                                "text-center normal-case text-base font-bold min-w-[120px]",
+                                tier.id === currentTier
+                                    ? "text-semantic-accent-text bg-semantic-accent-subtle"
+                                    : "text-semantic-text-main"
+                            )}
+                        >
+                            <div className="flex flex-col items-center gap-1">
+                                <span>{tier.name}</span>
+                                {tier.badge && (
+                                    <span className="text-[10px] bg-semantic-accent text-white px-2 py-0.5 rounded-full normal-case font-medium">
+                                        {tier.badge}
                                     </span>
-                                    {tier.price > 0 && (
-                                        <span className="text-xs text-nebula-text-muted">/{tier.period}</span>
-                                    )}
-                                </div>
-                            </td>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-nebula-border/50 text-sm">
-                    {(Object.keys(FEATURE_LABELS) as (keyof TierLimits)[]).map((key) => {
-                        const { label, suffix } = FEATURE_LABELS[key];
-                        return (
-                            <tr key={key} className="hover:bg-nebula-elevated/20 transition-colors">
-                                <td className="py-3 px-4 text-nebula-text-secondary sticky left-0 bg-nebula-surface z-10">
-                                    {label}
-                                </td>
-                                {tiers.map((tier) => {
-                                    const value = tier.limits[key];
-                                    const isBoolean = typeof value === "boolean";
-                                    const isUnlimited = value === -1;
-                                    const isZero = value === 0;
+                                )}
+                                {tier.id === currentTier && (
+                                    <span className="text-[10px] bg-semantic-accent-subtle text-semantic-accent-text px-2 py-0.5 rounded-full normal-case font-medium">
+                                        Hiện tại
+                                    </span>
+                                )}
+                            </div>
+                        </TableHead>
+                    ))}
+                </tr>
+                {/* Pricing row */}
+                <tr className="border-b border-semantic-border bg-semantic-bg-secondary/30">
+                    <TableCell className="sticky left-0 bg-semantic-bg-elevated z-10 text-semantic-text-muted font-medium">
+                        Giá
+                    </TableCell>
+                    {tiers.map((tier) => (
+                        <TableCell
+                            key={tier.id}
+                            className={cn("text-center", tier.id === currentTier ? "bg-semantic-accent-subtle" : "")}
+                        >
+                            <div className="flex flex-col items-center">
+                                <span className="text-2xl font-bold text-semantic-text-main">
+                                    {formatPrice(tier.price, tier.currency)}
+                                </span>
+                                {tier.price > 0 && (
+                                    <span className="text-xs text-semantic-text-muted">/{tier.period}</span>
+                                )}
+                            </div>
+                        </TableCell>
+                    ))}
+                </tr>
+            </TableHeader>
+            <TableBody>
+                {(Object.keys(FEATURE_LABELS) as (keyof TierLimits)[]).map((key) => {
+                    const { label, suffix } = FEATURE_LABELS[key];
+                    return (
+                        <TableRow key={key}>
+                            <TableCell className="sticky left-0 bg-semantic-bg-elevated z-10 text-semantic-text-secondary">
+                                {label}
+                            </TableCell>
+                            {tiers.map((tier) => {
+                                const value = tier.limits[key];
+                                const isBoolean = typeof value === "boolean";
+                                const isUnlimited = value === -1;
+                                const isZero = value === 0;
 
-                                    return (
-                                        <td
-                                            key={tier.id}
-                                            className={`py-3 px-4 text-center ${
-                                                tier.id === currentTier ? "bg-nebula-violet/5" : ""
-                                            } ${
-                                                isBoolean
-                                                    ? value
-                                                        ? "text-success"
-                                                        : "text-nebula-text-muted"
-                                                    : isUnlimited
-                                                    ? "text-success font-medium"
+                                return (
+                                    <TableCell
+                                        key={tier.id}
+                                        className={cn(
+                                            "text-center",
+                                            tier.id === currentTier ? "bg-semantic-accent-subtle" : "",
+                                            isBoolean
+                                                ? value
+                                                    ? "text-semantic-success"
+                                                    : "text-semantic-text-muted"
+                                                : isUnlimited
+                                                    ? "text-semantic-success font-medium"
                                                     : isZero
-                                                    ? "text-nebula-text-muted"
-                                                    : "text-nebula-text"
-                                            }`}
-                                        >
-                                            {formatLimit(value, suffix)}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
+                                                        ? "text-semantic-text-muted"
+                                                        : "text-semantic-text-main"
+                                        )}
+                                    >
+                                        {formatLimit(value, suffix)}
+                                    </TableCell>
+                                );
+                            })}
+                        </TableRow>
+                    );
+                })}
+            </TableBody>
+        </Table>
     );
 }

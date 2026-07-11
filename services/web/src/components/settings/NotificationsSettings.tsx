@@ -35,8 +35,8 @@ export function NotificationsSettings() {
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Thông báo</h2>
-                <p className="text-nebula-text-muted font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
+                <h2 className="text-3xl font-bold text-semantic-text-main mb-2 tracking-tight">Thông báo</h2>
+                <p className="text-semantic-text-muted font-body">Quản lý cách bạn nhận cảnh báo và tin nhắn.</p>
             </div>
 
             {/* Browser Push Notifications */}

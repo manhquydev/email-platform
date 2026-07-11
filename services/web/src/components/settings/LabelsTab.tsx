@@ -46,7 +46,7 @@ export function LabelsTab({ inboxId, inboxes = [], selectedInboxId, onInboxChang
         <div className="space-y-6">
             <div className="flex justify-between items-center gap-4">
                 <div className="flex items-center gap-4 flex-1">
-                    <h3 className="text-lg font-semibold text-nebula-text whitespace-nowrap">Danh sách nhãn</h3>
+                    <h3 className="text-lg font-semibold text-semantic-text-main whitespace-nowrap">Danh sách nhãn</h3>
                     {inboxes.length > 0 && onInboxChange && (
                         <InboxSelector
                             inboxes={inboxes}

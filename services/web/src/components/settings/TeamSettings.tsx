@@ -59,16 +59,16 @@ export function TeamSettings({ userInboxes = [] }: TeamSettingsProps) {
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Nhóm làm việc</h2>
-                <p className="text-nebula-text-muted font-body">Tạo nhóm và chia sẻ inbox với đồng nghiệp.</p>
+                <h2 className="text-3xl font-bold text-semantic-text-main mb-2 tracking-tight">Nhóm làm việc</h2>
+                <p className="text-semantic-text-muted font-body">Tạo nhóm và chia sẻ inbox với đồng nghiệp.</p>
             </div>
 
             {/* Teams List */}
-            <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border border-l-4 border-l-info/70 shadow-sm">
+            <section className="rounded-xl p-6 bg-semantic-bg-elevated border border-semantic-border border-l-4 border-l-semantic-info/70 shadow-semantic-sm">
                 <TeamsListHeader onCreateTeam={() => setIsCreateModalOpen(true)} />
 
                 {loading ? (
-                    <div className="text-center py-8 text-nebula-text-muted">Đang tải...</div>
+                    <div className="text-center py-8 text-semantic-text-muted">Đang tải...</div>
                 ) : teams.length === 0 ? (
                     <EmptyTeamsState />
                 ) : (

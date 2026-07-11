@@ -133,14 +133,14 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
 
     return (
         <>
-            <div className="app-shell flex flex-row h-screen w-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans relative">
+            <div className="app-shell flex flex-row h-screen w-screen overflow-hidden bg-semantic-bg-primary text-semantic-text-main font-sans relative">
                 {/* Background Effects */}
                 <BackgroundEffects variant="default" />
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0 relative z-10">
                     {/* Mobile Header */}
-                    <header className="md:hidden h-14 border-b border-slate-200 dark:border-white/10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg flex items-center justify-between px-4 z-20 shrink-0">
+                    <header className="md:hidden h-14 border-b border-semantic-border bg-semantic-bg-elevated/90 backdrop-blur-lg flex items-center justify-between px-4 z-20 shrink-0">
                         <div className="font-bold text-lg bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                             Ephemera
                         </div>
@@ -148,7 +148,7 @@ function AppShellInner({ children, animate = true }: AppShellProps) {
                             <NotificationCenter />
                             <button
                                 onClick={openDrawer}
-                                className="w-10 h-10 rounded-full bg-gradient-to-br from-nebula-violet to-nebula-violet-dark flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-nebula-violet/20 active:scale-95 transition-transform"
+                                className="w-10 h-10 rounded-full bg-gradient-to-br from-semantic-accent to-semantic-accent-active flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-semantic-accent/20 active:scale-95 transition-transform"
                                 aria-label="Mở menu"
                             >
                                 {user?.email?.charAt(0).toUpperCase() || "U"}

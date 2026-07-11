@@ -150,13 +150,19 @@ export function Settings() {
     }, [loadProfile, loadInboxes]);
 
     return (
-        <div className="flex flex-col h-full w-full bg-nebula-void overflow-hidden">
+        <div className="flex flex-col h-full w-full bg-semantic-bg-primary overflow-hidden">
             {/* Horizontal Tabs Header */}
             <SettingsTabs activeTab={activeTab} onTabChange={changeTab} />
 
             {/* Main Content Area - Full Width */}
             <main ref={mainContentRef} className="flex-1 overflow-y-auto">
-                <div className="max-w-7xl mx-auto px-6 py-8 pb-24">
+                {/* id/aria-labelledby link to the matching TabsTrigger rendered by SettingsTabs (tab-${activeTab}) */}
+                <div
+                    id={`tabpanel-${activeTab}`}
+                    role="tabpanel"
+                    aria-labelledby={`tab-${activeTab}`}
+                    className="max-w-7xl mx-auto px-6 py-8 pb-24"
+                >
                     {activeTab === 'general' && <GeneralSettings profile={profile} loadProfile={loadProfile} loading={loading} />}
                     {activeTab === 'security' && <SecuritySettings profile={profile} loadProfile={loadProfile} />}
                     {activeTab === 'subscription' && <SubscriptionSettings profile={profile} loadProfile={loadProfile} />}

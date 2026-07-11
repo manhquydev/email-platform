@@ -47,8 +47,8 @@ export function DeveloperSettings({}: DeveloperSettingsProps) {
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div>
-                <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Cài đặt cho nhà phát triển</h2>
-                <p className="text-nebula-text-muted font-body">Quản lý API key và Webhook để tích hợp hệ thống.</p>
+                <h2 className="text-3xl font-bold text-semantic-text-main mb-2 tracking-tight">Cài đặt cho nhà phát triển</h2>
+                <p className="text-semantic-text-muted font-body">Quản lý API key và Webhook để tích hợp hệ thống.</p>
             </div>
 
             {/* API Keys Section */}

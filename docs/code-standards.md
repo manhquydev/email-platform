@@ -114,6 +114,48 @@ export function ExampleComponent({ id, onSuccess }: ExampleProps) {
 }
 ```
 
+### Component Migration During Redesign Phases
+
+When a page is redesigned as part of the Notion-inspired post-login redesign (phases 1–6):
+
+**Pattern: Migrate page-local usage, leave shared legacy components in place**
+
+1. **If a page uses a shared legacy component** (e.g., `ConfirmationModal.tsx` called by multiple pages):
+   - Migrate **only that page's own call site(s)** to the new Phase 1 primitive (e.g., `ui/ConfirmModal.tsx`)
+   - Leave the shared legacy component file untouched — it serves its other out-of-scope callers
+   - Do not attempt to migrate all callers at once (other pages may not be in the current redesign scope)
+
+2. **Example: Delete confirmation in `/my-domains`**
+   ```tsx
+   // ❌ OLD: Using legacy shared component
+   import { ConfirmationModal } from '../components/ConfirmationModal';
+   
+   // ✅ NEW: Using Phase 1 primitive for this page's own usage
+   import { ConfirmModal } from '../components/ui/ConfirmModal';
+   
+   // Handle async operations to prevent double-submit:
+   const [deletingId, setDeletingId] = useState<string | null>(null);
+   
+   const confirmDelete = async (domainId: string) => {
+     if (deletingId) return; // Guard: only one delete in flight at a time
+     setDeletingId(domainId);
+     try {
+       await api.delete(`/domains/${domainId}`);
+     } finally {
+       setDeletingId(null);
+     }
+   };
+   ```
+
+3. **Do not apply this to shared infrastructure:**
+   - Navigation, layout, or auth components used across multiple redesigned + legacy pages
+   - Coordinate component migration timing with the phase plan (check `plans/*/plan.md`)
+
+4. **Async state management:**
+   - New Phase 1 primitives (like `ConfirmModal`) may not include the loading/disabled props of their legacy equivalents
+   - Always add explicit guards (e.g., `if (!isLoading)`) to prevent race conditions during async operations
+   - Reuse existing page state when possible rather than extending primitives
+
 ### Context Usage
 ```tsx
 // Use contexts for global state
@@ -158,38 +200,65 @@ useEffect(() => {
 - Handle cleanup in useEffect return
 
 ### Styling
+
+#### Semantic Design System (Phase 1+)
+
+For all newly designed pages and components, use the **semantic token system**:
+
 ```tsx
-// TailwindCSS utility classes
-<div className="bg-slate-900 p-4 rounded-lg shadow-lg">
-  <h1 className="text-xl font-bold text-white">Title</h1>
+// Semantic tokens — automatically theme-aware via .dark class
+<div className="bg-semantic-bg-primary text-semantic-text-main p-4 rounded-md shadow-semantic-md">
+  <h1 className="text-lg font-semibold">Title</h1>
+  <p className="text-semantic-text-secondary">Subtitle</p>
 </div>
 
-// CSS variables for theming
-<div className="bg-[var(--neo-glass-bg)] backdrop-blur-xl">
+// With borders
+<div className="border border-semantic-border bg-semantic-bg-secondary rounded-lg p-4">
+  {/* content */}
+</div>
+
+// Interactive states
+<button className="bg-semantic-accent text-white rounded-md px-4 py-2 hover:bg-semantic-accent-hover transition-colors">
+  Action
+</button>
 ```
 
-### Glassmorphism Design System (Phase 1)
+**Key Patterns:**
+- Use `bg-semantic-bg-*` for backgrounds
+- Use `text-semantic-text-*` for text hierarchy
+- Use `border-semantic-border*` for dividers
+- Use `bg-semantic-{success,warning,danger,info}-subtle` for status backgrounds
+- Use `shadow-semantic-{sm,md,lg}` for shadows (minimal, Notion-style)
+- All tokens automatically adapt to light/dark themes — no manual overrides needed
+
+**Architecture:**
+- Primitives layer: raw colors in `src/styles/primitives.css`
+- Semantic layer: purpose-named tokens in `src/styles/semantic-tokens.css` with `.dark` overrides
+- Tailwind integration: tokens mapped to `colors.semantic` and `shadows.semantic` in `tailwind.config.js`
+- See `docs/design-guidelines.md` for complete token reference
+
+#### Legacy Systems (v3-* and nebula-*)
+
+For pages **not yet redesigned** (check phase scope in `services/web/plans/*/plan.md`), use the existing systems:
+
 ```tsx
-// Card-based email redesign with frosted glass effect
-// Utilities defined in tailwind.config.js
+// Version C (dark-only, superhuman style)
+<div className="bg-v3-bg-primary text-v3-text-primary">
+  {/* dark mode only */}
+</div>
 
-// Base glass card (10px blur)
+// Glassmorphism (legacy, pre-Phase-1 design)
 <div className="glass rounded-lg p-4">
-
-// Elevated glass card (12px blur + shadow)
-<div className="glass-elevated rounded-lg p-4">
-
-// Unread email card (gradient + left accent)
-<div className="glass-unread rounded-lg p-4">
-
-// Hover-interactive glass
-<div className="glass glass-hover rounded-lg p-4">
+  {/* deprecated, for out-of-scope pages only */}
+</div>
 ```
 
-**Browser Compatibility:**
-- Safari: `-webkit-backdrop-filter` prefixes included
-- Legacy browsers: Solid background fallbacks via `@supports` in index.css
-- Performance: 60fps target with `transition-all duration-200`
+**Do not mix systems:** Keep `semantic-*`, `v3-*`, and `nebula-*` classes separate per component.
+
+**Browser Compatibility (Semantic):**
+- All modern browsers support CSS variables and `.dark` class selectors
+- No build-time theme extraction needed — themes toggle at runtime via `ThemeContext`
+- Performance: CSS variables have no runtime cost; theme switches are instant
 
 ### API Calls
 ```typescript

@@ -76,13 +76,13 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
             {/* Header with actions */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h2 className="text-3xl font-bold text-nebula-text mb-2 tracking-tight">Gói & Thanh toán</h2>
-                    <p className="text-nebula-text-muted font-body">Quản lý đăng ký, số dư và hóa đơn của bạn.</p>
+                    <h2 className="text-3xl font-bold text-semantic-text-main mb-2 tracking-tight">Gói & Thanh toán</h2>
+                    <p className="text-semantic-text-muted font-body">Quản lý đăng ký, số dư và hóa đơn của bạn.</p>
                 </div>
                 <div className="flex gap-3">
                     <button
                         onClick={handleExportReport}
-                        className="glass-panel px-4 py-2 rounded-lg text-sm font-medium hover:bg-nebula-elevated transition-colors flex items-center gap-2 border border-nebula-border text-nebula-text-secondary"
+                        className="px-4 py-2 rounded-lg text-sm font-medium bg-semantic-bg-elevated hover:bg-semantic-bg-hover transition-colors flex items-center gap-2 border border-semantic-border text-semantic-text-secondary"
                     >
                         <span className="material-symbols-outlined text-[18px]">download</span>
                         Xuất báo cáo
@@ -131,13 +131,13 @@ export function SubscriptionSettings({ profile, loadProfile }: SubscriptionSetti
             )}
 
             {/* Tier Comparison Table */}
-            <section className="glass-panel rounded-xl p-6 bg-nebula-surface border border-nebula-border">
+            <section className="rounded-xl p-6 bg-semantic-bg-elevated border border-semantic-border">
                 <div className="mb-4">
-                    <h3 className="text-lg font-bold text-nebula-text mb-1 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-nebula-violet">compare</span>
+                    <h3 className="text-lg font-bold text-semantic-text-main mb-1 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-semantic-accent">compare</span>
                         So sánh chi tiết các gói
                     </h3>
-                    <p className="text-sm text-nebula-text-muted">
+                    <p className="text-sm text-semantic-text-muted">
                         Xem tất cả tính năng và giới hạn của từng gói dịch vụ.
                     </p>
                 </div>

@@ -32,11 +32,11 @@ export function CreateTeamModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-nebula-surface rounded-xl p-6 border border-nebula-border shadow-xl">
-                <h3 className="text-xl font-bold text-nebula-text mb-4">Tạo nhóm mới</h3>
+            <div className="w-full max-w-md bg-semantic-bg-elevated rounded-xl p-6 border border-semantic-border shadow-semantic-lg">
+                <h3 className="text-xl font-bold text-semantic-text-main mb-4">Tạo nhóm mới</h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Tên nhóm *</label>
+                        <label className="block text-sm font-medium text-semantic-text-secondary mb-1">Tên nhóm *</label>
                         <Input
                             value={newTeamName}
                             onChange={e => setNewTeamName(e.target.value)}
@@ -45,7 +45,7 @@ export function CreateTeamModal({
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Mô tả</label>
+                        <label className="block text-sm font-medium text-semantic-text-secondary mb-1">Mô tả</label>
                         <Input
                             value={newTeamDescription}
                             onChange={e => setNewTeamDescription(e.target.value)}
@@ -90,11 +90,11 @@ export function AddMemberModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-nebula-surface rounded-xl p-6 border border-nebula-border shadow-xl">
-                <h3 className="text-xl font-bold text-nebula-text mb-4">Thêm thành viên</h3>
+            <div className="w-full max-w-md bg-semantic-bg-elevated rounded-xl p-6 border border-semantic-border shadow-semantic-lg">
+                <h3 className="text-xl font-bold text-semantic-text-main mb-4">Thêm thành viên</h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Email *</label>
+                        <label className="block text-sm font-medium text-semantic-text-secondary mb-1">Email *</label>
                         <Input
                             type="email"
                             value={memberEmail}
@@ -104,11 +104,11 @@ export function AddMemberModal({
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Vai trò</label>
+                        <label className="block text-sm font-medium text-semantic-text-secondary mb-1">Vai trò</label>
                         <select
                             value={memberRole}
                             onChange={e => setMemberRole(e.target.value as TeamRole)}
-                            className="w-full px-3 py-2 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text"
+                            className="w-full px-3 py-2 rounded-lg border border-semantic-border bg-semantic-bg-elevated text-semantic-text-main"
                         >
                             <option value="VIEWER">Viewer - Chỉ xem</option>
                             <option value="MEMBER">Member - Xem và trả lời</option>
@@ -151,14 +151,14 @@ export function ShareInboxModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-nebula-surface rounded-xl p-6 border border-nebula-border shadow-xl">
-                <h3 className="text-xl font-bold text-nebula-text mb-4">Chia sẻ inbox</h3>
+            <div className="w-full max-w-md bg-semantic-bg-elevated rounded-xl p-6 border border-semantic-border shadow-semantic-lg">
+                <h3 className="text-xl font-bold text-semantic-text-main mb-4">Chia sẻ inbox</h3>
                 <div>
-                    <label className="block text-sm font-medium text-nebula-text-secondary mb-1">Chọn inbox</label>
+                    <label className="block text-sm font-medium text-semantic-text-secondary mb-1">Chọn inbox</label>
                     <select
                         value={selectedInboxId}
                         onChange={e => setSelectedInboxId(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-nebula-border bg-nebula-surface text-nebula-text"
+                        className="w-full px-3 py-2 rounded-lg border border-semantic-border bg-semantic-bg-elevated text-semantic-text-main"
                     >
                         <option value="">-- Chọn inbox --</option>
                         {userInboxes.map(inbox => (

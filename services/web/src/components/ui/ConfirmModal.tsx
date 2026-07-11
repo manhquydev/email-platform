@@ -46,9 +46,9 @@ export function ConfirmModal({
     if (!isOpen) return null;
 
     const variantStyles = {
-        danger: 'bg-red-500 hover:bg-red-600',
-        warning: 'bg-yellow-500 hover:bg-yellow-600',
-        info: 'bg-[var(--nebula-violet)] hover:bg-[var(--nebula-violet-dark)]',
+        danger: 'bg-semantic-danger hover:bg-semantic-danger-hover',
+        warning: 'bg-semantic-warning hover:bg-semantic-warning-hover',
+        info: 'bg-semantic-accent hover:bg-semantic-accent-hover',
     };
 
     const variantIcons = {
@@ -66,27 +66,27 @@ export function ConfirmModal({
             aria-labelledby="confirm-title"
         >
             <div
-                className="w-full max-w-md bg-[var(--nebula-surface)] rounded-xl border border-white/10 shadow-2xl"
+                className="w-full max-w-md bg-semantic-bg-elevated rounded-xl border border-semantic-border shadow-semantic-lg"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 text-center">
                     <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                        variant === 'danger' ? 'bg-red-500/20' :
-                        variant === 'warning' ? 'bg-yellow-500/20' : 'bg-[var(--nebula-violet)]/20'
+                        variant === 'danger' ? 'bg-semantic-danger-subtle' :
+                        variant === 'warning' ? 'bg-semantic-warning-subtle' : 'bg-semantic-accent-subtle'
                     }`}>
                         <span className={`material-symbols-outlined text-[24px] ${
-                            variant === 'danger' ? 'text-red-400' :
-                            variant === 'warning' ? 'text-yellow-400' : 'text-[var(--nebula-violet)]'
+                            variant === 'danger' ? 'text-semantic-danger' :
+                            variant === 'warning' ? 'text-semantic-warning' : 'text-semantic-accent'
                         }`}>
                             {variantIcons[variant]}
                         </span>
                     </div>
-                    <h3 id="confirm-title" className="text-lg font-semibold text-white mb-2">{title}</h3>
-                    <p className="text-sm text-[var(--nebula-text-secondary)] mb-6">{message}</p>
+                    <h3 id="confirm-title" className="text-lg font-semibold text-semantic-text-main mb-2">{title}</h3>
+                    <p className="text-sm text-semantic-text-secondary mb-6">{message}</p>
                     <div className="flex gap-3">
                         <button
                             onClick={onCancel}
-                            className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium transition-all"
+                            className="flex-1 px-4 py-3 bg-semantic-bg-hover hover:bg-semantic-border text-semantic-text-main rounded-lg font-medium transition-all"
                         >
                             {cancelText}
                         </button>

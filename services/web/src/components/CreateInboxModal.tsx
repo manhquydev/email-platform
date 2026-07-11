@@ -64,7 +64,7 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                         variant="elevated"
                         className="relative flex h-[min(100dvh-0.5rem,48rem)] w-full flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl"
                     >
-                        <div className="sticky top-0 z-20 border-b border-nebula-border/60 bg-nebula-surface/95 px-4 py-3 backdrop-blur sm:px-6">
+                        <div className="sticky top-0 z-20 border-b border-semantic-border bg-semantic-bg-elevated/95 px-4 py-3 backdrop-blur sm:px-6">
                             <ModalHeader onClose={handleRequestClose} />
                         </div>
 
@@ -98,7 +98,7 @@ export function CreateInboxModal(props: CreateInboxModalProps) {
                         </div>
 
                         {verifiedDomains.length > 0 && (
-                            <div className="sticky bottom-0 z-20 border-t border-nebula-border/60 bg-nebula-surface/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:px-6">
+                            <div className="sticky bottom-0 z-20 border-t border-semantic-border bg-semantic-bg-elevated/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:px-6">
                                 <ModalFooter
                                     loading={loading}
                                     loadingAction={loadingAction}

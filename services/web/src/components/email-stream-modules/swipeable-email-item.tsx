@@ -68,7 +68,7 @@ export function SwipeableEmailItem({
                 ref={ref}
                 {...handlers}
                 className={cn(
-                    "relative bg-nebula-surface touch-pan-y",
+                    "relative bg-semantic-bg-primary touch-pan-y",
                     "md:pointer-events-none md:touch-none" // Disable swipe on desktop
                 )}
             >

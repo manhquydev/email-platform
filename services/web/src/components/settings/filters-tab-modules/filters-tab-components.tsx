@@ -20,26 +20,26 @@ export function FilterCard({ filter, onEdit, onDelete, onTest }: FilterCardProps
     return (
         <GlassCard className="p-4 flex flex-col md:flex-row justify-between gap-4 group">
             <div>
-                <div className="font-semibold text-nebula-text mb-1">{filter.name}</div>
-                <div className="text-sm text-nebula-text-muted space-y-1">
+                <div className="font-semibold text-semantic-text-main mb-1">{filter.name}</div>
+                <div className="text-sm text-semantic-text-muted space-y-1">
                     <div>
-                        <span className="text-nebula-text-secondary font-medium">Khi {filter.matchType === 'ALL' ? 'tất cả' : 'bất kỳ'}: </span>
+                        <span className="text-semantic-text-secondary font-medium">Khi {filter.matchType === 'ALL' ? 'tất cả' : 'bất kỳ'}: </span>
                         {filter.conditions.map((c, i) => {
                             const fieldLabel = FIELD_OPTIONS.find(o => o.value === c.field)?.label || c.field;
                             const opLabel = OPERATOR_OPTIONS.find(o => o.value === c.operator)?.label.toLowerCase() || c.operator.toLowerCase();
                             return (
-                                <span key={i} className="inline-block bg-nebula-elevated px-2 py-0.5 rounded text-xs mr-2 border border-nebula-border">
+                                <span key={i} className="inline-block bg-semantic-bg-secondary px-2 py-0.5 rounded text-xs mr-2 border border-semantic-border">
                                     {fieldLabel} {opLabel} "{c.value}"
                                 </span>
                             );
                         })}
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                        <span className="text-nebula-violet font-medium">Thì: </span>
+                        <span className="text-semantic-accent-text font-medium">Thì: </span>
                         {filter.actions.map((a, i) => {
                             const actionLabel = ACTION_OPTIONS.find(o => o.value === a.type)?.label || a.type;
                             return (
-                                <span key={i} className="inline-block bg-nebula-violet/20 text-nebula-violet px-2 py-0.5 rounded text-xs border border-nebula-violet/30">
+                                <span key={i} className="inline-block bg-semantic-accent-subtle text-semantic-accent-text px-2 py-0.5 rounded text-xs border border-semantic-accent/30">
                                     {actionLabel} {a.value ? `(${a.value})` : ''}
                                 </span>
                             );
@@ -50,7 +50,7 @@ export function FilterCard({ filter, onEdit, onDelete, onTest }: FilterCardProps
             <div className="flex items-start gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button variant="ghost" size="sm" onClick={onTest}>Test</Button>
                 <Button variant="ghost" size="sm" onClick={onEdit}>Sửa</Button>
-                <Button variant="ghost" size="sm" className="text-danger hover:text-danger/80" onClick={onDelete}>Xóa</Button>
+                <Button variant="ghost" size="sm" className="text-semantic-danger hover:text-semantic-danger" onClick={onDelete}>Xóa</Button>
             </div>
         </GlassCard>
     );
@@ -68,13 +68,13 @@ interface ConditionsSectionProps {
 
 export function ConditionsSection({ conditions, matchType, onMatchTypeChange, onUpdate, onAdd, onRemove }: ConditionsSectionProps) {
     return (
-        <div className="bg-nebula-elevated p-4 rounded-xl border border-nebula-border space-y-3">
+        <div className="bg-semantic-bg-secondary p-4 rounded-xl border border-semantic-border space-y-3">
             <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-nebula-text">Điều kiện</span>
+                <span className="text-sm font-semibold text-semantic-text-main">Điều kiện</span>
                 <select
                     value={matchType}
                     onChange={(e) => onMatchTypeChange(e.target.value as "ALL" | "ANY")}
-                    className="bg-nebula-surface border border-nebula-border rounded px-2 py-1 text-xs text-nebula-text focus:outline-none focus:border-nebula-violet"
+                    className="bg-semantic-bg-elevated border border-semantic-border rounded px-2 py-1 text-xs text-semantic-text-main focus:outline-none focus:border-semantic-accent"
                 >
                     <option value="ALL">Thỏa mãn TẤT CẢ (AND)</option>
                     <option value="ANY">Thỏa mãn BẤT KỲ (OR)</option>
@@ -86,14 +86,14 @@ export function ConditionsSection({ conditions, matchType, onMatchTypeChange, on
                     <select
                         value={cond.field}
                         onChange={e => onUpdate(idx, 'field', e.target.value)}
-                        className="w-1/3 bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
+                        className="w-1/3 bg-semantic-bg-elevated border border-semantic-border rounded h-10 px-3 text-sm text-semantic-text-main"
                     >
                         {FIELD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                     <select
                         value={cond.operator}
                         onChange={e => onUpdate(idx, 'operator', e.target.value)}
-                        className="w-1/3 bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
+                        className="w-1/3 bg-semantic-bg-elevated border border-semantic-border rounded h-10 px-3 text-sm text-semantic-text-main"
                     >
                         {OPERATOR_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -103,7 +103,7 @@ export function ConditionsSection({ conditions, matchType, onMatchTypeChange, on
                         onChange={e => onUpdate(idx, 'value', e.target.value)}
                         placeholder="Giá trị..."
                     />
-                    <button onClick={() => onRemove(idx)} className="text-nebula-text-muted hover:text-danger p-2">×</button>
+                    <button onClick={() => onRemove(idx)} className="text-semantic-text-muted hover:text-semantic-danger p-2">×</button>
                 </div>
             ))}
             <Button variant="ghost" size="sm" onClick={onAdd}>+ Thêm điều kiện</Button>
@@ -122,9 +122,9 @@ interface ActionsSectionProps {
 
 export function ActionsSection({ actions, labels, onUpdate, onAdd, onRemove }: ActionsSectionProps) {
     return (
-        <div className="bg-nebula-elevated p-4 rounded-xl border border-nebula-border space-y-3">
+        <div className="bg-semantic-bg-secondary p-4 rounded-xl border border-semantic-border space-y-3">
             <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-nebula-text">Hành động</span>
+                <span className="text-sm font-semibold text-semantic-text-main">Hành động</span>
             </div>
 
             {actions.map((act, idx) => (
@@ -132,7 +132,7 @@ export function ActionsSection({ actions, labels, onUpdate, onAdd, onRemove }: A
                     <select
                         value={act.type}
                         onChange={e => onUpdate(idx, 'type', e.target.value)}
-                        className="w-1/3 bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
+                        className="w-1/3 bg-semantic-bg-elevated border border-semantic-border rounded h-10 px-3 text-sm text-semantic-text-main"
                     >
                         {ACTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -142,7 +142,7 @@ export function ActionsSection({ actions, labels, onUpdate, onAdd, onRemove }: A
                             <select
                                 value={act.value || ""}
                                 onChange={e => onUpdate(idx, 'value', e.target.value)}
-                                className="w-full bg-nebula-surface border border-nebula-border rounded h-10 px-3 text-sm text-nebula-text"
+                                className="w-full bg-semantic-bg-elevated border border-semantic-border rounded h-10 px-3 text-sm text-semantic-text-main"
                             >
                                 <option value="">-- Chọn nhãn --</option>
                                 {labels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
@@ -155,13 +155,13 @@ export function ActionsSection({ actions, labels, onUpdate, onAdd, onRemove }: A
                                 className="w-full"
                             />
                         ) : (
-                            <div className="w-full h-10 flex items-center px-3 text-nebula-text-muted text-sm italic bg-nebula-surface/50 rounded border border-transparent">
+                            <div className="w-full h-10 flex items-center px-3 text-semantic-text-muted text-sm italic bg-semantic-bg-elevated/50 rounded border border-transparent">
                                 Không cần tham số
                             </div>
                         )}
                     </div>
 
-                    <button onClick={() => onRemove(idx)} className="text-nebula-text-muted hover:text-danger p-2">×</button>
+                    <button onClick={() => onRemove(idx)} className="text-semantic-text-muted hover:text-semantic-danger p-2">×</button>
                 </div>
             ))}
             <Button variant="ghost" size="sm" onClick={onAdd}>+ Thêm hành động</Button>
@@ -211,13 +211,13 @@ export function FilterModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
             <div className="min-h-full py-8 flex items-center justify-center w-full">
                 <GlassCard className="w-full max-w-2xl p-6 space-y-6 relative animate-fade-in-up">
-                    <h3 className="text-xl font-bold text-nebula-text">
+                    <h3 className="text-xl font-bold text-semantic-text-main">
                         {isEditing ? "Chỉnh sửa Bộ lọc" : "Tạo Bộ lọc Mới"}
                     </h3>
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Tên bộ lọc</label>
+                            <label className="block text-sm font-medium text-semantic-text-muted mb-1">Tên bộ lọc</label>
                             <Input value={name} onChange={e => onNameChange(e.target.value)} placeholder="VD: Hóa đơn Amazon" />
                         </div>
 
@@ -239,7 +239,7 @@ export function FilterModal({
                         />
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-nebula-border">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-semantic-border">
                         <Button variant="ghost" onClick={onClose}>Hủy</Button>
                         <Button variant="primary" onClick={onSave}>Lưu Bộ lọc</Button>
                     </div>
@@ -273,34 +273,34 @@ export function TestFilterModal({ filter, testResult, loading, onTest, onClose }
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
             <div className="min-h-full py-8 flex items-center justify-center w-full">
                 <GlassCard className="w-full max-w-lg p-6 space-y-5 relative animate-fade-in-up">
-                    <h3 className="text-xl font-bold text-nebula-text">
+                    <h3 className="text-xl font-bold text-semantic-text-main">
                         Kiểm tra Bộ lọc: {filter.name}
                     </h3>
 
-                    <p className="text-sm text-nebula-text-muted">
+                    <p className="text-sm text-semantic-text-muted">
                         Nhập dữ liệu email mẫu để kiểm tra bộ lọc có khớp không.
                     </p>
 
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Từ (From)</label>
+                            <label className="block text-sm font-medium text-semantic-text-muted mb-1">Từ (From)</label>
                             <Input value={fromAddress} onChange={e => setFromAddress(e.target.value)} placeholder="sender@example.com" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Đến (To)</label>
+                            <label className="block text-sm font-medium text-semantic-text-muted mb-1">Đến (To)</label>
                             <Input value={toAddress} onChange={e => setToAddress(e.target.value)} placeholder="inbox@yourdomain.com" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Tiêu đề (Subject)</label>
+                            <label className="block text-sm font-medium text-semantic-text-muted mb-1">Tiêu đề (Subject)</label>
                             <Input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Test email subject" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-nebula-text-muted mb-1">Nội dung (Body)</label>
+                            <label className="block text-sm font-medium text-semantic-text-muted mb-1">Nội dung (Body)</label>
                             <textarea
                                 value={body}
                                 onChange={e => setBody(e.target.value)}
                                 placeholder="Email body content..."
-                                className="w-full bg-nebula-surface border border-nebula-border rounded-lg px-3 py-2 text-sm text-nebula-text focus:outline-none focus:border-nebula-violet min-h-[80px]"
+                                className="w-full bg-semantic-bg-elevated border border-semantic-border rounded-lg px-3 py-2 text-sm text-semantic-text-main focus:outline-none focus:border-semantic-accent min-h-[80px]"
                             />
                         </div>
                         <div className="flex items-center gap-2">
@@ -309,32 +309,32 @@ export function TestFilterModal({ filter, testResult, loading, onTest, onClose }
                                 id="hasAttachment"
                                 checked={hasAttachment}
                                 onChange={e => setHasAttachment(e.target.checked)}
-                                className="rounded border-nebula-border"
+                                className="rounded border-semantic-border"
                             />
-                            <label htmlFor="hasAttachment" className="text-sm text-nebula-text">Có đính kèm</label>
+                            <label htmlFor="hasAttachment" className="text-sm text-semantic-text-main">Có đính kèm</label>
                         </div>
                     </div>
 
                     {/* Test Result */}
                     {testResult && (
-                        <div className={`p-4 rounded-lg border ${testResult.matches ? 'bg-success/10 border-success/30' : 'bg-warning/10 border-warning/30'}`}>
+                        <div className={`p-4 rounded-lg border ${testResult.matches ? 'bg-semantic-success-subtle border-semantic-success/30' : 'bg-semantic-warning-subtle border-semantic-warning/30'}`}>
                             <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-lg ${testResult.matches ? 'text-success' : 'text-warning'}`}>
+                                <span className={`text-lg ${testResult.matches ? 'text-semantic-success' : 'text-semantic-warning'}`}>
                                     {testResult.matches ? '✓' : '✗'}
                                 </span>
-                                <span className={`font-semibold ${testResult.matches ? 'text-success' : 'text-warning'}`}>
+                                <span className={`font-semibold ${testResult.matches ? 'text-semantic-success' : 'text-semantic-warning'}`}>
                                     {testResult.matches ? 'Bộ lọc KHỚP!' : 'Bộ lọc KHÔNG khớp'}
                                 </span>
                             </div>
                             {testResult.allMatchingFilters.length > 0 && (
-                                <div className="text-sm text-nebula-text-muted">
+                                <div className="text-sm text-semantic-text-muted">
                                     Tất cả bộ lọc khớp: {testResult.allMatchingFilters.map(f => f.name).join(', ')}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-nebula-border">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-semantic-border">
                         <Button variant="ghost" onClick={onClose}>Đóng</Button>
                         <Button variant="primary" onClick={handleSubmit} disabled={loading}>
                             {loading ? 'Đang kiểm tra...' : 'Kiểm tra'}

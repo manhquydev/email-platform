@@ -3,6 +3,7 @@
  */
 import { GlassCard } from "../../ui/GlassCard";
 import { Button } from "../../ui/Button";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "../../ui/Table";
 import type { WebhookLog, LogStatus } from "./webhook-logs-types";
 import { getLogStatus, calculateLogStats } from "./webhook-logs-types";
 
@@ -11,22 +12,22 @@ export function StatusBadge({ status, statusCode }: { status: LogStatus; statusC
     switch (status) {
         case "SUCCESS":
             return (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-success/10 text-success rounded-full">
-                    <span className="w-1.5 h-1.5 bg-success rounded-full"></span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-semantic-success-subtle text-semantic-success rounded-full">
+                    <span className="w-1.5 h-1.5 bg-semantic-success rounded-full"></span>
                     {statusCode || "OK"}
                 </span>
             );
         case "FAILED":
             return (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-danger/10 text-danger rounded-full">
-                    <span className="w-1.5 h-1.5 bg-danger rounded-full"></span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-semantic-danger-subtle text-semantic-danger rounded-full">
+                    <span className="w-1.5 h-1.5 bg-semantic-danger rounded-full"></span>
                     {statusCode || "Failed"}
                 </span>
             );
         case "PENDING":
             return (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-warning/10 text-warning rounded-full">
-                    <span className="w-1.5 h-1.5 bg-warning rounded-full animate-pulse"></span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-semantic-warning-subtle text-semantic-warning rounded-full">
+                    <span className="w-1.5 h-1.5 bg-semantic-warning rounded-full animate-pulse"></span>
                     Pending
                 </span>
             );
@@ -43,13 +44,13 @@ interface ModalHeaderProps {
 
 export function ModalHeader({ webhookName, loading, onRefresh, onClose }: ModalHeaderProps) {
     return (
-        <div className="flex items-center justify-between p-4 border-b border-nebula-border">
+        <div className="flex items-center justify-between p-4 border-b border-semantic-border">
             <div>
-                <h3 className="text-lg font-bold text-nebula-text flex items-center gap-2">
-                    <span className="material-symbols-outlined text-nebula-violet">history</span>
+                <h3 className="text-lg font-bold text-semantic-text-main flex items-center gap-2">
+                    <span className="material-symbols-outlined text-semantic-accent">history</span>
                     Lịch sử Webhook
                 </h3>
-                <p className="text-sm text-nebula-text-muted">{webhookName}</p>
+                <p className="text-sm text-semantic-text-muted">{webhookName}</p>
             </div>
             <div className="flex items-center gap-2">
                 <Button size="sm" variant="ghost" onClick={onRefresh} disabled={loading}>
@@ -57,7 +58,7 @@ export function ModalHeader({ webhookName, loading, onRefresh, onClose }: ModalH
                 </Button>
                 <button
                     onClick={onClose}
-                    className="p-2 hover:bg-nebula-elevated rounded-lg text-nebula-text-muted hover:text-nebula-text transition-colors"
+                    className="p-2 hover:bg-semantic-bg-hover rounded-lg text-semantic-text-muted hover:text-semantic-text-main transition-colors"
                 >
                     <span className="material-symbols-outlined">close</span>
                 </button>
@@ -70,22 +71,22 @@ export function ModalHeader({ webhookName, loading, onRefresh, onClose }: ModalH
 export function StatsSummary({ logs }: { logs: WebhookLog[] }) {
     const stats = calculateLogStats(logs);
     return (
-        <div className="grid grid-cols-4 gap-4 p-4 bg-nebula-elevated">
+        <div className="grid grid-cols-4 gap-4 p-4 bg-semantic-bg-secondary">
             <div className="text-center">
-                <div className="text-2xl font-bold text-nebula-text">{stats.total}</div>
-                <div className="text-xs text-nebula-text-muted">Tổng số</div>
+                <div className="text-2xl font-bold text-semantic-text-main">{stats.total}</div>
+                <div className="text-xs text-semantic-text-muted">Tổng số</div>
             </div>
             <div className="text-center">
-                <div className="text-2xl font-bold text-success">{stats.successCount}</div>
-                <div className="text-xs text-nebula-text-muted">Thành công</div>
+                <div className="text-2xl font-bold text-semantic-success">{stats.successCount}</div>
+                <div className="text-xs text-semantic-text-muted">Thành công</div>
             </div>
             <div className="text-center">
-                <div className="text-2xl font-bold text-danger">{stats.failedCount}</div>
-                <div className="text-xs text-nebula-text-muted">Thất bại</div>
+                <div className="text-2xl font-bold text-semantic-danger">{stats.failedCount}</div>
+                <div className="text-xs text-semantic-text-muted">Thất bại</div>
             </div>
             <div className="text-center">
-                <div className="text-2xl font-bold text-info">{stats.avgDuration}ms</div>
-                <div className="text-xs text-nebula-text-muted">Thời gian TB</div>
+                <div className="text-2xl font-bold text-semantic-info">{stats.avgDuration}ms</div>
+                <div className="text-xs text-semantic-text-muted">Thời gian TB</div>
             </div>
         </div>
     );
@@ -104,14 +105,14 @@ export function LogsTable({ logs, loading, retrying, onSelectLog, onRetry }: Log
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-nebula-violet"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-semantic-accent"></div>
             </div>
         );
     }
 
     if (logs.length === 0) {
         return (
-            <div className="text-center py-12 text-nebula-text-muted">
+            <div className="text-center py-12 text-semantic-text-muted">
                 <span className="material-symbols-outlined text-4xl mb-2">inbox</span>
                 <p>Chưa có lịch sử webhook nào</p>
             </div>
@@ -119,36 +120,37 @@ export function LogsTable({ logs, loading, retrying, onSelectLog, onRetry }: Log
     }
 
     return (
-        <table className="w-full">
-            <thead className="bg-nebula-elevated sticky top-0">
-                <tr className="text-left text-xs text-nebula-text-muted uppercase">
-                    <th className="px-4 py-3">Trạng thái</th>
-                    <th className="px-4 py-3">Sự kiện</th>
-                    <th className="px-4 py-3">Thời gian</th>
-                    <th className="px-4 py-3">Response</th>
-                    <th className="px-4 py-3"></th>
+        <Table className="border-none rounded-none">
+            <TableCaption>Lịch sử gửi webhook</TableCaption>
+            <TableHeader className="sticky top-0">
+                <tr>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Sự kiện</TableHead>
+                    <TableHead>Thời gian</TableHead>
+                    <TableHead>Response</TableHead>
+                    <TableHead aria-hidden="true"></TableHead>
                 </tr>
-            </thead>
-            <tbody className="divide-y divide-nebula-border">
+            </TableHeader>
+            <TableBody>
                 {logs.map(log => {
                     const status = getLogStatus(log);
                     return (
-                        <tr
+                        <TableRow
                             key={log.id}
-                            className="hover:bg-nebula-elevated transition-colors cursor-pointer"
+                            className="cursor-pointer"
                             onClick={() => onSelectLog(log)}
                         >
-                            <td className="px-4 py-3"><StatusBadge status={status} statusCode={log.statusCode} /></td>
-                            <td className="px-4 py-3">
-                                <span className="text-sm text-nebula-violet font-mono">{log.eventType}</span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-nebula-text-muted">
+                            <TableCell><StatusBadge status={status} statusCode={log.statusCode} /></TableCell>
+                            <TableCell>
+                                <span className="text-sm text-semantic-accent-text font-mono">{log.eventType}</span>
+                            </TableCell>
+                            <TableCell className="text-sm text-semantic-text-muted">
                                 {new Date(log.createdAt).toLocaleString("vi-VN")}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-nebula-text-muted">
+                            </TableCell>
+                            <TableCell className="text-sm text-semantic-text-muted">
                                 {log.duration ? `${log.duration}ms` : "-"}
-                            </td>
-                            <td className="px-4 py-3">
+                            </TableCell>
+                            <TableCell>
                                 {status === "FAILED" && (
                                     <Button
                                         size="sm"
@@ -159,12 +161,12 @@ export function LogsTable({ logs, loading, retrying, onSelectLog, onRetry }: Log
                                         {retrying === log.id ? "..." : "Retry"}
                                     </Button>
                                 )}
-                            </td>
-                        </tr>
+                            </TableCell>
+                        </TableRow>
                     );
                 })}
-            </tbody>
-        </table>
+            </TableBody>
+        </Table>
     );
 }
 
@@ -181,54 +183,54 @@ export function LogDetailModal({ log, onClose, onRetry }: LogDetailModalProps) {
 
     return (
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4">
-            <div className="bg-nebula-surface rounded-xl w-full max-w-2xl max-h-[70vh] flex flex-col border border-nebula-border">
-                <div className="flex items-center justify-between p-4 border-b border-nebula-border">
+            <div className="bg-semantic-bg-elevated rounded-xl w-full max-w-2xl max-h-[70vh] flex flex-col border border-semantic-border">
+                <div className="flex items-center justify-between p-4 border-b border-semantic-border">
                     <div className="flex items-center gap-3">
                         <StatusBadge status={status} statusCode={log.statusCode} />
-                        <span className="text-nebula-text font-medium">{log.eventType}</span>
+                        <span className="text-semantic-text-main font-medium">{log.eventType}</span>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-nebula-elevated rounded text-nebula-text-muted">
+                    <button onClick={onClose} className="p-1 hover:bg-semantic-bg-hover rounded text-semantic-text-muted">
                         <span className="material-symbols-outlined text-sm">close</span>
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-auto p-4 space-y-4">
                     <div>
-                        <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Thông tin</h4>
+                        <h4 className="text-xs text-semantic-text-muted uppercase mb-2">Thông tin</h4>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                             <div>
-                                <span className="text-nebula-text-muted">Thời gian:</span>
-                                <span className="text-nebula-text ml-2">{new Date(log.createdAt).toLocaleString("vi-VN")}</span>
+                                <span className="text-semantic-text-muted">Thời gian:</span>
+                                <span className="text-semantic-text-main ml-2">{new Date(log.createdAt).toLocaleString("vi-VN")}</span>
                             </div>
                             <div>
-                                <span className="text-nebula-text-muted">Response time:</span>
-                                <span className="text-nebula-text ml-2">{log.duration ? `${log.duration}ms` : "N/A"}</span>
+                                <span className="text-semantic-text-muted">Response time:</span>
+                                <span className="text-semantic-text-main ml-2">{log.duration ? `${log.duration}ms` : "N/A"}</span>
                             </div>
                             <div>
-                                <span className="text-nebula-text-muted">Status code:</span>
-                                <span className="text-nebula-text ml-2">{log.statusCode || "N/A"}</span>
+                                <span className="text-semantic-text-muted">Status code:</span>
+                                <span className="text-semantic-text-main ml-2">{log.statusCode || "N/A"}</span>
                             </div>
                         </div>
                     </div>
 
                     {log.responseBody && status === "FAILED" && (
                         <div>
-                            <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Response</h4>
-                            <pre className="bg-danger/10 border border-danger/20 rounded p-3 text-sm text-danger overflow-auto max-h-[100px]">
+                            <h4 className="text-xs text-semantic-text-muted uppercase mb-2">Response</h4>
+                            <pre className="bg-semantic-danger-subtle border border-semantic-danger/20 rounded p-3 text-sm text-semantic-danger overflow-auto max-h-[100px]">
                                 {log.responseBody}
                             </pre>
                         </div>
                     )}
 
                     <div>
-                        <h4 className="text-xs text-nebula-text-muted uppercase mb-2">Payload</h4>
-                        <pre className="bg-nebula-elevated rounded p-3 text-sm text-nebula-text-secondary overflow-auto max-h-[200px] font-mono">
+                        <h4 className="text-xs text-semantic-text-muted uppercase mb-2">Payload</h4>
+                        <pre className="bg-semantic-bg-secondary rounded p-3 text-sm text-semantic-text-secondary overflow-auto max-h-[200px] font-mono">
                             {JSON.stringify(log.payload, null, 2)}
                         </pre>
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-nebula-border flex justify-end gap-2">
+                <div className="p-4 border-t border-semantic-border flex justify-end gap-2">
                     {status === "FAILED" && (
                         <Button size="sm" onClick={() => { onRetry(log.id); onClose(); }}>Retry</Button>
                     )}

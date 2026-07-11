@@ -154,16 +154,16 @@ export function InboxWorkspace() {
         return (
             <AppShell>
                 <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-3xl items-center justify-center px-4 py-10">
-                    <div className="w-full rounded-3xl border border-white/10 bg-surface/30 p-8 text-center">
-                        <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Inbox Workspace</p>
-                        <h1 className="mt-3 text-2xl font-semibold text-text-main">Không tìm thấy inbox</h1>
-                        <p className="mt-2 text-sm text-text-secondary">
+                    <div className="w-full rounded-xl border border-semantic-border bg-semantic-bg-secondary p-8 text-center">
+                        <p className="text-xs uppercase tracking-[0.2em] text-semantic-text-secondary">Inbox Workspace</p>
+                        <h1 className="mt-3 text-2xl font-semibold text-semantic-text-main">Không tìm thấy inbox</h1>
+                        <p className="mt-2 text-sm text-semantic-text-secondary">
                             Inbox này không còn tồn tại hoặc bạn không có quyền truy cập.
                         </p>
                         <div className="mt-6 flex items-center justify-center gap-3">
                             <Link
                                 to="/app/manager"
-                                className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                                className="rounded-xl border border-semantic-border bg-semantic-bg-secondary px-4 py-2 text-sm text-semantic-text-main transition-colors hover:border-semantic-accent/40 hover:bg-semantic-accent-subtle"
                             >
                                 Quay lại manager
                             </Link>
@@ -175,11 +175,11 @@ export function InboxWorkspace() {
     }
 
     const shellHeader = (
-        <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-4 sm:px-5">
+        <div className="flex flex-col gap-3 border-b border-semantic-border px-4 py-4 sm:px-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                    <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Inbox Workspace</p>
-                    <p className="text-xs text-text-secondary">
+                    <p className="text-xs uppercase tracking-[0.2em] text-semantic-text-secondary">Inbox Workspace</p>
+                    <p className="text-xs text-semantic-text-secondary">
                         {messages.length} email • {unreadCount} chưa đọc
                     </p>
                 </div>
@@ -187,14 +187,14 @@ export function InboxWorkspace() {
                     <button
                         type="button"
                         onClick={() => navigate("/app/manager")}
-                        className="rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                        className="rounded-xl border border-semantic-border bg-semantic-bg-secondary px-3 py-2 text-sm text-semantic-text-main transition-colors hover:border-semantic-accent/40 hover:bg-semantic-accent-subtle"
                     >
                         Manager
                     </button>
                     <button
                         type="button"
                         onClick={handleCreateInbox}
-                        className="rounded-xl border border-primary/30 bg-primary/15 px-3 py-2 text-sm font-semibold text-primary transition hover:border-primary/50 hover:bg-primary/25"
+                        className="rounded-xl border border-semantic-accent/30 bg-semantic-accent-subtle px-3 py-2 text-sm font-semibold text-semantic-accent-text transition-colors hover:border-semantic-accent/50 hover:bg-semantic-accent/20"
                     >
                         Tạo email mới
                     </button>
@@ -204,7 +204,7 @@ export function InboxWorkspace() {
             <button
                 type="button"
                 onClick={handleCopyResolvedEmail}
-                className="truncate rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-left text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                className="truncate rounded-xl border border-semantic-border bg-semantic-bg-secondary px-3 py-2 text-left text-sm text-semantic-text-main transition-colors hover:border-semantic-accent/40 hover:bg-semantic-accent-subtle"
                 title="Sao chép địa chỉ email hiện tại"
             >
                 {inboxResolved.localPart}@{inboxResolved.domain?.name}
@@ -223,7 +223,7 @@ export function InboxWorkspace() {
                         }
                     }}
                     placeholder="Tìm inbox để chuyển nhanh..."
-                    className="flex-1 rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main placeholder:text-text-secondary/80 focus:border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary/40"
+                    className="flex-1 rounded-xl border border-semantic-border bg-semantic-bg-secondary px-3 py-2 text-sm text-semantic-text-main placeholder:text-semantic-text-muted focus:outline-none focus:ring-2 focus:ring-semantic-accent/50 focus:border-semantic-accent/50"
                 />
                 <datalist id="workspace-inbox-options">
                     {inboxOptions.map((option) => (
@@ -233,14 +233,14 @@ export function InboxWorkspace() {
                 <button
                     type="button"
                     onClick={handleQuickSwitchInbox}
-                    className="rounded-xl border border-white/20 bg-white/[0.08] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                    className="rounded-xl border border-semantic-border bg-semantic-bg-secondary px-3 py-2 text-sm text-semantic-text-main transition-colors hover:border-semantic-accent/40 hover:bg-semantic-accent-subtle"
                 >
                     Mở
                 </button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] uppercase tracking-[0.15em] text-text-secondary">Chọn nhanh</span>
+                <span className="text-[11px] uppercase tracking-[0.15em] text-semantic-text-secondary">Chọn nhanh</span>
                 <select
                     value={inboxId}
                     onChange={(event) => {
@@ -248,16 +248,15 @@ export function InboxWorkspace() {
                         if (!nextInboxId || nextInboxId === inboxId) return;
                         navigate(`/app/inbox/${nextInboxId}`);
                     }}
-                    className="min-w-[220px] max-w-full rounded-xl border border-white/25 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/30"
-                    style={{ colorScheme: "dark" }}
+                    className="min-w-[220px] max-w-full rounded-xl border border-semantic-border bg-semantic-bg-elevated px-3 py-2 text-sm text-semantic-text-main focus:outline-none focus:ring-2 focus:ring-semantic-accent/50 focus:border-semantic-accent/50"
                 >
-                    <option className="bg-slate-900 text-slate-100" value={inboxId}>
+                    <option value={inboxId}>
                         {inboxResolved.localPart}@{inboxResolved.domain?.name}
                     </option>
                     {inboxOptions
                         .filter((option) => option.id !== inboxId)
                         .map((option) => (
-                            <option className="bg-slate-900 text-slate-100" key={option.id} value={option.id}>
+                            <option key={option.id} value={option.id}>
                                 {option.email}
                             </option>
                         ))}
@@ -292,33 +291,33 @@ export function InboxWorkspace() {
             <div className="flex-1 p-2 sm:p-4 lg:p-6">
                 {isDesktop ? (
                     <div className="grid h-full min-h-[calc(100vh-6rem)] grid-cols-[360px_minmax(0,1fr)] gap-4">
-                        <div className="min-h-0 rounded-3xl border border-white/10 bg-surface/30 overflow-hidden flex flex-col">
+                        <div className="min-h-0 rounded-xl border border-semantic-border bg-semantic-bg-secondary overflow-hidden flex flex-col">
                             {shellHeader}
-                            <div className="flex flex-1 items-center justify-center px-5 text-center text-text-secondary">
+                            <div className="flex flex-1 items-center justify-center px-5 text-center text-semantic-text-secondary">
                                 <div>
-                                    <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Workspace Controls</p>
-                                    <h2 className="mt-3 text-lg font-semibold text-text-main">Tập trung điều hướng inbox</h2>
+                                    <p className="text-xs uppercase tracking-[0.2em] text-semantic-text-muted">Workspace Controls</p>
+                                    <h2 className="mt-3 text-lg font-semibold text-semantic-text-main">Tập trung điều hướng inbox</h2>
                                     <p className="mt-2 text-sm">
                                         Danh sách email đã được chuyển sang pane bên phải để đọc và triage liền mạch.
                                     </p>
                                 </div>
                             </div>
                         </div>
-                        <div className="min-h-0 rounded-3xl border border-white/10 bg-surface/30 overflow-hidden">
+                        <div className="min-h-0 rounded-xl border border-semantic-border bg-semantic-bg-primary overflow-hidden">
                             {selectedMessage ? (
                                 <>
-                                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                                    <div className="flex items-center justify-between border-b border-semantic-border px-4 py-3">
                                         <button
                                             type="button"
                                             onClick={() => setSelectedMessage(null)}
-                                            className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                                            className="rounded-xl border border-semantic-border bg-semantic-bg-secondary px-3 py-2 text-sm text-semantic-text-main transition-colors hover:border-semantic-accent/40 hover:bg-semantic-accent-subtle"
                                         >
                                             Danh sách email
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handleCopyResolvedEmail}
-                                            className="max-w-[320px] truncate rounded-lg px-2 py-1 text-sm text-text-secondary transition hover:bg-white/[0.05] hover:text-text-main"
+                                            className="max-w-[320px] truncate rounded-lg px-2 py-1 text-sm text-semantic-text-secondary transition-colors hover:bg-semantic-bg-hover hover:text-semantic-text-main"
                                             title="Sao chép địa chỉ email"
                                         >
                                             {inboxResolved.localPart}@{inboxResolved.domain?.name}
@@ -337,20 +336,20 @@ export function InboxWorkspace() {
                         </div>
                     </div>
                 ) : selectedMessage ? (
-                    <div className="min-h-[calc(100vh-6rem)] rounded-3xl border border-white/10 bg-surface/30 overflow-hidden">
-                        <div className="flex flex-col gap-2 border-b border-white/10 px-4 py-4">
+                    <div className="min-h-[calc(100vh-6rem)] rounded-xl border border-semantic-border bg-semantic-bg-primary overflow-hidden">
+                        <div className="flex flex-col gap-2 border-b border-semantic-border px-4 py-4">
                             <div className="flex items-center gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setSelectedMessage(null)}
-                                    className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-text-main transition hover:border-primary/40 hover:bg-primary/10"
+                                    className="rounded-xl border border-semantic-border bg-semantic-bg-secondary px-3 py-2 text-sm text-semantic-text-main transition-colors hover:border-semantic-accent/40 hover:bg-semantic-accent-subtle"
                                 >
                                     Danh sách email
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleCreateInbox}
-                                    className="rounded-xl border border-primary/30 bg-primary/15 px-3 py-2 text-sm font-semibold text-primary transition hover:border-primary/50 hover:bg-primary/25"
+                                    className="rounded-xl border border-semantic-accent/30 bg-semantic-accent-subtle px-3 py-2 text-sm font-semibold text-semantic-accent-text transition-colors hover:border-semantic-accent/50 hover:bg-semantic-accent/20"
                                 >
                                     Tạo email mới
                                 </button>
@@ -358,7 +357,7 @@ export function InboxWorkspace() {
                             <button
                                 type="button"
                                 onClick={handleCopyResolvedEmail}
-                                className="truncate rounded-lg px-2 py-1 text-left text-sm text-text-secondary transition hover:bg-white/[0.05] hover:text-text-main"
+                                className="truncate rounded-lg px-2 py-1 text-left text-sm text-semantic-text-secondary transition-colors hover:bg-semantic-bg-hover hover:text-semantic-text-main"
                                 title="Sao chép địa chỉ email"
                             >
                                 {inboxResolved.localPart}@{inboxResolved.domain?.name}
@@ -373,7 +372,7 @@ export function InboxWorkspace() {
                         />
                     </div>
                 ) : (
-                    <div className="min-h-[calc(100vh-6rem)] rounded-3xl border border-white/10 bg-surface/30 overflow-hidden">
+                    <div className="min-h-[calc(100vh-6rem)] rounded-xl border border-semantic-border bg-semantic-bg-primary overflow-hidden">
                         {shellHeader}
                         {messageStreamPane}
                     </div>

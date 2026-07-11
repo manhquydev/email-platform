@@ -342,7 +342,7 @@ describe("EmailStream - Labels Display", () => {
             />
         );
 
-        const otpButton = screen.getByText(/OTP: 654321/);
+        const otpButton = screen.getByText("654321");
         fireEvent.click(otpButton);
 
         await waitFor(() => {
@@ -368,7 +368,7 @@ describe("EmailStream - Labels Display", () => {
             />
         );
 
-        const otpButton = screen.getByText(/OTP: 111222/);
+        const otpButton = screen.getByText("111222");
         fireEvent.click(otpButton);
 
         // onSelectMessage should not be called when clicking OTP button
@@ -413,7 +413,8 @@ describe("EmailStream - Message Display", () => {
 
         // Unread messages should have special styling
         const messageElement = screen.getByText("Test Subject").closest('[role="button"]');
-        expect(messageElement.className).toContain("from-primary");
+        expect(messageElement.className).toContain("border-l-semantic-accent");
+        expect(messageElement.className).toContain("bg-semantic-accent-subtle");
     });
 
     it("should highlight selected message", () => {
@@ -428,7 +429,8 @@ describe("EmailStream - Message Display", () => {
         );
 
         const messageElement = screen.getByText("Test Subject").closest('[role="button"]');
-        expect(messageElement.className).toContain("from-primary");
+        expect(messageElement.className).toContain("border-l-semantic-accent");
+        expect(messageElement.className).toContain("bg-semantic-bg-selected");
     });
 
     it("should display placeholder text for messages without subject", () => {
@@ -456,7 +458,7 @@ describe("EmailStream - Message Display", () => {
             />
         );
 
-        expect(screen.getByText("Không có nội dung xem trước")).toBeInTheDocument();
+        expect(screen.getByText(/Không có nội dung xem trước/)).toBeInTheDocument();
     });
 
     it("should truncate long message body", () => {
@@ -471,8 +473,9 @@ describe("EmailStream - Message Display", () => {
             />
         );
 
-        // The body should be truncated to 120 characters (component uses substring(0, 120))
-        const previewText = screen.getByText("A".repeat(120));
+        // The preview is truncated to 140 characters (component uses substring(0, 140)) and
+        // rendered as "— <preview>" after the subject in the same row
+        const previewText = screen.getByText(new RegExp("A".repeat(140)));
         expect(previewText).toBeInTheDocument();
     });
 

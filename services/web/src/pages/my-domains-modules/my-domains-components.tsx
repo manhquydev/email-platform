@@ -1,9 +1,10 @@
 /**
  * UI Components for MyDomains page
- * Dark theme with monochrome outline icons (Lucide-style)
- * Glassmorphism cards with compact professional layout
+ * Phase 1 semantic-token theming (light + dark), monochrome outline icons (Lucide-style)
+ * Compact card layout
  */
 import type { Domain } from "../../types";
+import { Badge } from "../../components/ui/Badge";
 
 // Mail server configuration from environment
 const MAIL_HOSTNAME = import.meta.env.VITE_MAIL_HOSTNAME || "mail.manhquy.id.vn";
@@ -162,7 +163,7 @@ function CopyButton({ text, onCopy }: { text: string; onCopy: (text: string) => 
     return (
         <button
             onClick={() => onCopy(text)}
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all duration-150"
+            className="p-1.5 rounded-md text-semantic-text-muted hover:text-semantic-text-main hover:bg-semantic-bg-hover transition-all duration-150"
             title="Sao chép"
         >
             <IconCopy className="w-3.5 h-3.5" />
@@ -170,18 +171,13 @@ function CopyButton({ text, onCopy }: { text: string; onCopy: (text: string) => 
     );
 }
 
-/** Status badge component */
+/** Status badge component - uses Phase 1 Badge primitive */
 function StatusBadge({ status, isPublic }: { status: string; isPublic?: boolean }) {
     const isVerified = status === "VERIFIED";
 
     return (
         <div className="flex items-center gap-1.5">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full tracking-wide uppercase
-                ${isVerified
-                    ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
-                    : "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20"
-                }`}
-            >
+            <Badge variant={isVerified ? "success" : "warning"} className="uppercase tracking-wide">
                 {isVerified ? (
                     <>
                         <IconCheckCircle className="w-3 h-3" />
@@ -193,12 +189,12 @@ function StatusBadge({ status, isPublic }: { status: string; isPublic?: boolean 
                         Chờ xác minh
                     </>
                 )}
-            </span>
+            </Badge>
             {isPublic && isVerified && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full tracking-wide uppercase bg-cyan-500/10 text-cyan-400 ring-1 ring-cyan-500/20">
+                <Badge variant="info" className="uppercase tracking-wide">
                     <IconGlobe className="w-3 h-3" />
                     Công khai
-                </span>
+                </Badge>
             )}
         </div>
     );
@@ -240,26 +236,26 @@ export function AddDomainModal({
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-lg bg-zinc-900/95 border border-zinc-800 rounded-xl shadow-2xl shadow-black/50 animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-lg bg-semantic-bg-elevated border border-semantic-border rounded-xl shadow-semantic-lg animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-semantic-border">
                     <div className="flex items-center gap-3">
                         {addedDomain ? (
-                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                <IconCheckCircle className="w-4 h-4 text-emerald-400" />
+                            <div className="w-8 h-8 rounded-lg bg-semantic-success-subtle flex items-center justify-center">
+                                <IconCheckCircle className="w-4 h-4 text-semantic-success" />
                             </div>
                         ) : (
-                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-                                <IconGlobe className="w-4 h-4 text-cyan-400" />
+                            <div className="w-8 h-8 rounded-lg bg-semantic-accent-subtle flex items-center justify-center">
+                                <IconGlobe className="w-4 h-4 text-semantic-accent-text" />
                             </div>
                         )}
-                        <h2 className="text-base font-semibold text-zinc-100">
+                        <h2 className="text-base font-semibold text-semantic-text-main">
                             {addedDomain ? "Đã thêm tên miền" : "Thêm tên miền"}
                         </h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+                        className="p-1.5 rounded-lg text-semantic-text-muted hover:text-semantic-text-main hover:bg-semantic-bg-hover transition-colors"
                     >
                         <IconClose className="w-4 h-4" />
                     </button>
@@ -270,7 +266,7 @@ export function AddDomainModal({
                     {!addedDomain ? (
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wide">
+                                <label className="block text-xs font-medium text-semantic-text-secondary mb-1.5 uppercase tracking-wide">
                                     Tên miền
                                 </label>
                                 <input
@@ -278,7 +274,7 @@ export function AddDomainModal({
                                     value={newDomainName}
                                     onChange={(e) => setNewDomainName(e.target.value)}
                                     placeholder="example.com"
-                                    className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
+                                    className="w-full px-3 py-2.5 bg-semantic-bg-primary border border-semantic-border rounded-lg text-sm text-semantic-text-main placeholder-semantic-text-muted focus:outline-none focus:ring-2 focus:ring-semantic-accent/40 focus:border-semantic-accent/40 transition-all"
                                     onKeyDown={(e) => e.key === "Enter" && onAdd()}
                                     autoFocus
                                 />
@@ -286,14 +282,14 @@ export function AddDomainModal({
                             <div className="flex justify-end gap-2 pt-2">
                                 <button
                                     onClick={onClose}
-                                    className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-semantic-text-secondary hover:text-semantic-text-main hover:bg-semantic-bg-hover rounded-lg transition-colors"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     onClick={onAdd}
                                     disabled={busy}
-                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-semantic-text-inverse bg-semantic-accent hover:bg-semantic-accent-hover disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                                 >
                                     {busy ? (
                                         <>
@@ -311,46 +307,46 @@ export function AddDomainModal({
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <p className="text-sm text-zinc-400">
-                                Cấu hình bản ghi DNS cho <span className="text-zinc-200 font-medium">{addedDomain.name}</span>:
+                            <p className="text-sm text-semantic-text-secondary">
+                                Cấu hình bản ghi DNS cho <span className="text-semantic-text-main font-medium">{addedDomain.name}</span>:
                             </p>
 
                             {/* DNS Records Table */}
-                            <div className="rounded-lg border border-zinc-800 overflow-hidden">
+                            <div className="rounded-lg border border-semantic-border overflow-hidden">
                                 <table className="w-full text-sm">
                                     <thead>
-                                        <tr className="bg-zinc-800/50">
-                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-16">Loại</th>
-                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Giá trị</th>
+                                        <tr className="bg-semantic-bg-hover">
+                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-semantic-text-secondary uppercase tracking-wider w-16">Loại</th>
+                                            <th className="px-3 py-2 text-left text-[11px] font-semibold text-semantic-text-secondary uppercase tracking-wider">Giá trị</th>
                                             <th className="px-3 py-2 w-10"></th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-zinc-800">
-                                        <tr className="hover:bg-zinc-800/30 transition-colors">
+                                    <tbody className="divide-y divide-semantic-border">
+                                        <tr className="hover:bg-semantic-bg-hover transition-colors">
                                             <td className="px-3 py-2.5">
-                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-500/10 text-rose-400 rounded">MX</span>
+                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-semantic-danger-subtle text-semantic-danger rounded">MX</span>
                                             </td>
-                                            <td className="px-3 py-2.5 font-mono text-xs text-zinc-300">{MAIL_HOSTNAME}</td>
+                                            <td className="px-3 py-2.5 font-mono text-xs text-semantic-text-main">{MAIL_HOSTNAME}</td>
                                             <td className="px-3 py-2.5">
                                                 <CopyButton text={MAIL_HOSTNAME} onCopy={copyToClipboard} />
                                             </td>
                                         </tr>
-                                        <tr className="hover:bg-zinc-800/30 transition-colors">
+                                        <tr className="hover:bg-semantic-bg-hover transition-colors">
                                             <td className="px-3 py-2.5">
-                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/10 text-amber-400 rounded">A</span>
+                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-semantic-warning-subtle text-semantic-warning rounded">A</span>
                                             </td>
-                                            <td className="px-3 py-2.5 font-mono text-xs text-zinc-300">
-                                                <span className="text-zinc-500">mail →</span> {MAIL_SERVER_IP}
+                                            <td className="px-3 py-2.5 font-mono text-xs text-semantic-text-main">
+                                                <span className="text-semantic-text-muted">mail →</span> {MAIL_SERVER_IP}
                                             </td>
                                             <td className="px-3 py-2.5">
                                                 <CopyButton text={MAIL_SERVER_IP} onCopy={copyToClipboard} />
                                             </td>
                                         </tr>
-                                        <tr className="hover:bg-zinc-800/30 transition-colors">
+                                        <tr className="hover:bg-semantic-bg-hover transition-colors">
                                             <td className="px-3 py-2.5">
-                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 rounded">TXT</span>
+                                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-semantic-success-subtle text-semantic-success rounded">TXT</span>
                                             </td>
-                                            <td className="px-3 py-2.5 font-mono text-xs text-zinc-300 break-all max-w-[280px]">
+                                            <td className="px-3 py-2.5 font-mono text-xs text-semantic-text-main break-all max-w-[280px]">
                                                 {addedDomain.verificationToken}
                                             </td>
                                             <td className="px-3 py-2.5">
@@ -363,7 +359,7 @@ export function AddDomainModal({
 
                             <button
                                 onClick={onClose}
-                                className="w-full py-2.5 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 rounded-lg transition-colors"
+                                className="w-full py-2.5 text-sm font-medium text-semantic-text-inverse bg-semantic-accent hover:bg-semantic-accent-hover rounded-lg transition-colors"
                             >
                                 Đã hiểu, đóng
                             </button>
@@ -381,53 +377,53 @@ export function AddDomainModal({
 
 export function DNSConfigCard() {
     return (
-        <div className="mb-5 rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+        <div className="mb-5 rounded-xl border border-semantic-border bg-semantic-bg-elevated overflow-hidden">
             {/* Header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800 bg-zinc-800/30">
-                <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-                    <IconServer className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-semantic-border bg-semantic-bg-hover">
+                <div className="w-7 h-7 rounded-lg bg-semantic-accent-subtle flex items-center justify-center">
+                    <IconServer className="w-3.5 h-3.5 text-semantic-accent-text" />
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-200">Hướng dẫn cấu hình DNS</h3>
+                <h3 className="text-sm font-semibold text-semantic-text-main">Hướng dẫn cấu hình DNS</h3>
             </div>
 
             {/* Content */}
             <div className="p-4">
-                <p className="text-xs text-zinc-500 mb-3">
+                <p className="text-xs text-semantic-text-muted mb-3">
                     Thêm các bản ghi DNS sau để nhận email trên tên miền của bạn:
                 </p>
 
-                <div className="rounded-lg border border-zinc-800 overflow-hidden">
+                <div className="rounded-lg border border-semantic-border overflow-hidden">
                     <table className="w-full text-xs">
                         <thead>
-                            <tr className="bg-zinc-800/50">
-                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-14">Loại</th>
-                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-16">Tên</th>
-                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Giá trị</th>
+                            <tr className="bg-semantic-bg-hover">
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-semantic-text-muted uppercase tracking-wider w-14">Loại</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-semantic-text-muted uppercase tracking-wider w-16">Tên</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-semibold text-semantic-text-muted uppercase tracking-wider">Giá trị</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-zinc-800/50">
+                        <tbody className="divide-y divide-semantic-border">
                             <tr>
                                 <td className="px-3 py-2">
-                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-rose-500/10 text-rose-400 rounded">MX</span>
+                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-semantic-danger-subtle text-semantic-danger rounded">MX</span>
                                 </td>
-                                <td className="px-3 py-2 font-mono text-zinc-400">@</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">
-                                    {MAIL_HOSTNAME} <span className="text-zinc-600">(priority 10)</span>
+                                <td className="px-3 py-2 font-mono text-semantic-text-secondary">@</td>
+                                <td className="px-3 py-2 font-mono text-semantic-text-main">
+                                    {MAIL_HOSTNAME} <span className="text-semantic-text-muted">(priority 10)</span>
                                 </td>
                             </tr>
                             <tr>
                                 <td className="px-3 py-2">
-                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-500/10 text-amber-400 rounded">A</span>
+                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-semantic-warning-subtle text-semantic-warning rounded">A</span>
                                 </td>
-                                <td className="px-3 py-2 font-mono text-zinc-400">mail</td>
-                                <td className="px-3 py-2 font-mono text-zinc-300">{MAIL_SERVER_IP}</td>
+                                <td className="px-3 py-2 font-mono text-semantic-text-secondary">mail</td>
+                                <td className="px-3 py-2 font-mono text-semantic-text-main">{MAIL_SERVER_IP}</td>
                             </tr>
                             <tr>
                                 <td className="px-3 py-2">
-                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/10 text-emerald-400 rounded">TXT</span>
+                                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-semantic-success-subtle text-semantic-success rounded">TXT</span>
                                 </td>
-                                <td className="px-3 py-2 font-mono text-zinc-400">@</td>
-                                <td className="px-3 py-2 font-mono text-zinc-500 italic">[mã xác minh]</td>
+                                <td className="px-3 py-2 font-mono text-semantic-text-secondary">@</td>
+                                <td className="px-3 py-2 font-mono text-semantic-text-muted italic">[mã xác minh]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -468,7 +464,7 @@ export function DomainCard({
     const isDeleting = deletingId === domain.id;
 
     return (
-        <div className="group rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/70 hover:border-zinc-700 transition-all duration-200">
+        <div className="group rounded-xl border border-semantic-border bg-semantic-bg-elevated hover:bg-semantic-bg-hover hover:border-semantic-border-hover transition-all duration-200">
             {/* Main Content */}
             <div className="px-4 py-3.5">
                 <div className="flex items-center justify-between gap-4">
@@ -476,23 +472,23 @@ export function DomainCard({
                     <div className="flex items-center gap-3 min-w-0">
                         <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${
                             isVerified
-                                ? "bg-emerald-500/10 ring-1 ring-emerald-500/20"
-                                : "bg-amber-500/10 ring-1 ring-amber-500/20"
+                                ? "bg-semantic-success-subtle ring-1 ring-semantic-success/20"
+                                : "bg-semantic-warning-subtle ring-1 ring-semantic-warning/20"
                         }`}>
                             {isVerified ? (
-                                <IconCheckCircle className="w-4 h-4 text-emerald-400" />
+                                <IconCheckCircle className="w-4 h-4 text-semantic-success" />
                             ) : (
-                                <IconClock className="w-4 h-4 text-amber-400" />
+                                <IconClock className="w-4 h-4 text-semantic-warning" />
                             )}
                         </div>
                         <div className="min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
-                                <h3 className="text-sm font-semibold text-zinc-100 truncate">{domain.name}</h3>
-                                <IconExternalLink className="w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <h3 className="text-sm font-semibold text-semantic-text-main truncate">{domain.name}</h3>
+                                <IconExternalLink className="w-3 h-3 text-semantic-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                             <div className="flex items-center gap-2">
                                 <StatusBadge status={domain.status} isPublic={domain.isPublic} />
-                                <span className="text-[11px] text-zinc-600">
+                                <span className="text-[11px] text-semantic-text-muted">
                                     {new Date(domain.createdAt).toLocaleDateString("en-US", {
                                         month: "short",
                                         day: "numeric",
@@ -509,7 +505,7 @@ export function DomainCard({
                             <button
                                 onClick={() => onVerify(domain.id, domain.verificationToken)}
                                 disabled={isVerifying}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 disabled:opacity-50 rounded-lg transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-semantic-accent-text bg-semantic-accent-subtle hover:opacity-80 disabled:opacity-50 rounded-lg transition-opacity"
                             >
                                 {isVerifying ? (
                                     <IconLoader className="w-3 h-3" />
@@ -524,7 +520,7 @@ export function DomainCard({
                             <button
                                 onClick={() => onTogglePublic(domain.id, domain.isPublic)}
                                 disabled={isToggling}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 disabled:opacity-50 rounded-lg transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-semantic-text-secondary hover:text-semantic-text-main bg-semantic-bg-secondary hover:bg-semantic-bg-hover disabled:opacity-50 rounded-lg transition-colors"
                                 title={domain.isPublic ? "Chuyển sang riêng tư" : "Chuyển sang công khai"}
                             >
                                 {isToggling ? (
@@ -541,7 +537,7 @@ export function DomainCard({
                         <button
                             onClick={() => onDelete(domain)}
                             disabled={isDeleting}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 disabled:opacity-50 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-semantic-text-muted hover:text-semantic-danger hover:bg-semantic-danger-subtle disabled:opacity-50 rounded-lg transition-colors"
                             title="Xóa tên miền"
                         >
                             {isDeleting ? (
@@ -557,20 +553,20 @@ export function DomainCard({
             {/* Verification Instructions - Show when pending */}
             {!isVerified && (
                 <div className="px-4 pb-3.5">
-                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                    <div className="p-3 rounded-lg bg-semantic-warning-subtle border border-semantic-warning/20">
                         <div className="flex items-start gap-2">
-                            <IconInfo className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                            <IconInfo className="w-4 h-4 text-semantic-warning flex-shrink-0 mt-0.5" />
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs text-amber-300/80 mb-2">
+                                <p className="text-xs text-semantic-warning mb-2">
                                     Thêm bản ghi TXT sau để xác minh quyền sở hữu:
                                 </p>
                                 <div className="flex items-center gap-2">
-                                    <code className="flex-1 px-2.5 py-1.5 bg-zinc-900/80 rounded text-[11px] font-mono text-zinc-300 break-all">
+                                    <code className="flex-1 px-2.5 py-1.5 bg-semantic-bg-primary rounded text-[11px] font-mono text-semantic-text-main break-all">
                                         {domain.verificationToken}
                                     </code>
                                     <button
                                         onClick={() => copyToClipboard(domain.verificationToken)}
-                                        className="flex-shrink-0 px-2.5 py-1.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+                                        className="flex-shrink-0 px-2.5 py-1.5 text-[11px] font-medium text-semantic-text-secondary hover:text-semantic-text-main bg-semantic-bg-secondary hover:bg-semantic-bg-hover rounded transition-colors"
                                     >
                                         Sao chép
                                     </button>
@@ -584,10 +580,10 @@ export function DomainCard({
             {/* Public Domain Notice */}
             {domain.isPublic && isVerified && (
                 <div className="px-4 pb-3.5">
-                    <div className="p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+                    <div className="p-3 rounded-lg bg-semantic-accent-subtle border border-semantic-accent/20">
                         <div className="flex items-center gap-2">
-                            <IconGlobe className="w-4 h-4 text-cyan-400" />
-                            <p className="text-xs text-cyan-300/80">
+                            <IconGlobe className="w-4 h-4 text-semantic-accent-text" />
+                            <p className="text-xs text-semantic-accent-text">
                                 <span className="font-medium">Tên miền công khai.</span> Người dùng khác có thể tạo email trên tên miền này.
                             </p>
                         </div>
@@ -606,20 +602,20 @@ export function DomainsEmptyState({ onAdd }: { onAdd: () => void }) {
     return (
         <div className="flex flex-col items-center justify-center py-16 px-6">
             {/* Icon */}
-            <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700 flex items-center justify-center mb-5">
-                <IconGlobe className="w-8 h-8 text-zinc-600" />
+            <div className="w-16 h-16 rounded-2xl bg-semantic-bg-hover border border-semantic-border flex items-center justify-center mb-5">
+                <IconGlobe className="w-8 h-8 text-semantic-text-muted" />
             </div>
 
             {/* Text */}
-            <h3 className="text-lg font-semibold text-zinc-200 mb-1.5">Chưa có tên miền</h3>
-            <p className="text-sm text-zinc-500 text-center max-w-sm mb-6">
+            <h3 className="text-lg font-semibold text-semantic-text-main mb-1.5">Chưa có tên miền</h3>
+            <p className="text-sm text-semantic-text-secondary text-center max-w-sm mb-6">
                 Thêm tên miền đầu tiên để bắt đầu nhận email.
             </p>
 
             {/* Action */}
             <button
                 onClick={onAdd}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-zinc-900 bg-cyan-400 hover:bg-cyan-300 rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-semantic-text-inverse bg-semantic-accent hover:bg-semantic-accent-hover rounded-lg transition-colors"
             >
                 <IconPlus className="w-4 h-4" />
                 Thêm tên miền đầu tiên

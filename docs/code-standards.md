@@ -114,6 +114,48 @@ export function ExampleComponent({ id, onSuccess }: ExampleProps) {
 }
 ```
 
+### Component Migration During Redesign Phases
+
+When a page is redesigned as part of the Notion-inspired post-login redesign (phases 1–6):
+
+**Pattern: Migrate page-local usage, leave shared legacy components in place**
+
+1. **If a page uses a shared legacy component** (e.g., `ConfirmationModal.tsx` called by multiple pages):
+   - Migrate **only that page's own call site(s)** to the new Phase 1 primitive (e.g., `ui/ConfirmModal.tsx`)
+   - Leave the shared legacy component file untouched — it serves its other out-of-scope callers
+   - Do not attempt to migrate all callers at once (other pages may not be in the current redesign scope)
+
+2. **Example: Delete confirmation in `/my-domains`**
+   ```tsx
+   // ❌ OLD: Using legacy shared component
+   import { ConfirmationModal } from '../components/ConfirmationModal';
+   
+   // ✅ NEW: Using Phase 1 primitive for this page's own usage
+   import { ConfirmModal } from '../components/ui/ConfirmModal';
+   
+   // Handle async operations to prevent double-submit:
+   const [deletingId, setDeletingId] = useState<string | null>(null);
+   
+   const confirmDelete = async (domainId: string) => {
+     if (deletingId) return; // Guard: only one delete in flight at a time
+     setDeletingId(domainId);
+     try {
+       await api.delete(`/domains/${domainId}`);
+     } finally {
+       setDeletingId(null);
+     }
+   };
+   ```
+
+3. **Do not apply this to shared infrastructure:**
+   - Navigation, layout, or auth components used across multiple redesigned + legacy pages
+   - Coordinate component migration timing with the phase plan (check `plans/*/plan.md`)
+
+4. **Async state management:**
+   - New Phase 1 primitives (like `ConfirmModal`) may not include the loading/disabled props of their legacy equivalents
+   - Always add explicit guards (e.g., `if (!isLoading)`) to prevent race conditions during async operations
+   - Reuse existing page state when possible rather than extending primitives
+
 ### Context Usage
 ```tsx
 // Use contexts for global state

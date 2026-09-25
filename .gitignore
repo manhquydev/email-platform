@@ -13,3 +13,11 @@ services/web/node_modules
 services/web/dist
 postgres-data
 redis-data
+node_modules/
+.next/
+.venv/
+dist/
+*.rar
+*.zip
+.env*
+!.env.example

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api";
+import { useVersionCheck } from "../hooks/useVersionCheck";
 
 export function MainLayout() {
+    useVersionCheck();
     const { token } = useAuth();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, setHealth] = useState("checking...");

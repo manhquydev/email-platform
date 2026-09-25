@@ -266,7 +266,7 @@ export async function domainRoutes(app: FastifyInstance) {
     const isAdmin = user.role === "ADMIN";
     const isOwner = domain.ownerId === user.userId;
     const isOrgMember = domain.organization?.members && domain.organization.members.length > 0 &&
-      [OrganizationRole.OWNER, OrganizationRole.ADMIN].includes(domain.organization.members[0].role);
+      ([OrganizationRole.OWNER, OrganizationRole.ADMIN] as string[]).includes(domain.organization.members[0].role);
 
     if (!isOwner && !isAdmin && !isOrgMember) {
       return reply.status(403).send({ error: "Not authorized to delete this domain" });
@@ -320,7 +320,7 @@ export async function domainRoutes(app: FastifyInstance) {
     const isAdmin = user.role === "ADMIN";
     const isOwner = domain.ownerId === user.userId;
     const isOrgMember = domain.organization?.members && domain.organization.members.length > 0 &&
-      [OrganizationRole.OWNER, OrganizationRole.ADMIN].includes(domain.organization.members[0].role);
+      ([OrganizationRole.OWNER, OrganizationRole.ADMIN] as string[]).includes(domain.organization.members[0].role);
 
     // Only admin can toggle isPublic
     if (body.data.isPublic !== undefined && !isAdmin) {
@@ -386,9 +386,9 @@ export async function domainRoutes(app: FastifyInstance) {
     const updated = await prisma.domain.update({
       where: { id: domain.id },
       data: {
-        contributionStatus: ContributionStatus.PENDING,
+        contributionStatus: 'PENDING',
         publicDescription: body.data.publicDescription
-      }
+      } as any
     });
 
     await recordAudit(user.userId, "DOMAIN_CONTRIBUTION_REQUESTED", {
